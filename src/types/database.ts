@@ -1,0 +1,206 @@
+/**
+ * TypeScript types mirroring the Supabase database schema.
+ * Keep in sync with supabase/migrations/*.sql.
+ *
+ * These are the "row" types — what comes back from queries.
+ * For insert/update types, use Partial<> or Pick<> as needed.
+ */
+
+export interface Club {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logo_url: string | null;
+  website_url: string | null;
+  contact_email: string | null;
+  timezone: string;
+  settings: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  full_name: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
+  preferred_pace_group: string | null;
+  notification_preferences: {
+    push: boolean;
+    email: boolean;
+    quiet_start: string;
+    quiet_end: string;
+  };
+  onboarding_completed: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export type MemberRole = "rider" | "ride_leader" | "admin";
+export type MemberStatus = "active" | "inactive" | "pending";
+
+export interface ClubMembership {
+  id: string;
+  club_id: string;
+  user_id: string;
+  role: MemberRole;
+  status: MemberStatus;
+  oca_registered: boolean;
+  waiver_signed_at: string | null;
+  joined_at: string;
+}
+
+export interface MeetingLocation {
+  id: string;
+  club_id: string;
+  name: string;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface PaceGroup {
+  id: string;
+  club_id: string;
+  name: string;
+  moving_pace_min: number | null;
+  moving_pace_max: number | null;
+  strava_pace_min: number | null;
+  strava_pace_max: number | null;
+  typical_distance_min: number | null;
+  typical_distance_max: number | null;
+  is_drop_ride: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+export type RideStatus = "scheduled" | "weather_watch" | "cancelled" | "completed";
+
+export interface Ride {
+  id: string;
+  club_id: string;
+  created_by: string | null;
+  title: string;
+  description: string | null;
+  ride_date: string;
+  start_time: string;
+  end_time: string | null;
+  meeting_location_id: string | null;
+  pace_group_id: string | null;
+  distance_km: number | null;
+  elevation_m: number | null;
+  capacity: number | null;
+  route_url: string | null;
+  route_name: string | null;
+  is_drop_ride: boolean;
+  organiser_notes: string | null;
+  status: RideStatus;
+  cancellation_reason: string | null;
+  template_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RidePickup {
+  id: string;
+  ride_id: string;
+  location_id: string;
+  pickup_time: string;
+  notes: string | null;
+  sort_order: number;
+}
+
+export interface Tag {
+  id: string;
+  club_id: string;
+  name: string;
+  color: string | null;
+  sort_order: number;
+}
+
+export type SignupStatus = "confirmed" | "waitlisted" | "cancelled" | "checked_in";
+
+export interface RideSignup {
+  id: string;
+  ride_id: string;
+  user_id: string;
+  status: SignupStatus;
+  waitlist_position: number | null;
+  signed_up_at: string;
+  checked_in_at: string | null;
+  cancelled_at: string | null;
+}
+
+export type ReactionType = "thumbs_up" | "fire" | "suffering" | "heart" | "wind";
+
+export interface RideReaction {
+  id: string;
+  ride_id: string;
+  user_id: string;
+  reaction: ReactionType;
+  created_at: string;
+}
+
+export interface RideComment {
+  id: string;
+  ride_id: string;
+  user_id: string;
+  body: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Announcement {
+  id: string;
+  club_id: string;
+  created_by: string | null;
+  title: string;
+  body: string;
+  is_pinned: boolean;
+  pinned_to_ride_id: string | null;
+  published_at: string;
+  expires_at: string | null;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  type: string;
+  title: string;
+  body: string | null;
+  ride_id: string | null;
+  is_read: boolean;
+  channel: "push" | "email" | "both";
+  sent_at: string;
+}
+
+export interface WeatherRule {
+  id: string;
+  club_id: string;
+  name: string;
+  rain_probability_threshold: number | null;
+  wind_speed_threshold: number | null;
+  humidex_max: number | null;
+  aqhi_threshold: number | null;
+  is_default: boolean;
+  created_at: string;
+}
+
+/**
+ * Ride with joined relations — common query shape for the feed and detail pages.
+ */
+export interface RideWithDetails extends Ride {
+  meeting_location: MeetingLocation | null;
+  pace_group: PaceGroup | null;
+  tags: Tag[];
+  signup_count: number;
+  creator: Pick<User, "id" | "full_name" | "display_name" | "avatar_url"> | null;
+}
