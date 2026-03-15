@@ -1,10 +1,16 @@
 import { notFound } from "next/navigation";
 import { format, parseISO } from "date-fns";
-import { MapPin, Clock, Route, Users, TrendingUp, ExternalLink } from "lucide-react";
+import {
+  MapPin,
+  Path,
+  Users,
+  Mountains,
+  ArrowSquareOut,
+  CloudRain,
+} from "@phosphor-icons/react/dist/ssr";
 import { getRideById, getUserSignupStatus } from "@/lib/rides/queries";
 import { SignupButton } from "@/components/rides/signup-button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { appContent } from "@/content/app";
 
 const { detail } = appContent.rides;
@@ -15,14 +21,8 @@ interface RideDetailPageProps {
 
 export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const { id } = await params;
-  const [ride, signup] = await Promise.all([
-    getRideById(id),
-    getUserSignupStatus(id),
-  ]);
-
-  if (!ride) {
-    notFound();
-  }
+  const [ride, signup] = await Promise.all([getRideById(id), getUserSignupStatus(id)]);
+  if (!ride) notFound();
 
   const rideDate = parseISO(ride.ride_date);
   const isSignedUp = signup?.status === "confirmed" || signup?.status === "waitlisted";
@@ -31,36 +31,36 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
     ride.capacity != null
       ? detail.spotsRemaining(ride.capacity - ride.signup_count, ride.capacity)
       : `${ride.signup_count} signed up`;
+  const capacityPercent =
+    ride.capacity != null ? (ride.signup_count / ride.capacity) * 100 : null;
 
   return (
-    <div className="flex flex-1 flex-col px-4 py-6 md:px-8">
-      {/* Status Banner */}
+    <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10 gradient-crimson">
+      {/* Status Banners */}
       {ride.status === "weather_watch" && (
-        <div className="mb-4 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200">
+        <div className="mb-6 flex items-center gap-2.5 rounded-xl border border-amber-500/20 bg-amber-500/10 px-5 py-4 text-base text-amber-300">
+          <CloudRain weight="fill" className="h-5 w-5 shrink-0" />
           Weather Watch — this ride may be affected by weather conditions.
         </div>
       )}
       {isCancelled && (
-        <div className="mb-4 rounded-md bg-destructive/10 px-4 py-2 text-sm text-destructive">
+        <div className="mb-6 rounded-xl border border-destructive/20 bg-destructive/10 px-5 py-4 text-base text-destructive">
           {detail.cancelled}
           {ride.cancellation_reason && ` — ${ride.cancellation_reason}`}
         </div>
       )}
 
-      {/* Header */}
-      <h1 className="text-2xl font-bold text-foreground">{ride.title}</h1>
+      <h1 className="text-display text-foreground">{ride.title}</h1>
 
-      {/* Date & Time */}
-      <p className="mt-2 text-base text-foreground">
+      <p className="mt-3 text-lg text-foreground/90">
         {format(rideDate, "EEEE, MMMM d, yyyy")}
-        <span className="mx-2 text-muted-foreground">·</span>
-        {ride.start_time.slice(0, 5)}
-        {ride.end_time && ` – ${ride.end_time.slice(0, 5)}`}
+        <span className="mx-2 text-muted-foreground/50">·</span>
+        <span className="tabular-nums">{ride.start_time.slice(0, 5)}</span>
+        {ride.end_time && <span className="tabular-nums"> – {ride.end_time.slice(0, 5)}</span>}
       </p>
 
-      {/* Pace Group */}
       {ride.pace_group && (
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1.5 text-base text-muted-foreground">
           {ride.pace_group.name}
           {ride.pace_group.moving_pace_min && ride.pace_group.moving_pace_max
             ? ` (${ride.pace_group.moving_pace_min}–${ride.pace_group.moving_pace_max} km/h)`
@@ -69,97 +69,80 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         </p>
       )}
 
-      {/* Tags */}
       {ride.tags.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <div className="mt-3 flex flex-wrap gap-2">
           {ride.tags.map((tag) => (
-            <Badge
-              key={tag.id}
-              variant="secondary"
-              className="text-xs"
-              style={tag.color ? { backgroundColor: `${tag.color}20`, color: tag.color } : undefined}
-            >
+            <Badge key={tag.id} variant="secondary" className="text-sm"
+              style={tag.color ? { backgroundColor: `${tag.color}15`, color: tag.color } : undefined}>
               {tag.name}
             </Badge>
           ))}
         </div>
       )}
 
-      <Separator className="my-4" />
-
-      {/* Details Grid */}
-      <div className="grid gap-3 text-sm">
+      {/* Details */}
+      <div className="mt-8 space-y-3">
         {ride.meeting_location && (
-          <div className="flex items-start gap-3">
-            <MapPin className="mt-0.5 h-4 w-4 text-muted-foreground" />
+          <div className="flex items-start gap-3 rounded-xl border border-border/10 bg-card p-5">
+            <MapPin weight="fill" className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <div>
-              <p className="font-medium text-foreground">{ride.meeting_location.name}</p>
+              <p className="font-medium text-foreground text-base">{ride.meeting_location.name}</p>
               {ride.meeting_location.address && (
-                <p className="text-muted-foreground">{ride.meeting_location.address}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{ride.meeting_location.address}</p>
               )}
             </div>
           </div>
         )}
 
-        {ride.distance_km != null && (
-          <div className="flex items-center gap-3">
-            <Route className="h-4 w-4 text-muted-foreground" />
-            <span>{ride.distance_km} km</span>
-            {ride.elevation_m != null && (
-              <>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                <span>{ride.elevation_m} m elevation</span>
-              </>
-            )}
-          </div>
-        )}
-
-        <div className="flex items-center gap-3">
-          <Users className="h-4 w-4 text-muted-foreground" />
-          <span>{spotsText}</span>
+        <div className="flex items-center gap-5 rounded-xl border border-border/10 bg-card p-5">
+          {ride.distance_km != null && (
+            <span className="flex items-center gap-2 text-base font-medium text-info">
+              <Path weight="bold" className="h-5 w-5" />
+              {ride.distance_km} km
+            </span>
+          )}
+          {ride.elevation_m != null && (
+            <span className="flex items-center gap-2 text-base font-medium text-info">
+              <Mountains weight="fill" className="h-5 w-5" />
+              {ride.elevation_m} m
+            </span>
+          )}
+          <span className="flex items-center gap-2 text-base font-medium">
+            <Users weight="fill" className="h-5 w-5 text-muted-foreground" />
+            {spotsText}
+          </span>
         </div>
 
         {isSignedUp && (
-          <p className="text-sm font-medium text-primary">{detail.signedUp}</p>
+          <p className="text-base font-semibold text-primary">{detail.signedUp}</p>
         )}
       </div>
 
-      {/* Route Link */}
       {ride.route_url && (
-        <>
-          <Separator className="my-4" />
-          <a
-            href={ride.route_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-          >
-            <ExternalLink className="h-4 w-4" />
+        <div className="mt-8">
+          <a href={ride.route_url} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-2 text-base font-semibold text-info hover:underline underline-offset-2">
+            <ArrowSquareOut weight="bold" className="h-5 w-5" />
             {ride.route_name ?? "View Route"}
           </a>
-        </>
+        </div>
       )}
 
-      {/* Organiser Notes */}
       {ride.organiser_notes && (
-        <>
-          <Separator className="my-4" />
-          <div>
-            <h2 className="text-sm font-semibold text-foreground">Notes from the organiser</h2>
-            <p className="mt-1 text-sm text-muted-foreground whitespace-pre-line">
-              {ride.organiser_notes}
-            </p>
-          </div>
-        </>
+        <div className="mt-8">
+          <h2 className="text-section">Notes from the organiser</h2>
+          <p className="mt-3 text-base text-foreground/80 whitespace-pre-line leading-relaxed">{ride.organiser_notes}</p>
+        </div>
       )}
 
-      {/* Sign Up Button — sticky on mobile */}
-      <div className="mt-6 md:mt-8">
-        <SignupButton
-          rideId={ride.id}
-          isSignedUp={isSignedUp}
-          isCancelled={isCancelled}
-        />
+      <div className="mt-10">
+        {capacityPercent != null && (
+          <div className="mb-5 h-0.5 w-full rounded-full bg-muted overflow-hidden">
+            <div className="h-full rounded-full bg-primary transition-all duration-500"
+              style={{ width: `${Math.min(capacityPercent, 100)}%` }} />
+          </div>
+        )}
+        <SignupButton rideId={ride.id} isSignedUp={isSignedUp} isCancelled={isCancelled} />
       </div>
     </div>
   );

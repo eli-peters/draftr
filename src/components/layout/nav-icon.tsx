@@ -1,30 +1,33 @@
 import {
-  Bike,
+  House,
+  Bicycle,
   CalendarCheck,
   Bell,
-  User,
-  Settings,
-} from "lucide-react";
+  UserCircle,
+  GearSix,
+} from "@phosphor-icons/react/dist/ssr";
 import type { IconName } from "@/config/navigation";
 
-const iconMap: Record<IconName, React.ComponentType<{ className?: string }>> = {
-  bike: Bike,
+const iconMap: Record<IconName, React.ComponentType<{ className?: string; weight?: "thin" | "light" | "regular" | "bold" | "fill" | "duotone" }>> = {
+  house: House,
+  bike: Bicycle,
   "calendar-check": CalendarCheck,
   bell: Bell,
-  user: User,
-  settings: Settings,
+  user: UserCircle,
+  settings: GearSix,
 };
 
 interface NavIconProps {
   name: IconName;
   className?: string;
+  active?: boolean;
 }
 
 /**
- * Resolves icon name strings to Lucide icon components.
- * This indirection allows nav config to be serializable (no functions).
+ * Resolves icon name strings to Phosphor icon components.
+ * Uses fill weight when active, regular when inactive.
  */
-export function NavIcon({ name, className }: NavIconProps) {
+export function NavIcon({ name, className, active }: NavIconProps) {
   const Icon = iconMap[name];
-  return <Icon className={className} />;
+  return <Icon className={className} weight={active ? "fill" : "regular"} />;
 }

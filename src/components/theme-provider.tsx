@@ -31,7 +31,7 @@ interface ThemeProviderProps {
 export function ThemeProvider({
   children,
   club = defaultTheme,
-  defaultMode = "system",
+  defaultMode = "dark",
 }: ThemeProviderProps) {
   const [mode, setMode] = useState<ThemeMode>(defaultMode);
 
