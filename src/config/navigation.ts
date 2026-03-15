@@ -2,7 +2,7 @@ import { appContent } from "@/content/app";
 
 export type UserRole = "rider" | "ride_leader" | "admin";
 
-export type IconName = "bike" | "calendar-check" | "bell" | "user" | "settings";
+export type IconName = "house" | "bike" | "calendar-check" | "bell" | "user" | "settings";
 
 export interface NavItem {
   /** Route path */
@@ -22,6 +22,11 @@ export interface NavItem {
  */
 export const primaryNav: NavItem[] = [
   {
+    href: "/",
+    label: appContent.nav.home,
+    icon: "house",
+  },
+  {
     href: "/rides",
     label: appContent.nav.rides,
     icon: "bike",
@@ -30,16 +35,6 @@ export const primaryNav: NavItem[] = [
     href: "/my-rides",
     label: appContent.nav.myRides,
     icon: "calendar-check",
-  },
-  {
-    href: "/notifications",
-    label: appContent.nav.notifications,
-    icon: "bell",
-  },
-  {
-    href: "/profile",
-    label: appContent.nav.profile,
-    icon: "user",
   },
   {
     href: "/manage",

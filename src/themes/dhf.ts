@@ -10,9 +10,9 @@ export const dhfTheme: ClubTheme = {
   slug: "dark-horse-flyers",
   name: "Dark Horse Flyers Cycling Club",
   colors: {
-    primary: "#0085B6",   // DHF Cyan — dominant brand colour
-    danger: "#C10F33",    // DHF Crimson — warnings, destructive actions
-    accent: "#86142F",    // DHF Maroon — subtle accents, hover states
+    primary: "#86142F",   // DHF Crimson — dominant brand colour
+    danger: "#C10F33",    // DHF Red — warnings, destructive actions
+    accent: "#0085B6",    // DHF Cyan — info, links, secondary accent
     black: "#201D1D",     // DHF Black — text, dark backgrounds
     white: "#FFFFFF",     // DHF White — light backgrounds
     muted: "#999FA3",     // DHF Silver — muted text, borders, disabled
