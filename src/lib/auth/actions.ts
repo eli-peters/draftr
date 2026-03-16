@@ -92,8 +92,9 @@ export async function inviteMember(formData: FormData) {
   }
 
   // Build the redirect URL for the invite email
+  // Use /auth/confirm (client page) since Supabase uses implicit flow with hash fragments
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const redirectTo = `${siteUrl}/auth/callback?next=/setup-profile`;
+  const redirectTo = `${siteUrl}/auth/confirm`;
 
   // Invite the user via Supabase Auth (sends email with magic link)
   const { data, error } = await adminSupabase.auth.admin.inviteUserByEmail(

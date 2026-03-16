@@ -3,8 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 
 /**
  * Auth callback route handler.
- * Handles redirects from Supabase auth emails (invite, magic link, password reset).
- * Exchanges the auth code for a session and redirects to the app.
+ * Handles server-side auth flows (PKCE code exchange, token_hash verification).
+ * For implicit flow (hash fragments), see the client-side handler at /auth/confirm/page.tsx.
  */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
