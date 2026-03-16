@@ -19,9 +19,9 @@ export function SidebarNav({ items, appName }: SidebarNavProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex md:w-64 md:flex-col md:border-r md:border-border">
+    <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:w-60 md:flex-col md:border-r md:border-border md:bg-background">
       {/* Brand header */}
-      <div className="flex h-16 items-center gap-3 px-5 border-b border-border">
+      <div className="flex h-14 items-center gap-3 px-5 border-b border-border">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
           <span className="text-sm font-bold text-primary-foreground tracking-tight">D</span>
         </div>
@@ -30,7 +30,7 @@ export function SidebarNav({ items, appName }: SidebarNavProps) {
         </span>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
         {items.map((item) => {
           const isActive =
             item.href === "/"

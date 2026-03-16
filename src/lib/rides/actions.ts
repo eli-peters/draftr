@@ -14,10 +14,10 @@ export async function signUpForRide(rideId: string) {
     return { error: "Not authenticated" };
   }
 
-  // Get ride to check capacity
+  // Get ride to check capacity (+ title for notification)
   const { data: ride } = await supabase
     .from("rides")
-    .select("id, capacity, status")
+    .select("id, title, capacity, status")
     .eq("id", rideId)
     .single();
 
@@ -55,11 +55,25 @@ export async function signUpForRide(rideId: string) {
     return { error: error.message };
   }
 
+  // Create notification for the rider
+  const signupStatus = isFull ? "waitlisted" : "confirmed";
+  if (signupStatus === "confirmed") {
+    await supabase.from("notifications").insert({
+      user_id: user.id,
+      type: "signup_confirmed",
+      title: `You're signed up for ${ride.title}`,
+      body: null,
+      ride_id: rideId,
+      channel: "push",
+    });
+  }
+
   revalidatePath(`/rides/${rideId}`);
   revalidatePath("/rides");
   revalidatePath("/my-rides");
+  revalidatePath("/notifications");
   revalidatePath("/");
-  return { success: true, status: isFull ? "waitlisted" : "confirmed" };
+  return { success: true, status: signupStatus };
 }
 
 /**
@@ -227,9 +241,34 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
     );
   }
 
+  // Notify signed-up riders about the update
+  const { data: signups } = await supabase
+    .from("ride_signups")
+    .select("user_id")
+    .eq("ride_id", rideId)
+    .in("status", ["confirmed", "waitlisted"]);
+
+  if (signups && signups.length > 0) {
+    const notifications = signups
+      .filter((s) => s.user_id !== user.id) // Don't notify the leader who made the edit
+      .map((s) => ({
+        user_id: s.user_id,
+        type: "ride_update",
+        title: `Ride Updated: ${data.title}`,
+        body: "The ride details have been updated. Tap to see changes.",
+        ride_id: rideId,
+        channel: "push",
+      }));
+
+    if (notifications.length > 0) {
+      await supabase.from("notifications").insert(notifications);
+    }
+  }
+
   revalidatePath(`/rides/${rideId}`);
   revalidatePath("/rides");
   revalidatePath("/manage");
+  revalidatePath("/notifications");
   revalidatePath("/");
   return { success: true };
 }

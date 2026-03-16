@@ -8,8 +8,9 @@ import {
   ArrowSquareOut,
   CloudRain,
 } from "@phosphor-icons/react/dist/ssr";
-import { getRideById, getUserSignupStatus } from "@/lib/rides/queries";
+import { getRideById, getUserSignupStatus, getRideSignups } from "@/lib/rides/queries";
 import { SignupButton } from "@/components/rides/signup-button";
+import { SignupRoster } from "@/components/rides/signup-roster";
 import { Badge } from "@/components/ui/badge";
 import { appContent } from "@/content/app";
 
@@ -21,7 +22,7 @@ interface RideDetailPageProps {
 
 export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const { id } = await params;
-  const [ride, signup] = await Promise.all([getRideById(id), getUserSignupStatus(id)]);
+  const [ride, signup, signups] = await Promise.all([getRideById(id), getUserSignupStatus(id), getRideSignups(id)]);
   if (!ride) notFound();
 
   const rideDate = parseISO(ride.ride_date);
@@ -135,6 +136,18 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         </div>
       )}
 
+      {/* Signed-up riders */}
+      {signups.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {detail.ridersHeading(signups.length, ride.capacity)}
+          </h2>
+          <div className="mt-3 rounded-xl border border-border bg-card p-3">
+            <SignupRoster signups={signups} />
+          </div>
+        </div>
+      )}
+
       <div className="mt-10">
         {capacityPercent != null && (
           <div className="mb-5 h-0.5 w-full rounded-full bg-muted overflow-hidden">
@@ -142,7 +155,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
               style={{ width: `${Math.min(capacityPercent, 100)}%` }} />
           </div>
         )}
-        <SignupButton rideId={ride.id} isSignedUp={isSignedUp} isCancelled={isCancelled} />
+        <SignupButton rideId={ride.id} isSignedUp={isSignedUp} isCancelled={isCancelled} isFull={ride.capacity != null && ride.signup_count >= ride.capacity} />
       </div>
     </div>
   );

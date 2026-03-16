@@ -19,28 +19,46 @@ const { header, notifications: notifContent } = appContent;
 interface NotificationBellProps {
   notifications: Notification[];
   unreadCount: number;
+  isMobile: boolean;
 }
 
 /**
  * Notification bell icon with popover dropdown.
  * Shows the last 5 notifications. "View All" links to the full page.
  */
-export function NotificationBell({ notifications, unreadCount }: NotificationBellProps) {
+export function NotificationBell({ notifications, unreadCount, isMobile }: NotificationBellProps) {
   async function handleMarkAllRead() {
     await markAllNotificationsRead();
   }
 
+  const bellIcon = (
+    <>
+      <Bell weight={unreadCount > 0 ? "fill" : "regular"} className="h-6 w-6" />
+      {unreadCount > 0 && (
+        <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[0.6rem] font-bold text-primary-foreground tabular-nums">
+          {unreadCount}
+        </span>
+      )}
+    </>
+  );
+
+  const bellClassName =
+    "relative inline-flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground";
+
+  // Mobile: navigate to notifications page
+  if (isMobile) {
+    return (
+      <Link href="/notifications" className={bellClassName}>
+        {bellIcon}
+      </Link>
+    );
+  }
+
+  // Desktop: popover with recent notifications
   return (
     <Popover>
-      <PopoverTrigger className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer">
-        <div>
-          <Bell weight={unreadCount > 0 ? "fill" : "regular"} className="h-6 w-6" />
-        </div>
-        {unreadCount > 0 && (
-          <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[0.6rem] font-bold text-primary-foreground tabular-nums">
-            {unreadCount}
-          </span>
-        )}
+      <PopoverTrigger className={`${bellClassName} cursor-pointer`}>
+        <div>{bellIcon}</div>
       </PopoverTrigger>
       <PopoverContent
         align="end"

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Monitor, Sun, Moon } from "@phosphor-icons/react";
 import { useTheme } from "@/components/theme-provider";
 import { appContent } from "@/content/app";
@@ -16,6 +17,12 @@ const options: { value: ColorMode; label: string; icon: typeof Monitor }[] = [
 
 export function AppearanceSetting() {
   const { colorMode, setColorMode } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  // Before hydration, treat all buttons as unselected to avoid mismatch
+  const activeMode = mounted ? colorMode : null;
 
   return (
     <div>
@@ -29,13 +36,13 @@ export function AppearanceSetting() {
             onClick={() => setColorMode(value)}
             className={cn(
               "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-              colorMode === value
+              activeMode === value
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
             <Icon
-              weight={colorMode === value ? "fill" : "regular"}
+              weight={activeMode === value ? "fill" : "regular"}
               className="h-4 w-4"
             />
             {label}
