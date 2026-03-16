@@ -8,7 +8,10 @@ import {
   CloudRain,
 } from "@phosphor-icons/react/dist/ssr";
 import { Badge } from "@/components/ui/badge";
+import { appContent } from "@/content/app";
 import type { RideWithDetails } from "@/types/database";
+
+const { rides: ridesContent } = appContent;
 
 interface RideCardProps {
   ride: RideWithDetails;
@@ -46,7 +49,7 @@ export function RideCard({ ride }: RideCardProps) {
           {ride.status === "weather_watch" && (
             <Badge variant="outline" className="text-amber-600 border-amber-300 gap-1">
               <CloudRain weight="fill" className="h-3.5 w-3.5" />
-              Weather Watch
+              {ridesContent.status.weatherWatch}
             </Badge>
           )}
         </div>

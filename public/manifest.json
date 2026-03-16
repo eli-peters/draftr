@@ -1,0 +1,25 @@
+{
+  "name": "Draftr — Ride Coordination",
+  "short_name": "Draftr",
+  "description": "Ride coordination for cycling clubs",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#86142F",
+  "orientation": "portrait-primary",
+  "categories": ["sports", "fitness"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
