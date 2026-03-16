@@ -1,6 +1,7 @@
 "use client";
 
 import type { NavItem } from "@/config/navigation";
+import type { Notification } from "@/components/notifications/notification-item";
 import { BottomNav } from "./bottom-nav";
 import { HeaderBar } from "./header-bar";
 
@@ -16,9 +17,11 @@ interface AppShellProps {
   navItems: NavItem[];
   appName: string;
   user: AppShellUser;
+  notifications?: Notification[];
+  unreadNotificationCount?: number;
 }
 
-export function AppShell({ children, navItems, appName, user }: AppShellProps) {
+export function AppShell({ children, navItems, appName, user, notifications, unreadNotificationCount }: AppShellProps) {
   return (
     <div className="min-h-screen">
       <HeaderBar
@@ -27,6 +30,8 @@ export function AppShell({ children, navItems, appName, user }: AppShellProps) {
         userEmail={user.email}
         userInitials={user.initials}
         avatarUrl={user.avatarUrl}
+        notifications={notifications ?? []}
+        unreadNotificationCount={unreadNotificationCount ?? 0}
       />
 
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col pb-20">

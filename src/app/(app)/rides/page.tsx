@@ -16,7 +16,7 @@ export default async function RidesPage() {
   return (
     <DashboardShell>
       <div>
-        <h1 className="text-display text-foreground">{ridesContent.feed.heading}</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">{ridesContent.feed.heading}</h1>
         <p className="mt-2 text-base text-muted-foreground">
           {rides.length > 0
             ? `${rides.length} ride${rides.length === 1 ? "" : "s"} coming up`

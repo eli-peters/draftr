@@ -48,14 +48,8 @@ export const appContent = {
   },
 
   dashboard: {
-    nextRide: "Your Next Ride",
-    comingUp: "Coming Up",
-    recentRides: "Recent Rides",
-    yourStats: "Your Stats",
-    noNextRide: "Nothing on the books yet",
-    noNextRideDescription: "Browse rides and sign up for your next one.",
-    viewRide: "View Ride",
-    spotsLeft: (remaining: number) => `${remaining} spots left`,
+    noRides: "No upcoming rides",
+    noRidesDescription: "Check back soon — ride leaders will post new rides here.",
     greeting: {
       morning: "Good morning",
       afternoon: "Good afternoon",
@@ -63,6 +57,20 @@ export const appContent = {
     },
     greetingWithName: (greeting: string, name: string) =>
       name ? `${greeting}, ${name}` : greeting,
+    actionBar: {
+      yourNextRide: "Your Next Ride",
+      nextLedRide: "Your Next Led Ride",
+      spotsLeft: (remaining: number) => `${remaining} spots left`,
+      signedUp: (count: number, capacity: number | null) =>
+        capacity != null ? `${count}/${capacity} signed up` : `${count} signed up`,
+    },
+    feed: {
+      heading: "Upcoming Rides",
+    },
+    // Legacy keys — used by dashboard components that may be repurposed later
+    nextRide: "Your Next Ride",
+    viewRide: "View Ride",
+    spotsLeft: (remaining: number) => `${remaining} spots left`,
     leader: {
       yourLeads: "Your Upcoming Leads",
       noLeads: "You're not leading any upcoming rides",
@@ -150,6 +158,18 @@ export const appContent = {
       rider: "Rider",
       ride_leader: "Ride Leader",
       admin: "Admin",
+    },
+  },
+
+  settings: {
+    appearance: {
+      heading: "Appearance",
+      options: {
+        system: "System",
+        light: "Light",
+        dark: "Dark",
+      },
+      systemDescription: "Matches your device setting",
     },
   },
 

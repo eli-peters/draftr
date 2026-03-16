@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { SignOut, UserCircle } from "@phosphor-icons/react";
 import {
   DropdownMenu,
@@ -27,6 +28,8 @@ interface AvatarMenuProps {
  * Links to profile and sign out.
  */
 export function AvatarMenu({ userName, userEmail, userInitials, avatarUrl }: AvatarMenuProps) {
+  const router = useRouter();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="rounded-full ring-offset-background transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer">
@@ -49,7 +52,7 @@ export function AvatarMenu({ userName, userEmail, userInitials, avatarUrl }: Ava
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer"
-          onSelect={() => { window.location.href = "/profile"; }}
+          onClick={() => router.push("/profile")}
         >
           <UserCircle weight="regular" className="mr-2 h-4 w-4" />
           {header.profile}
