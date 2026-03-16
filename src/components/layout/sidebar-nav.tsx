@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
 import type { NavItem } from "@/config/navigation";
 import { NavIcon } from "./nav-icon";
 import { cn } from "@/lib/utils";
@@ -14,7 +13,6 @@ interface SidebarNavProps {
 
 /**
  * Desktop sidebar navigation.
- * Brand-accented header with animated active indicator.
  * Hidden on mobile (below md breakpoint).
  */
 export function SidebarNav({ items, appName }: SidebarNavProps) {
@@ -23,9 +21,9 @@ export function SidebarNav({ items, appName }: SidebarNavProps) {
   return (
     <aside className="hidden md:flex md:w-64 md:flex-col md:border-r md:border-border">
       {/* Brand header */}
-      <div className="flex h-16 items-center gap-3 px-5 border-b border-border/30">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary">
-          <span className="text-sm font-bold text-white tracking-tight">D</span>
+      <div className="flex h-16 items-center gap-3 px-5 border-b border-border">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+          <span className="text-sm font-bold text-primary-foreground tracking-tight">D</span>
         </div>
         <span className="text-lg font-bold tracking-tight text-foreground">
           {appName}
@@ -46,17 +44,10 @@ export function SidebarNav({ items, appName }: SidebarNavProps) {
               className={cn(
                 "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
-                  ? "text-primary"
+                  ? "text-primary bg-primary/10"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
               )}
             >
-              {isActive && (
-                <motion.span
-                  layoutId="sidebar-active"
-                  className="absolute inset-0 rounded-lg bg-primary/10"
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
-              )}
               <NavIcon
                 name={item.icon}
                 className="relative h-5 w-5"

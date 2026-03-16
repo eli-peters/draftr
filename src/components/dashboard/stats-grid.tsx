@@ -1,6 +1,3 @@
-'use client';
-
-import { motion } from 'framer-motion';
 import { AnimatedCounter } from '@/components/motion/animated-counter';
 
 interface StatItem {
@@ -16,33 +13,13 @@ interface StatsGridProps {
   stats: StatItem[];
 }
 
-const containerVariants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.08 } },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 12 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.35, ease: [0.25, 0.1, 0.25, 1] as const },
-  },
-};
-
 export function StatsGrid({ stats }: StatsGridProps) {
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-      className="grid grid-cols-2 gap-3 sm:grid-cols-4"
-    >
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       {stats.map((stat) => (
-        <motion.div
+        <div
           key={stat.label}
-          variants={itemVariants}
-          className="relative overflow-hidden rounded-xl border border-border/10 bg-card p-5 shadow-sm accent-line-top"
+          className="rounded-xl border border-border bg-card p-5"
         >
           {stat.icon && (
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
@@ -53,13 +30,13 @@ export function StatsGrid({ stats }: StatsGridProps) {
             value={stat.value}
             suffix={stat.suffix}
             decimals={stat.decimals}
-            className="text-stat text-foreground"
+            className="text-4xl font-bold tabular-nums text-foreground"
           />
           <p className="text-sm font-medium text-muted-foreground mt-2">
             {stat.label}
           </p>
-        </motion.div>
+        </div>
       ))}
-    </motion.div>
+    </div>
   );
 }

@@ -45,8 +45,8 @@ export function SignupButton({ rideId, isSignedUp, isCancelled }: SignupButtonPr
 
   return (
     <Button
-      variant="gradient"
-      size="cta"
+      variant="default"
+      size="lg"
       className="w-full"
       disabled={isPending}
       onClick={() => {

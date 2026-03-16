@@ -27,7 +27,7 @@ export function HeroRideCard({ ride }: { ride: RideWithDetails }) {
 
   return (
     <Link href={`/rides/${ride.id}`} className="group block">
-      <div className="relative rounded-xl border border-border/10 bg-card p-6 shadow-sm press-scale glow-primary-sm card-hover hover:glow-primary overflow-hidden">
+      <div className="relative rounded-xl border border-border bg-card p-6 overflow-hidden">
         {/* Day + Date */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

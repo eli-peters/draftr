@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
+import { COLOR_MODE_SCRIPT } from "@/lib/color-mode-script";
 import { appContent } from "@/content/app";
 import "./globals.css";
 
@@ -27,6 +28,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={`${plusJakarta.variable} ${jetbrainsMono.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: COLOR_MODE_SCRIPT }} />
+      </head>
       <body className="antialiased">
 
         <ThemeProvider>

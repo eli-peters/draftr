@@ -27,8 +27,7 @@ function LeadRideItem({ ride }: { ride: LeadRide }) {
 
   return (
     <Link href={`/rides/${ride.id}`} className="group block">
-      <div className="relative overflow-hidden rounded-xl border border-border/10 bg-card p-5 pl-7 shadow-sm press-scale card-hover mb-3">
-        <div className="accent-bar-left" />
+      <div className="rounded-xl border border-border bg-card p-5 mb-3">
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
             <h3 className="text-base font-semibold text-foreground truncate">
@@ -64,7 +63,7 @@ function LeadRideItem({ ride }: { ride: LeadRide }) {
 export function LeaderLeadsSection({ leads }: { leads: LeadRide[] }) {
   return (
     <section>
-      <h2 className="text-section mb-4">
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
         {content.leader.yourLeads}
       </h2>
       {leads.length === 0 ? (

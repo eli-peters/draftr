@@ -61,8 +61,9 @@ src/
 │   ├── utils.ts            → cn() helper
 │   └── supabase/           → Client, server, middleware helpers
 ├── themes/                 → Per-club brand configs
+├── test/                   → Vitest setup + test files
 ├── types/                  → TypeScript type definitions
-└── middleware.ts            → Supabase session refresh
+└── proxy.ts                 → Supabase session refresh
 ```
 
 ## Theming Architecture
@@ -76,10 +77,30 @@ Switching clubs = passing a different `ClubTheme` to `<ThemeProvider>`. No compo
 ## Commands
 
 ```bash
-npm run dev      # Start dev server
-npm run build    # Production build
-npm run lint     # ESLint
+npm run dev          # Start dev server
+npm run build        # Production build
+npm run lint         # ESLint
+npm run format       # Prettier — format all files
+npm run format:check # Prettier — check without writing
+npm test             # Vitest — single run
+npm run test:watch   # Vitest — watch mode
 ```
+
+## Code Quality
+
+### Tooling
+
+- **Prettier** — formats on save via VSCode (`.vscode/settings.json`). Config in `.prettierrc`.
+- **ESLint** — auto-fixes on save. `eslint-config-prettier` disables formatting rules that conflict with Prettier.
+- **Vitest** — test runner with jsdom, React Testing Library, and `@/` alias. Config in `vitest.config.ts`, setup in `src/test/setup.ts`.
+
+### When things run
+
+| Tool | On Save | CI / Build |
+|------|---------|------------|
+| Prettier | Auto-format | `format:check` (fail if unformatted) |
+| ESLint | Auto-fix | `lint` (fail on errors) |
+| Vitest | No | `test` (fail on failures) |
 
 ## Design Reference
 

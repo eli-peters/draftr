@@ -1,0 +1,47 @@
+"use client";
+
+import { Monitor, Sun, Moon } from "@phosphor-icons/react";
+import { useTheme } from "@/components/theme-provider";
+import { appContent } from "@/content/app";
+import { cn } from "@/lib/utils";
+import type { ColorMode } from "@/types/theme";
+
+const { settings: { appearance: content } } = appContent;
+
+const options: { value: ColorMode; label: string; icon: typeof Monitor }[] = [
+  { value: "system", label: content.options.system, icon: Monitor },
+  { value: "light", label: content.options.light, icon: Sun },
+  { value: "dark", label: content.options.dark, icon: Moon },
+];
+
+export function AppearanceSetting() {
+  const { colorMode, setColorMode } = useTheme();
+
+  return (
+    <div>
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {content.heading}
+      </h2>
+      <div className="mt-3 inline-flex rounded-lg bg-muted p-1">
+        {options.map(({ value, label, icon: Icon }) => (
+          <button
+            key={value}
+            onClick={() => setColorMode(value)}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+              colorMode === value
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Icon
+              weight={colorMode === value ? "fill" : "regular"}
+              className="h-4 w-4"
+            />
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
