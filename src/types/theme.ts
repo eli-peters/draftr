@@ -22,6 +22,9 @@ export interface BrandPrimitives {
   muted: string;
 }
 
+/** User's color mode preference */
+export type ColorMode = "system" | "light" | "dark";
+
 export interface ClubTheme {
   /** Unique club identifier (matches clubs.slug in DB) */
   slug: string;

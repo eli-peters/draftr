@@ -203,10 +203,21 @@ All: `rounded-full`
 ## 8. Dark Mode
 
 - Toggled via `.dark` class on `<html>` (managed by `ThemeProvider`)
-- Respects `prefers-color-scheme` by default, manual override available
-- Surface: `--brand-black` (#201D1D)
-- Cards: slightly lighter than surface
-- Borders: `--brand-white` at 10% opacity
+- Default: follows OS preference (`prefers-color-scheme`); manual override in Profile → Appearance (System / Light / Dark)
+- Preference persisted in `localStorage` under key `draftr-theme`
+- FOUC prevention: inline `<script>` in `<head>` applies `.dark` before React hydrates
+- Both modes are equal — neither is the "primary" design target
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `--background` | `#F8F8F7` | `var(--brand-black)` (#201D1D) |
+| `--card` | `var(--brand-white)` | `color-mix(in oklch, var(--brand-black) 90%, var(--brand-white))` (~#2A2626) |
+| `--foreground` | `var(--brand-black)` | `color-mix(in oklch, var(--brand-white) 93%, var(--brand-muted))` |
+| `--border` | `color-mix(… --brand-muted 30%, white)` | `color-mix(in oklch, var(--brand-white) 10%, transparent)` |
+| `--primary` | `var(--brand-primary)` | `var(--brand-primary)` (shared) |
+| `--destructive` | `var(--brand-danger)` | `color-mix(in oklch, var(--brand-danger) 90%, var(--brand-white))` |
+
+Dark tokens derive from the same brand primitives via `color-mix()`. Any club providing 6 brand colours gets both modes automatically.
 
 ---
 

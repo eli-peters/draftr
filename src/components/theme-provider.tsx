@@ -1,39 +1,103 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import type { ClubTheme } from "@/types/theme";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from "react";
+import type { ClubTheme, ColorMode } from "@/types/theme";
 import { defaultTheme } from "@/themes";
-
-type ThemeMode = "light" | "dark" | "system";
 
 interface ThemeContextValue {
   club: ClubTheme;
-  mode: ThemeMode;
-  setMode: (mode: ThemeMode) => void;
+  colorMode: ColorMode;
+  setColorMode: (mode: ColorMode) => void;
+  resolvedColorMode: "light" | "dark";
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
+const STORAGE_KEY = "draftr-theme";
+
+function readStoredMode(): ColorMode {
+  if (typeof window === "undefined") return "system";
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored === "light" || stored === "dark" || stored === "system")
+    return stored;
+  return "system";
+}
+
+function subscribeToMediaQuery(callback: () => void) {
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  mq.addEventListener("change", callback);
+  return () => mq.removeEventListener("change", callback);
+}
+
+function getSystemPrefersDark() {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
 interface ThemeProviderProps {
   children: React.ReactNode;
   club?: ClubTheme;
-  defaultMode?: ThemeMode;
 }
 
 /**
- * Injects club brand primitives as CSS custom properties on :root
- * and manages light/dark mode toggling.
+ * Manages club brand primitives and color mode (light/dark/system).
  *
  * Club switching = passing a different `club` prop.
- * All components downstream use semantic tokens (--primary, --danger, etc.)
- * which reference these primitives.
+ * Color mode is persisted in localStorage and respects OS preference.
  */
 export function ThemeProvider({
   children,
   club = defaultTheme,
-  defaultMode = "dark",
 }: ThemeProviderProps) {
-  const [mode, setMode] = useState<ThemeMode>(defaultMode);
+  const [colorMode, setColorModeState] = useState<ColorMode>(readStoredMode);
+
+  // Track system dark preference reactively
+  const systemPrefersDark = useSyncExternalStore(
+    subscribeToMediaQuery,
+    getSystemPrefersDark,
+    () => false, // server snapshot
+  );
+
+  // Derive resolved mode (no setState needed)
+  const resolvedColorMode: "light" | "dark" =
+    colorMode === "dark"
+      ? "dark"
+      : colorMode === "light"
+        ? "light"
+        : systemPrefersDark
+          ? "dark"
+          : "light";
+
+  // Apply .dark class to <html>
+  useEffect(() => {
+    document.documentElement.classList.toggle(
+      "dark",
+      resolvedColorMode === "dark",
+    );
+  }, [resolvedColorMode]);
+
+  // Cross-tab sync via storage event
+  useEffect(() => {
+    function onStorage(e: StorageEvent) {
+      if (e.key === STORAGE_KEY) {
+        const val = e.newValue as ColorMode | null;
+        setColorModeState(
+          val === "light" || val === "dark" || val === "system"
+            ? val
+            : "system",
+        );
+      }
+    }
+
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   // Inject brand primitives as CSS custom properties
   useEffect(() => {
@@ -48,28 +112,15 @@ export function ThemeProvider({
     root.style.setProperty("--brand-muted", colors.muted);
   }, [club]);
 
-  // Handle dark mode class toggling
-  useEffect(() => {
-    const root = document.documentElement;
-
-    const applyMode = (isDark: boolean) => {
-      root.classList.toggle("dark", isDark);
-    };
-
-    if (mode === "system") {
-      const mq = window.matchMedia("(prefers-color-scheme: dark)");
-      applyMode(mq.matches);
-
-      const handler = (e: MediaQueryListEvent) => applyMode(e.matches);
-      mq.addEventListener("change", handler);
-      return () => mq.removeEventListener("change", handler);
-    }
-
-    applyMode(mode === "dark");
-  }, [mode]);
+  const setColorMode = useCallback((mode: ColorMode) => {
+    setColorModeState(mode);
+    localStorage.setItem(STORAGE_KEY, mode);
+  }, []);
 
   return (
-    <ThemeContext.Provider value={{ club, mode, setMode }}>
+    <ThemeContext.Provider
+      value={{ club, colorMode, setColorMode, resolvedColorMode }}
+    >
       {children}
     </ThemeContext.Provider>
   );

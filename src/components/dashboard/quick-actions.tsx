@@ -51,13 +51,13 @@ export function QuickActions({ role }: { role: UserRole }) {
 
   return (
     <section>
-      <h2 className="text-section mb-4">
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
         {content.admin.quickActions}
       </h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {actions.map((action) => (
           <Link key={action.label} href={action.href} className="group block">
-            <div className="flex items-center gap-3 rounded-xl border border-border/10 bg-card p-5 shadow-sm press-scale card-hover hover:glow-primary-sm">
+            <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-5">
               <action.icon weight="duotone" className="h-5 w-5 text-primary" />
               <span className="text-base font-medium text-foreground">
                 {action.label}

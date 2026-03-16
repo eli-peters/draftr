@@ -28,7 +28,7 @@ const clubStatItems = [
 export function ClubOverviewSection() {
   return (
     <section>
-      <h2 className="text-section mb-4">
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
         {dashContent.admin.clubOverview}
       </h2>
       <StatsGrid stats={clubStatItems} />
