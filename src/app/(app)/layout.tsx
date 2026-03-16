@@ -4,6 +4,7 @@ import { getNavForRole, type UserRole } from "@/config/navigation";
 import { appContent } from "@/content/app";
 import { getUserClubMembership } from "@/lib/rides/queries";
 import { createClient } from "@/lib/supabase/server";
+import { getUserNotifications } from "@/lib/notifications/queries";
 
 /**
  * Build user initials from a full name string.
@@ -55,6 +56,11 @@ export default async function AppLayout({
   const userName = profile.display_name ?? profile.full_name ?? "User";
   const userEmail = profile.email ?? authUser.email ?? "";
 
+  // Fetch recent notifications for the header bell
+  const notifications = await getUserNotifications(authUser.id);
+  const recentNotifications = notifications.slice(0, 5);
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
+
   return (
     <AppShell
       navItems={navItems}
@@ -65,6 +71,8 @@ export default async function AppLayout({
         initials: getInitials(userName),
         avatarUrl: profile?.avatar_url ?? null,
       }}
+      notifications={recentNotifications}
+      unreadNotificationCount={unreadCount}
     >
       {children}
     </AppShell>

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Bell } from "@phosphor-icons/react";
 import {
   Popover,
@@ -10,32 +9,33 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import {
-  NotificationItem,
-  mockNotifications,
-} from "@/components/notifications/notification-item";
+import { NotificationItem } from "@/components/notifications/notification-item";
+import { markAllNotificationsRead } from "@/lib/notifications/actions";
 import { appContent } from "@/content/app";
+import type { Notification } from "@/components/notifications/notification-item";
 
 const { header, notifications: notifContent } = appContent;
+
+interface NotificationBellProps {
+  notifications: Notification[];
+  unreadCount: number;
+}
 
 /**
  * Notification bell icon with popover dropdown.
  * Shows the last 5 notifications. "View All" links to the full page.
  */
-export function NotificationBell() {
-  const notifications = mockNotifications;
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
-  const recentNotifications = notifications.slice(0, 5);
+export function NotificationBell({ notifications, unreadCount }: NotificationBellProps) {
+  async function handleMarkAllRead() {
+    await markAllNotificationsRead();
+  }
 
   return (
     <Popover>
       <PopoverTrigger className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer">
-        <motion.div
-          animate={unreadCount > 0 ? { scale: [1, 1.15, 1] } : {}}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
-        >
+        <div>
           <Bell weight={unreadCount > 0 ? "fill" : "regular"} className="h-6 w-6" />
-        </motion.div>
+        </div>
         {unreadCount > 0 && (
           <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[0.6rem] font-bold text-primary-foreground tabular-nums">
             {unreadCount}
@@ -53,7 +53,7 @@ export function NotificationBell() {
             {notifContent.heading}
           </h3>
           {unreadCount > 0 && (
-            <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-xs text-muted-foreground">
+            <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-xs text-muted-foreground" onClick={handleMarkAllRead}>
               {notifContent.markAllRead}
             </Button>
           )}
@@ -61,14 +61,22 @@ export function NotificationBell() {
         <Separator />
 
         {/* Notification list */}
-        {recentNotifications.length > 0 ? (
+        {notifications.length > 0 ? (
           <div className="max-h-80 overflow-y-auto py-1">
-            {recentNotifications.map((notification) => (
-              <div
-                key={notification.id}
-                className="cursor-pointer transition-colors hover:bg-muted/50"
-              >
-                <NotificationItem notification={notification} compact />
+            {notifications.map((notification) => (
+              <div key={notification.id}>
+                {notification.ride_id ? (
+                  <Link
+                    href={`/rides/${notification.ride_id}`}
+                    className="block cursor-pointer transition-colors hover:bg-muted/50"
+                  >
+                    <NotificationItem notification={notification} compact />
+                  </Link>
+                ) : (
+                  <div className="cursor-pointer transition-colors hover:bg-muted/50">
+                    <NotificationItem notification={notification} compact />
+                  </div>
+                )}
               </div>
             ))}
           </div>

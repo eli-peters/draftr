@@ -33,8 +33,7 @@ export function RideCard({ ride }: RideCardProps) {
 
   return (
     <Link href={`/rides/${ride.id}`} className="group block">
-      <div className="relative overflow-hidden rounded-xl border border-border/10 bg-card p-6 pl-8 shadow-sm card-hover mb-4">
-        <div className="accent-bar-left" />
+      <div className="rounded-xl border border-border bg-card p-6 mb-4">
 
         {/* Date + time + status */}
         <div className="flex items-center gap-2">

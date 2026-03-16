@@ -35,7 +35,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
     ride.capacity != null ? (ride.signup_count / ride.capacity) * 100 : null;
 
   return (
-    <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10 gradient-crimson">
+    <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
       {/* Status Banners */}
       {ride.status === "weather_watch" && (
         <div className="mb-6 flex items-center gap-2.5 rounded-xl border border-amber-500/20 bg-amber-500/10 px-5 py-4 text-base text-amber-300">
@@ -50,7 +50,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         </div>
       )}
 
-      <h1 className="text-display text-foreground">{ride.title}</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-foreground">{ride.title}</h1>
 
       <p className="mt-3 text-lg text-foreground/90">
         {format(rideDate, "EEEE, MMMM d, yyyy")}
@@ -83,7 +83,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       {/* Details */}
       <div className="mt-8 space-y-3">
         {ride.meeting_location && (
-          <div className="flex items-start gap-3 rounded-xl border border-border/10 bg-card p-5">
+          <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-5">
             <MapPin weight="fill" className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <div>
               <p className="font-medium text-foreground text-base">{ride.meeting_location.name}</p>
@@ -94,7 +94,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           </div>
         )}
 
-        <div className="flex items-center gap-5 rounded-xl border border-border/10 bg-card p-5">
+        <div className="flex items-center gap-5 rounded-xl border border-border bg-card p-5">
           {ride.distance_km != null && (
             <span className="flex items-center gap-2 text-base font-medium text-info">
               <Path weight="bold" className="h-5 w-5" />
@@ -130,7 +130,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
       {ride.organiser_notes && (
         <div className="mt-8">
-          <h2 className="text-section">Notes from the organiser</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Notes from the organiser</h2>
           <p className="mt-3 text-base text-foreground/80 whitespace-pre-line leading-relaxed">{ride.organiser_notes}</p>
         </div>
       )}
