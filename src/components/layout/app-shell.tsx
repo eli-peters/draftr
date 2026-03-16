@@ -4,6 +4,8 @@ import type { NavItem } from "@/config/navigation";
 import type { Notification } from "@/components/notifications/notification-item";
 import { BottomNav } from "./bottom-nav";
 import { HeaderBar } from "./header-bar";
+import { SidebarNav } from "./sidebar-nav";
+import { PageTransitionWrapper } from "./page-transition-wrapper";
 
 interface AppShellUser {
   name: string;
@@ -23,22 +25,26 @@ interface AppShellProps {
 
 export function AppShell({ children, navItems, appName, user, notifications, unreadNotificationCount }: AppShellProps) {
   return (
-    <div className="min-h-screen">
-      <HeaderBar
-        appName={appName}
-        userName={user.name}
-        userEmail={user.email}
-        userInitials={user.initials}
-        avatarUrl={user.avatarUrl}
-        notifications={notifications ?? []}
-        unreadNotificationCount={unreadNotificationCount ?? 0}
-      />
+    <div className="min-h-screen md:flex">
+      <SidebarNav items={navItems} appName={appName} />
 
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col pb-20">
-        {children}
-      </main>
+      <div className="flex min-h-screen flex-1 flex-col">
+        <HeaderBar
+          appName={appName}
+          userName={user.name}
+          userEmail={user.email}
+          userInitials={user.initials}
+          avatarUrl={user.avatarUrl}
+          notifications={notifications ?? []}
+          unreadNotificationCount={unreadNotificationCount ?? 0}
+        />
 
-      <BottomNav items={navItems} />
+        <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col pb-20 md:pb-0">
+          <PageTransitionWrapper>{children}</PageTransitionWrapper>
+        </main>
+
+        <BottomNav items={navItems} />
+      </div>
     </div>
   );
 }

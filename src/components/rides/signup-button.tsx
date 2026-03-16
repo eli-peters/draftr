@@ -12,9 +12,10 @@ interface SignupButtonProps {
   rideId: string;
   isSignedUp: boolean;
   isCancelled: boolean;
+  isFull?: boolean;
 }
 
-export function SignupButton({ rideId, isSignedUp, isCancelled }: SignupButtonProps) {
+export function SignupButton({ rideId, isSignedUp, isCancelled, isFull }: SignupButtonProps) {
   const [isPending, startTransition] = useTransition();
 
   if (isCancelled) {
@@ -56,7 +57,7 @@ export function SignupButton({ rideId, isSignedUp, isCancelled }: SignupButtonPr
       }}
     >
       <HandWaving weight="duotone" data-icon="inline-start" className="size-5" />
-      {isPending ? appContent.common.loading : detail.signUp}
+      {isPending ? appContent.common.loading : isFull ? detail.joinWaitlist : detail.signUp}
     </Button>
   );
 }

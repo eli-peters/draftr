@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 export async function signIn(formData: FormData) {
@@ -69,37 +70,74 @@ export async function setupProfile(formData: FormData) {
 
 /**
  * Admin action: invite a new member by email.
- * Creates a Supabase auth user and sends them an invite link.
+ * Uses the service role client to call auth.admin.inviteUserByEmail().
  */
 export async function inviteMember(formData: FormData) {
-  const supabase = await createClient();
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const adminSupabase = createAdminClient();
 
   const email = formData.get("email") as string;
   const role = (formData.get("role") as string) || "rider";
   const clubId = formData.get("club_id") as string;
 
+  // Check if this email has already been invited
+  const { data: existingUser } = await adminSupabase
+    .from("users")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (existingUser) {
+    return { error: "already_invited" };
+  }
+
+  // Build the redirect URL for the invite email
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const redirectTo = `${siteUrl}/auth/callback?next=/setup-profile`;
+
   // Invite the user via Supabase Auth (sends email with magic link)
-  const { data, error } = await supabase.auth.admin.inviteUserByEmail(email);
+  const { data, error } = await adminSupabase.auth.admin.inviteUserByEmail(
+    email,
+    { redirectTo },
+  );
 
   if (error) {
+    if (error.message.toLowerCase().includes("rate limit")) {
+      return { error: "rate_limited" };
+    }
     return { error: error.message };
   }
 
-  // Pre-create the club membership so the role is ready when they sign up
+  // Pre-create user row + club membership so the role is ready when they sign up
   if (data.user) {
-    const { error: membershipError } = await supabase
+    // Create a stub users row (profile setup will upsert with full details later)
+    await adminSupabase.from("users").upsert(
+      {
+        id: data.user.id,
+        email,
+        full_name: email.split("@")[0],
+        onboarding_completed: false,
+      },
+      { onConflict: "id" },
+    );
+
+    const { error: membershipError } = await adminSupabase
       .from("club_memberships")
-      .insert({
-        club_id: clubId,
-        user_id: data.user.id,
-        role,
-        status: "pending",
-      });
+      .upsert(
+        {
+          club_id: clubId,
+          user_id: data.user.id,
+          role,
+          status: "pending",
+        },
+        { onConflict: "club_id,user_id" },
+      );
 
     if (membershipError) {
       return { error: membershipError.message };
     }
   }
 
+  revalidatePath("/manage");
   return { success: true };
 }

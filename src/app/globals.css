@@ -146,3 +146,34 @@
     @apply font-sans scroll-smooth;
   }
 }
+
+/* Mobile page transitions — directional slide animations */
+@keyframes page-slide-in-from-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0.8;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes page-slide-in-from-left {
+  from {
+    transform: translateX(-30%);
+    opacity: 0.8;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.page-transition-forward {
+  animation: page-slide-in-from-right 250ms ease-out;
+}
+
+.page-transition-back {
+  animation: page-slide-in-from-left 250ms ease-out;
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SignOut, UserCircle } from "@phosphor-icons/react";
 import {
@@ -21,24 +22,42 @@ interface AvatarMenuProps {
   userEmail: string;
   userInitials: string;
   avatarUrl: string | null;
+  isMobile: boolean;
 }
 
 /**
  * Header avatar with dropdown menu.
  * Links to profile and sign out.
  */
-export function AvatarMenu({ userName, userEmail, userInitials, avatarUrl }: AvatarMenuProps) {
+export function AvatarMenu({ userName, userEmail, userInitials, avatarUrl, isMobile }: AvatarMenuProps) {
   const router = useRouter();
 
+  const avatarElement = (
+    <Avatar className="h-9 w-9">
+      {avatarUrl && <AvatarImage src={avatarUrl} alt={userName} />}
+      <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+        {userInitials}
+      </AvatarFallback>
+    </Avatar>
+  );
+
+  // Mobile: navigate to profile page
+  if (isMobile) {
+    return (
+      <Link
+        href="/profile"
+        className="rounded-full ring-offset-background transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      >
+        {avatarElement}
+      </Link>
+    );
+  }
+
+  // Desktop: dropdown menu
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="rounded-full ring-offset-background transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer">
-        <Avatar className="h-9 w-9">
-          {avatarUrl && <AvatarImage src={avatarUrl} alt={userName} />}
-          <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
-            {userInitials}
-          </AvatarFallback>
-        </Avatar>
+        {avatarElement}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8}>
         <DropdownMenuGroup>

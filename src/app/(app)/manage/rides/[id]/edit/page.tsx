@@ -8,7 +8,11 @@ import {
   getRideTagIds,
 } from "@/lib/rides/queries";
 import { RideForm } from "@/components/rides/ride-form";
+import { CancelRideButton } from "@/components/rides/cancel-ride-button";
+import { appContent } from "@/content/app";
 import type { UserRole } from "@/config/navigation";
+
+const { rides: ridesContent } = appContent;
 
 export default async function EditRidePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -33,7 +37,7 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
-      <h1 className="text-3xl font-bold tracking-tight text-foreground">Edit Ride</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-foreground">{ridesContent.edit.heading}</h1>
       <RideForm
         clubId={membership.club_id}
         meetingLocations={meetingLocations}
@@ -57,6 +61,12 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
           tag_ids: tagIds,
         }}
       />
+
+      {ride.status !== "cancelled" && (
+        <div className="mt-12">
+          <CancelRideButton rideId={id} rideTitle={ride.title} />
+        </div>
+      )}
     </div>
   );
 }

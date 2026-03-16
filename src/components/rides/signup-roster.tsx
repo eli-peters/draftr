@@ -1,6 +1,9 @@
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { appContent } from "@/content/app";
+
+const { rides: ridesContent } = appContent;
 
 interface SignupEntry {
   id: string;
@@ -19,7 +22,7 @@ interface SignupRosterProps {
 export function SignupRoster({ signups }: SignupRosterProps) {
   if (signups.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground py-4 text-center">No signups yet.</p>
+      <p className="text-sm text-muted-foreground py-4 text-center">{ridesContent.roster.noSignups}</p>
     );
   }
 
@@ -33,7 +36,7 @@ export function SignupRoster({ signups }: SignupRosterProps) {
       ))}
       {waitlisted.length > 0 && (
         <>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-3 pb-1">Waitlisted</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-3 pb-1">{ridesContent.roster.waitlisted}</p>
           {waitlisted.map((signup) => (
             <SignupRow key={signup.id} signup={signup} />
           ))}

@@ -10,6 +10,7 @@ import { appContent } from "@/content/app";
 import { createRide, updateRide, type CreateRideData, type UpdateRideData } from "@/lib/rides/actions";
 
 const { rides: ridesContent, common } = appContent;
+const form = ridesContent.form;
 
 interface RideFormInitialData {
   title: string;
@@ -33,7 +34,6 @@ interface RideFormProps {
   meetingLocations: { id: string; name: string }[];
   paceGroups: { id: string; name: string }[];
   tags: { id: string; name: string; color: string | null }[];
-  /** If provided, the form operates in edit mode. */
   rideId?: string;
   initialData?: RideFormInitialData;
 }
@@ -59,31 +59,31 @@ export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, i
     setIsPending(true);
     setError(null);
 
-    const form = new FormData(e.currentTarget);
-    const title = form.get("title") as string;
-    const ride_date = form.get("ride_date") as string;
-    const start_time = form.get("start_time") as string;
+    const fd = new FormData(e.currentTarget);
+    const title = fd.get("title") as string;
+    const ride_date = fd.get("ride_date") as string;
+    const start_time = fd.get("start_time") as string;
 
     if (!title || !ride_date || !start_time) {
-      setError("Title, date, and start time are required.");
+      setError(form.required);
       setIsPending(false);
       return;
     }
 
     const shared = {
       title,
-      description: (form.get("description") as string) || undefined,
+      description: (fd.get("description") as string) || undefined,
       ride_date,
       start_time,
-      meeting_location_id: (form.get("meeting_location_id") as string) || undefined,
-      pace_group_id: (form.get("pace_group_id") as string) || undefined,
-      distance_km: form.get("distance_km") ? Number(form.get("distance_km")) : undefined,
-      elevation_m: form.get("elevation_m") ? Number(form.get("elevation_m")) : undefined,
-      capacity: form.get("capacity") ? Number(form.get("capacity")) : undefined,
-      route_url: (form.get("route_url") as string) || undefined,
-      route_name: (form.get("route_name") as string) || undefined,
-      is_drop_ride: form.get("is_drop_ride") === "on",
-      organiser_notes: (form.get("organiser_notes") as string) || undefined,
+      meeting_location_id: (fd.get("meeting_location_id") as string) || undefined,
+      pace_group_id: (fd.get("pace_group_id") as string) || undefined,
+      distance_km: fd.get("distance_km") ? Number(fd.get("distance_km")) : undefined,
+      elevation_m: fd.get("elevation_m") ? Number(fd.get("elevation_m")) : undefined,
+      capacity: fd.get("capacity") ? Number(fd.get("capacity")) : undefined,
+      route_url: (fd.get("route_url") as string) || undefined,
+      route_name: (fd.get("route_name") as string) || undefined,
+      is_drop_ride: fd.get("is_drop_ride") === "on",
+      organiser_notes: (fd.get("organiser_notes") as string) || undefined,
       tag_ids: selectedTags,
     };
 
@@ -107,35 +107,35 @@ export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, i
   return (
     <form onSubmit={handleSubmit} className="mt-8 space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="title">Title *</Label>
-        <Input id="title" name="title" required defaultValue={initialData?.title} placeholder="Saturday Morning Social" />
+        <Label htmlFor="title">{form.title} *</Label>
+        <Input id="title" name="title" required defaultValue={initialData?.title} />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="ride_date">Date *</Label>
+          <Label htmlFor="ride_date">{form.date} *</Label>
           <Input id="ride_date" name="ride_date" type="date" required defaultValue={initialData?.ride_date} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="start_time">Start time *</Label>
+          <Label htmlFor="start_time">{form.startTime} *</Label>
           <Input id="start_time" name="start_time" type="time" required defaultValue={initialData?.start_time} />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="meeting_location_id">Meeting Location</Label>
+          <Label htmlFor="meeting_location_id">{form.meetingLocation}</Label>
           <select id="meeting_location_id" name="meeting_location_id" defaultValue={initialData?.meeting_location_id} className={selectClass}>
-            <option value="">Select location...</option>
+            <option value="">{form.selectLocation}</option>
             {meetingLocations.map((loc) => (
               <option key={loc.id} value={loc.id}>{loc.name}</option>
             ))}
           </select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="pace_group_id">Pace Group</Label>
+          <Label htmlFor="pace_group_id">{form.paceGroup}</Label>
           <select id="pace_group_id" name="pace_group_id" defaultValue={initialData?.pace_group_id} className={selectClass}>
-            <option value="">Select pace...</option>
+            <option value="">{form.selectPace}</option>
             {paceGroups.map((pg) => (
               <option key={pg.id} value={pg.id}>{pg.name}</option>
             ))}
@@ -145,37 +145,37 @@ export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, i
 
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="distance_km">Distance (km)</Label>
-          <Input id="distance_km" name="distance_km" type="number" step="0.1" min="0" defaultValue={initialData?.distance_km} placeholder="65" />
+          <Label htmlFor="distance_km">{form.distance}</Label>
+          <Input id="distance_km" name="distance_km" type="number" step="0.1" min="0" defaultValue={initialData?.distance_km} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="elevation_m">Elevation (m)</Label>
-          <Input id="elevation_m" name="elevation_m" type="number" min="0" defaultValue={initialData?.elevation_m} placeholder="380" />
+          <Label htmlFor="elevation_m">{form.elevation}</Label>
+          <Input id="elevation_m" name="elevation_m" type="number" min="0" defaultValue={initialData?.elevation_m} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="capacity">Capacity</Label>
-          <Input id="capacity" name="capacity" type="number" min="1" defaultValue={initialData?.capacity} placeholder="25" />
+          <Label htmlFor="capacity">{form.capacity}</Label>
+          <Input id="capacity" name="capacity" type="number" min="1" defaultValue={initialData?.capacity} />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="route_name">Route Name</Label>
-          <Input id="route_name" name="route_name" defaultValue={initialData?.route_name} placeholder="Humber River Loop" />
+          <Label htmlFor="route_name">{form.routeName}</Label>
+          <Input id="route_name" name="route_name" defaultValue={initialData?.route_name} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="route_url">Route Link</Label>
-          <Input id="route_url" name="route_url" type="url" defaultValue={initialData?.route_url} placeholder="https://strava.com/routes/..." />
+          <Label htmlFor="route_url">{form.routeLink}</Label>
+          <Input id="route_url" name="route_url" type="url" defaultValue={initialData?.route_url} />
         </div>
       </div>
 
       <div className="flex items-center gap-3">
         <input id="is_drop_ride" name="is_drop_ride" type="checkbox" defaultChecked={initialData?.is_drop_ride} className="h-4 w-4 rounded border-input" />
-        <Label htmlFor="is_drop_ride" className="cursor-pointer">This is a drop ride</Label>
+        <Label htmlFor="is_drop_ride" className="cursor-pointer">{form.isDropRide}</Label>
       </div>
 
       <div className="space-y-2">
-        <Label>Tags</Label>
+        <Label>{form.tags}</Label>
         <div className="flex flex-wrap gap-2">
           {tags.map((tag) => {
             const isSelected = selectedTags.includes(tag.id);
@@ -201,13 +201,13 @@ export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, i
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <textarea id="description" name="description" rows={2} defaultValue={initialData?.description} placeholder="Brief description of the ride..." className={textareaClass} />
+        <Label htmlFor="description">{form.description}</Label>
+        <textarea id="description" name="description" rows={2} defaultValue={initialData?.description} placeholder={form.descriptionPlaceholder} className={textareaClass} />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="organiser_notes">Organiser Notes</Label>
-        <textarea id="organiser_notes" name="organiser_notes" rows={2} defaultValue={initialData?.organiser_notes} placeholder="Notes for riders (meeting point details, things to bring, etc.)..." className={textareaClass} />
+        <Label htmlFor="organiser_notes">{form.organiserNotes}</Label>
+        <textarea id="organiser_notes" name="organiser_notes" rows={2} defaultValue={initialData?.organiser_notes} placeholder={form.organiserNotesPlaceholder} className={textareaClass} />
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
