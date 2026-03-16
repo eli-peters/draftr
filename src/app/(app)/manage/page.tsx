@@ -23,7 +23,7 @@ import { InviteMemberDialog } from "@/components/manage/invite-member-dialog";
 import { appContent } from "@/content/app";
 import type { UserRole } from "@/config/navigation";
 
-const { manage: content } = appContent;
+const { manage: content, rides: ridesContent } = appContent;
 
 interface ManageRideData {
   id: string;
@@ -50,12 +50,12 @@ function ManageRideItem({ ride }: { ride: ManageRideData }) {
               <h3 className="text-base font-bold text-foreground truncate">{ride.title}</h3>
               {ride.status === "weather_watch" && (
                 <Badge variant="outline" className="shrink-0 text-amber-600 border-amber-300 text-sm gap-1">
-                  <CloudRain weight="fill" className="h-3.5 w-3.5" />Weather Watch
+                  <CloudRain weight="fill" className="h-3.5 w-3.5" />{ridesContent.status.weatherWatch}
                 </Badge>
               )}
               {isCancelled && (
                 <Badge variant="outline" className="shrink-0 text-destructive border-destructive/30 text-sm">
-                  Cancelled
+                  {ridesContent.status.cancelled}
                 </Badge>
               )}
             </div>
@@ -148,6 +148,28 @@ export default async function ManagePage() {
   const upcomingRides = rides.filter((r) => r.ride_date >= today && r.status !== "cancelled");
   const pastRides = rides.filter((r) => r.ride_date < today || r.status === "cancelled");
 
+  const ridesContent = (
+    <div className="mt-4">
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{content.rides.upcoming}</h2>
+      {upcomingRides.length === 0 ? (
+        <p className="mt-3 text-base text-muted-foreground">{content.rides.noRides}</p>
+      ) : (
+        <div className="mt-3">
+          {upcomingRides.map((ride) => <ManageRideItem key={ride.id} ride={ride} />)}
+        </div>
+      )}
+
+      {pastRides.length > 0 && (
+        <>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-8">{content.rides.past}</h2>
+          <div className="mt-3">
+            {pastRides.map((ride) => <ManageRideItem key={ride.id} ride={ride} />)}
+          </div>
+        </>
+      )}
+    </div>
+  );
+
   return (
     <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
       <div className="flex items-center justify-between">
@@ -185,35 +207,15 @@ export default async function ManagePage() {
         </div>
       )}
 
-      <Tabs defaultValue="rides" className="mt-6">
-        <TabsList className="w-full">
-          <TabsTrigger value="rides">{content.sections.rides}</TabsTrigger>
-          {isAdmin && <TabsTrigger value="members">{content.sections.members}</TabsTrigger>}
-        </TabsList>
+      {isAdmin ? (
+        <Tabs defaultValue="rides" className="mt-6">
+          <TabsList variant="line" className="w-full">
+            <TabsTrigger value="rides">{content.sections.rides}</TabsTrigger>
+            <TabsTrigger value="members">{content.sections.members}</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="rides">
-          <div className="mt-4">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{content.rides.upcoming}</h2>
-            {upcomingRides.length === 0 ? (
-              <p className="mt-3 text-base text-muted-foreground">{content.rides.noRides}</p>
-            ) : (
-              <div className="mt-3">
-                {upcomingRides.map((ride) => <ManageRideItem key={ride.id} ride={ride} />)}
-              </div>
-            )}
+          <TabsContent value="rides">{ridesContent}</TabsContent>
 
-            {pastRides.length > 0 && (
-              <>
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-8">{content.rides.past}</h2>
-                <div className="mt-3">
-                  {pastRides.map((ride) => <ManageRideItem key={ride.id} ride={ride} />)}
-                </div>
-              </>
-            )}
-          </div>
-        </TabsContent>
-
-        {isAdmin && (
           <TabsContent value="members">
             <div className="mt-4">
               <div className="flex items-center justify-between">
@@ -225,8 +227,10 @@ export default async function ManagePage() {
               </div>
             </div>
           </TabsContent>
-        )}
-      </Tabs>
+        </Tabs>
+      ) : (
+        <div className="mt-6">{ridesContent}</div>
+      )}
     </div>
   );
 }

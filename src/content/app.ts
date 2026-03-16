@@ -95,6 +95,11 @@ export const appContent = {
         description: "Check back soon — ride leaders will post new rides here.",
       },
     },
+    status: {
+      weatherWatch: "Weather Watch",
+      weatherWatchDescription: "Weather Watch — this ride may be affected by weather conditions.",
+      cancelled: "Cancelled",
+    },
     detail: {
       signUp: "Sign Up",
       cancelSignUp: "Cancel Sign-Up",
