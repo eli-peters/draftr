@@ -1,19 +1,13 @@
-"use client";
+'use client';
 
-import { useState, useRef } from "react";
-import { CheckCircle, EnvelopeSimple } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { inviteMember } from "@/lib/auth/actions";
-import { appContent } from "@/content/app";
+import { useState, useRef } from 'react';
+import { CheckCircle, EnvelopeSimple, Copy, Check } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { inviteMember } from '@/lib/auth/actions';
+import { appContent } from '@/content/app';
 
 const { manage: content, common } = appContent;
 const inviteContent = content.members.invite;
@@ -27,7 +21,9 @@ export function InviteMemberDialog({ clubId }: InviteMemberDialogProps) {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [sentEmail, setSentEmail] = useState("");
+  const [sentEmail, setSentEmail] = useState('');
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   function handleOpenChange(isOpen: boolean) {
@@ -35,7 +31,9 @@ export function InviteMemberDialog({ clubId }: InviteMemberDialogProps) {
     if (!isOpen) {
       setError(null);
       setSuccess(false);
-      setSentEmail("");
+      setSentEmail('');
+      setInviteLink(null);
+      setCopied(false);
     }
   }
 
@@ -46,8 +44,8 @@ export function InviteMemberDialog({ clubId }: InviteMemberDialogProps) {
     setSuccess(false);
 
     const formData = new FormData(e.currentTarget);
-    formData.set("club_id", clubId);
-    const email = formData.get("email") as string;
+    formData.set('club_id', clubId);
+    const email = formData.get('email') as string;
 
     const result = await inviteMember(formData);
     setIsPending(false);
@@ -61,15 +59,15 @@ export function InviteMemberDialog({ clubId }: InviteMemberDialogProps) {
     } else {
       setSuccess(true);
       setSentEmail(email);
+      setInviteLink(result.inviteLink ?? null);
+      setCopied(false);
       formRef.current?.reset();
     }
   }
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetTrigger
-        render={<Button variant="outline" size="sm" />}
-      >
+      <SheetTrigger render={<Button variant="outline" size="sm" />}>
         <EnvelopeSimple weight="bold" className="mr-1.5 h-4 w-4" />
         {content.members.inviteButton}
       </SheetTrigger>
@@ -83,12 +81,42 @@ export function InviteMemberDialog({ clubId }: InviteMemberDialogProps) {
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
               <CheckCircle weight="fill" className="h-8 w-8 text-emerald-600" />
             </div>
-            <p className="mt-4 text-base font-semibold text-foreground">{inviteContent.successTitle}</p>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              {inviteContent.successMessage(sentEmail)}
+            <p className="mt-4 text-base font-semibold text-foreground">
+              {inviteContent.successTitle}
             </p>
+            <p className="mt-1.5 text-sm text-muted-foreground">{inviteContent.successMessage}</p>
+            {inviteLink && (
+              <div className="mt-4 w-full">
+                <div className="flex items-center gap-2">
+                  <Input
+                    readOnly
+                    value={inviteLink}
+                    className="text-xs"
+                    onClick={(e) => (e.target as HTMLInputElement).select()}
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(inviteLink);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                  >
+                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+            )}
             <div className="mt-6 flex gap-3 w-full">
-              <Button variant="outline" className="flex-1" onClick={() => { setSuccess(false); setSentEmail(""); }}>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setSuccess(false);
+                  setSentEmail('');
+                }}
+              >
                 {inviteContent.inviteAnother}
               </Button>
               <Button className="flex-1" onClick={() => setOpen(false)}>
