@@ -33,7 +33,7 @@ function RideListItem({ ride, variant = "upcoming" }: { ride: UserRideSignup; va
           <h3 className="text-base font-bold text-foreground truncate">{ride.title}</h3>
           <div className="flex items-center gap-2 shrink-0 ml-2">
             {isWaitlisted && ride.waitlist_position != null && (
-              <Badge variant="outline" className="text-amber-600 border-amber-300 text-sm">
+              <Badge variant="outline" className="text-warning border-warning/50 text-sm">
                 {myRides.waitlistPosition(ride.waitlist_position)}
               </Badge>
             )}

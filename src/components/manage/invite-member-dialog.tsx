@@ -78,8 +78,8 @@ export function InviteMemberDialog({ clubId }: InviteMemberDialogProps) {
 
         {success ? (
           <div className="mt-8 flex flex-col items-center text-center px-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
-              <CheckCircle weight="fill" className="h-8 w-8 text-emerald-600" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
+              <CheckCircle weight="fill" className="h-8 w-8 text-success" />
             </div>
             <p className="mt-4 text-base font-semibold text-foreground">
               {inviteContent.successTitle}

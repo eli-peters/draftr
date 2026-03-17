@@ -10,17 +10,21 @@ export async function signIn(formData: FormData) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
-  if (error) {
-    return { error: error.message };
+  if (error || !data.user) {
+    return { error: error?.message ?? 'Sign-in failed' };
   }
 
   // Check if user has completed onboarding
-  const { data: profile } = await supabase.from('users').select('onboarding_completed').single();
+  const { data: profile } = await supabase
+    .from('users')
+    .select('onboarding_completed')
+    .eq('id', data.user.id)
+    .single();
 
   if (!profile || !profile.onboarding_completed) {
     redirect('/setup-profile');
@@ -76,6 +80,13 @@ export async function setupProfile(formData: FormData) {
       return { error: pwError.message };
     }
   }
+
+  // Activate any pending club memberships now that onboarding is complete
+  await adminSupabase
+    .from('club_memberships')
+    .update({ status: 'active' })
+    .eq('user_id', user.id)
+    .eq('status', 'pending');
 
   redirect('/');
 }
@@ -152,8 +163,10 @@ export async function inviteMember(formData: FormData) {
   // This goes directly to our /auth/callback route which verifies server-side via verifyOtp.
   // Bypasses Supabase's verify endpoint (which redirects with hash fragments that server routes can't read).
   const hashedToken = data.properties?.hashed_token;
-  const inviteLink = hashedToken
-    ? `${siteUrl}/auth/callback?token_hash=${hashedToken}&type=invite`
-    : null;
+  if (!hashedToken) {
+    return { error: 'Failed to generate invite link' };
+  }
+
+  const inviteLink = `${siteUrl}/auth/callback?token_hash=${hashedToken}&type=invite`;
   return { success: true, inviteLink };
 }

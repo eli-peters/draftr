@@ -21,6 +21,7 @@ import { getClubMembers, getClubStats } from "@/lib/manage/queries";
 import { createClient } from "@/lib/supabase/server";
 import { InviteMemberDialog } from "@/components/manage/invite-member-dialog";
 import { appContent } from "@/content/app";
+import { getInitials } from "@/lib/utils";
 import type { UserRole } from "@/config/navigation";
 
 const { manage: content, rides: ridesContent } = appContent;
@@ -49,7 +50,7 @@ function ManageRideItem({ ride }: { ride: ManageRideData }) {
             <div className="flex items-center gap-2">
               <h3 className="text-base font-bold text-foreground truncate">{ride.title}</h3>
               {ride.status === "weather_watch" && (
-                <Badge variant="outline" className="shrink-0 text-amber-600 border-amber-300 text-sm gap-1">
+                <Badge variant="outline" className="shrink-0 text-warning border-warning/50 text-sm gap-1">
                   <CloudRain weight="fill" className="h-3.5 w-3.5" />{ridesContent.status.weatherWatch}
                 </Badge>
               )}
@@ -96,7 +97,7 @@ interface MemberData {
 
 function MemberRow({ member }: { member: MemberData }) {
   const name = member.display_name ?? member.full_name;
-  const initials = member.full_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  const initials = getInitials(member.full_name);
   const roleKey = member.role as keyof typeof content.members.roles;
 
   return (
@@ -113,7 +114,7 @@ function MemberRow({ member }: { member: MemberData }) {
         </div>
         <div className="flex items-center gap-2">
           {member.status === "pending" ? (
-            <Badge variant="outline" className="text-sm border-amber-300 text-amber-600">{content.members.status.pending}</Badge>
+            <Badge variant="outline" className="text-sm border-warning/50 text-warning">{content.members.status.pending}</Badge>
           ) : (
             <span className="text-sm font-medium text-muted-foreground">{content.members.roles[roleKey] ?? member.role}</span>
           )}

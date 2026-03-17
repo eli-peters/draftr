@@ -2,21 +2,10 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { getNavForRole, type UserRole } from "@/config/navigation";
 import { appContent } from "@/content/app";
+import { getInitials } from "@/lib/utils";
 import { getUserClubMembership } from "@/lib/rides/queries";
 import { createClient } from "@/lib/supabase/server";
 import { getUserNotifications } from "@/lib/notifications/queries";
-
-/**
- * Build user initials from a full name string.
- */
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
 
 /**
  * Authenticated app layout with navigation shell.

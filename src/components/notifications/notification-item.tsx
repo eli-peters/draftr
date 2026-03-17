@@ -35,8 +35,8 @@ export const notificationIcons: Record<NotificationType, React.ElementType> = {
 export const notificationStyles: Record<NotificationType, string> = {
   ride_update: "text-primary bg-primary/10",
   ride_cancelled: "text-destructive bg-destructive/10",
-  weather_watch: "text-amber-600 bg-amber-100",
-  signup_confirmed: "text-emerald-600 bg-emerald-100",
+  weather_watch: "text-warning bg-warning/10",
+  signup_confirmed: "text-success bg-success/10",
   waitlist_promoted: "text-primary bg-primary/10",
   announcement: "text-foreground bg-muted",
 };

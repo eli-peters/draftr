@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { format, parseISO, isToday, isTomorrow } from "date-fns";
+import { parseISO } from "date-fns";
 import {
   CalendarDots,
   MapPin,
@@ -8,6 +8,7 @@ import {
   CaretRight,
 } from "@phosphor-icons/react/dist/ssr";
 import { appContent } from "@/content/app";
+import { getRelativeDay } from "@/lib/utils";
 
 const { dashboard: content } = appContent;
 
@@ -35,12 +36,6 @@ interface NextLedRide {
 interface ActionBarProps {
   nextSignup: NextSignup | null;
   nextLedRide: NextLedRide | null;
-}
-
-function getRelativeDay(date: Date): string {
-  if (isToday(date)) return "Today";
-  if (isTomorrow(date)) return "Tomorrow";
-  return format(date, "EEEE");
 }
 
 function ActionCard({

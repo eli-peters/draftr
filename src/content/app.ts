@@ -41,11 +41,17 @@ export const appContent = {
       subheading: 'Tell us about yourself so we can match you with the right rides',
       nameLabel: 'Full name',
       displayNameLabel: 'Display name',
+      displayNamePlaceholder: 'How you want to be called',
       passwordLabel: 'Password',
       passwordPlaceholder: 'Create a password (min. 6 characters)',
       bioLabel: 'Bio',
+      bioPlaceholder: 'Tell others a bit about yourself...',
       paceLabel: 'Preferred pace',
+      noPreference: 'No preference',
       submitButton: 'Get Started',
+    },
+    confirm: {
+      expiredLink: 'The invite link may have expired. Please ask your admin for a new invite.',
     },
   },
 
@@ -204,6 +210,7 @@ export const appContent = {
       distance: 'Distance',
       elevation: 'Elevation',
     },
+    noBio: 'No bio yet',
     sections: {
       about: 'About',
       preferences: 'Preferences',

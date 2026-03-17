@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import type { User } from "@supabase/supabase-js";
 
 /**
  * Auth callback route handler.
@@ -11,27 +12,37 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type");
-  const next = searchParams.get("next") ?? "/setup-profile";
 
   const supabase = await createClient();
+  let user: User | null = null;
 
   // PKCE flow: exchange code for session
   if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
-    }
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error) user = data.user;
   }
 
   // Token hash flow (invite, recovery, etc.)
-  if (token_hash && type) {
-    const { error } = await supabase.auth.verifyOtp({
+  if (!user && token_hash && type) {
+    const { data, error } = await supabase.auth.verifyOtp({
       token_hash,
       type: type as "invite" | "recovery" | "email",
     });
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+    if (!error) user = data.user;
+  }
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("onboarding_completed")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.onboarding_completed) {
+      return NextResponse.redirect(`${origin}/`);
     }
+
+    return NextResponse.redirect(`${origin}/setup-profile`);
   }
 
   // If we get here, auth failed — redirect to sign-in with error

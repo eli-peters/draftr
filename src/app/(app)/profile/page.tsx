@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { AppearanceSetting } from "@/components/settings/appearance-setting";
 import { appContent } from "@/content/app";
+import { getInitials } from "@/lib/utils";
 import { getUserProfile, getUserProfileStats, getUserRecentRides } from "@/lib/profile/queries";
 
 const { profile: content } = appContent;
@@ -30,7 +31,7 @@ export default async function ProfilePage() {
   if (!profile) redirect("/sign-in");
 
   const displayName = profile.display_name ?? profile.full_name;
-  const initials = profile.full_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  const initials = getInitials(profile.full_name);
   const memberSince = format(new Date(profile.created_at), "MMM yyyy");
   const role = profile.role as keyof typeof content.roles;
 
@@ -77,7 +78,7 @@ export default async function ProfilePage() {
         {profile.bio ? (
           <p className="mt-3 text-base text-foreground/75 leading-relaxed">{profile.bio}</p>
         ) : (
-          <p className="mt-3 text-base text-muted-foreground italic">No bio yet</p>
+          <p className="mt-3 text-base text-muted-foreground italic">{content.noBio}</p>
         )}
       </div>
 

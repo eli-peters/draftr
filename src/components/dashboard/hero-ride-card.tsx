@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { format, parseISO, isToday, isTomorrow } from "date-fns";
+import { format, parseISO } from "date-fns";
 import {
   ArrowRight,
   MapPin,
@@ -7,15 +7,10 @@ import {
   Users,
 } from "@phosphor-icons/react/dist/ssr";
 import { appContent } from "@/content/app";
+import { getRelativeDay } from "@/lib/utils";
 import type { RideWithDetails } from "@/types/database";
 
 const { dashboard } = appContent;
-
-function getRelativeDay(date: Date): string {
-  if (isToday(date)) return "Today";
-  if (isTomorrow(date)) return "Tomorrow";
-  return format(date, "EEEE");
-}
 
 export function HeroRideCard({ ride }: { ride: RideWithDetails }) {
   const rideDate = parseISO(ride.ride_date);

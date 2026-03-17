@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { appContent } from "@/content/app";
 import { createRide, updateRide, type CreateRideData, type UpdateRideData } from "@/lib/rides/actions";
@@ -39,7 +40,6 @@ interface RideFormProps {
 }
 
 const selectClass = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
-const textareaClass = "flex w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
 export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, initialData }: RideFormProps) {
   const router = useRouter();
@@ -202,12 +202,12 @@ export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, i
 
       <div className="space-y-2">
         <Label htmlFor="description">{form.description}</Label>
-        <textarea id="description" name="description" rows={2} defaultValue={initialData?.description} placeholder={form.descriptionPlaceholder} className={textareaClass} />
+        <Textarea id="description" name="description" rows={2} defaultValue={initialData?.description} placeholder={form.descriptionPlaceholder} />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="organiser_notes">{form.organiserNotes}</Label>
-        <textarea id="organiser_notes" name="organiser_notes" rows={2} defaultValue={initialData?.organiser_notes} placeholder={form.organiserNotesPlaceholder} className={textareaClass} />
+        <Textarea id="organiser_notes" name="organiser_notes" rows={2} defaultValue={initialData?.organiser_notes} placeholder={form.organiserNotesPlaceholder} />
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
