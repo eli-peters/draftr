@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useActionState } from "react";
-import { setupProfile } from "@/lib/auth/actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { appContent } from "@/content/app";
+import { useActionState } from 'react';
+import { setupProfile } from '@/lib/auth/actions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { appContent } from '@/content/app';
 
 const { setupProfile: content } = appContent.auth;
 
@@ -26,24 +26,25 @@ export function ProfileSetupForm({ userEmail }: ProfileSetupFormProps) {
     <form action={formAction} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <Label htmlFor="email">{appContent.auth.signIn.emailLabel}</Label>
+        <Input id="email" type="email" value={userEmail} disabled className="opacity-60" />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="password">{content.passwordLabel}</Label>
         <Input
-          id="email"
-          type="email"
-          value={userEmail}
-          disabled
-          className="opacity-60"
+          id="password"
+          name="password"
+          type="password"
+          required
+          minLength={6}
+          placeholder={content.passwordPlaceholder}
+          autoComplete="new-password"
         />
       </div>
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="full_name">{content.nameLabel}</Label>
-        <Input
-          id="full_name"
-          name="full_name"
-          type="text"
-          required
-          autoComplete="name"
-        />
+        <Input id="full_name" name="full_name" type="text" required autoComplete="name" />
       </div>
 
       <div className="flex flex-col gap-2">
@@ -59,17 +60,10 @@ export function ProfileSetupForm({ userEmail }: ProfileSetupFormProps) {
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="bio">{content.bioLabel}</Label>
-        <Input
-          id="bio"
-          name="bio"
-          type="text"
-          placeholder="Optional"
-        />
+        <Input id="bio" name="bio" type="text" placeholder="Optional" />
       </div>
 
-      {state?.error && (
-        <p className="text-sm text-destructive">{state.error}</p>
-      )}
+      {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
 
       <Button type="submit" disabled={isPending} className="w-full">
         {isPending ? appContent.common.loading : content.submitButton}
