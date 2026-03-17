@@ -51,15 +51,11 @@ export async function setupProfile(formData: FormData) {
   const bio = formData.get('bio') as string;
   const preferredPace = formData.get('preferred_pace_group') as string;
 
-  // Set the user's password (invited users don't have one yet)
-  if (password) {
-    const { error: pwError } = await supabase.auth.updateUser({ password });
-    if (pwError) {
-      return { error: pwError.message };
-    }
-  }
+  // Use admin client for profile upsert to bypass RLS and guarantee it works
+  const { createAdminClient } = await import('@/lib/supabase/admin');
+  const adminSupabase = createAdminClient();
 
-  const { error } = await supabase.from('users').upsert({
+  const { error } = await adminSupabase.from('users').upsert({
     id: user.id,
     email: user.email!,
     full_name: fullName,
@@ -71,6 +67,14 @@ export async function setupProfile(formData: FormData) {
 
   if (error) {
     return { error: error.message };
+  }
+
+  // Set password AFTER profile is saved — updateUser may change session tokens
+  if (password) {
+    const { error: pwError } = await supabase.auth.updateUser({ password });
+    if (pwError) {
+      return { error: pwError.message };
+    }
   }
 
   redirect('/rides');
