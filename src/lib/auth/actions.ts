@@ -45,10 +45,19 @@ export async function setupProfile(formData: FormData) {
     redirect('/sign-in');
   }
 
+  const password = formData.get('password') as string;
   const fullName = formData.get('full_name') as string;
   const displayName = formData.get('display_name') as string;
   const bio = formData.get('bio') as string;
   const preferredPace = formData.get('preferred_pace_group') as string;
+
+  // Set the user's password (invited users don't have one yet)
+  if (password) {
+    const { error: pwError } = await supabase.auth.updateUser({ password });
+    if (pwError) {
+      return { error: pwError.message };
+    }
+  }
 
   const { error } = await supabase.from('users').upsert({
     id: user.id,

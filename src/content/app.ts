@@ -41,6 +41,8 @@ export const appContent = {
       subheading: 'Tell us about yourself so we can match you with the right rides',
       nameLabel: 'Full name',
       displayNameLabel: 'Display name',
+      passwordLabel: 'Password',
+      passwordPlaceholder: 'Create a password (min. 6 characters)',
       bioLabel: 'Bio',
       paceLabel: 'Preferred pace',
       submitButton: 'Get Started',
