@@ -39,7 +39,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
     <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
       {/* Status Banners */}
       {ride.status === "weather_watch" && (
-        <div className="mb-6 flex items-center gap-2.5 rounded-xl border border-amber-500/20 bg-amber-500/10 px-5 py-4 text-base text-amber-300">
+        <div className="mb-6 flex items-center gap-2.5 rounded-xl border border-warning/20 bg-warning/10 px-5 py-4 text-base text-warning">
           <CloudRain weight="fill" className="h-5 w-5 shrink-0" />
           {ridesStatus.weatherWatchDescription}
         </div>

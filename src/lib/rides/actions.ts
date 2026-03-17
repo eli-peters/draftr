@@ -174,7 +174,7 @@ export async function createRide(data: CreateRideData) {
       .insert(tagRows);
 
     if (tagError) {
-      console.error("Error inserting ride tags:", tagError);
+      return { error: tagError.message };
     }
   }
 

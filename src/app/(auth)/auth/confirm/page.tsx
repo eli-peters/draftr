@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { appContent } from "@/content/app";
 
-const { common } = appContent;
+const { common, auth } = appContent;
 
 /**
  * Client-side auth confirmation page.
@@ -47,7 +47,7 @@ export default function AuthConfirmPage() {
         <div className="text-center">
           <h2 className="text-lg font-semibold text-foreground">{common.error}</h2>
           <p className="mt-2 text-base text-muted-foreground">
-            The invite link may have expired. Please ask your admin for a new invite.
+            {auth.confirm.expiredLink}
           </p>
         </div>
       </div>

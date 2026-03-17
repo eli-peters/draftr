@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { cancelRide } from "@/lib/rides/actions";
 import { appContent } from "@/content/app";
 
@@ -54,13 +55,12 @@ export function CancelRideButton({ rideId, rideTitle }: CancelRideButtonProps) {
       </p>
       <div className="space-y-2">
         <Label htmlFor="cancel-reason" className="text-sm">{ridesContent.edit.cancelReasonLabel}</Label>
-        <textarea
+        <Textarea
           id="cancel-reason"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           rows={2}
           placeholder={ridesContent.edit.cancelReasonPlaceholder}
-          className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         />
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}

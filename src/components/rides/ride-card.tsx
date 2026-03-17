@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { format, parseISO, isToday, isTomorrow } from "date-fns";
+import { format, parseISO } from "date-fns";
 import {
   MapPin,
   Path,
@@ -9,6 +9,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import { Badge } from "@/components/ui/badge";
 import { appContent } from "@/content/app";
+import { getRelativeDay } from "@/lib/utils";
 import type { RideWithDetails } from "@/types/database";
 
 const { rides: ridesContent } = appContent;
@@ -18,15 +19,9 @@ interface RideCardProps {
   featured?: boolean;
 }
 
-function getRelativeDay(date: Date): string | null {
-  if (isToday(date)) return "Today";
-  if (isTomorrow(date)) return "Tomorrow";
-  return null;
-}
-
 export function RideCard({ ride }: RideCardProps) {
   const rideDate = parseISO(ride.ride_date);
-  const relativeDay = getRelativeDay(rideDate);
+  const relativeDay = getRelativeDay(rideDate, "EEE");
   const spotsText =
     ride.capacity != null
       ? `${ride.signup_count}/${ride.capacity}`
@@ -41,13 +36,13 @@ export function RideCard({ ride }: RideCardProps) {
         {/* Date + time + status */}
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold text-primary uppercase tracking-wide">
-            {relativeDay ?? format(rideDate, "EEE")} · {format(rideDate, "MMM d")}
+            {relativeDay} · {format(rideDate, "MMM d")}
           </span>
           <span className="text-sm text-muted-foreground tabular-nums">
             {ride.start_time.slice(0, 5)}
           </span>
           {ride.status === "weather_watch" && (
-            <Badge variant="outline" className="text-amber-600 border-amber-300 gap-1">
+            <Badge variant="outline" className="text-warning border-warning/50 gap-1">
               <CloudRain weight="fill" className="h-3.5 w-3.5" />
               {ridesContent.status.weatherWatch}
             </Badge>

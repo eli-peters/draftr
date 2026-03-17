@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { updateProfile } from "@/lib/profile/actions";
 import { appContent } from "@/content/app";
 
@@ -53,19 +54,18 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
           id="display_name"
           name="display_name"
           defaultValue={profile.display_name}
-          placeholder="How you want to be called"
+          placeholder={auth.setupProfile.displayNamePlaceholder}
         />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="bio">{auth.setupProfile.bioLabel}</Label>
-        <textarea
+        <Textarea
           id="bio"
           name="bio"
           defaultValue={profile.bio}
           rows={3}
-          placeholder="Tell others a bit about yourself..."
-          className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          placeholder={auth.setupProfile.bioPlaceholder}
         />
       </div>
 
@@ -77,7 +77,7 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
           defaultValue={profile.preferred_pace_group}
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          <option value="">No preference</option>
+          <option value="">{auth.setupProfile.noPreference}</option>
           {paceGroups.map((pg) => (
             <option key={pg.id} value={pg.name}>{pg.name}</option>
           ))}
