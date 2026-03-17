@@ -2,7 +2,7 @@
 
 ## What is this project?
 
-Draftr is a cycling club management PWA, initially built for Dark Horse Flyers (Toronto, ~1,000 members). It replaces the Cycle Club App with a modern, rider-first ride coordination tool. Full project spec lives in Notion (see memory for page IDs).
+Draftr is a cycling club management PWA. It replaces the Cycle Club App with a modern, rider-first ride coordination tool. Full project spec lives in Notion (see memory for page IDs).
 
 ## Tech Stack
 
@@ -60,7 +60,7 @@ src/
 ├── lib/
 │   ├── utils.ts            → cn() helper
 │   └── supabase/           → Client, server, middleware helpers
-├── themes/                 → Per-club brand configs
+├── themes/                 → Default theme + club overrides
 ├── test/                   → Vitest setup + test files
 ├── types/                  → TypeScript type definitions
 └── proxy.ts                 → Supabase session refresh
@@ -72,7 +72,7 @@ Two-layer system:
 1. **Brand primitives** (`--brand-primary`, `--brand-danger`, etc.) — set by ThemeProvider from `src/themes/*.ts`
 2. **Semantic tokens** (`--primary`, `--destructive`, `--background`, etc.) — defined in `globals.css`, reference brand primitives
 
-Switching clubs = passing a different `ClubTheme` to `<ThemeProvider>`. No component changes.
+The app ships a default theme (all 6 primitives). Clubs selectively override specific primitives (e.g., just `primary` + `accent`); unspecified tokens fall back to the app default. This maintains visual consistency across all clubs.
 
 ## Commands
 
@@ -112,4 +112,4 @@ Admin-gated — no self-registration. Admins add members by email after OCA regi
 
 ## Multi-Club Architecture
 
-Everything is scoped to a club from day one. The `clubs` table exists even though only DHF uses it initially. All queries filter by `club_id`. Theme configs are per-club. Content layer is club-agnostic.
+Everything is scoped to a club from day one. The `clubs` table exists for multi-tenancy. All queries filter by `club_id`. Theme configs are per-club (selective overrides on the app default). Content layer is club-agnostic.

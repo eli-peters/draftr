@@ -6,5 +6,5 @@ Step-by-step guides for common processes. If you forget how something works, che
 
 - [Auth Flow & Member Onboarding](./auth-flow.md) — How admin invites work, how riders set up accounts
 - [Database Migrations](./database-migrations.md) — How to create and run schema changes in Supabase
-- [Theming](./theming.md) — How to add a new club theme or modify DHF colours
+- [Theming](./theming.md) — Adding club themes, Figma sync
 - [Deployment](./deployment.md) — How Vercel deploys work, environment variables, preview deploys

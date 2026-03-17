@@ -1,10 +1,10 @@
 /**
- * Theme type definitions for multi-club theming.
+ * Theme type definitions.
  *
- * Layer 1: Brand primitives — raw colour values specific to a club.
- * Layer 2: Semantic tokens — what the app actually uses (mapped from primitives).
- *
- * Switching clubs = providing a different ClubTheme object.
+ * Layer 1: Brand primitives — raw colour values. The app ships a default set;
+ *          clubs can selectively override specific primitives.
+ * Layer 2: Semantic tokens — what components actually use (mapped from primitives
+ *          via color-mix() in globals.css).
  */
 
 export interface BrandPrimitives {
@@ -25,15 +25,26 @@ export interface BrandPrimitives {
 /** User's color mode preference */
 export type ColorMode = "system" | "light" | "dark";
 
+/** Fully resolved theme (app default or app default + club overrides merged) */
 export interface ClubTheme {
-  /** Unique club identifier (matches clubs.slug in DB) */
+  /** Unique identifier (matches clubs.slug in DB, or "draftr" for default) */
   slug: string;
   /** Display name */
   name: string;
-  /** Brand primitive colours */
+  /** Brand primitive colours (complete set) */
   colors: BrandPrimitives;
   /** Club logo URL (optional — may come from DB) */
   logoUrl?: string;
   /** Club website (optional) */
+  websiteUrl?: string;
+}
+
+/** Club-specific overrides — only the primitives that differ from the app default */
+export interface ClubOverride {
+  slug: string;
+  name: string;
+  /** Partial brand overrides — unspecified tokens fall back to app default */
+  colors: Partial<BrandPrimitives>;
+  logoUrl?: string;
   websiteUrl?: string;
 }
