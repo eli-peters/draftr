@@ -90,17 +90,12 @@ export async function inviteMember(formData: FormData) {
     return { error: 'already_invited' };
   }
 
-  // Build the redirect URL for the invite email
-  // Use /auth/callback (server route) since @supabase/ssr uses PKCE flow (code exchange)
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-  const redirectTo = `${siteUrl}/auth/callback`;
 
-  // Invite the user via Supabase Auth (sends email with magic link)
-  // Use generateLink to avoid rate limits, then optionally send email
+  // Generate invite link without sending email (avoids Supabase free-tier rate limits)
   const { data, error } = await adminSupabase.auth.admin.generateLink({
     type: 'invite',
     email,
-    options: { redirectTo },
   });
 
   if (error) {
@@ -140,8 +135,12 @@ export async function inviteMember(formData: FormData) {
 
   revalidatePath('/manage');
 
-  // Return the invite link so the admin can share it directly
-  // (generateLink doesn't send emails — avoids Supabase free-tier rate limits)
-  const inviteLink = data.properties?.action_link ?? null;
+  // Build our own invite URL using the hashed_token from generateLink.
+  // This goes directly to our /auth/callback route which verifies server-side via verifyOtp.
+  // Bypasses Supabase's verify endpoint (which redirects with hash fragments that server routes can't read).
+  const hashedToken = data.properties?.hashed_token;
+  const inviteLink = hashedToken
+    ? `${siteUrl}/auth/callback?token_hash=${hashedToken}&type=invite`
+    : null;
   return { success: true, inviteLink };
 }
