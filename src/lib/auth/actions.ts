@@ -26,7 +26,7 @@ export async function signIn(formData: FormData) {
     redirect('/setup-profile');
   }
 
-  redirect('/rides');
+  redirect('/');
 }
 
 export async function signOut() {
@@ -77,7 +77,7 @@ export async function setupProfile(formData: FormData) {
     }
   }
 
-  redirect('/rides');
+  redirect('/');
 }
 
 /**
