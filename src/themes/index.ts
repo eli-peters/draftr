@@ -1,25 +1,37 @@
-import type { ClubTheme } from "@/types/theme";
-import { dhfTheme } from "./dhf";
+import type { ClubOverride, ClubTheme } from "@/types/theme";
+import { defaultTheme } from "./default";
 
 /**
- * Registry of available club themes.
- * Add new clubs here as they onboard.
+ * Resolve a club override into a full theme by merging onto the app default.
+ * Unspecified brand primitives fall back to the default.
  */
-const themes: Record<string, ClubTheme> = {
-  [dhfTheme.slug]: dhfTheme,
-};
-
-/**
- * Get a club theme by slug. Falls back to DHF as default.
- */
-export function getTheme(slug?: string): ClubTheme {
-  if (slug && themes[slug]) {
-    return themes[slug];
-  }
-  return dhfTheme;
+export function resolveClubTheme(override: ClubOverride): ClubTheme {
+  return {
+    slug: override.slug,
+    name: override.name,
+    colors: { ...defaultTheme.colors, ...override.colors },
+    logoUrl: override.logoUrl,
+    websiteUrl: override.websiteUrl,
+  };
 }
 
 /**
- * Default theme for the app.
+ * Registry of club overrides.
+ * Import club files here as they onboard.
  */
-export const defaultTheme = dhfTheme;
+const clubOverrides: Record<string, ClubOverride> = {
+  // Example:
+  // [someClub.slug]: someClub,
+};
+
+/**
+ * Get a resolved theme by club slug. Falls back to app default.
+ */
+export function getTheme(slug?: string): ClubTheme {
+  if (slug && clubOverrides[slug]) {
+    return resolveClubTheme(clubOverrides[slug]);
+  }
+  return defaultTheme;
+}
+
+export { defaultTheme };

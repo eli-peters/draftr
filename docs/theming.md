@@ -2,32 +2,32 @@
 
 ## Overview
 
-Draftr uses a two-layer theming system so any cycling club can have their own brand colours without changing any component code.
+Draftr uses a two-layer theming system. The app ships with a default theme, and clubs can selectively override specific brand primitives without changing any component code.
 
 ## How it works
 
-1. **Brand primitives** — Raw colour values for a specific club, defined in `src/themes/<club-slug>.ts`
-2. **Semantic tokens** — What components actually use (`--primary`, `--background`, etc.), defined in `src/app/globals.css`
+1. **Brand primitives** — 6 raw colour values defined in `src/themes/default.ts`.
+2. **Semantic tokens** — What components actually use (`--primary`, `--background`, etc.), defined in `src/app/globals.css` using `color-mix()` formulas that reference brand primitives.
 
-The `ThemeProvider` component injects brand primitives as CSS custom properties at runtime. Semantic tokens in `globals.css` reference those primitives. Components only ever use semantic tokens.
+The `ThemeProvider` injects brand primitives as CSS custom properties at runtime. Semantic tokens recalculate automatically. Components only ever use semantic tokens.
 
-## Adding a new club theme
+Edit `src/themes/default.ts` to change the app's default colours.
 
-1. Create `src/themes/<club-slug>.ts`:
+## Adding a club theme
+
+Clubs only need to specify the primitives they want to change. Unspecified tokens fall back to the app default.
+
+1. Create `src/themes/clubs/<club-slug>.ts`:
 
 ```ts
-import type { ClubTheme } from "@/types/theme";
+import type { ClubOverride } from "@/types/theme";
 
-export const myClubTheme: ClubTheme = {
+export const myClub: ClubOverride = {
   slug: "my-club",
   name: "My Cycling Club",
   colors: {
-    primary: "#...",   // Main brand colour
-    danger: "#...",    // Warnings, destructive actions
-    accent: "#...",    // Subtle accents
-    black: "#...",     // Dark text / dark mode bg
-    white: "#FFFFFF",  // Light bg
-    muted: "#...",     // Muted text, borders
+    primary: "#2E5A1C", // Only override what differs
+    accent: "#D4A017",
   },
 };
 ```
@@ -35,20 +35,19 @@ export const myClubTheme: ClubTheme = {
 2. Register it in `src/themes/index.ts`:
 
 ```ts
-import { myClubTheme } from "./my-club";
+import { myClub } from "./clubs/my-club";
 
-const themes: Record<string, ClubTheme> = {
-  // ... existing themes
-  [myClubTheme.slug]: myClubTheme,
+const clubOverrides: Record<string, ClubOverride> = {
+  [myClub.slug]: myClub,
 };
 ```
 
-3. Pass it to the `ThemeProvider` (this will eventually come from the database based on which club the user belongs to).
-
-## Modifying DHF colours
-
-Edit `src/themes/dhf.ts`. The CSS custom properties update automatically — no need to touch `globals.css` or any components.
+3. `getTheme("my-club")` returns a fully resolved `ClubTheme` with the overrides merged onto the default.
 
 ## Dark mode
 
-Managed by `ThemeProvider`. Three modes: `light`, `dark`, `system` (default). The `.dark` class is toggled on `<html>`. All semantic tokens have dark mode mappings in `globals.css`.
+Managed by `ThemeProvider`. Three modes: `light`, `dark`, `system` (default). The `.dark` class is toggled on `<html>`. All semantic tokens have dark mode mappings in `globals.css` — any club providing brand overrides gets both modes automatically.
+
+## Figma sync
+
+Figma Variables are maintained manually. The Brand collection mirrors the 6 primitives from `default.ts`. The Semantic collection has Light and Dark modes with resolved values derived from the `color-mix()` formulas in `globals.css`.

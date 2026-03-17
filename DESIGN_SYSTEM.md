@@ -6,20 +6,24 @@ Single source of truth for all visual and UI decisions. Reference this file when
 
 ## 1. Colour Architecture
 
-### Layer 1 — Brand Primitives (per-club, swappable)
+### Layer 1 — Brand Primitives
 
-Defined in `src/themes/*.ts`, injected as CSS custom properties by `ThemeProvider`.
+Source of truth: `src/tokens/brand.tokens.json` (W3C DTCG format).
+Generated into `src/themes/default.ts` by Style Dictionary (`npm run tokens`).
+Injected as CSS custom properties by `ThemeProvider` at runtime.
 
-**DHF defaults:**
+**App defaults:**
 
 | Token               | Hex       | Usage                              |
 |----------------------|-----------|------------------------------------|
-| `--brand-primary`    | `#0085B6` | CTAs, links, active states         |
+| `--brand-primary`    | `#86142F` | CTAs, links, active states         |
 | `--brand-danger`     | `#C10F33` | Cancel, warnings, destructive      |
-| `--brand-accent`     | `#86142F` | Subtle accents, hover states       |
+| `--brand-accent`     | `#0085B6` | Subtle accents, hover states       |
 | `--brand-black`      | `#201D1D` | Text, dark mode background         |
 | `--brand-white`      | `#FFFFFF` | Light backgrounds, text on dark    |
 | `--brand-muted`      | `#999FA3` | Muted text, borders, disabled      |
+
+Clubs can selectively override specific primitives; unspecified tokens fall back to these defaults.
 
 ### Layer 2 — Semantic Tokens (what components use)
 
@@ -40,14 +44,15 @@ Defined in `src/app/globals.css`. Components **never** reference `--brand-*` dir
 
 ### Accessibility
 
-Some DHF brand colours may not meet WCAG AA contrast ratios (4.5:1 for text, 3:1 for large text). When using `--brand-primary` (#0085B6) on white, test and adjust. The `color-mix()` functions in `globals.css` help derive accessible variants.
+Some brand colours may not meet WCAG AA contrast ratios (4.5:1 for text, 3:1 for large text). When using brand colours on white or dark backgrounds, test and adjust. The `color-mix()` functions in `globals.css` help derive accessible variants.
 
 ### Switching Clubs
 
-1. Create a new theme file (e.g., `src/themes/new-club.ts`)
-2. Pass it to `<ThemeProvider club={newClubTheme}>`
-3. CSS custom properties update → entire app re-skins
-4. No component changes needed
+1. Create a club override in `src/themes/clubs/` with only the primitives that differ
+2. Register it in `src/themes/index.ts`
+3. Pass the resolved theme to `<ThemeProvider club={resolvedTheme}>`
+4. CSS custom properties update → semantic tokens recalculate → app re-skins
+5. No component changes needed
 
 ---
 
@@ -236,13 +241,17 @@ Dark tokens derive from the same brand primitives via `color-mix()`. Any club pr
 ## 10. Theming Architecture
 
 ```
-src/themes/dhf.ts          → Brand primitives (ClubTheme object)
-src/themes/index.ts        → Theme registry + getTheme()
+src/tokens/brand.tokens.json     → Brand primitives source of truth (DTCG JSON)
+src/tokens/build.ts              → Style Dictionary build script
+src/themes/default.ts            → Generated app default theme
+src/themes/clubs/                → Club-specific overrides (partial primitives)
+src/themes/index.ts              → Theme registry + resolveClubTheme()
 src/components/theme-provider.tsx → Injects --brand-* CSS vars at runtime
-src/app/globals.css        → Semantic tokens reference --brand-* vars
+src/app/globals.css              → Semantic tokens reference --brand-* vars
 ```
 
-Switching clubs = loading a different `ClubTheme` → CSS vars update → entire app re-skins. No component changes.
+Token pipeline: `brand.tokens.json` → Style Dictionary → `default.ts` + Figma values.
+Club overrides merge onto the default. CSS `color-mix()` formulas recalculate automatically.
 
 ---
 
@@ -252,7 +261,8 @@ Switching clubs = loading a different `ClubTheme` → CSS vars update → entire
 |------------------|---------------------------|------------------------------------------|
 | Content/copy     | `src/content/`            | All user-facing strings. Never inline.    |
 | Design tokens    | `src/app/globals.css`     | CSS custom properties via `@theme`        |
-| Theme/brand      | `src/themes/`             | Per-club brand configs                    |
+| Token source     | `src/tokens/`             | DTCG JSON → Style Dictionary pipeline     |
+| Theme/brand      | `src/themes/`             | Generated default + club overrides        |
 | Nav config       | `src/config/`             | Navigation items, feature flags           |
 | Business config  | Database (Supabase)       | Pace groups, locations, tags, rules       |
 | Environment      | `.env.local`              | API keys, URLs                            |
