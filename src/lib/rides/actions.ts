@@ -2,6 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { appContent } from "@/content/app";
+
+const { errors, common, notificationMessages: notif } = appContent;
 
 /**
  * Sign up for a ride. Handles capacity and waitlisting.
@@ -11,10 +14,9 @@ export async function signUpForRide(rideId: string) {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: "Not authenticated" };
+    return { error: common.notAuthenticated };
   }
 
-  // Get ride to check capacity (+ title for notification)
   const { data: ride } = await supabase
     .from("rides")
     .select("id, title, capacity, status")
@@ -22,11 +24,11 @@ export async function signUpForRide(rideId: string) {
     .single();
 
   if (!ride) {
-    return { error: "Ride not found" };
+    return { error: errors.rideNotFound };
   }
 
   if (ride.status === "cancelled") {
-    return { error: "This ride has been cancelled" };
+    return { error: errors.rideCancelled };
   }
 
   // Count current confirmed signups
@@ -56,12 +58,11 @@ export async function signUpForRide(rideId: string) {
   }
 
   // Create notification for the rider
-  const signupStatus = isFull ? "waitlisted" : "confirmed";
-  if (signupStatus === "confirmed") {
+  if (!isFull) {
     await supabase.from("notifications").insert({
       user_id: user.id,
       type: "signup_confirmed",
-      title: `You're signed up for ${ride.title}`,
+      title: notif.signupConfirmed.title(ride.title),
       body: null,
       ride_id: rideId,
       channel: "push",
@@ -73,7 +74,7 @@ export async function signUpForRide(rideId: string) {
   revalidatePath("/my-rides");
   revalidatePath("/notifications");
   revalidatePath("/");
-  return { success: true, status: signupStatus };
+  return { success: true, status: isFull ? "waitlisted" : "confirmed" };
 }
 
 /**
@@ -84,8 +85,18 @@ export async function cancelSignUp(rideId: string) {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: "Not authenticated" };
+    return { error: common.notAuthenticated };
   }
+
+  // Check if the user being cancelled was confirmed (a spot opens up)
+  const { data: currentSignup } = await supabase
+    .from("ride_signups")
+    .select("status")
+    .eq("ride_id", rideId)
+    .eq("user_id", user.id)
+    .single();
+
+  const wasConfirmed = currentSignup?.status === "confirmed";
 
   const { error } = await supabase
     .from("ride_signups")
@@ -100,9 +111,68 @@ export async function cancelSignUp(rideId: string) {
     return { error: error.message };
   }
 
+  // Auto-promote first waitlisted rider if a confirmed spot opened up
+  if (wasConfirmed) {
+    const { data: nextWaitlisted } = await supabase
+      .from("ride_signups")
+      .select("id, user_id, waitlist_position")
+      .eq("ride_id", rideId)
+      .eq("status", "waitlisted")
+      .order("waitlist_position", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (nextWaitlisted) {
+      // Promote to confirmed
+      await supabase
+        .from("ride_signups")
+        .update({
+          status: "confirmed",
+          waitlist_position: null,
+        })
+        .eq("id", nextWaitlisted.id);
+
+      // Reorder remaining waitlisted positions
+      const { data: remainingWaitlisted } = await supabase
+        .from("ride_signups")
+        .select("id")
+        .eq("ride_id", rideId)
+        .eq("status", "waitlisted")
+        .order("waitlist_position", { ascending: true });
+
+      if (remainingWaitlisted) {
+        for (let i = 0; i < remainingWaitlisted.length; i++) {
+          await supabase
+            .from("ride_signups")
+            .update({ waitlist_position: i + 1 })
+            .eq("id", remainingWaitlisted[i].id);
+        }
+      }
+
+      // Notify the promoted rider
+      const { data: ride } = await supabase
+        .from("rides")
+        .select("title")
+        .eq("id", rideId)
+        .single();
+
+      if (ride) {
+        await supabase.from("notifications").insert({
+          user_id: nextWaitlisted.user_id,
+          type: "waitlist_promoted",
+          title: notif.waitlistPromoted.title(ride.title),
+          body: notif.waitlistPromoted.body,
+          ride_id: rideId,
+          channel: "push",
+        });
+      }
+    }
+  }
+
   revalidatePath(`/rides/${rideId}`);
   revalidatePath("/rides");
   revalidatePath("/my-rides");
+  revalidatePath("/notifications");
   revalidatePath("/");
   return { success: true };
 }
@@ -123,6 +193,15 @@ export interface CreateRideData {
   is_drop_ride: boolean;
   organiser_notes?: string;
   tag_ids: string[];
+  // Recurring ride options
+  recurring?: {
+    recurrence: string;
+    day_of_week: number;
+    season_start_date?: string;
+    season_end_date?: string;
+    end_after_occurrences?: number;
+    end_date?: string;
+  };
 }
 
 /**
@@ -132,7 +211,47 @@ export async function createRide(data: CreateRideData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: common.notAuthenticated };
+
+  // If recurring, create the template first
+  let templateId: string | null = null;
+  if (data.recurring) {
+    // Fetch club season dates to cap generation window
+    const { data: club } = await supabase
+      .from("clubs")
+      .select("settings")
+      .eq("id", data.club_id)
+      .single();
+
+    const settings = (club?.settings ?? {}) as Record<string, string>;
+
+    const { data: template, error: tplError } = await supabase
+      .from("ride_templates")
+      .insert({
+        club_id: data.club_id,
+        created_by: user.id,
+        title: data.title,
+        description: data.description || null,
+        day_of_week: data.recurring.day_of_week,
+        start_time: data.start_time,
+        meeting_location_id: data.meeting_location_id || null,
+        pace_group_id: data.pace_group_id || null,
+        default_distance_km: data.distance_km ?? null,
+        default_capacity: data.capacity ?? null,
+        is_drop_ride: data.is_drop_ride,
+        recurrence: data.recurring.recurrence,
+        season_start_date: data.recurring.season_start_date || settings.season_start || null,
+        season_end_date: data.recurring.season_end_date || settings.season_end || null,
+        generate_weeks_ahead: 12,
+        end_after_occurrences: data.recurring.end_after_occurrences ?? null,
+        end_date: data.recurring.end_date || null,
+      })
+      .select("id")
+      .single();
+
+    if (tplError) return { error: tplError.message };
+    templateId = template?.id ?? null;
+  }
 
   // Insert ride
   const { data: ride, error: rideError } = await supabase
@@ -154,12 +273,13 @@ export async function createRide(data: CreateRideData) {
       is_drop_ride: data.is_drop_ride,
       organiser_notes: data.organiser_notes || null,
       status: "scheduled",
+      template_id: templateId,
     })
     .select("id")
     .single();
 
   if (rideError || !ride) {
-    return { error: rideError?.message ?? "Failed to create ride" };
+    return { error: rideError?.message ?? errors.createRideFailed };
   }
 
   // Insert tags
@@ -178,8 +298,43 @@ export async function createRide(data: CreateRideData) {
     }
   }
 
+  // Generate future recurring ride instances
+  if (templateId) {
+    try {
+      const { generateRidesFromRecurring } = await import("@/lib/manage/actions");
+      await generateRidesFromRecurring(templateId);
+    } catch (e) {
+      console.error("Failed to generate recurring rides:", e);
+    }
+  }
+
+  // Notify all active club members about the new ride
+  const { data: clubMembers } = await supabase
+    .from("club_memberships")
+    .select("user_id")
+    .eq("club_id", data.club_id)
+    .eq("status", "active");
+
+  if (clubMembers && clubMembers.length > 0) {
+    const notifications = clubMembers
+      .filter((m) => m.user_id !== user.id)
+      .map((m) => ({
+        user_id: m.user_id,
+        type: "ride_update",
+        title: notif.newRidePosted.title(data.title),
+        body: notif.newRidePosted.body,
+        ride_id: ride.id,
+        channel: "push",
+      }));
+
+    if (notifications.length > 0) {
+      await supabase.from("notifications").insert(notifications);
+    }
+  }
+
   revalidatePath("/rides");
   revalidatePath("/manage");
+  revalidatePath("/notifications");
   revalidatePath("/");
   return { success: true, rideId: ride.id };
 }
@@ -208,7 +363,7 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: common.notAuthenticated };
 
   const { error: rideError } = await supabase
     .from("rides")
@@ -250,12 +405,12 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
 
   if (signups && signups.length > 0) {
     const notifications = signups
-      .filter((s) => s.user_id !== user.id) // Don't notify the leader who made the edit
+      .filter((s) => s.user_id !== user.id)
       .map((s) => ({
         user_id: s.user_id,
         type: "ride_update",
-        title: `Ride Updated: ${data.title}`,
-        body: "The ride details have been updated. Tap to see changes.",
+        title: notif.rideUpdated.title(data.title),
+        body: notif.rideUpdated.body,
         ride_id: rideId,
         channel: "push",
       }));
@@ -274,13 +429,159 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
 }
 
 /**
+ * Update all future rides in a recurring series.
+ * Updates the template AND all future unmodified instances.
+ */
+export async function updateRecurringSeries(rideId: string, data: UpdateRideData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { error: common.notAuthenticated };
+
+  // Get the current ride to find its template
+  const { data: ride } = await supabase
+    .from("rides")
+    .select("template_id")
+    .eq("id", rideId)
+    .single();
+
+  if (!ride?.template_id) {
+    // No template — fall back to single ride update
+    return updateRide(rideId, data);
+  }
+
+  const templateId = ride.template_id;
+  const today = new Date().toISOString().split("T")[0];
+
+  // Update the template
+  await supabase
+    .from("ride_templates")
+    .update({
+      title: data.title,
+      description: data.description || null,
+      start_time: data.start_time,
+      meeting_location_id: data.meeting_location_id || null,
+      pace_group_id: data.pace_group_id || null,
+      default_distance_km: data.distance_km ?? null,
+      default_capacity: data.capacity ?? null,
+      is_drop_ride: data.is_drop_ride,
+    })
+    .eq("id", templateId);
+
+  // Update all future scheduled instances from this template
+  await supabase
+    .from("rides")
+    .update({
+      title: data.title,
+      description: data.description || null,
+      start_time: data.start_time,
+      meeting_location_id: data.meeting_location_id || null,
+      pace_group_id: data.pace_group_id || null,
+      distance_km: data.distance_km ?? null,
+      capacity: data.capacity ?? null,
+      is_drop_ride: data.is_drop_ride,
+      organiser_notes: data.organiser_notes || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("template_id", templateId)
+    .gte("ride_date", today)
+    .eq("status", "scheduled");
+
+  // Replace tags on all future instances
+  const { data: futureRides } = await supabase
+    .from("rides")
+    .select("id")
+    .eq("template_id", templateId)
+    .gte("ride_date", today)
+    .eq("status", "scheduled");
+
+  if (futureRides) {
+    for (const fr of futureRides) {
+      await supabase.from("ride_tags").delete().eq("ride_id", fr.id);
+      if (data.tag_ids.length > 0) {
+        await supabase.from("ride_tags").insert(
+          data.tag_ids.map((tag_id) => ({ ride_id: fr.id, tag_id })),
+        );
+      }
+    }
+  }
+
+  revalidatePath("/rides");
+  revalidatePath("/manage");
+  revalidatePath("/");
+  return { success: true };
+}
+
+/**
+ * Add a walk-up rider to a ride (leader/admin only).
+ * Leaders can add but cannot remove — removal is admin-only.
+ */
+export async function addWalkUpRider(rideId: string, riderUserId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { error: common.notAuthenticated };
+
+  const { data: ride } = await supabase
+    .from("rides")
+    .select("id, title, capacity, status")
+    .eq("id", rideId)
+    .single();
+
+  if (!ride) return { error: errors.rideNotFound };
+  if (ride.status === "cancelled") return { error: errors.rideCancelled };
+
+  // Count current confirmed signups
+  const { count } = await supabase
+    .from("ride_signups")
+    .select("*", { count: "exact", head: true })
+    .eq("ride_id", rideId)
+    .eq("status", "confirmed");
+
+  const currentCount = count ?? 0;
+  const isFull = ride.capacity != null && currentCount >= ride.capacity;
+
+  const { error } = await supabase.from("ride_signups").upsert(
+    {
+      ride_id: rideId,
+      user_id: riderUserId,
+      status: isFull ? "waitlisted" : "confirmed",
+      waitlist_position: isFull ? currentCount - ride.capacity! + 1 : null,
+      signed_up_at: new Date().toISOString(),
+      cancelled_at: null,
+    },
+    { onConflict: "ride_id,user_id" },
+  );
+
+  if (error) return { error: error.message };
+
+  // Notify the rider
+  if (!isFull) {
+    await supabase.from("notifications").insert({
+      user_id: riderUserId,
+      type: "signup_confirmed",
+      title: notif.walkUpAdded.title(ride.title),
+      body: notif.walkUpAdded.body,
+      ride_id: rideId,
+      channel: "push",
+    });
+  }
+
+  revalidatePath(`/rides/${rideId}`);
+  revalidatePath(`/manage/rides/${rideId}/edit`);
+  revalidatePath("/rides");
+  revalidatePath("/manage");
+  return { success: true };
+}
+
+/**
  * Cancel a ride. Creates notifications for signed-up riders.
  */
 export async function cancelRide(rideId: string, reason: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: common.notAuthenticated };
 
   // Get ride title for notification
   const { data: ride } = await supabase
@@ -312,10 +613,10 @@ export async function cancelRide(rideId: string, reason: string) {
     const notifications = signups.map((s) => ({
       user_id: s.user_id,
       type: "ride_cancelled",
-      title: `Ride Cancelled: ${ride.title}`,
-      body: reason || "This ride has been cancelled by the organiser.",
+      title: notif.rideCancelled.title(ride.title),
+      body: reason || notif.rideCancelled.defaultBody,
       ride_id: rideId,
-      channel: "push",
+      channel: "both" as const,
     }));
 
     await supabase.from("notifications").insert(notifications);

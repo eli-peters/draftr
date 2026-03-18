@@ -16,7 +16,7 @@ export async function getUpcomingRides(clubId: string): Promise<RideWithDetails[
       pace_group:pace_groups(*),
       ride_tags(tag:tags(*)),
       creator:users!rides_created_by_fkey(id, full_name, display_name, avatar_url),
-      ride_signups(count)
+      ride_signups(status)
     `)
     .eq("club_id", clubId)
     .gte("ride_date", today)
@@ -29,12 +29,15 @@ export async function getUpcomingRides(clubId: string): Promise<RideWithDetails[
     return [];
   }
 
-  return (data ?? []).map((ride) => ({
-    ...ride,
-    tags: ride.ride_tags?.map((rt: { tag: unknown }) => rt.tag).filter(Boolean) ?? [],
-    signup_count: ride.ride_signups?.[0]?.count ?? 0,
-    creator: ride.creator ?? null,
-  })) as RideWithDetails[];
+  return (data ?? []).map((ride) => {
+    const signups = (ride.ride_signups ?? []) as { status: string }[];
+    return {
+      ...ride,
+      tags: ride.ride_tags?.map((rt: { tag: unknown }) => rt.tag).filter(Boolean) ?? [],
+      signup_count: signups.filter((s) => s.status === "confirmed" || s.status === "checked_in").length,
+      creator: ride.creator ?? null,
+    };
+  }) as RideWithDetails[];
 }
 
 /**
@@ -51,7 +54,7 @@ export async function getRideById(rideId: string): Promise<RideWithDetails | nul
       pace_group:pace_groups(*),
       ride_tags(tag:tags(*)),
       creator:users!rides_created_by_fkey(id, full_name, display_name, avatar_url),
-      ride_signups(count)
+      ride_signups(status)
     `)
     .eq("id", rideId)
     .single();
@@ -60,10 +63,11 @@ export async function getRideById(rideId: string): Promise<RideWithDetails | nul
     return null;
   }
 
+  const signups = (data.ride_signups ?? []) as { status: string }[];
   return {
     ...data,
     tags: data.ride_tags?.map((rt: { tag: unknown }) => rt.tag).filter(Boolean) ?? [],
-    signup_count: data.ride_signups?.[0]?.count ?? 0,
+    signup_count: signups.filter((s) => s.status === "confirmed" || s.status === "checked_in").length,
     creator: data.creator ?? null,
   } as RideWithDetails;
 }
@@ -181,6 +185,98 @@ export async function getLeaderNextLedRide(userId: string, clubId: string) {
 }
 
 /**
+ * Fetch the user's next waitlisted ride (for action bar).
+ */
+export async function getUserNextWaitlistedRide(userId: string, clubId: string) {
+  const supabase = await createClient();
+  const today = new Date().toISOString().split("T")[0];
+
+  const { data } = await supabase
+    .from("ride_signups")
+    .select(`
+      id, status, waitlist_position,
+      ride:rides!inner(
+        id, title, ride_date, start_time, status,
+        meeting_location:meeting_locations(name)
+      )
+    `)
+    .eq("user_id", userId)
+    .eq("status", "waitlisted")
+    .eq("ride.club_id", clubId)
+    .gte("ride.ride_date", today)
+    .neq("ride.status", "cancelled")
+    .order("ride(ride_date)", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (!data?.ride) return null;
+
+  const ride = data.ride as unknown as {
+    id: string;
+    title: string;
+    ride_date: string;
+    start_time: string;
+    meeting_location: { name: string } | null;
+  };
+
+  return {
+    id: ride.id,
+    title: ride.title,
+    ride_date: ride.ride_date,
+    start_time: ride.start_time,
+    meeting_location_name: ride.meeting_location?.name ?? null,
+    waitlist_position: data.waitlist_position as number,
+  };
+}
+
+/**
+ * Count rides this week without a leader (created_by IS NULL).
+ */
+export async function getRidesNeedingLeaderCount(clubId: string) {
+  const supabase = await createClient();
+  const today = new Date();
+  const weekFromNow = new Date(today);
+  weekFromNow.setDate(weekFromNow.getDate() + 7);
+
+  const todayStr = today.toISOString().split("T")[0];
+  const weekStr = weekFromNow.toISOString().split("T")[0];
+
+  const { count } = await supabase
+    .from("rides")
+    .select("*", { count: "exact", head: true })
+    .eq("club_id", clubId)
+    .is("created_by", null)
+    .gte("ride_date", todayStr)
+    .lte("ride_date", weekStr)
+    .neq("status", "cancelled");
+
+  return count ?? 0;
+}
+
+/**
+ * Get the leader's next led ride that's in weather_watch status (for action bar stub).
+ */
+export async function getLeaderWeatherWatchRide(userId: string, clubId: string) {
+  const supabase = await createClient();
+  const today = new Date().toISOString().split("T")[0];
+
+  const { data } = await supabase
+    .from("rides")
+    .select(`
+      id, title, ride_date, start_time
+    `)
+    .eq("club_id", clubId)
+    .eq("created_by", userId)
+    .eq("status", "weather_watch")
+    .gte("ride_date", today)
+    .order("ride_date", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  return data;
+}
+
+/**
  * Get the user's club membership (first active club).
  */
 export async function getUserClubMembership() {
@@ -248,7 +344,7 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
   let query = supabase
     .from("rides")
     .select(`
-      id, title, ride_date, start_time, status, capacity,
+      id, title, ride_date, start_time, status, capacity, template_id,
       meeting_location:meeting_locations(name),
       pace_group:pace_groups(name),
       creator:users!rides_created_by_fkey(full_name, display_name),
@@ -282,6 +378,7 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
       start_time: ride.start_time,
       status: ride.status,
       capacity: ride.capacity as number | null,
+      template_id: (ride as Record<string, unknown>).template_id as string | null,
       meeting_location_name: location?.name ?? null,
       pace_group_name: pace?.name ?? null,
       signup_count: signups?.[0]?.count ?? 0,

@@ -14,6 +14,13 @@ export default async function ProfileEditPage() {
   const profile = await getUserProfile(authUser.id);
   if (!profile) redirect("/sign-in");
 
+  // Fetch emergency contact fields (not in getUserProfile currently)
+  const { data: userFull } = await supabase
+    .from("users")
+    .select("emergency_contact_name, emergency_contact_phone")
+    .eq("id", authUser.id)
+    .single();
+
   // Fetch pace groups for the dropdown
   const { data: paceGroups } = await supabase
     .from("pace_groups")
@@ -30,6 +37,10 @@ export default async function ProfileEditPage() {
           display_name: profile.display_name ?? "",
           bio: profile.bio ?? "",
           preferred_pace_group: profile.preferred_pace_group ?? "",
+          emergency_contact_name: userFull?.emergency_contact_name ?? "",
+          emergency_contact_phone: userFull?.emergency_contact_phone ?? "",
+          avatar_url: profile.avatar_url,
+          full_name: profile.full_name,
         }}
         paceGroups={paceGroups ?? []}
       />

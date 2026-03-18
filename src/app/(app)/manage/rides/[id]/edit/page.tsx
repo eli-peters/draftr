@@ -1,4 +1,7 @@
 import { redirect, notFound } from "next/navigation";
+import Link from "next/link";
+import { Copy } from "@phosphor-icons/react/dist/ssr";
+import { Button } from "@/components/ui/button";
 import {
   getUserClubMembership,
   getRideById,
@@ -6,9 +9,13 @@ import {
   getPaceGroups,
   getClubTags,
   getRideTagIds,
+  getRideSignups,
 } from "@/lib/rides/queries";
+import { getClubMembers } from "@/lib/manage/queries";
 import { RideForm } from "@/components/rides/ride-form";
 import { CancelRideButton } from "@/components/rides/cancel-ride-button";
+import { SignupRoster } from "@/components/rides/signup-roster";
+import { WalkUpRiderForm } from "@/components/rides/walk-up-rider-form";
 import { appContent } from "@/content/app";
 import type { UserRole } from "@/config/navigation";
 
@@ -25,25 +32,49 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
     redirect("/");
   }
 
-  const [ride, meetingLocations, paceGroups, tags, tagIds] = await Promise.all([
+  const [ride, meetingLocations, paceGroups, tags, tagIds, signups, members] = await Promise.all([
     getRideById(id),
     getMeetingLocations(membership.club_id),
     getPaceGroups(membership.club_id),
     getClubTags(membership.club_id),
     getRideTagIds(id),
+    getRideSignups(id),
+    getClubMembers(membership.club_id),
   ]);
 
   if (!ride) notFound();
 
+  const existingSignupUserIds = signups.map((s) => s.user_id);
+  const clubMembersForWalkUp = members
+    .filter((m) => m.status === "active")
+    .map((m) => ({
+      user_id: m.user_id,
+      name: m.display_name ?? m.full_name,
+    }));
+
   return (
     <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
-      <h1 className="text-3xl font-bold tracking-tight text-foreground">{ridesContent.edit.heading}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          {ridesContent.edit.heading}
+        </h1>
+        <Link
+          href={`/manage/rides/new?duplicate=${id}`}
+        >
+          <Button variant="outline" size="sm">
+            <Copy weight="bold" className="h-4 w-4 mr-1.5" />
+            {ridesContent.edit.duplicateRide}
+          </Button>
+        </Link>
+      </div>
+
       <RideForm
         clubId={membership.club_id}
         meetingLocations={meetingLocations}
         paceGroups={paceGroups}
         tags={tags}
         rideId={id}
+        templateId={ride.template_id ?? undefined}
         initialData={{
           title: ride.title,
           description: ride.description ?? "",
@@ -61,6 +92,23 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
           tag_ids: tagIds,
         }}
       />
+
+      {/* Signups section */}
+      {ride.status !== "cancelled" && (
+        <div className="mt-12">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
+            {ridesContent.edit.signups}
+          </h2>
+          <SignupRoster signups={signups} />
+          <div className="mt-4">
+            <WalkUpRiderForm
+              rideId={id}
+              clubMembers={clubMembersForWalkUp}
+              existingSignupUserIds={existingSignupUserIds}
+            />
+          </div>
+        </div>
+      )}
 
       {ride.status !== "cancelled" && (
         <div className="mt-12">

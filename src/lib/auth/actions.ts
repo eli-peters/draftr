@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { appContent } from '@/content/app';
 
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
@@ -16,7 +17,7 @@ export async function signIn(formData: FormData) {
   });
 
   if (error || !data.user) {
-    return { error: error?.message ?? 'Sign-in failed' };
+    return { error: error?.message ?? appContent.errors.signInFailed };
   }
 
   // Check if user has completed onboarding
@@ -28,6 +29,21 @@ export async function signIn(formData: FormData) {
 
   if (!profile || !profile.onboarding_completed) {
     redirect('/setup-profile');
+  }
+
+  // Check membership status — block deactivated members
+  // RLS only allows active members to read club_memberships, so if this returns null
+  // after onboarding is complete, the user's membership is inactive or doesn't exist.
+  const { data: membership } = await supabase
+    .from('club_memberships')
+    .select('id')
+    .eq('user_id', data.user.id)
+    .eq('status', 'active')
+    .maybeSingle();
+
+  if (!membership) {
+    await supabase.auth.signOut();
+    return { error: appContent.errors.accountDeactivated };
   }
 
   redirect('/');

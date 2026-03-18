@@ -182,6 +182,32 @@ export interface Notification {
   sent_at: string;
 }
 
+export interface RideTemplate {
+  id: string;
+  club_id: string;
+  created_by: string | null;
+  title: string;
+  description: string | null;
+  day_of_week: number | null;
+  start_time: string;
+  meeting_location_id: string | null;
+  pace_group_id: string | null;
+  default_distance_km: number | null;
+  default_capacity: number | null;
+  default_route_url: string | null;
+  default_route_name: string | null;
+  is_drop_ride: boolean;
+  is_active: boolean;
+  recurrence: "weekly" | "biweekly" | "monthly" | null;
+  season_start_date: string | null;
+  season_end_date: string | null;
+  last_generated_date: string | null;
+  generate_weeks_ahead: number;
+  end_after_occurrences: number | null;
+  end_date: string | null;
+  created_at: string;
+}
+
 export interface WeatherRule {
   id: string;
   club_id: string;

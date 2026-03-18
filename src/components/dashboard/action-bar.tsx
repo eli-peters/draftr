@@ -6,9 +6,14 @@ import {
   Users,
   FlagBanner,
   CaretRight,
+  Queue,
+  UserPlus,
+  FlagPennant,
+  CloudRain,
 } from "@phosphor-icons/react/dist/ssr";
 import { appContent } from "@/content/app";
 import { getRelativeDay } from "@/lib/utils";
+import type { UserRole } from "@/config/navigation";
 
 const { dashboard: content } = appContent;
 
@@ -33,9 +38,30 @@ interface NextLedRide {
   capacity: number | null;
 }
 
+interface NextWaitlistedRide {
+  id: string;
+  title: string;
+  ride_date: string;
+  start_time: string;
+  meeting_location_name: string | null;
+  waitlist_position: number;
+}
+
+interface WeatherWatchRide {
+  id: string;
+  title: string;
+  ride_date: string;
+  start_time: string;
+}
+
 interface ActionBarProps {
   nextSignup: NextSignup | null;
   nextLedRide: NextLedRide | null;
+  nextWaitlistedRide?: NextWaitlistedRide | null;
+  pendingMemberCount?: number;
+  ridesNeedingLeaderCount?: number;
+  weatherWatchRide?: WeatherWatchRide | null;
+  userRole?: UserRole;
 }
 
 function ActionCard({
@@ -65,12 +91,30 @@ function ActionCard({
   );
 }
 
-export function ActionBar({ nextSignup, nextLedRide }: ActionBarProps) {
-  const hasItems = nextSignup || nextLedRide;
+export function ActionBar({
+  nextSignup,
+  nextLedRide,
+  nextWaitlistedRide,
+  pendingMemberCount = 0,
+  ridesNeedingLeaderCount = 0,
+  weatherWatchRide,
+  userRole,
+}: ActionBarProps) {
+  const isAdmin = userRole === "admin";
+
+  const hasItems =
+    nextSignup ||
+    nextLedRide ||
+    nextWaitlistedRide ||
+    (isAdmin && pendingMemberCount > 0) ||
+    (isAdmin && ridesNeedingLeaderCount > 0) ||
+    weatherWatchRide;
+
   if (!hasItems) return null;
 
   return (
     <div className="space-y-3">
+      {/* Rider: your next confirmed ride */}
       {nextSignup && (
         <ActionCard
           label={content.actionBar.yourNextRide}
@@ -94,6 +138,28 @@ export function ActionBar({ nextSignup, nextLedRide }: ActionBarProps) {
         </ActionCard>
       )}
 
+      {/* Rider: waitlisted ride */}
+      {nextWaitlistedRide && (
+        <ActionCard
+          label={content.actionBar.waitlistPosition}
+          icon={Queue}
+          href={`/rides/${nextWaitlistedRide.id}`}
+        >
+          <h3 className="text-base font-semibold text-foreground leading-tight">
+            {nextWaitlistedRide.title}
+          </h3>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+            <span className="font-medium text-primary">
+              {getRelativeDay(parseISO(nextWaitlistedRide.ride_date))} · {nextWaitlistedRide.start_time.slice(0, 5)}
+            </span>
+            <span className="flex items-center gap-1 text-warning">
+              {appContent.myRides.waitlistPosition(nextWaitlistedRide.waitlist_position)}
+            </span>
+          </div>
+        </ActionCard>
+      )}
+
+      {/* Leader: next led ride */}
       {nextLedRide && (
         <ActionCard
           label={content.actionBar.nextLedRide}
@@ -120,6 +186,48 @@ export function ActionBar({ nextSignup, nextLedRide }: ActionBarProps) {
               />
             </div>
           )}
+        </ActionCard>
+      )}
+
+      {/* Leader: weather watch stub */}
+      {weatherWatchRide && (
+        <ActionCard
+          label={content.actionBar.weatherWatch}
+          icon={CloudRain}
+          href={`/rides/${weatherWatchRide.id}`}
+        >
+          <h3 className="text-base font-semibold text-foreground leading-tight">
+            {weatherWatchRide.title}
+          </h3>
+          <p className="mt-1 text-sm text-warning">
+            {content.actionBar.weatherWatchDetail(weatherWatchRide.title)}
+          </p>
+        </ActionCard>
+      )}
+
+      {/* Admin: pending member approvals */}
+      {isAdmin && pendingMemberCount > 0 && (
+        <ActionCard
+          label={content.actionBar.pendingApprovals}
+          icon={UserPlus}
+          href="/manage?tab=members"
+        >
+          <p className="text-sm text-muted-foreground">
+            {content.actionBar.pendingApprovalsCount(pendingMemberCount)}
+          </p>
+        </ActionCard>
+      )}
+
+      {/* Admin: rides needing a leader */}
+      {isAdmin && ridesNeedingLeaderCount > 0 && (
+        <ActionCard
+          label={content.actionBar.ridesNeedingLeader}
+          icon={FlagPennant}
+          href="/manage?tab=rides"
+        >
+          <p className="text-sm text-muted-foreground">
+            {content.actionBar.ridesNeedingLeaderCount(ridesNeedingLeaderCount)}
+          </p>
         </ActionCard>
       )}
     </div>
