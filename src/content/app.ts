@@ -71,9 +71,24 @@ export const appContent = {
       spotsLeft: (remaining: number) => `${remaining} spots left`,
       signedUp: (count: number, capacity: number | null) =>
         capacity != null ? `${count}/${capacity} signed up` : `${count} signed up`,
+      waitlistPosition: 'Waitlisted',
+      waitlistDetail: (position: number, rideTitle: string) =>
+        `#${position} on waitlist for ${rideTitle}`,
+      pendingApprovals: 'Pending Approvals',
+      pendingApprovalsCount: (count: number) =>
+        `${count} member${count === 1 ? '' : 's'} waiting for approval`,
+      ridesNeedingLeader: 'Rides Need a Leader',
+      ridesNeedingLeaderCount: (count: number) =>
+        `${count} ride${count === 1 ? '' : 's'} this week without a leader`,
+      weatherWatch: 'Weather Watch',
+      weatherWatchDetail: (rideTitle: string) =>
+        `${rideTitle} may be affected by weather conditions`,
     },
     feed: {
       heading: 'Upcoming Rides',
+    },
+    announcementBanner: {
+      dismiss: 'Dismiss',
     },
     // Legacy keys — used by dashboard components that may be repurposed later
     nextRide: 'Your Next Ride',
@@ -108,12 +123,20 @@ export const appContent = {
       heading: 'Filter Rides',
       paceGroupLabel: 'Pace Group',
       tagsLabel: 'Tags',
+      sortLabel: 'Sort By',
       clearAll: 'Clear Filters',
       apply: 'Show Rides',
       activeCount: (count: number) => `${count}`,
+      showingCount: (filtered: number) => `Showing ${filtered} result${filtered === 1 ? '' : 's'}`,
       noResults: {
         title: 'No matching rides',
         description: 'Try adjusting your filters to see more rides.',
+      },
+      sort: {
+        dateAsc: 'Date (soonest first)',
+        dateDesc: 'Date (latest first)',
+        distanceAsc: 'Distance (shortest first)',
+        distanceDesc: 'Distance (longest first)',
       },
     },
     status: {
@@ -126,23 +149,59 @@ export const appContent = {
       joinWaitlist: 'Join Waitlist',
       cancelSignUp: 'Cancel Sign-Up',
       spotsRemaining: (remaining: number, total: number) => `${remaining}/${total} spots remaining`,
+      spotsFilled: (confirmed: number, capacity: number) => `${confirmed}/${capacity} spots filled`,
+      signedUpCount: (count: number) => `${count} signed up`,
+      waitlistedCount: (count: number) => `${count} waitlisted`,
+      confirmedCount: (count: number) => `${count} confirmed`,
+      dropRide: 'Drop ride',
+      noDrop: 'No-drop',
+      viewRoute: 'View Route',
+      organiserNotesHeading: 'Notes from the organiser',
       signedUp: "You're signed up!",
       cancelled: 'This ride has been cancelled',
-      ridersHeading: (count: number, capacity: number | null) =>
-        capacity != null ? `Riders (${count}/${capacity})` : `Riders (${count})`,
+      ridersHeading: (confirmed: number, waitlisted: number, capacity: number | null) => {
+        const parts: string[] = [];
+        if (capacity != null) {
+          parts.push(`${confirmed} confirmed`);
+        } else {
+          parts.push(`${confirmed} signed up`);
+        }
+        if (waitlisted > 0) {
+          parts.push(`${waitlisted} waitlisted`);
+        }
+        return `Riders — ${parts.join(' · ')}`;
+      },
     },
     create: {
       heading: 'Create a Ride',
       submitButton: 'Publish Ride',
     },
+    recurring: {
+      toggle: 'Make this a recurring ride',
+      frequency: 'Repeat',
+      badge: 'Recurring',
+      endCondition: 'Ends',
+      endAfter: 'After',
+      occurrences: 'occurrences',
+      endOnDate: 'On date',
+      endNever: 'Never',
+    },
     edit: {
       heading: 'Edit Ride',
+      duplicateRide: 'Duplicate Ride',
+      recurringPrompt: 'This ride is part of a recurring series.',
+      editThisOnly: 'Edit this ride only',
+      editAllFuture: 'Edit all future rides',
       cancelRide: 'Cancel This Ride',
       cancelConfirm: (title: string) => `Cancel "${title}"? All signed-up riders will be notified.`,
       cancelReasonLabel: 'Reason (optional)',
       cancelReasonPlaceholder: 'Weather, insufficient signups, etc.',
       confirmCancel: 'Yes, Cancel Ride',
       keepRide: 'Keep Ride',
+      signups: 'Signups',
+      addWalkUp: 'Add Walk-Up Rider',
+      walkUpPlaceholder: 'Select a member...',
+      walkUpAdded: 'Rider added successfully',
     },
     form: {
       title: 'Title',
@@ -217,6 +276,22 @@ export const appContent = {
       paceGroup: 'Preferred Pace',
       memberSince: 'Member since',
       role: 'Role',
+      emergencyContact: 'Emergency Contact',
+    },
+    emergencyContact: {
+      nameLabel: 'Emergency Contact Name',
+      namePlaceholder: 'Full name',
+      phoneLabel: 'Emergency Contact Phone',
+      phonePlaceholder: '+1 (555) 123-4567',
+      noContact: 'No emergency contact set',
+      visibilityNote: 'Only visible to ride leaders and admins',
+    },
+    avatar: {
+      uploadButton: 'Change Photo',
+      uploading: 'Uploading...',
+    },
+    publicProfile: {
+      deactivated: 'This member is no longer active.',
     },
     roles: {
       rider: 'Rider',
@@ -301,6 +376,58 @@ export const appContent = {
       signupsThisWeek: 'Sign-ups This Week',
       avgRiders: 'Avg. Riders/Ride',
     },
+    season: {
+      heading: 'Season Dates',
+      description: 'Set your club’s season start and end dates below.',
+      startLabel: 'Season Start',
+      endLabel: 'Season End',
+      save: 'Save Season Dates',
+      saved: 'Season dates saved',
+      noSeason: 'No season dates configured — recurring rides will generate indefinitely.',
+    },
+    memberActions: {
+      searchPlaceholder: 'Search members...',
+      editRole: 'Change Role',
+      deactivate: 'Deactivate',
+      reactivate: 'Reactivate',
+      approve: 'Approve',
+      confirmDeactivate: (name: string) => `Deactivate ${name}? They will lose access to the app.`,
+    },
+    announcements: {
+      heading: 'Announcements',
+      create: 'New Announcement',
+      titleLabel: 'Title',
+      titlePlaceholder: 'Announcement title...',
+      bodyLabel: 'Message',
+      bodyPlaceholder: 'Write your announcement...',
+      pin: 'Pin',
+      unpin: 'Unpin',
+      delete: 'Delete',
+      edit: 'Edit',
+      noAnnouncements: 'No announcements yet.',
+      pinned: 'Pinned',
+    },
+    recurringRides: {
+      heading: 'Recurring Rides',
+      create: 'New Recurring Ride',
+      noRecurring: 'No recurring rides set up yet.',
+      delete: 'Delete',
+      pause: 'Pause',
+      resume: 'Resume',
+      paused: 'Paused',
+      generateNow: 'Generate Rides Now',
+      generated: (count: number) => `${count} ride${count === 1 ? '' : 's'} generated`,
+      seasonLabel: 'Season',
+      seasonStartLabel: 'Season Start',
+      seasonEndLabel: 'Season End',
+      weeksAheadLabel: 'Generate rides ahead (weeks)',
+      recurrence: {
+        weekly: 'Weekly',
+        biweekly: 'Bi-weekly',
+        monthly: 'Monthly',
+      },
+      dayOfWeek: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+    },
   },
 
   common: {
@@ -310,5 +437,45 @@ export const appContent = {
     cancel: 'Cancel',
     save: 'Save',
     back: 'Back',
+    notAuthenticated: 'Not authenticated',
+    today: 'Today',
+    tomorrow: 'Tomorrow',
+  },
+
+  errors: {
+    accountDeactivated: 'Your account has been deactivated. Please contact your club admin.',
+    signInFailed: 'Sign-in failed',
+    rideNotFound: 'Ride not found',
+    rideCancelled: 'This ride has been cancelled',
+    createRideFailed: 'Failed to create ride',
+    cannotDeactivateSelf: 'Cannot deactivate yourself',
+    lastAdmin: 'Cannot change role — this is the only admin in the club.',
+    noFileProvided: 'No file provided',
+  },
+
+  notificationMessages: {
+    signupConfirmed: {
+      title: (rideTitle: string) => `You're signed up for ${rideTitle}`,
+    },
+    walkUpAdded: {
+      title: (rideTitle: string) => `You've been signed up for ${rideTitle}`,
+      body: 'A ride leader added you to this ride.',
+    },
+    waitlistPromoted: {
+      title: (rideTitle: string) => `You're in! Spot opened for ${rideTitle}`,
+      body: 'A spot opened up and you\'ve been promoted from the waitlist.',
+    },
+    newRidePosted: {
+      title: (rideTitle: string) => `New Ride: ${rideTitle}`,
+      body: 'A new ride has been posted. Tap to view details and sign up.',
+    },
+    rideUpdated: {
+      title: (rideTitle: string) => `Ride Updated: ${rideTitle}`,
+      body: 'The ride details have been updated. Tap to see changes.',
+    },
+    rideCancelled: {
+      title: (rideTitle: string) => `Ride Cancelled: ${rideTitle}`,
+      defaultBody: 'This ride has been cancelled by the organiser.',
+    },
   },
 } as const;

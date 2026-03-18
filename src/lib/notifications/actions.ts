@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { appContent } from "@/content/app";
 
 /**
  * Mark a single notification as read.
@@ -10,7 +11,7 @@ export async function markNotificationRead(notificationId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: appContent.common.notAuthenticated };
 
   const { error } = await supabase
     .from("notifications")
@@ -31,7 +32,7 @@ export async function markAllNotificationsRead() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return { error: appContent.common.notAuthenticated };
 
   const { error } = await supabase
     .from("notifications")

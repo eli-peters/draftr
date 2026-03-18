@@ -28,12 +28,24 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const rideDate = parseISO(ride.ride_date);
   const isSignedUp = signup?.status === "confirmed" || signup?.status === "waitlisted";
   const isCancelled = ride.status === "cancelled";
-  const spotsText =
-    ride.capacity != null
-      ? detail.spotsRemaining(ride.capacity - ride.signup_count, ride.capacity)
-      : `${ride.signup_count} signed up`;
+
+  // Separate confirmed from waitlisted for accurate display
+  const confirmedCount = signups.filter((s) => s.status === "confirmed" || s.status === "checked_in").length;
+  const waitlistedCount = signups.filter((s) => s.status === "waitlisted").length;
+
+  let spotsText: string;
+  if (ride.capacity == null) {
+    spotsText = detail.signedUpCount(confirmedCount);
+  } else if (confirmedCount < ride.capacity) {
+    spotsText = detail.spotsRemaining(ride.capacity - confirmedCount, ride.capacity);
+  } else {
+    const parts = [detail.confirmedCount(confirmedCount)];
+    if (waitlistedCount > 0) parts.push(detail.waitlistedCount(waitlistedCount));
+    spotsText = parts.join(' · ');
+  }
+
   const capacityPercent =
-    ride.capacity != null ? (ride.signup_count / ride.capacity) * 100 : null;
+    ride.capacity != null ? (confirmedCount / ride.capacity) * 100 : null;
 
   return (
     <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
@@ -66,7 +78,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           {ride.pace_group.moving_pace_min && ride.pace_group.moving_pace_max
             ? ` (${ride.pace_group.moving_pace_min}–${ride.pace_group.moving_pace_max} km/h)`
             : ""}
-          {ride.is_drop_ride ? " · Drop ride" : " · No-drop"}
+          {` · ${ride.is_drop_ride ? detail.dropRide : detail.noDrop}`}
         </p>
       )}
 
@@ -124,14 +136,14 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           <a href={ride.route_url} target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-2 text-base font-semibold text-info hover:underline underline-offset-2">
             <ArrowSquareOut weight="bold" className="h-5 w-5" />
-            {ride.route_name ?? "View Route"}
+            {ride.route_name ?? detail.viewRoute}
           </a>
         </div>
       )}
 
       {ride.organiser_notes && (
         <div className="mt-8">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Notes from the organiser</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{detail.organiserNotesHeading}</h2>
           <p className="mt-3 text-base text-foreground/80 whitespace-pre-line leading-relaxed">{ride.organiser_notes}</p>
         </div>
       )}
@@ -140,7 +152,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       {signups.length > 0 && (
         <div className="mt-8">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {detail.ridersHeading(signups.length, ride.capacity)}
+            {detail.ridersHeading(confirmedCount, waitlistedCount, ride.capacity)}
           </h2>
           <div className="mt-3 rounded-xl border border-border bg-card p-3">
             <SignupRoster signups={signups} />
@@ -155,7 +167,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
               style={{ width: `${Math.min(capacityPercent, 100)}%` }} />
           </div>
         )}
-        <SignupButton rideId={ride.id} isSignedUp={isSignedUp} isCancelled={isCancelled} isFull={ride.capacity != null && ride.signup_count >= ride.capacity} />
+        <SignupButton rideId={ride.id} isSignedUp={isSignedUp} isCancelled={isCancelled} isFull={ride.capacity != null && confirmedCount >= ride.capacity} />
       </div>
     </div>
   );

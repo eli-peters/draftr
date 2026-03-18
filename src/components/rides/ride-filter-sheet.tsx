@@ -10,12 +10,22 @@ import { appContent } from '@/content/app';
 
 const { rides: ridesContent } = appContent;
 
+export type SortOption = 'date_asc' | 'date_desc' | 'distance_asc' | 'distance_desc';
+
+const sortOptions: { value: SortOption; label: string }[] = [
+  { value: 'date_asc', label: ridesContent.filter.sort.dateAsc },
+  { value: 'date_desc', label: ridesContent.filter.sort.dateDesc },
+  { value: 'distance_asc', label: ridesContent.filter.sort.distanceAsc },
+  { value: 'distance_desc', label: ridesContent.filter.sort.distanceDesc },
+];
+
 interface RideFilterSheetProps {
   paceGroups: { id: string; name: string }[];
   tags: { id: string; name: string; color: string | null }[];
   activePaceGroupIds: string[];
   activeTagIds: string[];
-  onApply: (paceGroupIds: string[], tagIds: string[]) => void;
+  activeSort: SortOption;
+  onApply: (paceGroupIds: string[], tagIds: string[], sort: SortOption) => void;
   onClear: () => void;
 }
 
@@ -24,12 +34,14 @@ export function RideFilterSheet({
   tags,
   activePaceGroupIds,
   activeTagIds,
+  activeSort,
   onApply,
   onClear,
 }: RideFilterSheetProps) {
   const [open, setOpen] = useState(false);
   const [pendingPaceGroups, setPendingPaceGroups] = useState<string[]>([]);
   const [pendingTags, setPendingTags] = useState<string[]>([]);
+  const [pendingSort, setPendingSort] = useState<SortOption>('date_asc');
 
   const activeCount = activePaceGroupIds.length + activeTagIds.length;
 
@@ -37,6 +49,7 @@ export function RideFilterSheet({
     if (nextOpen) {
       setPendingPaceGroups(activePaceGroupIds);
       setPendingTags(activeTagIds);
+      setPendingSort(activeSort);
     }
     setOpen(nextOpen);
   }
@@ -52,7 +65,7 @@ export function RideFilterSheet({
   }
 
   function handleApply() {
-    onApply(pendingPaceGroups, pendingTags);
+    onApply(pendingPaceGroups, pendingTags, pendingSort);
     setOpen(false);
   }
 
@@ -137,10 +150,27 @@ export function RideFilterSheet({
                 </div>
               </div>
             )}
+
+            {/* Sort */}
+            <div className="space-y-2">
+              <Label>{ridesContent.filter.sortLabel}</Label>
+              <div className="flex flex-wrap gap-2">
+                {sortOptions.map((opt) => (
+                  <Badge
+                    key={opt.value}
+                    variant={pendingSort === opt.value ? 'default' : 'outline'}
+                    className="cursor-pointer text-sm px-3 py-1"
+                    onClick={() => setPendingSort(opt.value)}
+                  >
+                    {opt.label}
+                  </Badge>
+                ))}
+              </div>
+            </div>
           </div>
 
           <SheetFooter className="flex-row gap-3">
-            {(pendingPaceGroups.length > 0 || pendingTags.length > 0) && (
+            {(pendingPaceGroups.length > 0 || pendingTags.length > 0 || pendingSort !== 'date_asc') && (
               <Button variant="ghost" className="flex-1" onClick={handleClear}>
                 {ridesContent.filter.clearAll}
               </Button>

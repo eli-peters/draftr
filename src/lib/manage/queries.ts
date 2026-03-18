@@ -48,6 +48,116 @@ export async function getClubMembers(clubId: string): Promise<ClubMember[]> {
   });
 }
 
+/**
+ * Count pending member approvals for a club.
+ */
+export async function getPendingMemberCount(clubId: string): Promise<number> {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("club_memberships")
+    .select("*", { count: "exact", head: true })
+    .eq("club_id", clubId)
+    .eq("status", "pending");
+  return count ?? 0;
+}
+
+/**
+ * Fetch announcements for a club.
+ */
+export async function getClubAnnouncements(clubId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("announcements")
+    .select(`
+      id, title, body, is_pinned, published_at, expires_at,
+      creator:users!announcements_created_by_fkey(display_name, full_name)
+    `)
+    .eq("club_id", clubId)
+    .order("is_pinned", { ascending: false })
+    .order("published_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching announcements:", error);
+    return [];
+  }
+
+  return (data ?? []).map((a) => {
+    const creator = a.creator as unknown as { display_name: string | null; full_name: string } | null;
+    return {
+      id: a.id,
+      title: a.title,
+      body: a.body,
+      is_pinned: a.is_pinned,
+      published_at: a.published_at,
+      expires_at: a.expires_at,
+      created_by_name: creator?.display_name ?? creator?.full_name ?? null,
+    };
+  });
+}
+
+/**
+ * Fetch ride templates for a club.
+ */
+export async function getClubRideTemplates(clubId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("ride_templates")
+    .select(`
+      id, title, description, day_of_week, start_time, is_drop_ride, is_active, recurrence,
+      default_distance_km, default_capacity, default_route_url, default_route_name,
+      season_start_date, season_end_date,
+      meeting_location:meeting_locations(name),
+      pace_group:pace_groups(name)
+    `)
+    .eq("club_id", clubId)
+    .order("is_active", { ascending: false })
+    .order("title");
+
+  if (error) {
+    console.error("Error fetching ride templates:", error);
+    return [];
+  }
+
+  return (data ?? []).map((t) => {
+    const location = t.meeting_location as unknown as { name: string } | null;
+    const pace = t.pace_group as unknown as { name: string } | null;
+    return {
+      ...t,
+      meeting_location_name: location?.name ?? null,
+      pace_group_name: pace?.name ?? null,
+    };
+  });
+}
+
+/**
+ * Fetch the current pinned announcement for a club (max one).
+ */
+export async function getPinnedAnnouncement(clubId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("announcements")
+    .select(`
+      id, title, body, published_at,
+      creator:users!announcements_created_by_fkey(display_name, full_name)
+    `)
+    .eq("club_id", clubId)
+    .eq("is_pinned", true)
+    .order("published_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!data) return null;
+
+  const creator = data.creator as unknown as { display_name: string | null; full_name: string } | null;
+  return {
+    id: data.id,
+    title: data.title,
+    body: data.body,
+    published_at: data.published_at,
+    created_by_name: creator?.display_name ?? creator?.full_name ?? null,
+  };
+}
+
 export interface ClubStats {
   totalRides: number;
   activeMembers: number;

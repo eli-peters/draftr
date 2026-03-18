@@ -5,6 +5,7 @@ import {
   Bicycle,
   Path,
   CaretRight,
+  FirstAidKit,
 } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
@@ -22,13 +23,15 @@ export default async function ProfilePage() {
   const { data: { user: authUser } } = await supabase.auth.getUser();
   if (!authUser) redirect("/sign-in");
 
-  const [profile, stats, recentRides] = await Promise.all([
+  const [profile, stats, recentRides, emergencyContact] = await Promise.all([
     getUserProfile(authUser.id),
     getUserProfileStats(authUser.id),
     getUserRecentRides(authUser.id),
+    supabase.from("users").select("emergency_contact_name, emergency_contact_phone").eq("id", authUser.id).single(),
   ]);
 
   if (!profile) redirect("/sign-in");
+  const ec = emergencyContact.data;
 
   const displayName = profile.display_name ?? profile.full_name;
   const initials = getInitials(profile.full_name);
@@ -97,6 +100,26 @@ export default async function ProfilePage() {
           </div>
         </div>
       )}
+
+      {/* Emergency Contact */}
+      <div className="mt-8">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {content.sections.emergencyContact}
+        </h2>
+        {ec?.emergency_contact_name ? (
+          <div className="mt-3 flex items-center gap-3 rounded-xl border border-border bg-card p-5">
+            <FirstAidKit weight="duotone" className="h-5 w-5 text-destructive" />
+            <div>
+              <p className="font-medium text-foreground text-base">{ec.emergency_contact_name}</p>
+              {ec.emergency_contact_phone && (
+                <p className="text-sm text-muted-foreground">{ec.emergency_contact_phone}</p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <p className="mt-3 text-base text-muted-foreground italic">{content.emergencyContact.noContact}</p>
+        )}
+      </div>
 
       {/* Appearance */}
       <div className="mt-8">

@@ -7,6 +7,12 @@ import { NotificationItem } from "@/components/notifications/notification-item";
 import { markNotificationRead, markAllNotificationsRead } from "@/lib/notifications/actions";
 import type { Notification } from "@/components/notifications/notification-item";
 
+function getNotificationHref(notification: Notification): string | null {
+  if (notification.ride_id) return `/rides/${notification.ride_id}`;
+  if (notification.type === 'announcement') return '/';
+  return null;
+}
+
 interface NotificationsListProps {
   notifications: Notification[];
   heading: string;
@@ -72,8 +78,10 @@ export function NotificationsList({
               </div>
             );
 
-            return notification.ride_id ? (
-              <Link key={notification.id} href={`/rides/${notification.ride_id}`} className="block">
+            const href = getNotificationHref(notification);
+
+            return href ? (
+              <Link key={notification.id} href={href} className="block">
                 {content}
               </Link>
             ) : (

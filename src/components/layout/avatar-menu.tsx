@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SignOut, UserCircle } from "@phosphor-icons/react";
+import { signOut } from "@/lib/auth/actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,14 +23,15 @@ interface AvatarMenuProps {
   userEmail: string;
   userInitials: string;
   avatarUrl: string | null;
-  isMobile: boolean;
 }
 
 /**
  * Header avatar with dropdown menu.
  * Links to profile and sign out.
+ * Mobile: plain link to profile page. Desktop: dropdown menu.
+ * Both variants are always rendered (CSS visibility) to avoid hydration mismatches.
  */
-export function AvatarMenu({ userName, userEmail, userInitials, avatarUrl, isMobile }: AvatarMenuProps) {
+export function AvatarMenu({ userName, userEmail, userInitials, avatarUrl }: AvatarMenuProps) {
   const router = useRouter();
 
   const avatarElement = (
@@ -41,47 +43,47 @@ export function AvatarMenu({ userName, userEmail, userInitials, avatarUrl, isMob
     </Avatar>
   );
 
-  // Mobile: navigate to profile page
-  if (isMobile) {
-    return (
-      <Link
-        href="/profile"
-        className="rounded-full ring-offset-background transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-      >
+  const ringClassName =
+    "rounded-full ring-offset-background transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
+
+  return (
+    <>
+      {/* Mobile: navigate to profile page */}
+      <Link href="/profile" className={`${ringClassName} md:hidden`}>
         {avatarElement}
       </Link>
-    );
-  }
 
-  // Desktop: dropdown menu
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="rounded-full ring-offset-background transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer">
-        {avatarElement}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" sideOffset={8}>
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-semibold leading-none">{userName}</p>
-              <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
-            </div>
-          </DropdownMenuLabel>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={() => router.push("/profile")}
-        >
-          <UserCircle weight="regular" className="mr-2 h-4 w-4" />
-          {header.profile}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive" className="cursor-pointer">
-          <SignOut weight="bold" className="mr-2 h-4 w-4" />
-          {header.signOut}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      {/* Desktop: dropdown menu */}
+      <div className="hidden md:block">
+        <DropdownMenu>
+          <DropdownMenuTrigger className={`${ringClassName} cursor-pointer`}>
+            {avatarElement}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" sideOffset={8}>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-semibold leading-none">{userName}</p>
+                  <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
+                </div>
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => router.push("/profile")}
+            >
+              <UserCircle weight="regular" className="mr-2 h-4 w-4" />
+              {header.profile}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" className="cursor-pointer" onClick={() => signOut()}>
+              <SignOut weight="bold" className="mr-2 h-4 w-4" />
+              {header.signOut}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </>
   );
 }

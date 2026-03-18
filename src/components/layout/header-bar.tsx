@@ -3,7 +3,6 @@
 import { UsersThree } from "@phosphor-icons/react/dist/ssr";
 import { NotificationBell } from "./notification-bell";
 import { AvatarMenu } from "./avatar-menu";
-import { useIsMobile } from "@/hooks/use-is-mobile";
 import type { Notification } from "@/components/notifications/notification-item";
 
 interface HeaderBarProps {
@@ -29,8 +28,6 @@ export function HeaderBar({
   notifications,
   unreadNotificationCount,
 }: HeaderBarProps) {
-  const isMobile = useIsMobile();
-
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background px-5 md:px-8 pt-[env(safe-area-inset-top)]">
       {/* Left: team logo (mobile only — sidebar has brand on desktop) */}
@@ -48,14 +45,12 @@ export function HeaderBar({
         <NotificationBell
           notifications={notifications}
           unreadCount={unreadNotificationCount}
-          isMobile={isMobile}
         />
         <AvatarMenu
           userName={userName}
           userEmail={userEmail}
           userInitials={userInitials}
           avatarUrl={avatarUrl}
-          isMobile={isMobile}
         />
       </div>
     </header>

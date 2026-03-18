@@ -6,6 +6,7 @@ import {
   Users,
   Mountains,
   CloudRain,
+  ArrowsClockwise,
 } from "@phosphor-icons/react/dist/ssr";
 import { Badge } from "@/components/ui/badge";
 import { appContent } from "@/content/app";
@@ -41,6 +42,9 @@ export function RideCard({ ride }: RideCardProps) {
           <span className="text-sm text-muted-foreground tabular-nums">
             {ride.start_time.slice(0, 5)}
           </span>
+          {ride.template_id && (
+            <ArrowsClockwise weight="bold" className="h-3.5 w-3.5 text-muted-foreground/50" />
+          )}
           {ride.status === "weather_watch" && (
             <Badge variant="outline" className="text-warning border-warning/50 gap-1">
               <CloudRain weight="fill" className="h-3.5 w-3.5" />

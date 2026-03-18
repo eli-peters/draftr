@@ -1,7 +1,8 @@
 import { formatDistanceToNow } from "date-fns";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { appContent } from "@/content/app";
+import { getInitials } from "@/lib/utils";
 
 const { rides: ridesContent } = appContent;
 
@@ -47,16 +48,12 @@ export function SignupRoster({ signups }: SignupRosterProps) {
 }
 
 function SignupRow({ signup }: { signup: SignupEntry }) {
-  const initials = signup.user_name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  const initials = getInitials(signup.user_name);
 
   return (
     <div className="flex items-center gap-3 rounded-lg px-2 py-2">
       <Avatar className="h-8 w-8">
+        {signup.avatar_url && <AvatarImage src={signup.avatar_url} alt={signup.user_name} />}
         <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
           {initials}
         </AvatarFallback>

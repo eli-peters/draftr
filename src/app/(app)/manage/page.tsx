@@ -7,21 +7,22 @@ import {
   MapPin,
   CaretRight,
   CloudRain,
-  DotsThreeOutline,
+  ArrowsClockwise,
   Bicycle,
   UsersThree,
   ChartLineUp,
 } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { getUserClubMembership, getLeaderRides } from "@/lib/rides/queries";
-import { getClubMembers, getClubStats } from "@/lib/manage/queries";
+import { getClubMembers, getClubStats, getClubAnnouncements } from "@/lib/manage/queries";
 import { createClient } from "@/lib/supabase/server";
 import { InviteMemberDialog } from "@/components/manage/invite-member-dialog";
+import { MemberList } from "@/components/manage/member-list";
+import { AnnouncementsPanel } from "@/components/manage/announcements-panel";
+import { SeasonDatesCard } from "@/components/manage/season-dates-card";
 import { appContent } from "@/content/app";
-import { getInitials } from "@/lib/utils";
 import type { UserRole } from "@/config/navigation";
 
 const { manage: content, rides: ridesContent } = appContent;
@@ -33,6 +34,7 @@ interface ManageRideData {
   start_time: string;
   status: string;
   capacity: number | null;
+  template_id: string | null;
   meeting_location_name: string | null;
   signup_count: number;
   created_by_name: string | null;
@@ -49,6 +51,9 @@ function ManageRideItem({ ride }: { ride: ManageRideData }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="text-base font-bold text-foreground truncate">{ride.title}</h3>
+              {ride.template_id && (
+                <ArrowsClockwise weight="bold" className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+              )}
               {ride.status === "weather_watch" && (
                 <Badge variant="outline" className="shrink-0 text-warning border-warning/50 text-sm gap-1">
                   <CloudRain weight="fill" className="h-3.5 w-3.5" />{ridesContent.status.weatherWatch}
@@ -86,47 +91,6 @@ function ManageRideItem({ ride }: { ride: ManageRideData }) {
   );
 }
 
-interface MemberData {
-  user_id: string;
-  full_name: string;
-  display_name: string | null;
-  email: string;
-  role: string;
-  status: string;
-}
-
-function MemberRow({ member }: { member: MemberData }) {
-  const name = member.display_name ?? member.full_name;
-  const initials = getInitials(member.full_name);
-  const roleKey = member.role as keyof typeof content.members.roles;
-
-  return (
-    <div className="rounded-xl border border-border bg-card p-4 mb-2">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-9 w-9">
-            <AvatarFallback className="text-sm font-medium bg-primary/10 text-primary">{initials}</AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="text-base font-medium text-foreground">{name}</p>
-            <p className="text-sm text-muted-foreground">{member.email}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {member.status === "pending" ? (
-            <Badge variant="outline" className="text-sm border-warning/50 text-warning">{content.members.status.pending}</Badge>
-          ) : (
-            <span className="text-sm font-medium text-muted-foreground">{content.members.roles[roleKey] ?? member.role}</span>
-          )}
-          <button className="p-1.5 text-muted-foreground/40 hover:text-foreground transition-colors">
-            <DotsThreeOutline weight="fill" className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default async function ManagePage() {
   const membership = await getUserClubMembership();
   if (!membership) redirect("/sign-in");
@@ -138,18 +102,26 @@ export default async function ManagePage() {
   const userRole = membership.role as UserRole;
   const isAdmin = userRole === "admin";
 
-  // Fetch all data in parallel
-  const [rides, members, stats] = await Promise.all([
+  // Fetch club settings for season dates
+  const { data: club } = await supabase
+    .from("clubs")
+    .select("settings")
+    .eq("id", membership.club_id)
+    .single();
+  const clubSettings = (club?.settings ?? {}) as Record<string, string>;
+
+  const [rides, members, stats, announcements] = await Promise.all([
     getLeaderRides(user.id, membership.club_id, isAdmin),
     isAdmin ? getClubMembers(membership.club_id) : Promise.resolve([]),
     isAdmin ? getClubStats(membership.club_id) : Promise.resolve(null),
+    isAdmin ? getClubAnnouncements(membership.club_id) : Promise.resolve([]),
   ]);
 
   const today = new Date().toISOString().split("T")[0];
   const upcomingRides = rides.filter((r) => r.ride_date >= today && r.status !== "cancelled");
   const pastRides = rides.filter((r) => r.ride_date < today || r.status === "cancelled");
 
-  const ridesContent = (
+  const ridesTab = (
     <div className="mt-4">
       <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{content.rides.upcoming}</h2>
       {upcomingRides.length === 0 ? (
@@ -159,7 +131,6 @@ export default async function ManagePage() {
           {upcomingRides.map((ride) => <ManageRideItem key={ride.id} ride={ride} />)}
         </div>
       )}
-
       {pastRides.length > 0 && (
         <>
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-8">{content.rides.past}</h2>
@@ -213,24 +184,40 @@ export default async function ManagePage() {
           <TabsList variant="line" className="w-full">
             <TabsTrigger value="rides">{content.sections.rides}</TabsTrigger>
             <TabsTrigger value="members">{content.sections.members}</TabsTrigger>
+            <TabsTrigger value="announcements">{content.announcements.heading}</TabsTrigger>
+            <TabsTrigger value="club">{content.sections.club}</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="rides">{ridesContent}</TabsContent>
+          <TabsContent value="rides">{ridesTab}</TabsContent>
 
           <TabsContent value="members">
             <div className="mt-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <p className="text-sm text-muted-foreground font-medium">{content.members.totalMembers(members.length)}</p>
                 <InviteMemberDialog clubId={membership.club_id} />
               </div>
-              <div className="mt-3">
-                {members.map((member) => <MemberRow key={member.user_id} member={member} />)}
-              </div>
+              <MemberList members={members} clubId={membership.club_id} currentUserId={user.id} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="announcements">
+            <div className="mt-4">
+              <AnnouncementsPanel announcements={announcements} clubId={membership.club_id} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="club">
+            <div className="mt-4">
+              <SeasonDatesCard
+                clubId={membership.club_id}
+                seasonStart={clubSettings.season_start ?? ""}
+                seasonEnd={clubSettings.season_end ?? ""}
+              />
             </div>
           </TabsContent>
         </Tabs>
       ) : (
-        <div className="mt-6">{ridesContent}</div>
+        <div className="mt-6">{ridesTab}</div>
       )}
     </div>
   );
