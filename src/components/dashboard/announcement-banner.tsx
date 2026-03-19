@@ -37,9 +37,7 @@ export function AnnouncementBanner({ announcement }: AnnouncementBannerProps) {
             {announcement.body}
           </p>
           {announcement.created_by_name && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              — {announcement.created_by_name}
-            </p>
+            <p className="mt-2 text-xs text-muted-foreground">— {announcement.created_by_name}</p>
           )}
         </div>
       </div>

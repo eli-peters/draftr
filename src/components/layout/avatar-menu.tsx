@@ -1,9 +1,11 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { SignOut, UserCircle } from "@phosphor-icons/react";
-import { signOut } from "@/lib/auth/actions";
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { SignOut, UserCircle } from '@phosphor-icons/react';
+import { signOut } from '@/lib/auth/actions';
+import { routes } from '@/config/routes';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,9 +14,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { appContent } from "@/content/app";
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { appContent } from '@/content/app';
 
 const { header } = appContent;
 
@@ -33,6 +35,9 @@ interface AvatarMenuProps {
  */
 export function AvatarMenu({ userName, userEmail, userInitials, avatarUrl }: AvatarMenuProps) {
   const router = useRouter();
+  // Defer Base UI menu to client-only to prevent hydration ID mismatch
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const avatarElement = (
     <Avatar className="h-9 w-9">
@@ -44,46 +49,52 @@ export function AvatarMenu({ userName, userEmail, userInitials, avatarUrl }: Ava
   );
 
   const ringClassName =
-    "rounded-full ring-offset-background transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
+    'rounded-full ring-offset-background transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
   return (
     <>
       {/* Mobile: navigate to profile page */}
-      <Link href="/profile" className={`${ringClassName} md:hidden`}>
+      <Link href={routes.profile} className={`${ringClassName} md:hidden`}>
         {avatarElement}
       </Link>
 
-      {/* Desktop: dropdown menu */}
-      <div className="hidden md:block">
-        <DropdownMenu>
-          <DropdownMenuTrigger className={`${ringClassName} cursor-pointer`}>
-            {avatarElement}
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" sideOffset={8}>
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-semibold leading-none">{userName}</p>
-                  <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
-                </div>
-              </DropdownMenuLabel>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => router.push("/profile")}
-            >
-              <UserCircle weight="regular" className="mr-2 h-4 w-4" />
-              {header.profile}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" className="cursor-pointer" onClick={() => signOut()}>
-              <SignOut weight="bold" className="mr-2 h-4 w-4" />
-              {header.signOut}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      {/* Desktop: dropdown menu (client-only to avoid Base UI hydration ID mismatch) */}
+      {mounted && (
+        <div className="hidden md:block">
+          <DropdownMenu>
+            <DropdownMenuTrigger className={`${ringClassName} cursor-pointer`}>
+              {avatarElement}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" sideOffset={8}>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-semibold leading-none">{userName}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
+                  </div>
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => router.push(routes.profile)}
+              >
+                <UserCircle weight="regular" className="mr-2 h-4 w-4" />
+                {header.profile}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                className="cursor-pointer"
+                onClick={() => signOut()}
+              >
+                <SignOut weight="bold" className="mr-2 h-4 w-4" />
+                {header.signOut}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
     </>
   );
 }

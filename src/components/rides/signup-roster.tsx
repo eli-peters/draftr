@@ -1,8 +1,9 @@
-import { formatDistanceToNow } from "date-fns";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { appContent } from "@/content/app";
-import { getInitials } from "@/lib/utils";
+import { formatDistanceToNow } from 'date-fns';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { appContent } from '@/content/app';
+import { getInitials } from '@/lib/utils';
+import { SignupStatus } from '@/config/statuses';
 
 const { rides: ridesContent } = appContent;
 
@@ -23,12 +24,16 @@ interface SignupRosterProps {
 export function SignupRoster({ signups }: SignupRosterProps) {
   if (signups.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground py-4 text-center">{ridesContent.roster.noSignups}</p>
+      <p className="text-sm text-muted-foreground py-4 text-center">
+        {ridesContent.roster.noSignups}
+      </p>
     );
   }
 
-  const confirmed = signups.filter((s) => s.status === "confirmed" || s.status === "checked_in");
-  const waitlisted = signups.filter((s) => s.status === "waitlisted");
+  const confirmed = signups.filter(
+    (s) => s.status === SignupStatus.CONFIRMED || s.status === SignupStatus.CHECKED_IN,
+  );
+  const waitlisted = signups.filter((s) => s.status === SignupStatus.WAITLISTED);
 
   return (
     <div className="space-y-1">
@@ -37,7 +42,9 @@ export function SignupRoster({ signups }: SignupRosterProps) {
       ))}
       {waitlisted.length > 0 && (
         <>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-3 pb-1">{ridesContent.roster.waitlisted}</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-3 pb-1">
+            {ridesContent.roster.waitlisted}
+          </p>
           {waitlisted.map((signup) => (
             <SignupRow key={signup.id} signup={signup} />
           ))}
@@ -66,8 +73,8 @@ function SignupRow({ signup }: { signup: SignupEntry }) {
           </p>
         )}
       </div>
-      {signup.status === "waitlisted" && signup.waitlist_position != null && (
-        <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">
+      {signup.status === SignupStatus.WAITLISTED && signup.waitlist_position != null && (
+        <Badge variant="warning" className="text-xs">
           #{signup.waitlist_position}
         </Badge>
       )}

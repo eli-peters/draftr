@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from 'date-fns';
 import {
   CloudRain,
   CalendarCheck,
@@ -8,8 +8,8 @@ import {
   ArrowCircleUp,
   Megaphone,
   Info,
-} from "@phosphor-icons/react";
-import { appContent } from "@/content/app";
+} from '@phosphor-icons/react';
+import { appContent } from '@/content/app';
 
 export type NotificationType = keyof typeof appContent.notifications.types;
 
@@ -33,12 +33,12 @@ export const notificationIcons: Record<NotificationType, React.ElementType> = {
 };
 
 export const notificationStyles: Record<NotificationType, string> = {
-  ride_update: "text-primary bg-primary/10",
-  ride_cancelled: "text-destructive bg-destructive/10",
-  weather_watch: "text-warning bg-warning/10",
-  signup_confirmed: "text-success bg-success/10",
-  waitlist_promoted: "text-primary bg-primary/10",
-  announcement: "text-foreground bg-muted",
+  ride_update: 'text-primary bg-primary/10',
+  ride_cancelled: 'text-destructive bg-destructive/10',
+  weather_watch: 'text-warning bg-warning/10',
+  signup_confirmed: 'text-success bg-success/10',
+  waitlist_promoted: 'text-primary bg-primary/10',
+  announcement: 'text-foreground bg-muted',
 };
 
 interface NotificationItemProps {
@@ -58,20 +58,22 @@ export function NotificationItem({ notification, compact }: NotificationItemProp
   return (
     <div
       className={`flex gap-3 transition-all duration-200 ${
-        compact ? "px-3 py-2.5" : ""
-      } ${notification.is_read ? "opacity-50" : ""}`}
+        compact ? 'px-3 py-2.5' : ''
+      } ${notification.is_read ? 'opacity-muted' : ''}`}
     >
       {/* Icon */}
-      <div className={`flex ${compact ? "h-7 w-7" : "h-10 w-10"} shrink-0 items-center justify-center rounded-xl ${iconStyle}`}>
-        <Icon weight="fill" className={compact ? "h-3.5 w-3.5" : "h-4.5 w-4.5"} />
+      <div
+        className={`flex ${compact ? 'h-7 w-7' : 'h-10 w-10'} shrink-0 items-center justify-center rounded-xl ${iconStyle}`}
+      >
+        <Icon weight="fill" className={compact ? 'h-3.5 w-3.5' : 'h-4.5 w-4.5'} />
       </div>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <h3
-            className={`${compact ? "text-xs" : "text-sm"} leading-tight ${
-              notification.is_read ? "font-medium text-foreground" : "font-semibold text-foreground"
+            className={`${compact ? 'text-xs' : 'text-sm'} leading-tight ${
+              notification.is_read ? 'font-medium text-foreground' : 'font-semibold text-foreground'
             }`}
           >
             {notification.title}
@@ -81,11 +83,13 @@ export function NotificationItem({ notification, compact }: NotificationItemProp
           )}
         </div>
         {!compact && notification.body && (
-          <p className="mt-1 text-[0.8rem] text-muted-foreground leading-relaxed">
+          <p className="mt-1 text-compact text-muted-foreground leading-relaxed">
             {notification.body}
           </p>
         )}
-        <p className={`${compact ? "mt-1" : "mt-2"} text-xs font-medium uppercase tracking-wide text-muted-foreground/70`}>
+        <p
+          className={`${compact ? 'mt-1' : 'mt-2'} text-xs font-medium uppercase tracking-wide text-muted-foreground/70`}
+        >
           {timeAgo}
         </p>
       </div>

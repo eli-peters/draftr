@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { MagnifyingGlass } from '@phosphor-icons/react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { appContent } from '@/content/app';
@@ -14,6 +15,7 @@ import {
   reactivateMember,
   approveMember,
 } from '@/lib/manage/actions';
+import { MemberStatus } from '@/config/statuses';
 import type { MemberRole } from '@/types/database';
 
 const { manage: content } = appContent;
@@ -40,9 +42,6 @@ const roleOptions: { value: MemberRole; label: string }[] = [
   { value: 'admin', label: content.members.roles.admin },
 ];
 
-const selectClass =
-  'flex h-8 rounded-md border border-input bg-background px-2 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
-
 export function MemberList({ members, clubId, currentUserId }: MemberListProps) {
   const [search, setSearch] = useState('');
   const [isPending, startTransition] = useTransition();
@@ -57,9 +56,9 @@ export function MemberList({ members, clubId, currentUserId }: MemberListProps) 
     );
   });
 
-  const pending = filtered.filter((m) => m.status === 'pending');
-  const active = filtered.filter((m) => m.status === 'active');
-  const inactive = filtered.filter((m) => m.status === 'inactive');
+  const pending = filtered.filter((m) => m.status === MemberStatus.PENDING);
+  const active = filtered.filter((m) => m.status === MemberStatus.ACTIVE);
+  const inactive = filtered.filter((m) => m.status === MemberStatus.INACTIVE);
 
   function handleRoleChange(userId: string, newRole: MemberRole) {
     startTransition(async () => {
@@ -86,7 +85,7 @@ export function MemberList({ members, clubId, currentUserId }: MemberListProps) 
   }
 
   return (
-    <div className={isPending ? 'opacity-60 pointer-events-none' : ''}>
+    <div className={isPending ? 'opacity-pending pointer-events-none' : ''}>
       {/* Search */}
       <div className="relative mb-4">
         <MagnifyingGlass
@@ -171,12 +170,14 @@ function MemberRow({
 }) {
   const name = member.display_name ?? member.full_name;
   const initials = getInitials(member.full_name);
-  const isInactive = member.status === 'inactive';
-  const isPending = member.status === 'pending';
+  const isInactive = member.status === MemberStatus.INACTIVE;
+  const isPending = member.status === MemberStatus.PENDING;
   const roleKey = member.role as keyof typeof content.members.roles;
 
   return (
-    <div className={`rounded-xl border border-border bg-card p-4 mb-2 ${isInactive ? 'opacity-50' : ''}`}>
+    <div
+      className={`rounded-xl border border-border bg-card p-4 mb-2 ${isInactive ? 'opacity-muted' : ''}`}
+    >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <Avatar className="h-9 w-9 shrink-0">
@@ -198,17 +199,17 @@ function MemberRow({
           )}
 
           {!isInactive && !isPending && onRoleChange && !isSelf && (
-            <select
+            <Select
               value={member.role}
               onChange={(e) => onRoleChange(member.user_id, e.target.value as MemberRole)}
-              className={selectClass}
+              selectSize="sm"
             >
               {roleOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
               ))}
-            </select>
+            </Select>
           )}
 
           {!isInactive && !isPending && isSelf && (
@@ -218,28 +219,19 @@ function MemberRow({
           )}
 
           {isPending && (
-            <Badge variant="outline" className="text-sm border-warning/50 text-warning">
+            <Badge variant="warning" className="text-sm">
               {content.members.status.pending}
             </Badge>
           )}
 
           {!isInactive && !isPending && onDeactivate && !isSelf && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-destructive hover:text-destructive"
-              onClick={() => onDeactivate(member.user_id)}
-            >
+            <Button variant="destructive" size="sm" onClick={() => onDeactivate(member.user_id)}>
               {content.memberActions.deactivate}
             </Button>
           )}
 
           {isInactive && onReactivate && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onReactivate(member.user_id)}
-            >
+            <Button variant="outline" size="sm" onClick={() => onReactivate(member.user_id)}>
               {content.memberActions.reactivate}
             </Button>
           )}

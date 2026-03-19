@@ -1,43 +1,41 @@
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
-import { appContent } from "@/content/app";
-import type { MemberRole, MemberStatus } from "@/types/database";
+import { revalidatePath } from 'next/cache';
+import { createClient } from '@/lib/supabase/server';
+import { appContent } from '@/content/app';
+import type { MemberRole, MemberStatus } from '@/types/database';
 
 const { common, errors } = appContent;
 
 /**
  * Update a club member's role.
  */
-export async function updateMemberRole(
-  clubId: string,
-  userId: string,
-  newRole: MemberRole,
-) {
+export async function updateMemberRole(clubId: string, userId: string, newRole: MemberRole) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: common.notAuthenticated };
 
   // Prevent self-demotion
   if (user.id === userId) return { error: errors.cannotDeactivateSelf };
 
   // Prevent demoting the last admin
-  if (newRole !== "admin") {
+  if (newRole !== 'admin') {
     const { data: currentMembership } = await supabase
-      .from("club_memberships")
-      .select("role")
-      .eq("club_id", clubId)
-      .eq("user_id", userId)
+      .from('club_memberships')
+      .select('role')
+      .eq('club_id', clubId)
+      .eq('user_id', userId)
       .single();
 
-    if (currentMembership?.role === "admin") {
+    if (currentMembership?.role === 'admin') {
       const { count } = await supabase
-        .from("club_memberships")
-        .select("*", { count: "exact", head: true })
-        .eq("club_id", clubId)
-        .eq("role", "admin")
-        .eq("status", "active");
+        .from('club_memberships')
+        .select('*', { count: 'exact', head: true })
+        .eq('club_id', clubId)
+        .eq('role', 'admin')
+        .eq('status', 'active');
 
       if ((count ?? 0) <= 1) {
         return { error: errors.lastAdmin };
@@ -46,14 +44,14 @@ export async function updateMemberRole(
   }
 
   const { error } = await supabase
-    .from("club_memberships")
+    .from('club_memberships')
     .update({ role: newRole })
-    .eq("club_id", clubId)
-    .eq("user_id", userId);
+    .eq('club_id', clubId)
+    .eq('user_id', userId);
 
   if (error) return { error: error.message };
 
-  revalidatePath("/manage");
+  revalidatePath('/manage');
   return { success: true };
 }
 
@@ -62,21 +60,23 @@ export async function updateMemberRole(
  */
 export async function deactivateMember(clubId: string, userId: string) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: common.notAuthenticated };
 
   // Prevent self-deactivation
   if (user.id === userId) return { error: errors.cannotDeactivateSelf };
 
   const { error } = await supabase
-    .from("club_memberships")
-    .update({ status: "inactive" as MemberStatus })
-    .eq("club_id", clubId)
-    .eq("user_id", userId);
+    .from('club_memberships')
+    .update({ status: 'inactive' as MemberStatus })
+    .eq('club_id', clubId)
+    .eq('user_id', userId);
 
   if (error) return { error: error.message };
 
-  revalidatePath("/manage");
+  revalidatePath('/manage');
   return { success: true };
 }
 
@@ -85,18 +85,20 @@ export async function deactivateMember(clubId: string, userId: string) {
  */
 export async function reactivateMember(clubId: string, userId: string) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: common.notAuthenticated };
 
   const { error } = await supabase
-    .from("club_memberships")
-    .update({ status: "active" as MemberStatus })
-    .eq("club_id", clubId)
-    .eq("user_id", userId);
+    .from('club_memberships')
+    .update({ status: 'active' as MemberStatus })
+    .eq('club_id', clubId)
+    .eq('user_id', userId);
 
   if (error) return { error: error.message };
 
-  revalidatePath("/manage");
+  revalidatePath('/manage');
   return { success: true };
 }
 
@@ -115,11 +117,13 @@ export async function createAnnouncement(
   data: { title: string; body: string; is_pinned?: boolean },
 ) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: common.notAuthenticated };
 
   const { data: announcement, error } = await supabase
-    .from("announcements")
+    .from('announcements')
     .insert({
       club_id: clubId,
       created_by: user.id,
@@ -127,37 +131,37 @@ export async function createAnnouncement(
       body: data.body,
       is_pinned: data.is_pinned ?? false,
     })
-    .select("id")
+    .select('id')
     .single();
 
   if (error) return { error: error.message };
 
   // Notify all club members
   const { data: members } = await supabase
-    .from("club_memberships")
-    .select("user_id")
-    .eq("club_id", clubId)
-    .eq("status", "active");
+    .from('club_memberships')
+    .select('user_id')
+    .eq('club_id', clubId)
+    .eq('status', 'active');
 
   if (members && members.length > 0) {
     const notifications = members
       .filter((m) => m.user_id !== user.id)
       .map((m) => ({
         user_id: m.user_id,
-        type: "announcement",
+        type: 'announcement',
         title: data.title,
         body: data.body.slice(0, 200),
         ride_id: null,
-        channel: "push",
+        channel: 'push',
       }));
 
     if (notifications.length > 0) {
-      await supabase.from("notifications").insert(notifications);
+      await supabase.from('notifications').insert(notifications);
     }
   }
 
-  revalidatePath("/manage");
-  revalidatePath("/notifications");
+  revalidatePath('/manage');
+  revalidatePath('/notifications');
   return { success: true, id: announcement?.id };
 }
 
@@ -169,21 +173,23 @@ export async function updateAnnouncement(
   data: { title: string; body: string; is_pinned?: boolean },
 ) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: common.notAuthenticated };
 
   const { error } = await supabase
-    .from("announcements")
+    .from('announcements')
     .update({
       title: data.title,
       body: data.body,
       is_pinned: data.is_pinned ?? false,
     })
-    .eq("id", announcementId);
+    .eq('id', announcementId);
 
   if (error) return { error: error.message };
 
-  revalidatePath("/manage");
+  revalidatePath('/manage');
   return { success: true };
 }
 
@@ -192,46 +198,51 @@ export async function updateAnnouncement(
  */
 export async function deleteAnnouncement(announcementId: string) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: common.notAuthenticated };
 
-  const { error } = await supabase
-    .from("announcements")
-    .delete()
-    .eq("id", announcementId);
+  const { error } = await supabase.from('announcements').delete().eq('id', announcementId);
 
   if (error) return { error: error.message };
 
-  revalidatePath("/manage");
+  revalidatePath('/manage');
   return { success: true };
 }
 
 /**
  * Toggle pin on an announcement.
  */
-export async function toggleAnnouncementPin(announcementId: string, isPinned: boolean, clubId: string) {
+export async function toggleAnnouncementPin(
+  announcementId: string,
+  isPinned: boolean,
+  clubId: string,
+) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: common.notAuthenticated };
 
   // Enforce one-pinned-max: unpin all others in this club first
   if (isPinned) {
     await supabase
-      .from("announcements")
+      .from('announcements')
       .update({ is_pinned: false })
-      .eq("club_id", clubId)
-      .eq("is_pinned", true);
+      .eq('club_id', clubId)
+      .eq('is_pinned', true);
   }
 
   const { error } = await supabase
-    .from("announcements")
+    .from('announcements')
     .update({ is_pinned: isPinned })
-    .eq("id", announcementId);
+    .eq('id', announcementId);
 
   if (error) return { error: error.message };
 
-  revalidatePath("/manage");
-  revalidatePath("/");
+  revalidatePath('/manage');
+  revalidatePath('/');
   return { success: true };
 }
 
@@ -241,20 +252,18 @@ export async function toggleAnnouncementPin(announcementId: string, isPinned: bo
  */
 export async function updateSeasonDates(clubId: string, seasonStart: string, seasonEnd: string) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: common.notAuthenticated };
 
   // Fetch existing settings and merge
-  const { data: club } = await supabase
-    .from("clubs")
-    .select("settings")
-    .eq("id", clubId)
-    .single();
+  const { data: club } = await supabase.from('clubs').select('settings').eq('id', clubId).single();
 
   const existingSettings = (club?.settings ?? {}) as Record<string, unknown>;
 
   const { error } = await supabase
-    .from("clubs")
+    .from('clubs')
     .update({
       settings: {
         ...existingSettings,
@@ -262,11 +271,11 @@ export async function updateSeasonDates(clubId: string, seasonStart: string, sea
         season_end: seasonEnd || null,
       },
     })
-    .eq("id", clubId);
+    .eq('id', clubId);
 
   if (error) return { error: error.message };
 
-  revalidatePath("/manage");
+  revalidatePath('/manage');
   return { success: true };
 }
 
@@ -292,11 +301,13 @@ export async function createRecurringRide(
   },
 ) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: common.notAuthenticated };
 
   const { data: template, error } = await supabase
-    .from("ride_templates")
+    .from('ride_templates')
     .insert({
       club_id: clubId,
       created_by: user.id,
@@ -314,7 +325,7 @@ export async function createRecurringRide(
       default_capacity: data.default_capacity ?? null,
       is_drop_ride: data.is_drop_ride ?? false,
     })
-    .select("id")
+    .select('id')
     .single();
 
   if (error) return { error: error.message };
@@ -324,9 +335,9 @@ export async function createRecurringRide(
     await generateRidesFromRecurring(template.id);
   }
 
-  revalidatePath("/manage");
-  revalidatePath("/rides");
-  revalidatePath("/");
+  revalidatePath('/manage');
+  revalidatePath('/rides');
+  revalidatePath('/');
   return { success: true };
 }
 
@@ -334,7 +345,7 @@ export async function createRecurringRide(
  * Parse a YYYY-MM-DD string into a local Date (avoids UTC timezone shift).
  */
 function parseLocalDate(dateStr: string): Date {
-  const [y, m, d] = dateStr.split("-").map(Number);
+  const [y, m, d] = dateStr.split('-').map(Number);
   return new Date(y, m - 1, d);
 }
 
@@ -343,8 +354,8 @@ function parseLocalDate(dateStr: string): Date {
  */
 function formatLocalDate(date: Date): string {
   const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
 }
 
@@ -354,13 +365,15 @@ function formatLocalDate(date: Date): string {
  */
 export async function generateRidesFromRecurring(templateId: string) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: common.notAuthenticated };
 
   const { data: template } = await supabase
-    .from("ride_templates")
-    .select("*")
-    .eq("id", templateId)
+    .from('ride_templates')
+    .select('*')
+    .eq('id', templateId)
     .single();
 
   if (!template || !template.recurrence || template.day_of_week == null) {
@@ -376,7 +389,9 @@ export async function generateRidesFromRecurring(templateId: string) {
   windowEnd.setDate(windowEnd.getDate() + maxWeeks * 7);
 
   // Respect season bounds
-  const seasonStart = template.season_start_date ? parseLocalDate(template.season_start_date) : today;
+  const seasonStart = template.season_start_date
+    ? parseLocalDate(template.season_start_date)
+    : today;
   const seasonEnd = template.season_end_date ? parseLocalDate(template.season_end_date) : windowEnd;
 
   // Respect end_date on template (Outlook "end on date")
@@ -393,10 +408,10 @@ export async function generateRidesFromRecurring(templateId: string) {
 
   // Count existing rides from this template (for "end after X occurrences")
   const { count: existingTotal } = await supabase
-    .from("rides")
-    .select("*", { count: "exact", head: true })
-    .eq("template_id", templateId)
-    .neq("status", "cancelled");
+    .from('rides')
+    .select('*', { count: 'exact', head: true })
+    .eq('template_id', templateId)
+    .neq('status', 'cancelled');
 
   const maxOccurrences = template.end_after_occurrences ?? Infinity;
   let remainingSlots = maxOccurrences - (existingTotal ?? 0);
@@ -404,12 +419,12 @@ export async function generateRidesFromRecurring(templateId: string) {
 
   // Find existing ride dates to deduplicate
   const { data: existingRides } = await supabase
-    .from("rides")
-    .select("ride_date")
-    .eq("template_id", templateId)
-    .neq("status", "cancelled")
-    .gte("ride_date", startStr)
-    .lte("ride_date", endStr);
+    .from('rides')
+    .select('ride_date')
+    .eq('template_id', templateId)
+    .neq('status', 'cancelled')
+    .gte('ride_date', startStr)
+    .lte('ride_date', endStr);
 
   const existingDates = new Set((existingRides ?? []).map((r) => r.ride_date));
 
@@ -430,14 +445,14 @@ export async function generateRidesFromRecurring(templateId: string) {
     }
 
     // Advance cursor based on recurrence type
-    if (template.recurrence === "monthly") {
+    if (template.recurrence === 'monthly') {
       cursor.setMonth(cursor.getMonth() + 1);
       // Keep same day-of-week within the month
       while (cursor.getDay() !== template.day_of_week) {
         cursor.setDate(cursor.getDate() + 1);
       }
     } else {
-      const increment = template.recurrence === "biweekly" ? 14 : 7;
+      const increment = template.recurrence === 'biweekly' ? 14 : 7;
       cursor.setDate(cursor.getDate() + increment);
     }
   }
@@ -459,21 +474,21 @@ export async function generateRidesFromRecurring(templateId: string) {
     distance_km: template.default_distance_km,
     capacity: template.default_capacity,
     is_drop_ride: template.is_drop_ride,
-    status: "scheduled",
+    status: 'scheduled',
     template_id: template.id,
   }));
 
-  await supabase.from("rides").insert(rides);
+  await supabase.from('rides').insert(rides);
 
   // Update last_generated_date
   await supabase
-    .from("ride_templates")
+    .from('ride_templates')
     .update({ last_generated_date: formatLocalDate(new Date()) })
-    .eq("id", templateId);
+    .eq('id', templateId);
 
-  revalidatePath("/manage");
-  revalidatePath("/rides");
-  revalidatePath("/");
+  revalidatePath('/manage');
+  revalidatePath('/rides');
+  revalidatePath('/');
   return { success: true, count: datesToCreate.length };
 }
 
@@ -482,17 +497,19 @@ export async function generateRidesFromRecurring(templateId: string) {
  */
 export async function toggleRecurringRide(templateId: string, isActive: boolean) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: common.notAuthenticated };
 
   const { error } = await supabase
-    .from("ride_templates")
+    .from('ride_templates')
     .update({ is_active: isActive })
-    .eq("id", templateId);
+    .eq('id', templateId);
 
   if (error) return { error: error.message };
 
-  revalidatePath("/manage");
+  revalidatePath('/manage');
   return { success: true };
 }
 
@@ -501,27 +518,26 @@ export async function toggleRecurringRide(templateId: string, isActive: boolean)
  */
 export async function deleteRecurringRide(templateId: string) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: common.notAuthenticated };
 
   // Delete future unmodified rides from this template (no signups)
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split('T')[0];
   await supabase
-    .from("rides")
+    .from('rides')
     .delete()
-    .eq("template_id", templateId)
-    .gte("ride_date", today)
-    .eq("status", "scheduled");
+    .eq('template_id', templateId)
+    .gte('ride_date', today)
+    .eq('status', 'scheduled');
 
-  const { error } = await supabase
-    .from("ride_templates")
-    .delete()
-    .eq("id", templateId);
+  const { error } = await supabase.from('ride_templates').delete().eq('id', templateId);
 
   if (error) return { error: error.message };
 
-  revalidatePath("/manage");
-  revalidatePath("/rides");
-  revalidatePath("/");
+  revalidatePath('/manage');
+  revalidatePath('/rides');
+  revalidatePath('/');
   return { success: true };
 }

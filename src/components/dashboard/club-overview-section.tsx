@@ -1,13 +1,8 @@
 'use client';
 
-import {
-  Bicycle,
-  UsersThree,
-  ChartLineUp,
-  TrendUp,
-} from "@phosphor-icons/react";
-import { appContent } from "@/content/app";
-import { StatsGrid } from "./stats-grid";
+import { Bicycle, UsersThree, ChartLineUp, TrendUp } from '@phosphor-icons/react';
+import { appContent } from '@/content/app';
+import { StatsGrid } from './stats-grid';
 
 const { dashboard: dashContent, manage: manageContent } = appContent;
 
@@ -20,8 +15,16 @@ const mockClubStats = {
 
 const clubStatItems = [
   { label: manageContent.stats.totalRides, value: mockClubStats.totalRides, icon: Bicycle },
-  { label: manageContent.stats.activeMembers, value: mockClubStats.activeMembers, icon: UsersThree },
-  { label: manageContent.stats.signupsThisWeek, value: mockClubStats.signupsThisWeek, icon: ChartLineUp },
+  {
+    label: manageContent.stats.activeMembers,
+    value: mockClubStats.activeMembers,
+    icon: UsersThree,
+  },
+  {
+    label: manageContent.stats.signupsThisWeek,
+    value: mockClubStats.signupsThisWeek,
+    icon: ChartLineUp,
+  },
   { label: manageContent.stats.avgRiders, value: mockClubStats.avgRiders, icon: TrendUp },
 ];
 

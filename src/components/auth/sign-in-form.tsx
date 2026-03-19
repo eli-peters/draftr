@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useActionState } from "react";
-import { signIn } from "@/lib/auth/actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { appContent } from "@/content/app";
+import { useActionState } from 'react';
+import { signIn } from '@/lib/auth/actions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { appContent } from '@/content/app';
 
 const { signIn: content } = appContent.auth;
 
@@ -43,9 +43,7 @@ export function SignInForm() {
         />
       </div>
 
-      {state?.error && (
-        <p className="text-sm text-destructive">{state.error}</p>
-      )}
+      {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
 
       <Button type="submit" disabled={isPending} className="w-full">
         {isPending ? appContent.common.loading : content.submitButton}

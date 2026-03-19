@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 interface AnimatedListProps {
   children: ReactNode[];
@@ -9,10 +9,7 @@ interface AnimatedListProps {
 /**
  * Renders children in a container. (Formerly animated, now static.)
  */
-export function AnimatedList({
-  children,
-  className,
-}: AnimatedListProps) {
+export function AnimatedList({ children, className }: AnimatedListProps) {
   return (
     <div className={className}>
       {children.map((child, i) => (

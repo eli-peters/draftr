@@ -50,12 +50,7 @@ export function SeasonDatesCard({ clubId, seasonStart, seasonEnd }: SeasonDatesC
         </div>
         <div className="space-y-2">
           <Label htmlFor="season-end">{season.endLabel}</Label>
-          <Input
-            id="season-end"
-            type="date"
-            value={end}
-            onChange={(e) => setEnd(e.target.value)}
-          />
+          <Input id="season-end" type="date" value={end} onChange={(e) => setEnd(e.target.value)} />
         </div>
       </div>
       <div className="mt-4 flex items-center gap-3">

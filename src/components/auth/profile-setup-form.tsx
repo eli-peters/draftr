@@ -26,7 +26,7 @@ export function ProfileSetupForm({ userEmail }: ProfileSetupFormProps) {
     <form action={formAction} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <Label htmlFor="email">{appContent.auth.signIn.emailLabel}</Label>
-        <Input id="email" type="email" value={userEmail} disabled className="opacity-60" />
+        <Input id="email" type="email" value={userEmail} disabled className="opacity-pending" />
       </div>
 
       <div className="flex flex-col gap-2">

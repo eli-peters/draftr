@@ -1,15 +1,16 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { BellSimple } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { NotificationItem } from "@/components/notifications/notification-item";
-import { markNotificationRead, markAllNotificationsRead } from "@/lib/notifications/actions";
-import type { Notification } from "@/components/notifications/notification-item";
+import Link from 'next/link';
+import { BellSimple } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
+import { NotificationItem } from '@/components/notifications/notification-item';
+import { markNotificationRead, markAllNotificationsRead } from '@/lib/notifications/actions';
+import { routes } from '@/config/routes';
+import type { Notification } from '@/components/notifications/notification-item';
 
 function getNotificationHref(notification: Notification): string | null {
-  if (notification.ride_id) return `/rides/${notification.ride_id}`;
-  if (notification.type === 'announcement') return '/';
+  if (notification.ride_id) return routes.ride(notification.ride_id);
+  if (notification.type === 'announcement') return routes.home;
   return null;
 }
 
@@ -50,7 +51,12 @@ export function NotificationsList({
           )}
         </div>
         {unreadCount > 0 && (
-          <Button variant="ghost" size="sm" className="text-sm text-muted-foreground" onClick={handleMarkAllRead}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-sm text-muted-foreground"
+            onClick={handleMarkAllRead}
+          >
             {markAllReadLabel}
           </Button>
         )}
@@ -70,7 +76,7 @@ export function NotificationsList({
             const content = (
               <div
                 className={`rounded-xl border border-border bg-card p-5 ${
-                  notification.is_read ? "opacity-40" : "cursor-pointer"
+                  notification.is_read ? 'opacity-disabled' : 'cursor-pointer'
                 }`}
                 onClick={!notification.is_read ? () => handleMarkRead(notification.id) : undefined}
               >

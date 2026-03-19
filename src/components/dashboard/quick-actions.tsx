@@ -1,41 +1,37 @@
-import Link from "next/link";
-import {
-  Plus,
-  EnvelopeSimple,
-  UsersThree,
-} from "@phosphor-icons/react/dist/ssr";
-import { appContent } from "@/content/app";
-import type { UserRole } from "@/config/navigation";
+import Link from 'next/link';
+import { Plus, EnvelopeSimple, UsersThree } from '@phosphor-icons/react/dist/ssr';
+import { appContent } from '@/content/app';
+import type { UserRole } from '@/config/navigation';
 
 const { dashboard: content } = appContent;
 
 interface QuickAction {
   label: string;
   href: string;
-  icon: React.ComponentType<{ weight?: "duotone" | "bold"; className?: string }>;
+  icon: React.ComponentType<{ weight?: 'duotone' | 'bold'; className?: string }>;
 }
 
 function getActionsForRole(role: UserRole): QuickAction[] {
   const actions: QuickAction[] = [];
 
-  if (role === "ride_leader" || role === "admin") {
+  if (role === 'ride_leader' || role === 'admin') {
     actions.push({
       label: content.leader.createRide,
-      href: "/manage",
+      href: '/manage',
       icon: Plus,
     });
   }
 
-  if (role === "admin") {
+  if (role === 'admin') {
     actions.push(
       {
         label: content.admin.inviteMember,
-        href: "/manage",
+        href: '/manage',
         icon: EnvelopeSimple,
       },
       {
         label: content.admin.viewMembers,
-        href: "/manage",
+        href: '/manage',
         icon: UsersThree,
       },
     );
@@ -59,9 +55,7 @@ export function QuickActions({ role }: { role: UserRole }) {
           <Link key={action.label} href={action.href} className="group block">
             <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-5">
               <action.icon weight="duotone" className="h-5 w-5 text-primary" />
-              <span className="text-base font-medium text-foreground">
-                {action.label}
-              </span>
+              <span className="text-base font-medium text-foreground">{action.label}</span>
             </div>
           </Link>
         ))}

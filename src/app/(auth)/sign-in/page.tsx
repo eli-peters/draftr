@@ -1,5 +1,5 @@
-import { SignInForm } from "@/components/auth/sign-in-form";
-import { appContent } from "@/content/app";
+import { SignInForm } from '@/components/auth/sign-in-form';
+import { appContent } from '@/content/app';
 
 const { signIn } = appContent.auth;
 

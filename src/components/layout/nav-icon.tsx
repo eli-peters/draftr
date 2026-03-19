@@ -5,13 +5,19 @@ import {
   Bell,
   UserCircle,
   GearSix,
-} from "@phosphor-icons/react/dist/ssr";
-import type { IconName } from "@/config/navigation";
+} from '@phosphor-icons/react/dist/ssr';
+import type { IconName } from '@/config/navigation';
 
-const iconMap: Record<IconName, React.ComponentType<{ className?: string; weight?: "thin" | "light" | "regular" | "bold" | "fill" | "duotone" }>> = {
+const iconMap: Record<
+  IconName,
+  React.ComponentType<{
+    className?: string;
+    weight?: 'thin' | 'light' | 'regular' | 'bold' | 'fill' | 'duotone';
+  }>
+> = {
   house: House,
   bike: Bicycle,
-  "calendar-check": CalendarCheck,
+  'calendar-check': CalendarCheck,
   bell: Bell,
   user: UserCircle,
   settings: GearSix,
@@ -29,5 +35,5 @@ interface NavIconProps {
  */
 export function NavIcon({ name, className, active }: NavIconProps) {
   const Icon = iconMap[name];
-  return <Icon className={className} weight={active ? "fill" : "regular"} />;
+  return <Icon className={className} weight={active ? 'fill' : 'regular'} />;
 }

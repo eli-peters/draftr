@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { UsersThree } from "@phosphor-icons/react/dist/ssr";
-import { NotificationBell } from "./notification-bell";
-import { AvatarMenu } from "./avatar-menu";
-import type { Notification } from "@/components/notifications/notification-item";
+import { UsersThree } from '@phosphor-icons/react/dist/ssr';
+import { NotificationBell } from './notification-bell';
+import { AvatarMenu } from './avatar-menu';
+import type { Notification } from '@/components/notifications/notification-item';
 
 interface HeaderBarProps {
   appName: string;
@@ -42,10 +42,7 @@ export function HeaderBar({
 
       {/* Right: notification bell + avatar */}
       <div className="flex items-center gap-1.5">
-        <NotificationBell
-          notifications={notifications}
-          unreadCount={unreadNotificationCount}
-        />
+        <NotificationBell notifications={notifications} unreadCount={unreadNotificationCount} />
         <AvatarMenu
           userName={userName}
           userEmail={userEmail}

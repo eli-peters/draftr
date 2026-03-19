@@ -1,15 +1,23 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowsClockwise } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { appContent } from "@/content/app";
-import { createRide, updateRide, updateRecurringSeries, type CreateRideData, type UpdateRideData } from "@/lib/rides/actions";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ArrowsClockwise } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { appContent } from '@/content/app';
+import { routes } from '@/config/routes';
+import {
+  createRide,
+  updateRide,
+  updateRecurringSeries,
+  type CreateRideData,
+  type UpdateRideData,
+} from '@/lib/rides/actions';
 
 const { rides: ridesContent, common, manage: manageContent } = appContent;
 const form = ridesContent.form;
@@ -44,9 +52,17 @@ interface RideFormProps {
   seasonEnd?: string;
 }
 
-const selectClass = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
-
-export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, templateId, initialData, seasonStart, seasonEnd }: RideFormProps) {
+export function RideForm({
+  clubId,
+  meetingLocations,
+  paceGroups,
+  tags,
+  rideId,
+  templateId,
+  initialData,
+  seasonStart,
+  seasonEnd,
+}: RideFormProps) {
   const router = useRouter();
   const isEdit = !!rideId;
   const isRecurringSeries = isEdit && !!templateId;
@@ -54,7 +70,7 @@ export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, t
   const [error, setError] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tag_ids ?? []);
   const [isRecurring, setIsRecurring] = useState(false);
-  const [editScope, setEditScope] = useState<"this" | "all">("this");
+  const [editScope, setEditScope] = useState<'this' | 'all'>('this');
 
   function toggleTag(tagId: string) {
     setSelectedTags((prev) =>
@@ -68,9 +84,9 @@ export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, t
     setError(null);
 
     const fd = new FormData(e.currentTarget);
-    const title = fd.get("title") as string;
-    const ride_date = fd.get("ride_date") as string;
-    const start_time = fd.get("start_time") as string;
+    const title = fd.get('title') as string;
+    const ride_date = fd.get('ride_date') as string;
+    const start_time = fd.get('start_time') as string;
 
     if (!title || !ride_date || !start_time) {
       setError(form.required);
@@ -80,42 +96,41 @@ export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, t
 
     const shared = {
       title,
-      description: (fd.get("description") as string) || undefined,
+      description: (fd.get('description') as string) || undefined,
       ride_date,
       start_time,
-      meeting_location_id: (fd.get("meeting_location_id") as string) || undefined,
-      pace_group_id: (fd.get("pace_group_id") as string) || undefined,
-      distance_km: fd.get("distance_km") ? Number(fd.get("distance_km")) : undefined,
-      elevation_m: fd.get("elevation_m") ? Number(fd.get("elevation_m")) : undefined,
-      capacity: fd.get("capacity") ? Number(fd.get("capacity")) : undefined,
-      route_url: (fd.get("route_url") as string) || undefined,
-      route_name: (fd.get("route_name") as string) || undefined,
-      is_drop_ride: fd.get("is_drop_ride") === "on",
-      organiser_notes: (fd.get("organiser_notes") as string) || undefined,
+      meeting_location_id: (fd.get('meeting_location_id') as string) || undefined,
+      pace_group_id: (fd.get('pace_group_id') as string) || undefined,
+      distance_km: fd.get('distance_km') ? Number(fd.get('distance_km')) : undefined,
+      elevation_m: fd.get('elevation_m') ? Number(fd.get('elevation_m')) : undefined,
+      capacity: fd.get('capacity') ? Number(fd.get('capacity')) : undefined,
+      route_url: (fd.get('route_url') as string) || undefined,
+      route_name: (fd.get('route_name') as string) || undefined,
+      is_drop_ride: fd.get('is_drop_ride') === 'on',
+      organiser_notes: (fd.get('organiser_notes') as string) || undefined,
       tag_ids: selectedTags,
     };
 
     let result: { error?: string; success?: boolean };
 
-    if (isEdit && editScope === "all" && isRecurringSeries) {
+    if (isEdit && editScope === 'all' && isRecurringSeries) {
       result = await updateRecurringSeries(rideId, shared as UpdateRideData);
     } else if (isEdit) {
       result = await updateRide(rideId, shared as UpdateRideData);
     } else {
       // Build recurring options if toggle is on
-      const recurrence = fd.get("recurrence") as string;
-      let recurring: CreateRideData["recurring"] = undefined;
+      const recurrence = fd.get('recurrence') as string;
+      let recurring: CreateRideData['recurring'] = undefined;
       if (isRecurring && recurrence) {
         // Timezone-safe day-of-week: parse YYYY-MM-DD as local date
-        const [y, m, d] = ride_date.split("-").map(Number);
-        const endType = fd.get("recurring_end_type") as string;
+        const [y, m, d] = ride_date.split('-').map(Number);
+        const endType = fd.get('recurring_end_type') as string;
         recurring = {
           recurrence,
           day_of_week: new Date(y, m - 1, d).getDay(),
-          end_after_occurrences: endType === "after" && fd.get("end_after")
-            ? Number(fd.get("end_after"))
-            : undefined,
-          end_date: endType === "on_date" ? (fd.get("end_date") as string) || undefined : undefined,
+          end_after_occurrences:
+            endType === 'after' && fd.get('end_after') ? Number(fd.get('end_after')) : undefined,
+          end_date: endType === 'on_date' ? (fd.get('end_date') as string) || undefined : undefined,
         };
       }
 
@@ -127,7 +142,7 @@ export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, t
     if (result.error) {
       setError(result.error);
     } else {
-      router.push("/manage");
+      router.push(routes.manage);
     }
   }
 
@@ -138,22 +153,24 @@ export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, t
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
           <div className="flex items-center gap-2">
             <ArrowsClockwise weight="bold" className="h-4 w-4 text-primary" />
-            <p className="text-sm font-medium text-foreground">{ridesContent.edit.recurringPrompt}</p>
+            <p className="text-sm font-medium text-foreground">
+              {ridesContent.edit.recurringPrompt}
+            </p>
           </div>
           <div className="flex gap-3">
             <Button
               type="button"
               size="sm"
-              variant={editScope === "this" ? "default" : "outline"}
-              onClick={() => setEditScope("this")}
+              variant={editScope === 'this' ? 'default' : 'outline'}
+              onClick={() => setEditScope('this')}
             >
               {ridesContent.edit.editThisOnly}
             </Button>
             <Button
               type="button"
               size="sm"
-              variant={editScope === "all" ? "default" : "outline"}
-              onClick={() => setEditScope("all")}
+              variant={editScope === 'all' ? 'default' : 'outline'}
+              onClick={() => setEditScope('all')}
             >
               {ridesContent.edit.editAllFuture}
             </Button>
@@ -169,47 +186,88 @@ export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, t
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="ride_date">{form.date} *</Label>
-          <Input id="ride_date" name="ride_date" type="date" required defaultValue={initialData?.ride_date} min={seasonStart || undefined} max={seasonEnd || undefined} />
+          <Input
+            id="ride_date"
+            name="ride_date"
+            type="date"
+            required
+            defaultValue={initialData?.ride_date}
+            min={seasonStart || undefined}
+            max={seasonEnd || undefined}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="start_time">{form.startTime} *</Label>
-          <Input id="start_time" name="start_time" type="time" required defaultValue={initialData?.start_time} />
+          <Input
+            id="start_time"
+            name="start_time"
+            type="time"
+            required
+            defaultValue={initialData?.start_time}
+          />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="meeting_location_id">{form.meetingLocation}</Label>
-          <select id="meeting_location_id" name="meeting_location_id" defaultValue={initialData?.meeting_location_id} className={selectClass}>
+          <Select
+            id="meeting_location_id"
+            name="meeting_location_id"
+            defaultValue={initialData?.meeting_location_id}
+          >
             <option value="">{form.selectLocation}</option>
             {meetingLocations.map((loc) => (
-              <option key={loc.id} value={loc.id}>{loc.name}</option>
+              <option key={loc.id} value={loc.id}>
+                {loc.name}
+              </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div className="space-y-2">
           <Label htmlFor="pace_group_id">{form.paceGroup}</Label>
-          <select id="pace_group_id" name="pace_group_id" defaultValue={initialData?.pace_group_id} className={selectClass}>
+          <Select id="pace_group_id" name="pace_group_id" defaultValue={initialData?.pace_group_id}>
             <option value="">{form.selectPace}</option>
             {paceGroups.map((pg) => (
-              <option key={pg.id} value={pg.id}>{pg.name}</option>
+              <option key={pg.id} value={pg.id}>
+                {pg.name}
+              </option>
             ))}
-          </select>
+          </Select>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label htmlFor="distance_km">{form.distance}</Label>
-          <Input id="distance_km" name="distance_km" type="number" step="0.1" min="0" defaultValue={initialData?.distance_km} />
+          <Input
+            id="distance_km"
+            name="distance_km"
+            type="number"
+            step="0.1"
+            min="0"
+            defaultValue={initialData?.distance_km}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="elevation_m">{form.elevation}</Label>
-          <Input id="elevation_m" name="elevation_m" type="number" min="0" defaultValue={initialData?.elevation_m} />
+          <Input
+            id="elevation_m"
+            name="elevation_m"
+            type="number"
+            min="0"
+            defaultValue={initialData?.elevation_m}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="capacity">{form.capacity}</Label>
-          <Input id="capacity" name="capacity" type="number" min="1" defaultValue={initialData?.capacity} />
+          <Input
+            id="capacity"
+            name="capacity"
+            type="number"
+            min="1"
+            defaultValue={initialData?.capacity}
+          />
         </div>
       </div>
 
@@ -225,8 +283,16 @@ export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, t
       </div>
 
       <div className="flex items-center gap-3">
-        <input id="is_drop_ride" name="is_drop_ride" type="checkbox" defaultChecked={initialData?.is_drop_ride} className="h-4 w-4 rounded border-input" />
-        <Label htmlFor="is_drop_ride" className="cursor-pointer">{form.isDropRide}</Label>
+        <input
+          id="is_drop_ride"
+          name="is_drop_ride"
+          type="checkbox"
+          defaultChecked={initialData?.is_drop_ride}
+          className="h-4 w-4 rounded border-input"
+        />
+        <Label htmlFor="is_drop_ride" className="cursor-pointer">
+          {form.isDropRide}
+        </Label>
       </div>
 
       <div className="space-y-2">
@@ -237,13 +303,21 @@ export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, t
             return (
               <Badge
                 key={tag.id}
-                variant={isSelected ? "default" : "outline"}
-                className="cursor-pointer text-sm px-3 py-1"
+                variant={isSelected ? 'default' : 'outline'}
+                size="lg"
+                className="cursor-pointer"
                 style={
                   isSelected && tag.color
-                    ? { backgroundColor: tag.color, color: "#fff", borderColor: tag.color }
+                    ? {
+                        backgroundColor: tag.color,
+                        color: 'var(--primary-foreground)',
+                        borderColor: tag.color,
+                      }
                     : tag.color
-                      ? { borderColor: `${tag.color}60`, color: tag.color }
+                      ? {
+                          borderColor: `color-mix(in srgb, ${tag.color} 60%, transparent)`,
+                          color: tag.color,
+                        }
                       : undefined
                 }
                 onClick={() => toggleTag(tag.id)}
@@ -257,12 +331,24 @@ export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, t
 
       <div className="space-y-2">
         <Label htmlFor="description">{form.description}</Label>
-        <Textarea id="description" name="description" rows={2} defaultValue={initialData?.description} placeholder={form.descriptionPlaceholder} />
+        <Textarea
+          id="description"
+          name="description"
+          rows={2}
+          defaultValue={initialData?.description}
+          placeholder={form.descriptionPlaceholder}
+        />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="organiser_notes">{form.organiserNotes}</Label>
-        <Textarea id="organiser_notes" name="organiser_notes" rows={2} defaultValue={initialData?.organiser_notes} placeholder={form.organiserNotesPlaceholder} />
+        <Textarea
+          id="organiser_notes"
+          name="organiser_notes"
+          rows={2}
+          defaultValue={initialData?.organiser_notes}
+          placeholder={form.organiserNotesPlaceholder}
+        />
       </div>
 
       {/* Recurring ride toggle — only for new rides */}
@@ -285,29 +371,58 @@ export function RideForm({ clubId, meetingLocations, paceGroups, tags, rideId, t
             <div className="space-y-4 pl-7">
               <div className="space-y-2">
                 <Label htmlFor="recurrence">{ridesContent.recurring.frequency}</Label>
-                <select id="recurrence" name="recurrence" className={selectClass} defaultValue="weekly">
+                <Select id="recurrence" name="recurrence" defaultValue="weekly">
                   <option value="weekly">{rc.recurrence.weekly}</option>
                   <option value="biweekly">{rc.recurrence.biweekly}</option>
                   <option value="monthly">{rc.recurrence.monthly}</option>
-                </select>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>{ridesContent.recurring.endCondition}</Label>
                 <div className="space-y-2">
                   <label className="flex items-center gap-2 text-sm">
-                    <input type="radio" name="recurring_end_type" value="never" defaultChecked className="h-4 w-4" />
+                    <input
+                      type="radio"
+                      name="recurring_end_type"
+                      value="never"
+                      defaultChecked
+                      className="h-4 w-4"
+                    />
                     {ridesContent.recurring.endNever}
                   </label>
                   <label className="flex items-center gap-2 text-sm">
-                    <input type="radio" name="recurring_end_type" value="after" className="h-4 w-4" />
+                    <input
+                      type="radio"
+                      name="recurring_end_type"
+                      value="after"
+                      className="h-4 w-4"
+                    />
                     {ridesContent.recurring.endAfter}
-                    <Input name="end_after" type="number" min="1" max="52" defaultValue="10" className="w-20 h-8" />
+                    <Input
+                      name="end_after"
+                      type="number"
+                      min="1"
+                      max="52"
+                      defaultValue="10"
+                      className="w-20 h-8"
+                    />
                     {ridesContent.recurring.occurrences}
                   </label>
                   <label className="flex items-center gap-2 text-sm">
-                    <input type="radio" name="recurring_end_type" value="on_date" className="h-4 w-4" />
+                    <input
+                      type="radio"
+                      name="recurring_end_type"
+                      value="on_date"
+                      className="h-4 w-4"
+                    />
                     {ridesContent.recurring.endOnDate}
-                    <Input name="end_date" type="date" className="w-auto h-8" min={seasonStart || undefined} max={seasonEnd || undefined} />
+                    <Input
+                      name="end_date"
+                      type="date"
+                      className="w-auto h-8"
+                      min={seasonStart || undefined}
+                      max={seasonEnd || undefined}
+                    />
                   </label>
                 </div>
               </div>

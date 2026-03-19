@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore } from 'react';
 
 const MOBILE_BREAKPOINT = 768;
 const QUERY = `(max-width: ${MOBILE_BREAKPOINT - 1}px)`;
 
 function subscribe(callback: () => void) {
   const mq = window.matchMedia(QUERY);
-  mq.addEventListener("change", callback);
-  return () => mq.removeEventListener("change", callback);
+  mq.addEventListener('change', callback);
+  return () => mq.removeEventListener('change', callback);
 }
 
 function getSnapshot() {

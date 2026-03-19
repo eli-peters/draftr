@@ -9,13 +9,12 @@ interface AnimatedCounterProps {
 
 export function AnimatedCounter({
   value,
-  suffix = "",
-  prefix = "",
+  suffix = '',
+  prefix = '',
   decimals = 0,
   className,
 }: AnimatedCounterProps) {
-  const display =
-    decimals > 0 ? value.toFixed(decimals) : Math.round(value).toString();
+  const display = decimals > 0 ? value.toFixed(decimals) : Math.round(value).toString();
   return (
     <span className={className}>
       {prefix}

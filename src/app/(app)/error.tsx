@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { WarningCircle } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { appContent } from "@/content/app";
+import { WarningCircle } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
+import { appContent } from '@/content/app';
 
 const { common } = appContent;
 
@@ -20,7 +20,7 @@ export default function AppError({
       </div>
       <h2 className="mt-4 text-lg font-semibold text-foreground">{common.error}</h2>
       <p className="mt-2 text-base text-muted-foreground max-w-80">
-        {error.message || "An unexpected error occurred. Please try again."}
+        {error.message || 'An unexpected error occurred. Please try again.'}
       </p>
       <Button onClick={reset} className="mt-6" size="sm">
         {common.retry}

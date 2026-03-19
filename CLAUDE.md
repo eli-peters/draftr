@@ -6,12 +6,12 @@ Draftr is a cycling club management PWA. It replaces the Cycle Club App with a m
 
 ## Tech Stack
 
-- **Framework:** Next.js 15 (App Router) + TypeScript
+- **Framework:** Next.js 16 (App Router) + TypeScript
 - **Styling:** Tailwind CSS v4 (CSS-first config with `@theme`, NOT v3's `tailwind.config.ts`)
-- **Components:** shadcn/ui (Radix-based)
+- **Components:** shadcn/ui (Base UI primitives)
 - **Backend:** Supabase (PostgreSQL + Auth + Realtime + Storage)
 - **Hosting:** Vercel (auto-deploy from main)
-- **Icons:** Lucide React
+- **Icons:** Phosphor Icons (`@phosphor-icons/react`)
 
 ## Critical Rules
 
@@ -21,7 +21,7 @@ Draftr is a cycling club management PWA. It replaces the Cycle Club App with a m
 - **Design tokens:** All colours, spacing, typography reference CSS custom properties via semantic tokens. Never use raw hex values in components.
 - **Theme/brand:** Club-specific values live in `src/themes/`. Components use `--primary`, `--destructive`, etc. — never `--brand-*` directly.
 - **Business config:** Pace groups, meeting locations, tags, weather rules come from the database. Never hardcode in code.
-- **Navigation:** Nav items defined in `src/config/navigation.ts`. Never hardcode routes in layout components.
+- **Navigation/routes:** Routes defined in `src/config/routes.ts`. Nav items in `src/config/navigation.ts`. Never hardcode routes in components.
 - **Environment:** API keys, URLs, feature flags via `.env.local`. Never commit secrets.
 
 ### Tailwind v4 Specifics
@@ -34,15 +34,15 @@ Draftr is a cycling club management PWA. It replaces the Cycle Club App with a m
 
 ### Separation of Concerns
 
-| Layer | Location | Rule |
-|-------|----------|------|
-| Content/copy | `src/content/` | Structured objects, CMS-ready |
-| Design tokens | `src/app/globals.css` | CSS custom properties |
-| Theme/brand | `src/themes/` | Typed ClubTheme configs |
-| Nav config | `src/config/` | Navigation items, feature flags |
-| Business config | Database | Pace groups, locations, tags |
-| Environment | `.env.local` | API keys, URLs |
-| Components | `src/components/` | Pure, data-driven, props only |
+| Layer           | Location              | Rule                            |
+| --------------- | --------------------- | ------------------------------- |
+| Content/copy    | `src/content/`        | Structured objects, CMS-ready   |
+| Design tokens   | `src/app/globals.css` | CSS custom properties           |
+| Theme/brand     | `src/themes/`         | Typed ClubTheme configs         |
+| App config      | `src/config/`         | Routes, navigation, formatting, status constants |
+| Business config | Database              | Pace groups, locations, tags    |
+| Environment     | `.env.local`          | API keys, URLs                  |
+| Components      | `src/components/`     | Pure, data-driven, props only   |
 
 ## Project Structure
 
@@ -55,7 +55,7 @@ src/
 ├── components/
 │   ├── ui/                 → shadcn/ui components
 │   └── layout/             → App shell, nav components
-├── config/                 → Navigation, feature flags
+├── config/                 → Routes, navigation, formatting, status constants
 ├── content/                → All user-facing strings
 ├── lib/
 │   ├── utils.ts            → cn() helper
@@ -63,12 +63,13 @@ src/
 ├── themes/                 → Default theme + club overrides
 ├── test/                   → Vitest setup + test files
 ├── types/                  → TypeScript type definitions
-└── proxy.ts                 → Supabase session refresh
+└── proxy.ts                → Next.js proxy config (Supabase session refresh)
 ```
 
 ## Theming Architecture
 
 Two-layer system:
+
 1. **Brand primitives** (`--brand-primary`, `--brand-danger`, etc.) — set by ThemeProvider from `src/themes/*.ts`
 2. **Semantic tokens** (`--primary`, `--destructive`, `--background`, etc.) — defined in `globals.css`, reference brand primitives
 
@@ -96,11 +97,11 @@ npm run test:watch   # Vitest — watch mode
 
 ### When things run
 
-| Tool | On Save | CI / Build |
-|------|---------|------------|
+| Tool     | On Save     | CI / Build                           |
+| -------- | ----------- | ------------------------------------ |
 | Prettier | Auto-format | `format:check` (fail if unformatted) |
-| ESLint | Auto-fix | `lint` (fail on errors) |
-| Vitest | No | `test` (fail on failures) |
+| ESLint   | Auto-fix    | `lint` (fail on errors)              |
+| Vitest   | No          | `test` (fail on failures)            |
 
 ## Design Reference
 

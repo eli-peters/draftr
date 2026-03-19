@@ -7,6 +7,7 @@ import {
   getClubTags,
 } from '@/lib/rides/queries';
 import { appContent } from '@/content/app';
+import { routes } from '@/config/routes';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { FilterableRideFeed } from '@/components/rides/filterable-ride-feed';
 
@@ -14,7 +15,7 @@ const { rides: ridesContent } = appContent;
 
 export default async function RidesPage() {
   const membership = await getUserClubMembership();
-  if (!membership) redirect('/sign-in');
+  if (!membership) redirect(routes.signIn);
 
   const [rides, paceGroups, tags] = await Promise.all([
     getUpcomingRides(membership.club_id),

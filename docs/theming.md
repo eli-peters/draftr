@@ -20,14 +20,14 @@ Clubs only need to specify the primitives they want to change. Unspecified token
 1. Create `src/themes/clubs/<club-slug>.ts`:
 
 ```ts
-import type { ClubOverride } from "@/types/theme";
+import type { ClubOverride } from '@/types/theme';
 
 export const myClub: ClubOverride = {
-  slug: "my-club",
-  name: "My Cycling Club",
+  slug: 'my-club',
+  name: 'My Cycling Club',
   colors: {
-    primary: "#2E5A1C", // Only override what differs
-    accent: "#D4A017",
+    primary: '#2E5A1C', // Only override what differs
+    accent: '#D4A017',
   },
 };
 ```
@@ -35,7 +35,7 @@ export const myClub: ClubOverride = {
 2. Register it in `src/themes/index.ts`:
 
 ```ts
-import { myClub } from "./clubs/my-club";
+import { myClub } from './clubs/my-club';
 
 const clubOverrides: Record<string, ClubOverride> = {
   [myClub.slug]: myClub,
@@ -48,6 +48,3 @@ const clubOverrides: Record<string, ClubOverride> = {
 
 Managed by `ThemeProvider`. Three modes: `light`, `dark`, `system` (default). The `.dark` class is toggled on `<html>`. All semantic tokens have dark mode mappings in `globals.css` — any club providing brand overrides gets both modes automatically.
 
-## Figma sync
-
-Figma Variables are maintained manually. The Brand collection mirrors the 6 primitives from `default.ts`. The Semantic collection has Light and Dark modes with resolved values derived from the `color-mix()` formulas in `globals.css`.

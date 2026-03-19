@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import type { NavItem } from "@/config/navigation";
-import { NavIcon } from "./nav-icon";
-import { cn } from "@/lib/utils";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import type { NavItem } from '@/config/navigation';
+import { NavIcon } from './nav-icon';
+import { cn } from '@/lib/utils';
 
 interface SidebarNavProps {
   items: NavItem[];
@@ -25,16 +25,14 @@ export function SidebarNav({ items, appName }: SidebarNavProps) {
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
           <span className="text-sm font-bold text-primary-foreground tracking-tight">D</span>
         </div>
-        <span className="text-lg font-bold tracking-tight text-foreground">
-          {appName}
-        </span>
+        <span className="text-lg font-bold tracking-tight text-foreground">{appName}</span>
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
         {items.map((item) => {
           const isActive =
-            item.href === "/"
-              ? pathname === "/"
+            item.href === '/'
+              ? pathname === '/'
               : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
           return (
@@ -42,17 +40,13 @@ export function SidebarNav({ items, appName }: SidebarNavProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                'relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                 isActive
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                  ? 'text-primary bg-primary/10'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
               )}
             >
-              <NavIcon
-                name={item.icon}
-                className="relative h-5 w-5"
-                active={isActive}
-              />
+              <NavIcon name={item.icon} className="relative h-5 w-5" active={isActive} />
               <span className="relative">{item.label}</span>
             </Link>
           );
