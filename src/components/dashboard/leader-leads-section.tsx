@@ -34,16 +34,16 @@ function LeadRideItem({ ride }: { ride: LeadRide }) {
                 {ride.start_time}
               </span>
               <span className="flex items-center gap-1">
-                <MapPin weight="duotone" className="h-3.5 w-3.5" />
+                <MapPin className="h-3.5 w-3.5" />
                 {ride.location}
               </span>
               <span className="flex items-center gap-1">
-                <Users weight="duotone" className="h-3.5 w-3.5" />
+                <Users className="h-3.5 w-3.5" />
                 {content.leader.signups(ride.signup_count)}
               </span>
             </div>
           </div>
-          <CaretRight weight="duotone" className="ml-2 h-4 w-4 shrink-0 text-muted-foreground/40" />
+          <CaretRight className="ml-2 h-4 w-4 shrink-0 text-muted-foreground/40" />
         </div>
         {ride.capacity != null && (
           <div className="mt-4 h-0.5 w-full rounded-full bg-muted overflow-hidden">

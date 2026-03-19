@@ -25,13 +25,6 @@ import type { UserRole } from '@/config/navigation';
 
 const { dashboard } = appContent;
 
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return dashboard.greeting.morning;
-  if (hour < 18) return dashboard.greeting.afternoon;
-  return dashboard.greeting.evening;
-}
-
 export default async function HomePage() {
   const membership = await getUserClubMembership();
   if (!membership) redirect(routes.signIn);
@@ -49,7 +42,6 @@ export default async function HomePage() {
     : { data: null };
 
   const firstName = profile?.display_name ?? profile?.full_name?.split(' ')[0] ?? '';
-  const greeting = dashboard.greetingWithName(getGreeting(), firstName);
 
   // Fetch action bar data + ride feed + filter options in parallel
   const [
@@ -83,7 +75,7 @@ export default async function HomePage() {
 
   return (
     <DashboardShell>
-      <GreetingSection greeting={greeting} subtitle={subtitle} />
+      <GreetingSection firstName={firstName} subtitle={subtitle} />
 
       {/* Role-contextual action bar — only renders if there are items needing attention */}
       <div className="mt-8">

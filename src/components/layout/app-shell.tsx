@@ -37,7 +37,6 @@ export function AppShell({
 
       <div className="flex min-h-screen flex-1 flex-col">
         <HeaderBar
-          appName={appName}
           userName={user.name}
           userEmail={user.email}
           userInitials={user.initials}

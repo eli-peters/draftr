@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Plus, EnvelopeSimple, UsersThree } from '@phosphor-icons/react/dist/ssr';
 import { appContent } from '@/content/app';
+import { routes } from '@/config/routes';
 import type { UserRole } from '@/config/navigation';
 
 const { dashboard: content } = appContent;
@@ -17,7 +18,7 @@ function getActionsForRole(role: UserRole): QuickAction[] {
   if (role === 'ride_leader' || role === 'admin') {
     actions.push({
       label: content.leader.createRide,
-      href: '/manage',
+      href: routes.manage,
       icon: Plus,
     });
   }
@@ -26,12 +27,12 @@ function getActionsForRole(role: UserRole): QuickAction[] {
     actions.push(
       {
         label: content.admin.inviteMember,
-        href: '/manage',
+        href: routes.manage,
         icon: EnvelopeSimple,
       },
       {
         label: content.admin.viewMembers,
-        href: '/manage',
+        href: routes.manage,
         icon: UsersThree,
       },
     );
@@ -54,7 +55,7 @@ export function QuickActions({ role }: { role: UserRole }) {
         {actions.map((action) => (
           <Link key={action.label} href={action.href} className="group block">
             <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-5">
-              <action.icon weight="duotone" className="h-5 w-5 text-primary" />
+              <action.icon className="h-5 w-5 text-primary" />
               <span className="text-base font-medium text-foreground">{action.label}</span>
             </div>
           </Link>

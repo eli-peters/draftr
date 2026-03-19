@@ -112,7 +112,7 @@ export default async function ProfilePage() {
           </h2>
           <div className="mt-3">
             <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-5">
-              <Bicycle weight="duotone" className="h-5 w-5 text-primary" />
+              <Bicycle className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">{content.sections.paceGroup}</p>
                 <p className="font-medium text-foreground text-base">
@@ -131,7 +131,7 @@ export default async function ProfilePage() {
         </h2>
         {ec?.emergency_contact_name ? (
           <div className="mt-3 flex items-center gap-3 rounded-xl border border-border bg-card p-5">
-            <FirstAidKit weight="duotone" className="h-5 w-5 text-destructive" />
+            <FirstAidKit className="h-5 w-5 text-destructive" />
             <div>
               <p className="font-medium text-foreground text-base">{ec.emergency_contact_name}</p>
               {ec.emergency_contact_phone && (
@@ -171,14 +171,14 @@ export default async function ProfilePage() {
                       <span>{format(new Date(ride.ride_date), dateFormats.monthDay)}</span>
                       {ride.distance_km != null && (
                         <span className="flex items-center gap-1 text-info">
-                          <Path weight="duotone" className="h-3.5 w-3.5" />
+                          <Path className="h-3.5 w-3.5" />
                           {ride.distance_km}
                           {units.km}
                         </span>
                       )}
                     </div>
                   </div>
-                  <CaretRight weight="duotone" className="h-4 w-4 text-muted-foreground/50" />
+                  <CaretRight className="h-4 w-4 text-muted-foreground/50" />
                 </div>
               </Link>
             ))}

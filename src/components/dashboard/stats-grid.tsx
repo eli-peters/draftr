@@ -20,7 +20,7 @@ export function StatsGrid({ stats }: StatsGridProps) {
         <div key={stat.label} className="rounded-xl border border-border bg-card p-5">
           {stat.icon && (
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-              <stat.icon weight="duotone" className="h-5 w-5 text-primary" />
+              <stat.icon className="h-5 w-5 text-primary" />
             </div>
           )}
           <AnimatedCounter
