@@ -43,7 +43,7 @@ export function FilterableRideFeed({
   const dateFrom = searchParams.get('from') ?? '';
   const dateTo = searchParams.get('to') ?? '';
   const dateRange: DateRange = { from: dateFrom, to: dateTo };
-  const sortBy = (searchParams.get('sort') as SortOption) || 'date_asc';
+  const sortBy = (searchParams.get('sort') as SortOption) ?? 'date_asc';
   const activeCount = paceIds.length + tagIds.length + (dateFrom || dateTo ? 1 : 0);
   const hasFilters = activeCount > 0;
 
@@ -107,9 +107,7 @@ export function FilterableRideFeed({
             disabled={isRefreshing}
             aria-label="Refresh rides"
           >
-            <ArrowClockwise
-              className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
-            />
+            <ArrowClockwise className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
           <RideFilterSheet
             paceGroups={paceGroups}
@@ -133,7 +131,7 @@ export function FilterableRideFeed({
       ) : (
         <div className="mt-12 flex flex-col items-center justify-center text-center py-8">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/8">
-            <Bicycle className="h-10 w-10 text-primary/60" />
+            <Bicycle weight="duotone" className="h-10 w-10 text-primary/60" />
           </div>
           <h2 className="mt-4 text-lg font-semibold text-foreground">
             {hasFilters ? ridesContent.filter.noResults.title : emptyTitle}

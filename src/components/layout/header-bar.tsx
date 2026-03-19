@@ -6,7 +6,6 @@ import { AvatarMenu } from './avatar-menu';
 import type { Notification } from '@/components/notifications/notification-item';
 
 interface HeaderBarProps {
-  appName: string;
   userName: string;
   userEmail: string;
   userInitials: string;
@@ -20,7 +19,6 @@ interface HeaderBarProps {
  * Team logo left, notification bell + avatar right.
  */
 export function HeaderBar({
-  appName,
   userName,
   userEmail,
   userInitials,
@@ -33,7 +31,7 @@ export function HeaderBar({
       {/* Left: team logo (mobile only — sidebar has brand on desktop) */}
       <div className="flex items-center gap-2 md:hidden">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-          <UsersThree weight="duotone" className="h-4.5 w-4.5 text-primary" />
+          <UsersThree className="h-4.5 w-4.5 text-primary" />
         </div>
       </div>
 

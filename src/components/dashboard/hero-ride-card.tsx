@@ -52,19 +52,19 @@ export function HeroRideCard({ ride }: { ride: RideWithDetails }) {
         <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-base text-muted-foreground">
           {ride.meeting_location && (
             <span className="flex items-center gap-1.5">
-              <MapPin weight="duotone" className="h-4 w-4" />
+              <MapPin className="h-4 w-4" />
               {ride.meeting_location.name}
             </span>
           )}
           {ride.distance_km != null && (
             <span className="flex items-center gap-1.5 text-info">
-              <Path weight="duotone" className="h-4 w-4" />
+              <Path className="h-4 w-4" />
               {ride.distance_km}
               {units.km}
             </span>
           )}
           <span className="flex items-center gap-1.5">
-            <Users weight="duotone" className="h-4 w-4" />
+            <Users className="h-4 w-4" />
             {ride.signup_count}
             {ride.capacity != null ? `/${ride.capacity}` : ''} {ridesContent.card.riders}
           </span>
@@ -83,10 +83,7 @@ export function HeroRideCard({ ride }: { ride: RideWithDetails }) {
         {/* CTA */}
         <div className="mt-4 inline-flex items-center gap-2 text-base font-semibold text-primary">
           {dashboard.viewRide}
-          <ArrowRight
-            weight="duotone"
-            className="h-4 w-4 transition-transform group-hover:translate-x-1"
-          />
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
         </div>
       </div>
     </Link>

@@ -80,14 +80,11 @@ function ActionCard({
     <Link href={href} className="group block">
       <div className="rounded-xl border border-border bg-card p-5">
         <div className="flex items-center gap-2 mb-3">
-          <Icon weight="duotone" className="h-4 w-4 text-primary" />
+          <Icon className="h-4 w-4 text-primary" />
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {label}
           </span>
-          <CaretRight
-            weight="duotone"
-            className="ml-auto h-3.5 w-3.5 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5"
-          />
+          <CaretRight className="ml-auto h-3.5 w-3.5 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5" />
         </div>
         {children}
       </div>
@@ -134,7 +131,7 @@ export function ActionBar({
             </span>
             {nextSignup.meeting_location_name && (
               <span className="flex items-center gap-1">
-                <MapPin weight="duotone" className="h-3.5 w-3.5" />
+                <MapPin className="h-3.5 w-3.5" />
                 {nextSignup.meeting_location_name}
               </span>
             )}
@@ -180,7 +177,7 @@ export function ActionBar({
               {nextLedRide.start_time.slice(0, 5)}
             </span>
             <span className="flex items-center gap-1">
-              <Users weight="duotone" className="h-3.5 w-3.5" />
+              <Users className="h-3.5 w-3.5" />
               {content.actionBar.signedUp(nextLedRide.signup_count, nextLedRide.capacity)}
             </span>
           </div>

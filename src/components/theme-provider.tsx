@@ -62,14 +62,12 @@ export function ThemeProvider({ children, club = defaultTheme }: ThemeProviderPr
   );
 
   // Derive resolved mode (no setState needed)
-  const resolvedColorMode: 'light' | 'dark' =
-    colorMode === 'dark'
-      ? 'dark'
-      : colorMode === 'light'
-        ? 'light'
-        : systemPrefersDark
-          ? 'dark'
-          : 'light';
+  function resolveColorMode(): 'light' | 'dark' {
+    if (colorMode === 'dark') return 'dark';
+    if (colorMode === 'light') return 'light';
+    return systemPrefersDark ? 'dark' : 'light';
+  }
+  const resolvedColorMode = resolveColorMode();
 
   // Apply .dark class to <html>
   useEffect(() => {
@@ -109,7 +107,7 @@ export function ThemeProvider({ children, club = defaultTheme }: ThemeProviderPr
 
   return (
     <ThemeContext.Provider value={{ club, colorMode, setColorMode, resolvedColorMode }}>
-      <IconContext.Provider value={{ weight: 'duotone' }}>{children}</IconContext.Provider>
+      <IconContext.Provider value={{ weight: 'bold' }}>{children}</IconContext.Provider>
     </ThemeContext.Provider>
   );
 }

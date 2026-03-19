@@ -60,7 +60,7 @@ export default async function ManagePage() {
         <h1 className="text-3xl font-bold tracking-tight text-foreground">{content.heading}</h1>
         <Link href={routes.manageNewRide}>
           <Button size="sm">
-            <Plus weight="duotone" className="mr-1.5 h-4 w-4" />
+            <Plus className="mr-1.5 h-4 w-4" />
             {content.rides.createRide}
           </Button>
         </Link>
@@ -70,7 +70,7 @@ export default async function ManagePage() {
         <div className="mt-8 grid grid-cols-3 gap-3">
           <div className="rounded-xl border border-border bg-card p-5">
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-              <Bicycle weight="duotone" className="h-5 w-5 text-primary" />
+              <Bicycle className="h-5 w-5 text-primary" />
             </div>
             <p className="text-4xl font-bold tabular-nums text-foreground">{stats.totalRides}</p>
             <p className="text-sm font-medium text-muted-foreground mt-2">
@@ -79,7 +79,7 @@ export default async function ManagePage() {
           </div>
           <div className="rounded-xl border border-border bg-card p-5">
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-              <UsersThree weight="duotone" className="h-5 w-5 text-primary" />
+              <UsersThree className="h-5 w-5 text-primary" />
             </div>
             <p className="text-4xl font-bold tabular-nums text-foreground">{stats.activeMembers}</p>
             <p className="text-sm font-medium text-muted-foreground mt-2">
@@ -88,7 +88,7 @@ export default async function ManagePage() {
           </div>
           <div className="rounded-xl border border-border bg-card p-5">
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-              <ChartLineUp weight="duotone" className="h-5 w-5 text-primary" />
+              <ChartLineUp className="h-5 w-5 text-primary" />
             </div>
             <p className="text-4xl font-bold tabular-nums text-foreground">
               {stats.signupsThisWeek}
