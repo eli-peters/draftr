@@ -19,9 +19,10 @@ interface SignupEntry {
 
 interface SignupRosterProps {
   signups: SignupEntry[];
+  createdBy?: string | null;
 }
 
-export function SignupRoster({ signups }: SignupRosterProps) {
+export function SignupRoster({ signups, createdBy }: SignupRosterProps) {
   if (signups.length === 0) {
     return (
       <p className="text-sm text-muted-foreground py-4 text-center">
@@ -35,10 +36,19 @@ export function SignupRoster({ signups }: SignupRosterProps) {
   );
   const waitlisted = signups.filter((s) => s.status === SignupStatus.WAITLISTED);
 
+  // Pin the ride leader to the top of the confirmed list
+  const sortedConfirmed = createdBy
+    ? [...confirmed].sort((a, b) => {
+        if (a.user_id === createdBy) return -1;
+        if (b.user_id === createdBy) return 1;
+        return 0;
+      })
+    : confirmed;
+
   return (
     <div className="space-y-1">
-      {confirmed.map((signup) => (
-        <SignupRow key={signup.id} signup={signup} />
+      {sortedConfirmed.map((signup) => (
+        <SignupRow key={signup.id} signup={signup} isLeader={signup.user_id === createdBy} />
       ))}
       {waitlisted.length > 0 && (
         <>
@@ -46,7 +56,7 @@ export function SignupRoster({ signups }: SignupRosterProps) {
             {ridesContent.roster.waitlisted}
           </p>
           {waitlisted.map((signup) => (
-            <SignupRow key={signup.id} signup={signup} />
+            <SignupRow key={signup.id} signup={signup} isLeader={signup.user_id === createdBy} />
           ))}
         </>
       )}
@@ -54,7 +64,7 @@ export function SignupRoster({ signups }: SignupRosterProps) {
   );
 }
 
-function SignupRow({ signup }: { signup: SignupEntry }) {
+function SignupRow({ signup, isLeader }: { signup: SignupEntry; isLeader?: boolean }) {
   const initials = getInitials(signup.user_name);
 
   return (
@@ -73,6 +83,11 @@ function SignupRow({ signup }: { signup: SignupEntry }) {
           </p>
         )}
       </div>
+      {isLeader && (
+        <Badge variant="default" className="text-xs">
+          {ridesContent.roster.leader}
+        </Badge>
+      )}
       {signup.status === SignupStatus.WAITLISTED && signup.waitlist_position != null && (
         <Badge variant="warning" className="text-xs">
           #{signup.waitlist_position}
