@@ -1,118 +1,26 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { format } from 'date-fns';
-import {
-  Plus,
-  Users,
-  MapPin,
-  CaretRight,
-  CloudRain,
-  ArrowsClockwise,
-  Bicycle,
-  UsersThree,
-  ChartLineUp,
-} from '@phosphor-icons/react/dist/ssr';
+import { Plus, Bicycle, UsersThree, ChartLineUp } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { getUserClubMembership, getLeaderRides } from '@/lib/rides/queries';
+import {
+  getUserClubMembership,
+  getLeaderRides,
+  getPaceGroups,
+  getClubTags,
+} from '@/lib/rides/queries';
 import { getClubMembers, getClubStats, getClubAnnouncements } from '@/lib/manage/queries';
 import { createClient } from '@/lib/supabase/server';
 import { InviteMemberDialog } from '@/components/manage/invite-member-dialog';
 import { MemberList } from '@/components/manage/member-list';
+import { ManageRidesPanel } from '@/components/manage/manage-rides-panel';
 import { AnnouncementsPanel } from '@/components/manage/announcements-panel';
 import { SeasonDatesCard } from '@/components/manage/season-dates-card';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
-import { RideStatus } from '@/config/statuses';
-import { dateFormats, separators } from '@/config/formatting';
 import type { UserRole } from '@/config/navigation';
 
-const { manage: content, rides: ridesContent } = appContent;
-
-interface ManageRideData {
-  id: string;
-  title: string;
-  ride_date: string;
-  start_time: string;
-  status: string;
-  capacity: number | null;
-  template_id: string | null;
-  meeting_location_name: string | null;
-  signup_count: number;
-  created_by_name: string | null;
-}
-
-function ManageRideItem({ ride }: { ride: ManageRideData }) {
-  const capacityPercent = ride.capacity != null ? (ride.signup_count / ride.capacity) * 100 : 0;
-  const isCancelled = ride.status === RideStatus.CANCELLED;
-
-  return (
-    <Link href={routes.manageEditRide(ride.id)} className="block group">
-      <div
-        className={`rounded-xl border border-border bg-card p-5 mb-3 ${isCancelled ? 'opacity-disabled' : ''}`}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-foreground truncate">{ride.title}</h3>
-              {ride.template_id && (
-                <ArrowsClockwise
-                  weight="bold"
-                  className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50"
-                />
-              )}
-              {ride.status === RideStatus.WEATHER_WATCH && (
-                <Badge variant="warning" className="shrink-0 text-sm gap-1">
-                  <CloudRain weight="fill" className="h-3.5 w-3.5" />
-                  {ridesContent.status.weatherWatch}
-                </Badge>
-              )}
-              {isCancelled && (
-                <Badge variant="destructive" className="shrink-0 text-sm">
-                  {ridesContent.status.cancelled}
-                </Badge>
-              )}
-            </div>
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
-              <span>
-                {format(new Date(ride.ride_date), dateFormats.dayMonthDay)}
-                {separators.at}
-                {ride.start_time.slice(0, 5)}
-              </span>
-              {ride.meeting_location_name && (
-                <span className="flex items-center gap-1.5">
-                  <MapPin weight="fill" className="h-3.5 w-3.5" />
-                  {ride.meeting_location_name}
-                </span>
-              )}
-              <span className="flex items-center gap-1.5">
-                <Users weight="fill" className="h-3.5 w-3.5" />
-                {ride.capacity != null
-                  ? `${ride.signup_count}/${ride.capacity}`
-                  : ride.signup_count}
-              </span>
-            </div>
-            {ride.created_by_name && (
-              <p className="mt-1.5 text-sm text-muted-foreground/60">
-                Created by {ride.created_by_name}
-              </p>
-            )}
-          </div>
-          <CaretRight weight="bold" className="ml-2 h-4 w-4 shrink-0 text-muted-foreground/40" />
-        </div>
-        {ride.capacity != null && !isCancelled && (
-          <div className="mt-4 h-0.5 w-full rounded-full bg-muted overflow-hidden">
-            <div
-              className="h-full rounded-full bg-primary transition-all duration-500"
-              style={{ width: `${Math.min(capacityPercent, 100)}%` }}
-            />
-          </div>
-        )}
-      </div>
-    </Link>
-  );
-}
+const { manage: content } = appContent;
 
 export default async function ManagePage() {
   const membership = await getUserClubMembership();
@@ -135,47 +43,16 @@ export default async function ManagePage() {
     .single();
   const clubSettings = (club?.settings ?? {}) as Record<string, string>;
 
-  const [rides, members, stats, announcements] = await Promise.all([
+  const [rides, paceGroups, tags, members, stats, announcements] = await Promise.all([
     getLeaderRides(user.id, membership.club_id, isAdmin),
+    getPaceGroups(membership.club_id),
+    getClubTags(membership.club_id),
     isAdmin ? getClubMembers(membership.club_id) : Promise.resolve([]),
     isAdmin ? getClubStats(membership.club_id) : Promise.resolve(null),
     isAdmin ? getClubAnnouncements(membership.club_id) : Promise.resolve([]),
   ]);
 
-  const today = new Date().toISOString().split('T')[0];
-  const upcomingRides = rides.filter(
-    (r) => r.ride_date >= today && r.status !== RideStatus.CANCELLED,
-  );
-  const pastRides = rides.filter((r) => r.ride_date < today || r.status === RideStatus.CANCELLED);
-
-  const ridesTab = (
-    <div className="mt-4">
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {content.rides.upcoming}
-      </h2>
-      {upcomingRides.length === 0 ? (
-        <p className="mt-3 text-base text-muted-foreground">{content.rides.noRides}</p>
-      ) : (
-        <div className="mt-3">
-          {upcomingRides.map((ride) => (
-            <ManageRideItem key={ride.id} ride={ride} />
-          ))}
-        </div>
-      )}
-      {pastRides.length > 0 && (
-        <>
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-8">
-            {content.rides.past}
-          </h2>
-          <div className="mt-3">
-            {pastRides.map((ride) => (
-              <ManageRideItem key={ride.id} ride={ride} />
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
+  const ridesPanel = <ManageRidesPanel rides={rides} paceGroups={paceGroups} tags={tags} />;
 
   return (
     <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
@@ -183,7 +60,7 @@ export default async function ManagePage() {
         <h1 className="text-3xl font-bold tracking-tight text-foreground">{content.heading}</h1>
         <Link href={routes.manageNewRide}>
           <Button size="sm">
-            <Plus weight="bold" className="mr-1.5 h-4 w-4" />
+            <Plus weight="duotone" className="mr-1.5 h-4 w-4" />
             {content.rides.createRide}
           </Button>
         </Link>
@@ -232,7 +109,7 @@ export default async function ManagePage() {
             <TabsTrigger value="club">{content.sections.club}</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="rides">{ridesTab}</TabsContent>
+          <TabsContent value="rides">{ridesPanel}</TabsContent>
 
           <TabsContent value="members">
             <div className="mt-4">
@@ -263,7 +140,7 @@ export default async function ManagePage() {
           </TabsContent>
         </Tabs>
       ) : (
-        <div className="mt-6">{ridesTab}</div>
+        <div className="mt-6">{ridesPanel}</div>
       )}
     </div>
   );

@@ -363,11 +363,12 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
     .from('rides')
     .select(
       `
-      id, title, ride_date, start_time, status, capacity, template_id,
+      id, title, ride_date, start_time, status, capacity, template_id, distance_km,
       meeting_location:meeting_locations(name),
-      pace_group:pace_groups(name),
+      pace_group:pace_groups(id, name),
       creator:users!rides_created_by_fkey(full_name, display_name),
-      ride_signups(count)
+      ride_signups(count),
+      ride_tags(tag:tags(id, name, color))
     `,
     )
     .eq('club_id', clubId)
@@ -387,12 +388,15 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
 
   return (data ?? []).map((ride) => {
     const location = ride.meeting_location as unknown as { name: string } | null;
-    const pace = ride.pace_group as unknown as { name: string } | null;
+    const pace = ride.pace_group as unknown as { id: string; name: string } | null;
     const signups = ride.ride_signups as unknown as { count: number }[];
     const creator = ride.creator as unknown as {
       full_name: string;
       display_name: string | null;
     } | null;
+    const rideTags = ride.ride_tags as unknown as {
+      tag: { id: string; name: string; color: string | null };
+    }[];
 
     return {
       id: ride.id,
@@ -401,9 +405,12 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
       start_time: ride.start_time,
       status: ride.status,
       capacity: ride.capacity as number | null,
+      distance_km: (ride as Record<string, unknown>).distance_km as number | null,
       template_id: (ride as Record<string, unknown>).template_id as string | null,
       meeting_location_name: location?.name ?? null,
+      pace_group_id: pace?.id ?? null,
       pace_group_name: pace?.name ?? null,
+      tags: rideTags?.map((rt) => rt.tag).filter(Boolean) ?? [],
       signup_count: signups?.[0]?.count ?? 0,
       created_by_name: creator?.display_name ?? creator?.full_name ?? null,
     };

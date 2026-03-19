@@ -152,7 +152,7 @@ export function RideForm({
       {isRecurringSeries && (
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <ArrowsClockwise weight="bold" className="h-4 w-4 text-primary" />
+            <ArrowsClockwise className="h-4 w-4 text-primary" />
             <p className="text-sm font-medium text-foreground">
               {ridesContent.edit.recurringPrompt}
             </p>
@@ -363,7 +363,7 @@ export function RideForm({
               className="h-4 w-4 rounded border-input"
             />
             <Label htmlFor="is_recurring" className="cursor-pointer flex items-center gap-2">
-              <ArrowsClockwise weight="bold" className="h-4 w-4 text-muted-foreground" />
+              <ArrowsClockwise className="h-4 w-4 text-muted-foreground" />
               {ridesContent.recurring.toggle}
             </Label>
           </div>

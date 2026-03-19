@@ -8,6 +8,7 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
+import { IconContext } from '@phosphor-icons/react';
 import type { ClubTheme, ColorMode } from '@/types/theme';
 import { defaultTheme } from '@/themes';
 
@@ -108,7 +109,7 @@ export function ThemeProvider({ children, club = defaultTheme }: ThemeProviderPr
 
   return (
     <ThemeContext.Provider value={{ club, colorMode, setColorMode, resolvedColorMode }}>
-      {children}
+      <IconContext.Provider value={{ weight: 'duotone' }}>{children}</IconContext.Provider>
     </ThemeContext.Provider>
   );
 }

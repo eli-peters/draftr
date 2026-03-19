@@ -5,7 +5,12 @@ import { useTransition, useCallback } from 'react';
 import { Bicycle, ArrowClockwise } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { RideCard } from '@/components/rides/ride-card';
-import { RideFilterSheet, type SortOption } from '@/components/rides/ride-filter-sheet';
+import {
+  RideFilterSheet,
+  type SortOption,
+  type DateRange,
+} from '@/components/rides/ride-filter-sheet';
+import { sortRides } from '@/lib/rides/sort';
 import { appContent } from '@/content/app';
 import type { RideWithDetails } from '@/types/database';
 
@@ -18,23 +23,6 @@ interface FilterableRideFeedProps {
   heading?: string;
   emptyTitle: string;
   emptyDescription: string;
-}
-
-function sortRides(rides: RideWithDetails[], sortBy: SortOption): RideWithDetails[] {
-  return [...rides].sort((a, b) => {
-    switch (sortBy) {
-      case 'date_asc':
-        return a.ride_date.localeCompare(b.ride_date) || a.start_time.localeCompare(b.start_time);
-      case 'date_desc':
-        return b.ride_date.localeCompare(a.ride_date) || b.start_time.localeCompare(a.start_time);
-      case 'distance_asc':
-        return (a.distance_km ?? Infinity) - (b.distance_km ?? Infinity);
-      case 'distance_desc':
-        return (b.distance_km ?? 0) - (a.distance_km ?? 0);
-      default:
-        return 0;
-    }
-  });
 }
 
 export function FilterableRideFeed({
@@ -52,23 +40,35 @@ export function FilterableRideFeed({
 
   const paceIds = searchParams.get('pace')?.split(',').filter(Boolean) ?? [];
   const tagIds = searchParams.get('tags')?.split(',').filter(Boolean) ?? [];
+  const dateFrom = searchParams.get('from') ?? '';
+  const dateTo = searchParams.get('to') ?? '';
+  const dateRange: DateRange = { from: dateFrom, to: dateTo };
   const sortBy = (searchParams.get('sort') as SortOption) || 'date_asc';
-  const activeCount = paceIds.length + tagIds.length;
+  const activeCount = paceIds.length + tagIds.length + (dateFrom || dateTo ? 1 : 0);
   const hasFilters = activeCount > 0;
 
   const filtered = rides.filter((ride) => {
     if (paceIds.length > 0 && (!ride.pace_group || !paceIds.includes(ride.pace_group.id)))
       return false;
     if (tagIds.length > 0 && !ride.tags.some((t) => tagIds.includes(t.id))) return false;
+    if (dateFrom && ride.ride_date < dateFrom) return false;
+    if (dateTo && ride.ride_date > dateTo) return false;
     return true;
   });
 
   const sorted = sortRides(filtered, sortBy);
 
-  function handleApply(newPaceIds: string[], newTagIds: string[], newSort: SortOption) {
+  function handleApply(
+    newPaceIds: string[],
+    newTagIds: string[],
+    newDateRange: DateRange,
+    newSort: SortOption,
+  ) {
     const params = new URLSearchParams();
     if (newPaceIds.length > 0) params.set('pace', newPaceIds.join(','));
     if (newTagIds.length > 0) params.set('tags', newTagIds.join(','));
+    if (newDateRange.from) params.set('from', newDateRange.from);
+    if (newDateRange.to) params.set('to', newDateRange.to);
     if (newSort !== 'date_asc') params.set('sort', newSort);
     const qs = params.toString();
     router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false });
@@ -108,7 +108,6 @@ export function FilterableRideFeed({
             aria-label="Refresh rides"
           >
             <ArrowClockwise
-              weight="bold"
               className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
             />
           </Button>
@@ -117,6 +116,7 @@ export function FilterableRideFeed({
             tags={tags}
             activePaceGroupIds={paceIds}
             activeTagIds={tagIds}
+            activeDateRange={dateRange}
             activeSort={sortBy}
             onApply={handleApply}
             onClear={handleClear}
@@ -133,7 +133,7 @@ export function FilterableRideFeed({
       ) : (
         <div className="mt-12 flex flex-col items-center justify-center text-center py-8">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/8">
-            <Bicycle weight="duotone" className="h-10 w-10 text-primary/60" />
+            <Bicycle className="h-10 w-10 text-primary/60" />
           </div>
           <h2 className="mt-4 text-lg font-semibold text-foreground">
             {hasFilters ? ridesContent.filter.noResults.title : emptyTitle}

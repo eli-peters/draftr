@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { AppearanceSetting } from '@/components/settings/appearance-setting';
 import { appContent } from '@/content/app';
+import { formatPhoneDisplay } from '@/lib/phone';
 import { routes } from '@/config/routes';
 import { getInitials } from '@/lib/utils';
 import { dateFormats, units } from '@/config/formatting';
@@ -134,7 +135,9 @@ export default async function ProfilePage() {
             <div>
               <p className="font-medium text-foreground text-base">{ec.emergency_contact_name}</p>
               {ec.emergency_contact_phone && (
-                <p className="text-sm text-muted-foreground">{ec.emergency_contact_phone}</p>
+                <p className="text-sm text-muted-foreground">
+                  {formatPhoneDisplay(ec.emergency_contact_phone)}
+                </p>
               )}
             </div>
           </div>
@@ -168,14 +171,14 @@ export default async function ProfilePage() {
                       <span>{format(new Date(ride.ride_date), dateFormats.monthDay)}</span>
                       {ride.distance_km != null && (
                         <span className="flex items-center gap-1 text-info">
-                          <Path weight="bold" className="h-3.5 w-3.5" />
+                          <Path weight="duotone" className="h-3.5 w-3.5" />
                           {ride.distance_km}
                           {units.km}
                         </span>
                       )}
                     </div>
                   </div>
-                  <CaretRight weight="bold" className="h-4 w-4 text-muted-foreground/50" />
+                  <CaretRight weight="duotone" className="h-4 w-4 text-muted-foreground/50" />
                 </div>
               </Link>
             ))}

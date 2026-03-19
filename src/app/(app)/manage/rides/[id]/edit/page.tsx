@@ -62,7 +62,7 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
         </h1>
         <Link href={`${routes.manageNewRide}?duplicate=${id}`}>
           <Button variant="outline" size="sm">
-            <Copy weight="bold" className="h-4 w-4 mr-1.5" />
+            <Copy weight="duotone" className="h-4 w-4 mr-1.5" />
             {ridesContent.edit.duplicateRide}
           </Button>
         </Link>

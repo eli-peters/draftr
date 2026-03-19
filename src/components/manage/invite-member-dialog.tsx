@@ -68,7 +68,7 @@ export function InviteMemberDialog({ clubId }: InviteMemberDialogProps) {
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger render={<Button variant="outline" size="sm" />}>
-        <EnvelopeSimple weight="bold" className="mr-1.5 h-4 w-4" />
+        <EnvelopeSimple className="mr-1.5 h-4 w-4" />
         {content.members.inviteButton}
       </SheetTrigger>
       <SheetContent>
@@ -79,7 +79,7 @@ export function InviteMemberDialog({ clubId }: InviteMemberDialogProps) {
         {success ? (
           <div className="mt-8 flex flex-col items-center text-center px-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
-              <CheckCircle weight="fill" className="h-8 w-8 text-success" />
+              <CheckCircle className="h-8 w-8 text-success" />
             </div>
             <p className="mt-4 text-base font-semibold text-foreground">
               {inviteContent.successTitle}

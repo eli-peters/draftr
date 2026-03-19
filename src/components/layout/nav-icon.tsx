@@ -35,5 +35,5 @@ interface NavIconProps {
  */
 export function NavIcon({ name, className, active }: NavIconProps) {
   const Icon = iconMap[name];
-  return <Icon className={className} weight={active ? 'fill' : 'regular'} />;
+  return <Icon className={className} weight={active ? 'fill' : 'duotone'} />;
 }

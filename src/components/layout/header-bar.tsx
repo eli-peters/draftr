@@ -33,7 +33,7 @@ export function HeaderBar({
       {/* Left: team logo (mobile only — sidebar has brand on desktop) */}
       <div className="flex items-center gap-2 md:hidden">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-          <UsersThree className="h-4.5 w-4.5 text-primary" />
+          <UsersThree weight="duotone" className="h-4.5 w-4.5 text-primary" />
         </div>
       </div>
 

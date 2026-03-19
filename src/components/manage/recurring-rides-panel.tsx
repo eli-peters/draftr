@@ -117,7 +117,7 @@ export function RecurringRidesPanel({
           {rc.heading}
         </h2>
         <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-          <Plus weight="bold" className="h-4 w-4 mr-1.5" />
+          <Plus className="h-4 w-4 mr-1.5" />
           {rc.create}
         </Button>
       </div>
@@ -167,7 +167,7 @@ export function RecurringRidesPanel({
                     className="p-1.5 text-muted-foreground/50 hover:text-primary transition-colors"
                     title={rc.generateNow}
                   >
-                    <ArrowClockwise weight="bold" className="h-4 w-4" />
+                    <ArrowClockwise className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleToggle(r.id, r.is_active)}
@@ -175,9 +175,9 @@ export function RecurringRidesPanel({
                     title={r.is_active ? rc.pause : rc.resume}
                   >
                     {r.is_active ? (
-                      <Pause weight="bold" className="h-4 w-4" />
+                      <Pause className="h-4 w-4" />
                     ) : (
-                      <Play weight="bold" className="h-4 w-4" />
+                      <Play className="h-4 w-4" />
                     )}
                   </button>
                   <button
@@ -185,7 +185,7 @@ export function RecurringRidesPanel({
                     className="p-1.5 text-muted-foreground/50 hover:text-destructive transition-colors"
                     title={rc.delete}
                   >
-                    <Trash weight="bold" className="h-4 w-4" />
+                    <Trash className="h-4 w-4" />
                   </button>
                 </div>
               </div>

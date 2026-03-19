@@ -46,7 +46,7 @@ function RideListItem({
                 {myRides.waitlistPosition(ride.waitlist_position)}
               </Badge>
             )}
-            <CaretRight weight="bold" className="h-4 w-4 text-muted-foreground/40" />
+            <CaretRight className="h-4 w-4 text-muted-foreground/40" />
           </div>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -56,19 +56,19 @@ function RideListItem({
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
           {ride.meeting_location_name && (
             <span className="flex items-center gap-1.5">
-              <MapPin weight="fill" className="h-3.5 w-3.5" />
+              <MapPin className="h-3.5 w-3.5" />
               {ride.meeting_location_name}
             </span>
           )}
           {ride.distance_km != null && (
             <span className="flex items-center gap-1.5 text-info">
-              <Path weight="bold" className="h-3.5 w-3.5" />
+              <Path className="h-3.5 w-3.5" />
               {ride.distance_km}
               {units.km}
             </span>
           )}
           <span className="flex items-center gap-1.5">
-            <Users weight="fill" className="h-3.5 w-3.5" />
+            <Users className="h-3.5 w-3.5" />
             {spotsText}
           </span>
         </div>

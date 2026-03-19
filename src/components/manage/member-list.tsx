@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { format } from 'date-fns';
 import { MagnifyingGlass } from '@phosphor-icons/react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import {
   approveMember,
 } from '@/lib/manage/actions';
 import { MemberStatus } from '@/config/statuses';
+import { separators } from '@/config/formatting';
 import type { MemberRole } from '@/types/database';
 
 const { manage: content } = appContent;
@@ -26,8 +28,10 @@ interface MemberData {
   display_name: string | null;
   email: string;
   avatar_url: string | null;
+  preferred_pace_group: string | null;
   role: string;
   status: string;
+  joined_at: string;
 }
 
 interface MemberListProps {
@@ -36,17 +40,50 @@ interface MemberListProps {
   currentUserId: string;
 }
 
+type RoleFilter = 'all' | MemberRole;
+type SortOption = 'alpha' | 'newest';
+
 const roleOptions: { value: MemberRole; label: string }[] = [
   { value: 'rider', label: content.members.roles.rider },
   { value: 'ride_leader', label: content.members.roles.ride_leader },
   { value: 'admin', label: content.members.roles.admin },
 ];
 
+const roleFilterOptions: { value: RoleFilter; label: string }[] = [
+  { value: 'all', label: content.memberActions.filterAll },
+  ...roleOptions,
+];
+
+const sortOptions: { value: SortOption; label: string }[] = [
+  { value: 'alpha', label: content.memberActions.sortAlpha },
+  { value: 'newest', label: content.memberActions.sortNewest },
+];
+
+function sortMembers(members: MemberData[], sortBy: SortOption): MemberData[] {
+  return [...members].sort((a, b) => {
+    switch (sortBy) {
+      case 'alpha': {
+        const nameA = (a.display_name ?? a.full_name).toLowerCase();
+        const nameB = (b.display_name ?? b.full_name).toLowerCase();
+        return nameA.localeCompare(nameB);
+      }
+      case 'newest':
+        return b.joined_at.localeCompare(a.joined_at);
+      default:
+        return 0;
+    }
+  });
+}
+
 export function MemberList({ members, clubId, currentUserId }: MemberListProps) {
   const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
+  const [sortBy, setSortBy] = useState<SortOption>('alpha');
   const [isPending, startTransition] = useTransition();
 
+  // Filter by search + role
   const filtered = members.filter((m) => {
+    if (roleFilter !== 'all' && m.role !== roleFilter) return false;
     if (!search) return true;
     const q = search.toLowerCase();
     return (
@@ -56,9 +93,22 @@ export function MemberList({ members, clubId, currentUserId }: MemberListProps) 
     );
   });
 
-  const pending = filtered.filter((m) => m.status === MemberStatus.PENDING);
-  const active = filtered.filter((m) => m.status === MemberStatus.ACTIVE);
-  const inactive = filtered.filter((m) => m.status === MemberStatus.INACTIVE);
+  // Group by status, then sort within groups (current user pinned in active)
+  const pending = sortMembers(
+    filtered.filter((m) => m.status === MemberStatus.PENDING),
+    sortBy,
+  );
+  const activeFiltered = filtered.filter((m) => m.status === MemberStatus.ACTIVE);
+  const currentUser = activeFiltered.find((m) => m.user_id === currentUserId);
+  const otherActive = sortMembers(
+    activeFiltered.filter((m) => m.user_id !== currentUserId),
+    sortBy,
+  );
+  const active = currentUser ? [currentUser, ...otherActive] : otherActive;
+  const inactive = sortMembers(
+    filtered.filter((m) => m.status === MemberStatus.INACTIVE),
+    sortBy,
+  );
 
   function handleRoleChange(userId: string, newRole: MemberRole) {
     startTransition(async () => {
@@ -87,9 +137,8 @@ export function MemberList({ members, clubId, currentUserId }: MemberListProps) 
   return (
     <div className={isPending ? 'opacity-pending pointer-events-none' : ''}>
       {/* Search */}
-      <div className="relative mb-4">
+      <div className="relative mb-3">
         <MagnifyingGlass
-          weight="bold"
           className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
         />
         <Input
@@ -98,6 +147,36 @@ export function MemberList({ members, clubId, currentUserId }: MemberListProps) 
           placeholder={content.memberActions.searchPlaceholder}
           className="pl-9"
         />
+      </div>
+
+      {/* Filter + Sort controls */}
+      <div className="flex items-center justify-between mb-4 gap-3">
+        <div className="flex flex-wrap gap-1.5">
+          {roleFilterOptions.map((opt) => (
+            <Badge
+              key={opt.value}
+              variant={roleFilter === opt.value ? 'default' : 'outline'}
+              size="lg"
+              className="cursor-pointer"
+              onClick={() => setRoleFilter(opt.value)}
+            >
+              {opt.label}
+            </Badge>
+          ))}
+        </div>
+        <div className="flex gap-1.5 shrink-0">
+          {sortOptions.map((opt) => (
+            <Badge
+              key={opt.value}
+              variant={sortBy === opt.value ? 'default' : 'outline'}
+              size="lg"
+              className="cursor-pointer"
+              onClick={() => setSortBy(opt.value)}
+            >
+              {opt.label}
+            </Badge>
+          ))}
+        </div>
       </div>
 
       {/* Pending approvals */}
@@ -173,6 +252,13 @@ function MemberRow({
   const isInactive = member.status === MemberStatus.INACTIVE;
   const isPending = member.status === MemberStatus.PENDING;
   const roleKey = member.role as keyof typeof content.members.roles;
+  const joinedFormatted = format(new Date(member.joined_at), 'MMM yyyy');
+
+  // Build metadata line: pace group · Joined date
+  const metaParts: string[] = [];
+  if (member.preferred_pace_group) metaParts.push(member.preferred_pace_group);
+  metaParts.push(content.memberActions.joinedDate(joinedFormatted));
+  const metaLine = metaParts.join(separators.dot);
 
   return (
     <div
@@ -186,8 +272,16 @@ function MemberRow({
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="text-base font-medium text-foreground truncate">{name}</p>
+            <p className="text-base font-medium text-foreground truncate">
+              {name}
+              {isSelf && (
+                <span className="ml-1.5 text-sm font-normal text-muted-foreground">
+                  ({content.members.you})
+                </span>
+              )}
+            </p>
             <p className="text-sm text-muted-foreground truncate">{member.email}</p>
+            <p className="text-xs text-muted-foreground/60 truncate">{metaLine}</p>
           </div>
         </div>
 

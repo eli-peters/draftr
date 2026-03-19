@@ -27,10 +27,10 @@ export function AnnouncementBanner({ announcement }: AnnouncementBannerProps) {
         className="absolute top-3 right-3 p-1 text-muted-foreground/50 hover:text-foreground transition-colors"
         aria-label={content.announcementBanner.dismiss}
       >
-        <X weight="bold" className="h-4 w-4" />
+        <X className="h-4 w-4" />
       </button>
       <div className="flex items-start gap-3 pr-6">
-        <Megaphone weight="duotone" className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+        <Megaphone className="h-5 w-5 text-primary shrink-0 mt-0.5" />
         <div className="min-w-0">
           <h3 className="text-base font-bold text-foreground">{announcement.title}</h3>
           <p className="mt-1 text-sm text-foreground/75 leading-relaxed line-clamp-3">

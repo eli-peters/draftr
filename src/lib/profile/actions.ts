@@ -3,8 +3,9 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { appContent } from '@/content/app';
+import { toE164 } from '@/lib/phone';
 
-const { common, errors } = appContent;
+const { common, errors, profile: profileContent } = appContent;
 
 interface UpdateProfileData {
   display_name?: string;
@@ -25,6 +26,12 @@ export async function updateProfile(data: UpdateProfileData) {
 
   if (!user) return { error: common.notAuthenticated };
 
+  let normalizedPhone = data.emergency_contact_phone || null;
+  if (normalizedPhone) {
+    normalizedPhone = toE164(normalizedPhone);
+    if (!normalizedPhone) return { error: profileContent.emergencyContact.phoneInvalidError };
+  }
+
   const { error } = await supabase
     .from('users')
     .update({
@@ -32,7 +39,7 @@ export async function updateProfile(data: UpdateProfileData) {
       bio: data.bio || null,
       preferred_pace_group: data.preferred_pace_group || null,
       emergency_contact_name: data.emergency_contact_name || null,
-      emergency_contact_phone: data.emergency_contact_phone || null,
+      emergency_contact_phone: normalizedPhone,
       updated_at: new Date().toISOString(),
     })
     .eq('id', user.id);

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { FunnelSimple } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Sheet, SheetContent, SheetHeader, SheetFooter, SheetTitle } from '@/components/ui/sheet';
 import { appContent } from '@/content/app';
@@ -19,13 +20,24 @@ const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'distance_desc', label: ridesContent.filter.sort.distanceDesc },
 ];
 
+export interface DateRange {
+  from: string;
+  to: string;
+}
+
 interface RideFilterSheetProps {
   paceGroups: { id: string; name: string }[];
   tags: { id: string; name: string; color: string | null }[];
   activePaceGroupIds: string[];
   activeTagIds: string[];
+  activeDateRange: DateRange;
   activeSort: SortOption;
-  onApply: (paceGroupIds: string[], tagIds: string[], sort: SortOption) => void;
+  onApply: (
+    paceGroupIds: string[],
+    tagIds: string[],
+    dateRange: DateRange,
+    sort: SortOption,
+  ) => void;
   onClear: () => void;
 }
 
@@ -34,6 +46,7 @@ export function RideFilterSheet({
   tags,
   activePaceGroupIds,
   activeTagIds,
+  activeDateRange,
   activeSort,
   onApply,
   onClear,
@@ -41,14 +54,19 @@ export function RideFilterSheet({
   const [open, setOpen] = useState(false);
   const [pendingPaceGroups, setPendingPaceGroups] = useState<string[]>([]);
   const [pendingTags, setPendingTags] = useState<string[]>([]);
+  const [pendingDateRange, setPendingDateRange] = useState<DateRange>({ from: '', to: '' });
   const [pendingSort, setPendingSort] = useState<SortOption>('date_asc');
 
-  const activeCount = activePaceGroupIds.length + activeTagIds.length;
+  const activeCount =
+    activePaceGroupIds.length +
+    activeTagIds.length +
+    (activeDateRange.from || activeDateRange.to ? 1 : 0);
 
   function handleOpenChange(nextOpen: boolean) {
     if (nextOpen) {
       setPendingPaceGroups(activePaceGroupIds);
       setPendingTags(activeTagIds);
+      setPendingDateRange(activeDateRange);
       setPendingSort(activeSort);
     }
     setOpen(nextOpen);
@@ -65,7 +83,7 @@ export function RideFilterSheet({
   }
 
   function handleApply() {
-    onApply(pendingPaceGroups, pendingTags, pendingSort);
+    onApply(pendingPaceGroups, pendingTags, pendingDateRange, pendingSort);
     setOpen(false);
   }
 
@@ -77,7 +95,7 @@ export function RideFilterSheet({
   return (
     <>
       <Button variant="outline" size="sm" onClick={() => handleOpenChange(true)}>
-        <FunnelSimple weight="bold" className="h-4 w-4" />
+        <FunnelSimple className="h-4 w-4" />
         {ridesContent.filter.button}
         {activeCount > 0 && (
           <Badge variant="default" size="sm" className="ml-1">
@@ -153,6 +171,37 @@ export function RideFilterSheet({
               </div>
             )}
 
+            {/* Date Range */}
+            <div className="space-y-2">
+              <Label>{ridesContent.filter.dateRangeLabel}</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground">
+                    {ridesContent.filter.dateFrom}
+                  </span>
+                  <Input
+                    type="date"
+                    value={pendingDateRange.from}
+                    onChange={(e) =>
+                      setPendingDateRange((prev) => ({ ...prev, from: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground">
+                    {ridesContent.filter.dateTo}
+                  </span>
+                  <Input
+                    type="date"
+                    value={pendingDateRange.to}
+                    onChange={(e) =>
+                      setPendingDateRange((prev) => ({ ...prev, to: e.target.value }))
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Sort */}
             <div className="space-y-2">
               <Label>{ridesContent.filter.sortLabel}</Label>
@@ -175,6 +224,8 @@ export function RideFilterSheet({
           <SheetFooter className="flex-row gap-3">
             {(pendingPaceGroups.length > 0 ||
               pendingTags.length > 0 ||
+              pendingDateRange.from ||
+              pendingDateRange.to ||
               pendingSort !== 'date_asc') && (
               <Button variant="ghost" className="flex-1" onClick={handleClear}>
                 {ridesContent.filter.clearAll}
