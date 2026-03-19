@@ -159,14 +159,14 @@ export default async function PublicProfilePage({
                       <span>{format(new Date(ride.ride_date), dateFormats.monthDay)}</span>
                       {ride.distance_km != null && (
                         <span className="flex items-center gap-1 text-info">
-                          <Path weight="bold" className="h-3.5 w-3.5" />
+                          <Path weight="duotone" className="h-3.5 w-3.5" />
                           {ride.distance_km}
                           {units.km}
                         </span>
                       )}
                     </div>
                   </div>
-                  <CaretRight weight="bold" className="h-4 w-4 text-muted-foreground/50" />
+                  <CaretRight weight="duotone" className="h-4 w-4 text-muted-foreground/50" />
                 </div>
               </Link>
             ))}

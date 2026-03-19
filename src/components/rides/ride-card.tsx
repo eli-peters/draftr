@@ -44,11 +44,11 @@ export function RideCard({ ride }: RideCardProps) {
             {ride.start_time.slice(0, 5)}
           </span>
           {ride.template_id && (
-            <ArrowsClockwise weight="bold" className="h-3.5 w-3.5 text-muted-foreground/50" />
+            <ArrowsClockwise weight="duotone" className="h-3.5 w-3.5 text-muted-foreground/50" />
           )}
           {ride.status === RideStatus.WEATHER_WATCH && (
             <Badge variant="warning" className="gap-1">
-              <CloudRain weight="fill" className="h-3.5 w-3.5" />
+              <CloudRain weight="duotone" className="h-3.5 w-3.5" />
               {ridesContent.status.weatherWatch}
             </Badge>
           )}
@@ -71,26 +71,26 @@ export function RideCard({ ride }: RideCardProps) {
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
           {ride.meeting_location && (
             <span className="flex items-center gap-1.5">
-              <MapPin weight="fill" className="h-4 w-4" />
+              <MapPin weight="duotone" className="h-4 w-4" />
               {ride.meeting_location.name}
             </span>
           )}
           {ride.distance_km != null && (
             <span className="flex items-center gap-1.5 text-info">
-              <Path weight="bold" className="h-4 w-4" />
+              <Path weight="duotone" className="h-4 w-4" />
               {ride.distance_km}
               {units.km}
             </span>
           )}
           {ride.elevation_m != null && (
             <span className="flex items-center gap-1.5 text-info">
-              <Mountains weight="fill" className="h-4 w-4" />
+              <Mountains weight="duotone" className="h-4 w-4" />
               {ride.elevation_m}
               {units.m}
             </span>
           )}
           <span className="flex items-center gap-1.5">
-            <Users weight="fill" className="h-4 w-4" />
+            <Users weight="duotone" className="h-4 w-4" />
             {spotsText}
           </span>
         </div>

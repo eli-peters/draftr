@@ -65,7 +65,7 @@ export function WalkUpRiderForm({
         onClick={handleAdd}
         disabled={!selectedUserId || isPending}
       >
-        <UserPlus weight="bold" className="h-4 w-4 mr-1.5" />
+        <UserPlus className="h-4 w-4 mr-1.5" />
         {ridesContent.edit.addWalkUp}
       </Button>
       {message && <p className="text-sm text-muted-foreground">{message}</p>}

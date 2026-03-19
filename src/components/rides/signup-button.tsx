@@ -56,7 +56,7 @@ export function SignupButton({ rideId, isSignedUp, isCancelled, isFull }: Signup
         });
       }}
     >
-      <HandWaving weight="duotone" data-icon="inline-start" className="size-5" />
+      <HandWaving data-icon="inline-start" className="size-5" />
       {isPending ? appContent.common.loading : isFull ? detail.joinWaitlist : detail.signUp}
     </Button>
   );

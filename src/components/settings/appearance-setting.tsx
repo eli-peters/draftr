@@ -45,7 +45,7 @@ export function AppearanceSetting() {
                 : 'text-muted-foreground',
             )}
           >
-            <Icon weight={activeMode === value ? 'fill' : 'regular'} className="h-4 w-4" />
+            <Icon weight={activeMode === value ? 'fill' : undefined} className="h-4 w-4" />
             {label}
           </Button>
         ))}

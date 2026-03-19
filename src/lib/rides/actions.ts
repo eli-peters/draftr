@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { appContent } from '@/content/app';
 
 const { errors, common, notificationMessages: notif } = appContent;
@@ -21,7 +22,7 @@ export async function signUpForRide(rideId: string) {
 
   const { data: ride } = await supabase
     .from('rides')
-    .select('id, title, capacity, status')
+    .select('id, title, capacity, status, created_by')
     .eq('id', rideId)
     .single();
 
@@ -66,6 +67,20 @@ export async function signUpForRide(rideId: string) {
       type: 'signup_confirmed',
       title: notif.signupConfirmed.title(ride.title),
       body: null,
+      ride_id: rideId,
+      channel: 'push',
+    });
+  }
+
+  // Notify the ride leader when a rider joins the waitlist
+  // Uses admin client — RLS doesn't allow riders to insert notifications for other users
+  if (isFull) {
+    const admin = createAdminClient();
+    await admin.from('notifications').insert({
+      user_id: ride.created_by,
+      type: 'waitlist_joined',
+      title: notif.waitlistJoined.title(ride.title),
+      body: notif.waitlistJoined.body,
       ride_id: rideId,
       channel: 'push',
     });
@@ -154,10 +169,12 @@ export async function cancelSignUp(rideId: string) {
       }
 
       // Notify the promoted rider
+      // Uses admin client — the canceling rider can't insert notifications for other users via RLS
       const { data: ride } = await supabase.from('rides').select('title').eq('id', rideId).single();
 
       if (ride) {
-        await supabase.from('notifications').insert({
+        const admin = createAdminClient();
+        await admin.from('notifications').insert({
           user_id: nextWaitlisted.user_id,
           type: 'waitlist_promoted',
           title: notif.waitlistPromoted.title(ride.title),

@@ -85,7 +85,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
           {content.announcements.heading}
         </h2>
         <Button size="sm" variant="outline" onClick={handleNew}>
-          <Plus weight="bold" className="h-4 w-4 mr-1.5" />
+          <Plus className="h-4 w-4 mr-1.5" />
           {content.announcements.create}
         </Button>
       </div>
@@ -120,21 +120,21 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                     className="p-1.5 text-muted-foreground/50 hover:text-primary transition-colors"
                     title={a.is_pinned ? content.announcements.unpin : content.announcements.pin}
                   >
-                    <PushPin weight={a.is_pinned ? 'fill' : 'regular'} className="h-4 w-4" />
+                    <PushPin weight={a.is_pinned ? 'fill' : undefined} className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleEdit(a)}
                     className="p-1.5 text-muted-foreground/50 hover:text-foreground transition-colors"
                     title={content.announcements.edit}
                   >
-                    <PencilSimple weight="bold" className="h-4 w-4" />
+                    <PencilSimple className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(a.id)}
                     className="p-1.5 text-muted-foreground/50 hover:text-destructive transition-colors"
                     title={content.announcements.delete}
                   >
-                    <Trash weight="bold" className="h-4 w-4" />
+                    <Trash className="h-4 w-4" />
                   </button>
                 </div>
               </div>

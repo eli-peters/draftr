@@ -60,7 +60,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       {/* Status Banners */}
       {ride.status === RideStatus.WEATHER_WATCH && (
         <div className="mb-6 flex items-center gap-2.5 rounded-xl border border-warning/20 bg-warning/10 px-5 py-4 text-base text-warning">
-          <CloudRain weight="fill" className="h-5 w-5 shrink-0" />
+          <CloudRain weight="duotone" className="h-5 w-5 shrink-0" />
           {ridesStatus.weatherWatchDescription}
         </div>
       )}
@@ -121,7 +121,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       <div className="mt-8 space-y-3">
         {ride.meeting_location && (
           <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-5">
-            <MapPin weight="fill" className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+            <MapPin weight="duotone" className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <div>
               <p className="font-medium text-foreground text-base">{ride.meeting_location.name}</p>
               {ride.meeting_location.address && (
@@ -136,20 +136,20 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         <div className="flex items-center gap-5 rounded-xl border border-border bg-card p-5">
           {ride.distance_km != null && (
             <span className="flex items-center gap-2 text-base font-medium text-info">
-              <Path weight="bold" className="h-5 w-5" />
+              <Path weight="duotone" className="h-5 w-5" />
               {ride.distance_km}
               {units.km}
             </span>
           )}
           {ride.elevation_m != null && (
             <span className="flex items-center gap-2 text-base font-medium text-info">
-              <Mountains weight="fill" className="h-5 w-5" />
+              <Mountains weight="duotone" className="h-5 w-5" />
               {ride.elevation_m}
               {units.m}
             </span>
           )}
           <span className="flex items-center gap-2 text-base font-medium">
-            <Users weight="fill" className="h-5 w-5 text-muted-foreground" />
+            <Users weight="duotone" className="h-5 w-5 text-muted-foreground" />
             {spotsText}
           </span>
         </div>
@@ -165,7 +165,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-base font-semibold text-info hover:underline underline-offset-2"
           >
-            <ArrowSquareOut weight="bold" className="h-5 w-5" />
+            <ArrowSquareOut weight="duotone" className="h-5 w-5" />
             {ride.route_name ?? detail.viewRoute}
           </a>
         </div>

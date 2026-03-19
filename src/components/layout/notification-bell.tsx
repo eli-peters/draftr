@@ -47,7 +47,7 @@ export function NotificationBell({ notifications, unreadCount }: NotificationBel
 
   const bellIcon = (
     <>
-      <Bell weight={unreadCount > 0 ? 'fill' : 'regular'} className="h-6 w-6" />
+      <Bell weight={unreadCount > 0 ? 'fill' : undefined} className="h-6 w-6" />
       {unreadCount > 0 && (
         <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-micro font-bold text-primary-foreground tabular-nums">
           {unreadCount}

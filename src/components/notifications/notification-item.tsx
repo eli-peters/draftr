@@ -8,6 +8,7 @@ import {
   ArrowCircleUp,
   Megaphone,
   Info,
+  Queue,
 } from '@phosphor-icons/react';
 import { appContent } from '@/content/app';
 
@@ -29,6 +30,7 @@ export const notificationIcons: Record<NotificationType, React.ElementType> = {
   weather_watch: CloudRain,
   signup_confirmed: CalendarCheck,
   waitlist_promoted: ArrowCircleUp,
+  waitlist_joined: Queue,
   announcement: Megaphone,
 };
 
@@ -38,6 +40,7 @@ export const notificationStyles: Record<NotificationType, string> = {
   weather_watch: 'text-warning bg-warning/10',
   signup_confirmed: 'text-success bg-success/10',
   waitlist_promoted: 'text-primary bg-primary/10',
+  waitlist_joined: 'text-warning bg-warning/10',
   announcement: 'text-foreground bg-muted',
 };
 
@@ -65,7 +68,7 @@ export function NotificationItem({ notification, compact }: NotificationItemProp
       <div
         className={`flex ${compact ? 'h-7 w-7' : 'h-10 w-10'} shrink-0 items-center justify-center rounded-xl ${iconStyle}`}
       >
-        <Icon weight="fill" className={compact ? 'h-3.5 w-3.5' : 'h-4.5 w-4.5'} />
+        <Icon className={compact ? 'h-3.5 w-3.5' : 'h-4.5 w-4.5'} />
       </div>
 
       {/* Content */}

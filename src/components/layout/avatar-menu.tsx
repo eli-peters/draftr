@@ -79,7 +79,7 @@ export function AvatarMenu({ userName, userEmail, userInitials, avatarUrl }: Ava
                 className="cursor-pointer"
                 onClick={() => router.push(routes.profile)}
               >
-                <UserCircle weight="regular" className="mr-2 h-4 w-4" />
+                <UserCircle className="mr-2 h-4 w-4" />
                 {header.profile}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -88,7 +88,7 @@ export function AvatarMenu({ userName, userEmail, userInitials, avatarUrl }: Ava
                 className="cursor-pointer"
                 onClick={() => signOut()}
               >
-                <SignOut weight="bold" className="mr-2 h-4 w-4" />
+                <SignOut className="mr-2 h-4 w-4" />
                 {header.signOut}
               </DropdownMenuItem>
             </DropdownMenuContent>

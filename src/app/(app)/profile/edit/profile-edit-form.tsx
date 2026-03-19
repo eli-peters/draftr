@@ -5,6 +5,7 @@ import { useState, useRef, useTransition } from 'react';
 import { Camera } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PhoneInput } from '@/components/ui/phone-input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
@@ -104,7 +105,7 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
           </Avatar>
           {/* Camera badge — bottom-right offset */}
           <span className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm ring-2 ring-background transition-transform group-hover:scale-110">
-            <Camera weight="fill" className="h-3.5 w-3.5" />
+            <Camera className="h-3.5 w-3.5" />
           </span>
         </button>
         <input
@@ -200,12 +201,11 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
             <Label htmlFor="emergency_contact_phone">
               {profileContent.emergencyContact.phoneLabel}
             </Label>
-            <Input
+            <PhoneInput
               id="emergency_contact_phone"
               name="emergency_contact_phone"
-              type="tel"
               defaultValue={profile.emergency_contact_phone}
-              placeholder={profileContent.emergencyContact.phonePlaceholder}
+              placeholder={profileContent.emergencyContact.phoneInputPlaceholder}
             />
           </div>
         </div>

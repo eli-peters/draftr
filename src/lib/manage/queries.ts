@@ -6,6 +6,7 @@ export interface ClubMember {
   display_name: string | null;
   email: string;
   avatar_url: string | null;
+  preferred_pace_group: string | null;
   role: string;
   status: string;
   joined_at: string;
@@ -22,7 +23,7 @@ export async function getClubMembers(clubId: string): Promise<ClubMember[]> {
     .select(
       `
       user_id, role, status, joined_at,
-      user:users!club_memberships_user_id_fkey(full_name, display_name, email, avatar_url)
+      user:users!club_memberships_user_id_fkey(full_name, display_name, email, avatar_url, preferred_pace_group)
     `,
     )
     .eq('club_id', clubId)
@@ -39,6 +40,7 @@ export async function getClubMembers(clubId: string): Promise<ClubMember[]> {
       display_name: string | null;
       email: string;
       avatar_url: string | null;
+      preferred_pace_group: string | null;
     };
     return {
       user_id: m.user_id,
@@ -46,6 +48,7 @@ export async function getClubMembers(clubId: string): Promise<ClubMember[]> {
       display_name: user.display_name,
       email: user.email,
       avatar_url: user.avatar_url,
+      preferred_pace_group: user.preferred_pace_group,
       role: m.role,
       status: m.status,
       joined_at: m.joined_at,
