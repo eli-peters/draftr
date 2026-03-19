@@ -152,6 +152,7 @@ export const appContent = {
       cancelled: 'Cancelled',
     },
     detail: {
+      createdBy: (name: string) => `Created by ${name}`,
       signUp: 'Sign Up',
       joinWaitlist: 'Join Waitlist',
       cancelSignUp: 'Cancel Sign-Up',
@@ -166,6 +167,8 @@ export const appContent = {
       organiserNotesHeading: 'Notes from the organiser',
       signedUp: "You're signed up!",
       cancelled: 'This ride has been cancelled',
+      cancelledLocked: 'Cancelled rides cannot be edited.',
+      duplicateAsNew: 'Duplicate as New Ride',
       ridersHeading: (confirmed: number, waitlisted: number, capacity: number | null) => {
         const parts: string[] = [];
         if (capacity != null) {
@@ -235,6 +238,7 @@ export const appContent = {
     roster: {
       noSignups: 'No signups yet.',
       waitlisted: 'Waitlisted',
+      leader: 'Leader',
     },
   },
 
@@ -472,6 +476,7 @@ export const appContent = {
     rideNotFound: 'Ride not found',
     rideCancelled: 'This ride has been cancelled',
     createRideFailed: 'Failed to create ride',
+    notAuthorized: 'You do not have permission to perform this action',
     cannotDeactivateSelf: 'Cannot deactivate yourself',
     lastAdmin: 'Cannot change role — this is the only admin in the club.',
     noFileProvided: 'No file provided',

@@ -4,8 +4,44 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { appContent } from '@/content/app';
+import { RideStatus } from '@/config/statuses';
 
 const { errors, common, notificationMessages: notif } = appContent;
+
+/**
+ * Verify the caller has permission to modify a ride.
+ * Returns an error string if denied, null if allowed.
+ */
+async function checkRideEditPermission(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  rideId: string,
+): Promise<string | null> {
+  const { data: membership } = await supabase
+    .from('club_memberships')
+    .select('role')
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .single();
+
+  if (!membership) return errors.notAuthorized;
+
+  const role = membership.role;
+  if (role !== 'ride_leader' && role !== 'admin') return errors.notAuthorized;
+
+  // Admins can edit any ride; leaders can only edit rides they created
+  if (role === 'ride_leader') {
+    const { data: ride } = await supabase
+      .from('rides')
+      .select('created_by')
+      .eq('id', rideId)
+      .single();
+
+    if (ride?.created_by !== userId) return errors.notAuthorized;
+  }
+
+  return null;
+}
 
 /**
  * Sign up for a ride. Handles capacity and waitlisting.
@@ -30,7 +66,7 @@ export async function signUpForRide(rideId: string) {
     return { error: errors.rideNotFound };
   }
 
-  if (ride.status === 'cancelled') {
+  if (ride.status === RideStatus.CANCELLED) {
     return { error: errors.rideCancelled };
   }
 
@@ -384,6 +420,21 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
 
   if (!user) return { error: common.notAuthenticated };
 
+  // Verify caller has permission to edit this ride
+  const permissionError = await checkRideEditPermission(supabase, user.id, rideId);
+  if (permissionError) return { error: permissionError };
+
+  // Reject updates to cancelled rides
+  const { data: existingRide } = await supabase
+    .from('rides')
+    .select('status')
+    .eq('id', rideId)
+    .single();
+
+  if (existingRide?.status === RideStatus.CANCELLED) {
+    return { error: appContent.rides.detail.cancelledLocked };
+  }
+
   const { error: rideError } = await supabase
     .from('rides')
     .update({
@@ -458,6 +509,10 @@ export async function updateRecurringSeries(rideId: string, data: UpdateRideData
   } = await supabase.auth.getUser();
 
   if (!user) return { error: common.notAuthenticated };
+
+  // Verify caller has permission to edit this ride
+  const permissionError = await checkRideEditPermission(supabase, user.id, rideId);
+  if (permissionError) return { error: permissionError };
 
   // Get the current ride to find its template
   const { data: ride } = await supabase
@@ -552,7 +607,7 @@ export async function addWalkUpRider(rideId: string, riderUserId: string) {
     .single();
 
   if (!ride) return { error: errors.rideNotFound };
-  if (ride.status === 'cancelled') return { error: errors.rideCancelled };
+  if (ride.status === RideStatus.CANCELLED) return { error: errors.rideCancelled };
 
   // Count current confirmed signups
   const { count } = await supabase
@@ -608,6 +663,10 @@ export async function cancelRide(rideId: string, reason: string) {
 
   if (!user) return { error: common.notAuthenticated };
 
+  // Verify caller has permission to cancel this ride
+  const permissionError = await checkRideEditPermission(supabase, user.id, rideId);
+  if (permissionError) return { error: permissionError };
+
   // Get ride title for notification
   const { data: ride } = await supabase.from('rides').select('title').eq('id', rideId).single();
 
@@ -615,7 +674,7 @@ export async function cancelRide(rideId: string, reason: string) {
   const { error } = await supabase
     .from('rides')
     .update({
-      status: 'cancelled',
+      status: RideStatus.CANCELLED,
       cancellation_reason: reason || null,
       updated_at: new Date().toISOString(),
     })

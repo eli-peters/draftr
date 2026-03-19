@@ -34,6 +34,8 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
     redirect(routes.home);
   }
 
+  const userId = membership.user_id;
+
   const [ride, meetingLocations, paceGroups, tags, tagIds, signups, members] = await Promise.all([
     getRideById(id),
     getMeetingLocations(membership.club_id),
@@ -45,6 +47,16 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
   ]);
 
   if (!ride) notFound();
+
+  // Cancelled rides cannot be edited — redirect to detail page
+  if (ride.status === RideStatus.CANCELLED) {
+    redirect(routes.ride(id));
+  }
+
+  // Leaders can only edit rides they created; admins can edit any ride
+  if (userRole === 'ride_leader' && ride.created_by !== userId) {
+    redirect(routes.ride(id));
+  }
 
   const existingSignupUserIds = signups.map((s) => s.user_id);
   const clubMembersForWalkUp = members
@@ -94,27 +106,23 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
       />
 
       {/* Signups section */}
-      {ride.status !== RideStatus.CANCELLED && (
-        <div className="mt-12">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-            {ridesContent.edit.signups}
-          </h2>
-          <SignupRoster signups={signups} />
-          <div className="mt-4">
-            <WalkUpRiderForm
-              rideId={id}
-              clubMembers={clubMembersForWalkUp}
-              existingSignupUserIds={existingSignupUserIds}
-            />
-          </div>
+      <div className="mt-12">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
+          {ridesContent.edit.signups}
+        </h2>
+        <SignupRoster signups={signups} createdBy={ride.created_by} />
+        <div className="mt-4">
+          <WalkUpRiderForm
+            rideId={id}
+            clubMembers={clubMembersForWalkUp}
+            existingSignupUserIds={existingSignupUserIds}
+          />
         </div>
-      )}
+      </div>
 
-      {ride.status !== RideStatus.CANCELLED && (
-        <div className="mt-12">
-          <CancelRideButton rideId={id} rideTitle={ride.title} />
-        </div>
-      )}
+      <div className="mt-12">
+        <CancelRideButton rideId={id} rideTitle={ride.title} />
+      </div>
     </div>
   );
 }

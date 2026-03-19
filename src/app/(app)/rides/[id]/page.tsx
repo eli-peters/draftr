@@ -8,13 +8,23 @@ import {
   ArrowSquareOut,
   CloudRain,
 } from '@phosphor-icons/react/dist/ssr';
-import { getRideById, getUserSignupStatus, getRideSignups } from '@/lib/rides/queries';
+import Link from 'next/link';
+import { Copy } from '@phosphor-icons/react/dist/ssr';
+import {
+  getRideById,
+  getUserSignupStatus,
+  getRideSignups,
+  getUserClubMembership,
+} from '@/lib/rides/queries';
 import { SignupButton } from '@/components/rides/signup-button';
 import { SignupRoster } from '@/components/rides/signup-roster';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { appContent } from '@/content/app';
 import { RideStatus, SignupStatus } from '@/config/statuses';
 import { dateFormats, separators, units } from '@/config/formatting';
+import { routes } from '@/config/routes';
+import type { UserRole } from '@/config/navigation';
 
 const { detail, status: ridesStatus } = appContent.rides;
 
@@ -24,10 +34,11 @@ interface RideDetailPageProps {
 
 export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const { id } = await params;
-  const [ride, signup, signups] = await Promise.all([
+  const [ride, signup, signups, membership] = await Promise.all([
     getRideById(id),
     getUserSignupStatus(id),
     getRideSignups(id),
+    getUserClubMembership(),
   ]);
   if (!ride) notFound();
 
@@ -35,6 +46,10 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const isSignedUp =
     signup?.status === SignupStatus.CONFIRMED || signup?.status === SignupStatus.WAITLISTED;
   const isCancelled = ride.status === RideStatus.CANCELLED;
+
+  const userRole = (membership?.role as UserRole) ?? 'rider';
+  const isCreator = membership?.user_id === ride.created_by;
+  const canEdit = userRole === 'admin' || (userRole === 'ride_leader' && isCreator);
 
   // Separate confirmed from waitlisted for accurate display
   const confirmedCount = signups.filter(
@@ -93,6 +108,38 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             : ''}
           {`${separators.dot}${ride.is_drop_ride ? detail.dropRide : detail.noDrop}`}
         </p>
+      )}
+
+      {ride.creator && (
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          <Link
+            href={routes.publicProfile(ride.creator.id)}
+            className="hover:text-foreground transition-colors"
+          >
+            {detail.createdBy(ride.creator.display_name ?? ride.creator.full_name)}
+          </Link>
+        </p>
+      )}
+
+      {/* Edit / Duplicate actions for authorized users */}
+      {canEdit && (
+        <div className="mt-4 flex gap-2">
+          {!isCancelled && (
+            <Link href={routes.manageEditRide(ride.id)}>
+              <Button variant="outline" size="sm">
+                {appContent.rides.edit.heading}
+              </Button>
+            </Link>
+          )}
+          {isCancelled && (
+            <Link href={`${routes.manageNewRide}?duplicate=${ride.id}`}>
+              <Button variant="outline" size="sm">
+                <Copy className="h-4 w-4 mr-1.5" />
+                {detail.duplicateAsNew}
+              </Button>
+            </Link>
+          )}
+        </div>
       )}
 
       {ride.tags.length > 0 && (
@@ -189,7 +236,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             {detail.ridersHeading(confirmedCount, waitlistedCount, ride.capacity)}
           </h2>
           <div className="mt-3 rounded-xl border border-border bg-card p-3">
-            <SignupRoster signups={signups} />
+            <SignupRoster signups={signups} createdBy={ride.created_by} />
           </div>
         </div>
       )}
