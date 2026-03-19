@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { parseISO } from "date-fns";
+import Link from 'next/link';
+import { parseISO } from 'date-fns';
 import {
   CalendarDots,
   MapPin,
@@ -10,10 +10,11 @@ import {
   UserPlus,
   FlagPennant,
   CloudRain,
-} from "@phosphor-icons/react/dist/ssr";
-import { appContent } from "@/content/app";
-import { getRelativeDay } from "@/lib/utils";
-import type { UserRole } from "@/config/navigation";
+} from '@phosphor-icons/react/dist/ssr';
+import { appContent } from '@/content/app';
+import { routes } from '@/config/routes';
+import { getRelativeDay } from '@/lib/utils';
+import type { UserRole } from '@/config/navigation';
 
 const { dashboard: content } = appContent;
 
@@ -71,7 +72,7 @@ function ActionCard({
   children,
 }: {
   label: string;
-  icon: React.ComponentType<{ weight?: "duotone" | "fill"; className?: string }>;
+  icon: React.ComponentType<{ weight?: 'duotone' | 'fill'; className?: string }>;
   href: string;
   children: React.ReactNode;
 }) {
@@ -83,7 +84,10 @@ function ActionCard({
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {label}
           </span>
-          <CaretRight weight="bold" className="ml-auto h-3.5 w-3.5 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5" />
+          <CaretRight
+            weight="bold"
+            className="ml-auto h-3.5 w-3.5 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5"
+          />
         </div>
         {children}
       </div>
@@ -100,7 +104,7 @@ export function ActionBar({
   weatherWatchRide,
   userRole,
 }: ActionBarProps) {
-  const isAdmin = userRole === "admin";
+  const isAdmin = userRole === 'admin';
 
   const hasItems =
     nextSignup ||
@@ -119,7 +123,7 @@ export function ActionBar({
         <ActionCard
           label={content.actionBar.yourNextRide}
           icon={CalendarDots}
-          href={`/rides/${nextSignup.id}`}
+          href={routes.ride(nextSignup.id)}
         >
           <h3 className="text-base font-semibold text-foreground leading-tight">
             {nextSignup.title}
@@ -143,14 +147,15 @@ export function ActionBar({
         <ActionCard
           label={content.actionBar.waitlistPosition}
           icon={Queue}
-          href={`/rides/${nextWaitlistedRide.id}`}
+          href={routes.ride(nextWaitlistedRide.id)}
         >
           <h3 className="text-base font-semibold text-foreground leading-tight">
             {nextWaitlistedRide.title}
           </h3>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span className="font-medium text-primary">
-              {getRelativeDay(parseISO(nextWaitlistedRide.ride_date))} · {nextWaitlistedRide.start_time.slice(0, 5)}
+              {getRelativeDay(parseISO(nextWaitlistedRide.ride_date))} ·{' '}
+              {nextWaitlistedRide.start_time.slice(0, 5)}
             </span>
             <span className="flex items-center gap-1 text-warning">
               {appContent.myRides.waitlistPosition(nextWaitlistedRide.waitlist_position)}
@@ -164,14 +169,15 @@ export function ActionBar({
         <ActionCard
           label={content.actionBar.nextLedRide}
           icon={FlagBanner}
-          href={`/rides/${nextLedRide.id}`}
+          href={routes.ride(nextLedRide.id)}
         >
           <h3 className="text-base font-semibold text-foreground leading-tight">
             {nextLedRide.title}
           </h3>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span className="font-medium text-primary">
-              {getRelativeDay(parseISO(nextLedRide.ride_date))} · {nextLedRide.start_time.slice(0, 5)}
+              {getRelativeDay(parseISO(nextLedRide.ride_date))} ·{' '}
+              {nextLedRide.start_time.slice(0, 5)}
             </span>
             <span className="flex items-center gap-1">
               <Users weight="fill" className="h-3.5 w-3.5" />
@@ -182,7 +188,9 @@ export function ActionBar({
             <div className="mt-3 h-0.5 w-full rounded-full bg-muted overflow-hidden">
               <div
                 className="h-full rounded-full bg-primary transition-all duration-500"
-                style={{ width: `${Math.min((nextLedRide.signup_count / nextLedRide.capacity) * 100, 100)}%` }}
+                style={{
+                  width: `${Math.min((nextLedRide.signup_count / nextLedRide.capacity) * 100, 100)}%`,
+                }}
               />
             </div>
           )}
@@ -194,7 +202,7 @@ export function ActionBar({
         <ActionCard
           label={content.actionBar.weatherWatch}
           icon={CloudRain}
-          href={`/rides/${weatherWatchRide.id}`}
+          href={routes.ride(weatherWatchRide.id)}
         >
           <h3 className="text-base font-semibold text-foreground leading-tight">
             {weatherWatchRide.title}
@@ -210,7 +218,7 @@ export function ActionBar({
         <ActionCard
           label={content.actionBar.pendingApprovals}
           icon={UserPlus}
-          href="/manage?tab=members"
+          href={routes.manageTab('members')}
         >
           <p className="text-sm text-muted-foreground">
             {content.actionBar.pendingApprovalsCount(pendingMemberCount)}
@@ -223,7 +231,7 @@ export function ActionBar({
         <ActionCard
           label={content.actionBar.ridesNeedingLeader}
           icon={FlagPennant}
-          href="/manage?tab=rides"
+          href={routes.manageTab('rides')}
         >
           <p className="text-sm text-muted-foreground">
             {content.actionBar.ridesNeedingLeaderCount(ridesNeedingLeaderCount)}

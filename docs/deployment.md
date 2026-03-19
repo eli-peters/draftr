@@ -8,9 +8,9 @@ Draftr is deployed on **Vercel**, connected to the GitHub repo. Every push to `m
 
 Set these in Vercel's project settings (Settings → Environment Variables):
 
-| Variable | Where to get it |
-|----------|----------------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase dashboard → Settings → API |
+| Variable                        | Where to get it                                       |
+| ------------------------------- | ----------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase dashboard → Settings → API                   |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase dashboard → Settings → API (anon/public key) |
 
 These are also in `.env.local` for local development (not committed to git).

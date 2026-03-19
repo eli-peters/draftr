@@ -3,6 +3,7 @@
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTransition, useCallback } from 'react';
 import { Bicycle, ArrowClockwise } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
 import { RideCard } from '@/components/rides/ride-card';
 import { RideFilterSheet, type SortOption } from '@/components/rides/ride-filter-sheet';
 import { appContent } from '@/content/app';
@@ -99,17 +100,18 @@ export function FilterableRideFeed({
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
             aria-label="Refresh rides"
           >
             <ArrowClockwise
               weight="bold"
               className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
             />
-          </button>
+          </Button>
           <RideFilterSheet
             paceGroups={paceGroups}
             tags={tags}

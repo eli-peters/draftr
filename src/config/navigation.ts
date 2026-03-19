@@ -1,8 +1,8 @@
-import { appContent } from "@/content/app";
+import { appContent } from '@/content/app';
 
-export type UserRole = "rider" | "ride_leader" | "admin";
+export type UserRole = 'rider' | 'ride_leader' | 'admin';
 
-export type IconName = "house" | "bike" | "calendar-check" | "bell" | "user" | "settings";
+export type IconName = 'house' | 'bike' | 'calendar-check' | 'bell' | 'user' | 'settings';
 
 export interface NavItem {
   /** Route path */
@@ -22,25 +22,25 @@ export interface NavItem {
  */
 export const primaryNav: NavItem[] = [
   {
-    href: "/",
+    href: '/',
     label: appContent.nav.home,
-    icon: "house",
+    icon: 'house',
   },
   {
-    href: "/rides",
+    href: '/rides',
     label: appContent.nav.rides,
-    icon: "bike",
+    icon: 'bike',
   },
   {
-    href: "/my-rides",
+    href: '/my-rides',
     label: appContent.nav.myRides,
-    icon: "calendar-check",
+    icon: 'calendar-check',
   },
   {
-    href: "/manage",
+    href: '/manage',
     label: appContent.nav.manage,
-    icon: "settings",
-    requiredRole: "ride_leader",
+    icon: 'settings',
+    requiredRole: 'ride_leader',
   },
 ];
 

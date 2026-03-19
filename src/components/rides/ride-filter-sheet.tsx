@@ -80,14 +80,14 @@ export function RideFilterSheet({
         <FunnelSimple weight="bold" className="h-4 w-4" />
         {ridesContent.filter.button}
         {activeCount > 0 && (
-          <Badge variant="default" className="ml-1 h-5 min-w-5 px-1.5">
+          <Badge variant="default" size="sm" className="ml-1">
             {ridesContent.filter.activeCount(activeCount)}
           </Badge>
         )}
       </Button>
 
       <Sheet open={open} onOpenChange={handleOpenChange}>
-        <SheetContent side="bottom" className="max-h-[70vh] overflow-y-auto">
+        <SheetContent side="bottom" className="max-h-(--sheet-height-md) overflow-y-auto">
           <SheetHeader>
             <SheetTitle>{ridesContent.filter.heading}</SheetTitle>
           </SheetHeader>
@@ -104,7 +104,8 @@ export function RideFilterSheet({
                       <Badge
                         key={pg.id}
                         variant={isSelected ? 'default' : 'outline'}
-                        className="cursor-pointer text-sm px-3 py-1"
+                        size="lg"
+                        className="cursor-pointer"
                         onClick={() => togglePaceGroup(pg.id)}
                       >
                         {pg.name}
@@ -126,17 +127,18 @@ export function RideFilterSheet({
                       <Badge
                         key={tag.id}
                         variant={isSelected ? 'default' : 'outline'}
-                        className="cursor-pointer text-sm px-3 py-1"
+                        size="lg"
+                        className="cursor-pointer"
                         style={
                           isSelected && tag.color
                             ? {
                                 backgroundColor: tag.color,
-                                color: '#fff',
+                                color: 'var(--primary-foreground)',
                                 borderColor: tag.color,
                               }
                             : tag.color
                               ? {
-                                  borderColor: `${tag.color}60`,
+                                  borderColor: `color-mix(in srgb, ${tag.color} 60%, transparent)`,
                                   color: tag.color,
                                 }
                               : undefined
@@ -159,7 +161,8 @@ export function RideFilterSheet({
                   <Badge
                     key={opt.value}
                     variant={pendingSort === opt.value ? 'default' : 'outline'}
-                    className="cursor-pointer text-sm px-3 py-1"
+                    size="lg"
+                    className="cursor-pointer"
                     onClick={() => setPendingSort(opt.value)}
                   >
                     {opt.label}
@@ -170,7 +173,9 @@ export function RideFilterSheet({
           </div>
 
           <SheetFooter className="flex-row gap-3">
-            {(pendingPaceGroups.length > 0 || pendingTags.length > 0 || pendingSort !== 'date_asc') && (
+            {(pendingPaceGroups.length > 0 ||
+              pendingTags.length > 0 ||
+              pendingSort !== 'date_asc') && (
               <Button variant="ghost" className="flex-1" onClick={handleClear}>
                 {ridesContent.filter.clearAll}
               </Button>

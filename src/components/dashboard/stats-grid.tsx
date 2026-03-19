@@ -17,10 +17,7 @@ export function StatsGrid({ stats }: StatsGridProps) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       {stats.map((stat) => (
-        <div
-          key={stat.label}
-          className="rounded-xl border border-border bg-card p-5"
-        >
+        <div key={stat.label} className="rounded-xl border border-border bg-card p-5">
           {stat.icon && (
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
               <stat.icon weight="duotone" className="h-5 w-5 text-primary" />
@@ -32,9 +29,7 @@ export function StatsGrid({ stats }: StatsGridProps) {
             decimals={stat.decimals}
             className="text-4xl font-bold tabular-nums text-foreground"
           />
-          <p className="text-sm font-medium text-muted-foreground mt-2">
-            {stat.label}
-          </p>
+          <p className="text-sm font-medium text-muted-foreground mt-2">{stat.label}</p>
         </div>
       ))}
     </div>

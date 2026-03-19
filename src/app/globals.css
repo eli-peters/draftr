@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -55,6 +55,24 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-input-bg: var(--input-bg);
+  --color-input-bg-disabled: var(--input-bg-disabled);
+  --color-input-border-invalid: var(--input-border-invalid);
+  --color-input-ring-invalid: var(--input-ring-invalid);
+  --color-tabs-list-bg: var(--tabs-list-bg);
+  --color-tabs-trigger-text: var(--tabs-trigger-text);
+  --color-tabs-trigger-active-bg: var(--tabs-trigger-active-bg);
+  --color-tabs-trigger-active-border: var(--tabs-trigger-active-border);
+  --color-tabs-trigger-active-text: var(--tabs-trigger-active-text);
+  --color-destructive-focus-bg: var(--destructive-focus-bg);
+  --color-overlay: var(--overlay);
+  --color-overlay-heavy: var(--overlay-heavy);
+  --text-micro: 0.6rem;
+  --text-compact: 0.8rem;
+  --opacity-disabled: 0.4;
+  --opacity-muted: 0.5;
+  --opacity-pending: 0.6;
+  --opacity-subtle: 0.8;
 }
 
 /*
@@ -64,15 +82,15 @@
  */
 :root {
   /* Brand primitives — defaults for SSR / before ThemeProvider hydrates */
-  --brand-primary: #86142F;
-  --brand-danger: #C10F33;
-  --brand-accent: #0085B6;
-  --brand-black: #201D1D;
-  --brand-white: #FFFFFF;
-  --brand-muted: #999FA3;
+  --brand-primary: #86142f;
+  --brand-danger: #c10f33;
+  --brand-accent: #0085b6;
+  --brand-black: #201d1d;
+  --brand-white: #ffffff;
+  --brand-muted: #999fa3;
 
   /* Semantic tokens */
-  --background: #F8F8F7;
+  --background: #f8f8f7;
   --foreground: var(--brand-black);
   --card: var(--brand-white);
   --card-foreground: var(--brand-black);
@@ -96,10 +114,36 @@
   --info-foreground: var(--brand-white);
 
   /* Status colours — universal, not brand-specific */
-  --warning: #D97706;
+  --warning: #d97706;
   --warning-foreground: var(--brand-white);
   --success: #059669;
   --success-foreground: var(--brand-white);
+
+  /* Component-level tokens — avoid dark: overrides in components */
+  --input-bg: transparent;
+  --input-bg-disabled: color-mix(in srgb, var(--input) 50%, transparent);
+  --input-border-invalid: var(--destructive);
+  --input-ring-invalid: color-mix(in srgb, var(--destructive) 20%, transparent);
+  --tabs-list-bg: var(--muted);
+  --tabs-trigger-text: color-mix(in srgb, var(--foreground) 60%, transparent);
+  --tabs-trigger-active-bg: var(--background);
+  --tabs-trigger-active-border: transparent;
+  --tabs-trigger-active-text: var(--foreground);
+  --destructive-focus-bg: color-mix(in srgb, var(--destructive) 10%, transparent);
+  --sheet-height-md: 70vh;
+  --sheet-height-lg: 85vh;
+  --overlay: rgba(0, 0, 0, 0.1);
+  --overlay-heavy: rgba(0, 0, 0, 0.4);
+
+  /* Motion */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 350ms;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
 
   /* Charts */
   --chart-1: var(--brand-primary);
@@ -138,9 +182,9 @@
   --info: var(--brand-accent);
   --info-foreground: var(--brand-white);
 
-  --warning: #FBBF24;
+  --warning: #fbbf24;
   --warning-foreground: var(--brand-black);
-  --success: #34D399;
+  --success: #34d399;
   --success-foreground: var(--brand-black);
 
   --chart-1: var(--brand-primary);
@@ -148,6 +192,20 @@
   --chart-3: var(--brand-accent);
   --chart-4: var(--brand-muted);
   --chart-5: color-mix(in oklch, var(--brand-primary) 70%, var(--brand-white));
+
+  /* Component-level dark overrides */
+  --input-bg: color-mix(in srgb, var(--input) 30%, transparent);
+  --input-bg-disabled: color-mix(in srgb, var(--input) 80%, transparent);
+  --input-border-invalid: color-mix(in srgb, var(--destructive) 50%, transparent);
+  --input-ring-invalid: color-mix(in srgb, var(--destructive) 40%, transparent);
+  --tabs-list-bg: color-mix(in srgb, white 5%, transparent);
+  --tabs-trigger-text: var(--muted-foreground);
+  --tabs-trigger-active-bg: color-mix(in srgb, var(--input) 30%, transparent);
+  --tabs-trigger-active-border: var(--input);
+  --tabs-trigger-active-text: var(--primary);
+  --destructive-focus-bg: color-mix(in srgb, var(--destructive) 20%, transparent);
+  --overlay: rgba(255, 255, 255, 0.05);
+  --overlay-heavy: rgba(0, 0, 0, 0.6);
 }
 
 @layer base {
@@ -186,9 +244,9 @@
 }
 
 .page-transition-forward {
-  animation: page-slide-in-from-right 250ms ease-out;
+  animation: page-slide-in-from-right var(--duration-normal) ease-out;
 }
 
 .page-transition-back {
-  animation: page-slide-in-from-left 250ms ease-out;
+  animation: page-slide-in-from-left var(--duration-normal) ease-out;
 }

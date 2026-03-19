@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { appContent } from "@/content/app";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { appContent } from '@/content/app';
 
 const { common, auth } = appContent;
 
@@ -22,13 +22,13 @@ export default function AuthConfirmPage() {
 
     // The Supabase client automatically detects tokens in the URL hash
     // and triggers SIGNED_IN. We just need to listen for it.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event) => {
-        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-          router.replace("/setup-profile");
-        }
-      },
-    );
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        router.replace('/setup-profile');
+      }
+    });
 
     // Fallback: if no auth event fires within 5 seconds, show error
     const timeout = setTimeout(() => {
@@ -46,9 +46,7 @@ export default function AuthConfirmPage() {
       <div className="flex min-h-screen items-center justify-center px-4">
         <div className="text-center">
           <h2 className="text-lg font-semibold text-foreground">{common.error}</h2>
-          <p className="mt-2 text-base text-muted-foreground">
-            {auth.confirm.expiredLink}
-          </p>
+          <p className="mt-2 text-base text-muted-foreground">{auth.confirm.expiredLink}</p>
         </div>
       </div>
     );

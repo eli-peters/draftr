@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 export default function RootError({
   error,
@@ -12,7 +12,7 @@ export default function RootError({
       <div className="text-center px-4">
         <h2 className="text-lg font-semibold">Something went wrong</h2>
         <p className="mt-2 text-base text-muted-foreground max-w-80 mx-auto">
-          {error.message || "An unexpected error occurred."}
+          {error.message || 'An unexpected error occurred.'}
         </p>
         <button
           onClick={reset}

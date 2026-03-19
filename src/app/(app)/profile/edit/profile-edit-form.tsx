@@ -1,16 +1,18 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useState, useRef, useTransition } from "react";
-import { Camera } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { updateProfile, uploadAvatar } from "@/lib/profile/actions";
-import { appContent } from "@/content/app";
-import { getInitials } from "@/lib/utils";
+import { useRouter } from 'next/navigation';
+import { useState, useRef, useTransition } from 'react';
+import { Camera } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select } from '@/components/ui/select';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { updateProfile, uploadAvatar, removeAvatar } from '@/lib/profile/actions';
+import { appContent } from '@/content/app';
+import { routes } from '@/config/routes';
+import { getInitials } from '@/lib/utils';
 
 const { auth, common, profile: profileContent } = appContent;
 
@@ -49,7 +51,7 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
 
     // Upload
     const formData = new FormData();
-    formData.append("avatar", file);
+    formData.append('avatar', file);
     startUpload(async () => {
       const result = await uploadAvatar(formData);
       if (result.error) {
@@ -68,11 +70,11 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
 
     const formData = new FormData(e.currentTarget);
     const result = await updateProfile({
-      display_name: formData.get("display_name") as string,
-      bio: formData.get("bio") as string,
-      preferred_pace_group: formData.get("preferred_pace_group") as string,
-      emergency_contact_name: formData.get("emergency_contact_name") as string,
-      emergency_contact_phone: formData.get("emergency_contact_phone") as string,
+      display_name: formData.get('display_name') as string,
+      bio: formData.get('bio') as string,
+      preferred_pace_group: formData.get('preferred_pace_group') as string,
+      emergency_contact_name: formData.get('emergency_contact_name') as string,
+      emergency_contact_phone: formData.get('emergency_contact_phone') as string,
     });
 
     setIsPending(false);
@@ -80,12 +82,9 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
     if (result.error) {
       setError(result.error);
     } else {
-      router.push("/profile");
+      router.push(routes.profile);
     }
   }
-
-  const selectClass =
-    "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
   return (
     <form onSubmit={handleSubmit} className="mt-8 space-y-6">
@@ -93,19 +92,20 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
       <div className="flex flex-col items-center">
         <button
           type="button"
-          className="relative group"
+          className="relative group cursor-pointer"
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading}
         >
-          <Avatar className="h-24 w-24 ring-2 ring-primary/20">
+          <Avatar className="h-24 w-24 ring-2 ring-primary/20 transition-opacity group-hover:opacity-80">
             {avatarPreview && <AvatarImage src={avatarPreview} alt={profile.full_name} />}
             <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
               {initials}
             </AvatarFallback>
           </Avatar>
-          <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Camera weight="fill" className="h-6 w-6 text-white" />
-          </div>
+          {/* Camera badge — bottom-right offset */}
+          <span className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm ring-2 ring-background transition-transform group-hover:scale-110">
+            <Camera weight="fill" className="h-3.5 w-3.5" />
+          </span>
         </button>
         <input
           ref={fileInputRef}
@@ -114,19 +114,29 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
           className="hidden"
           onChange={handleAvatarChange}
         />
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="mt-2 text-sm"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isUploading}
-        >
-          {isUploading ? profileContent.avatar.uploading : profileContent.avatar.uploadButton}
-        </Button>
-        {avatarError && (
-          <p className="mt-1 text-sm text-destructive">{avatarError}</p>
+        {isUploading && (
+          <p className="mt-2 text-sm text-muted-foreground">{profileContent.avatar.uploading}</p>
         )}
+        {avatarPreview && !isUploading && (
+          <button
+            type="button"
+            className="mt-2 text-sm text-destructive hover:underline"
+            onClick={() => {
+              if (!window.confirm(profileContent.avatar.removeConfirm)) return;
+              startUpload(async () => {
+                const result = await removeAvatar();
+                if (result.error) {
+                  setAvatarError(result.error);
+                } else {
+                  setAvatarPreview(null);
+                }
+              });
+            }}
+          >
+            {profileContent.avatar.removeButton}
+          </button>
+        )}
+        {avatarError && <p className="mt-1 text-sm text-destructive">{avatarError}</p>}
       </div>
 
       <div className="space-y-2">
@@ -152,17 +162,18 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
 
       <div className="space-y-2">
         <Label htmlFor="preferred_pace_group">{auth.setupProfile.paceLabel}</Label>
-        <select
+        <Select
           id="preferred_pace_group"
           name="preferred_pace_group"
           defaultValue={profile.preferred_pace_group}
-          className={selectClass}
         >
           <option value="">{auth.setupProfile.noPreference}</option>
           {paceGroups.map((pg) => (
-            <option key={pg.id} value={pg.name}>{pg.name}</option>
+            <option key={pg.id} value={pg.name}>
+              {pg.name}
+            </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {/* Emergency Contact */}
@@ -170,10 +181,14 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {profileContent.sections.emergencyContact}
         </h3>
-        <p className="text-xs text-muted-foreground">{profileContent.emergencyContact.visibilityNote}</p>
+        <p className="text-xs text-muted-foreground">
+          {profileContent.emergencyContact.visibilityNote}
+        </p>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="emergency_contact_name">{profileContent.emergencyContact.nameLabel}</Label>
+            <Label htmlFor="emergency_contact_name">
+              {profileContent.emergencyContact.nameLabel}
+            </Label>
             <Input
               id="emergency_contact_name"
               name="emergency_contact_name"
@@ -182,7 +197,9 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="emergency_contact_phone">{profileContent.emergencyContact.phoneLabel}</Label>
+            <Label htmlFor="emergency_contact_phone">
+              {profileContent.emergencyContact.phoneLabel}
+            </Label>
             <Input
               id="emergency_contact_phone"
               name="emergency_contact_phone"
@@ -194,9 +211,7 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
         </div>
       </div>
 
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="flex gap-3">
         <Button type="submit" disabled={isPending}>

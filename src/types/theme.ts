@@ -23,7 +23,7 @@ export interface BrandPrimitives {
 }
 
 /** User's color mode preference */
-export type ColorMode = "system" | "light" | "dark";
+export type ColorMode = 'system' | 'light' | 'dark';
 
 /** Fully resolved theme (app default or app default + club overrides merged) */
 export interface ClubTheme {

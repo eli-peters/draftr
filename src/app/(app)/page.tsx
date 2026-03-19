@@ -15,6 +15,7 @@ import {
 import { getPendingMemberCount, getPinnedAnnouncement } from '@/lib/manage/queries';
 import { createClient } from '@/lib/supabase/server';
 import { appContent } from '@/content/app';
+import { routes } from '@/config/routes';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { GreetingSection } from '@/components/dashboard/greeting-section';
 import { ActionBar } from '@/components/dashboard/action-bar';
@@ -33,7 +34,7 @@ function getGreeting(): string {
 
 export default async function HomePage() {
   const membership = await getUserClubMembership();
-  if (!membership) redirect('/sign-in');
+  if (!membership) redirect(routes.signIn);
 
   const userRole = membership.role as UserRole;
   const isLeader = userRole === 'ride_leader' || userRole === 'admin';

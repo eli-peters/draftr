@@ -1,0 +1,16 @@
+export const routes = {
+  home: '/',
+  signIn: '/sign-in',
+  setupProfile: '/setup-profile',
+  rides: '/rides',
+  ride: (id: string) => `/rides/${id}`,
+  myRides: '/my-rides',
+  manage: '/manage',
+  manageNewRide: '/manage/rides/new',
+  manageEditRide: (id: string) => `/manage/rides/${id}/edit`,
+  manageTab: (tab: string) => `/manage?tab=${tab}`,
+  profile: '/profile',
+  profileEdit: '/profile/edit',
+  publicProfile: (userId: string) => `/profile/${userId}`,
+  notifications: '/notifications',
+} as const;

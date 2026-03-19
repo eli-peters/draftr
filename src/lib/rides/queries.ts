@@ -1,31 +1,33 @@
-import { createClient } from "@/lib/supabase/server";
-import type { RideWithDetails } from "@/types/database";
+import { createClient } from '@/lib/supabase/server';
+import type { RideWithDetails } from '@/types/database';
 
 /**
  * Fetch upcoming rides for a club, with joined relations.
  */
 export async function getUpcomingRides(clubId: string): Promise<RideWithDetails[]> {
   const supabase = await createClient();
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split('T')[0];
 
   const { data, error } = await supabase
-    .from("rides")
-    .select(`
+    .from('rides')
+    .select(
+      `
       *,
       meeting_location:meeting_locations(*),
       pace_group:pace_groups(*),
       ride_tags(tag:tags(*)),
       creator:users!rides_created_by_fkey(id, full_name, display_name, avatar_url),
       ride_signups(status)
-    `)
-    .eq("club_id", clubId)
-    .gte("ride_date", today)
-    .neq("status", "cancelled")
-    .order("ride_date", { ascending: true })
-    .order("start_time", { ascending: true });
+    `,
+    )
+    .eq('club_id', clubId)
+    .gte('ride_date', today)
+    .neq('status', 'cancelled')
+    .order('ride_date', { ascending: true })
+    .order('start_time', { ascending: true });
 
   if (error) {
-    console.error("Error fetching rides:", error);
+    console.error('Error fetching rides:', error);
     return [];
   }
 
@@ -34,7 +36,8 @@ export async function getUpcomingRides(clubId: string): Promise<RideWithDetails[
     return {
       ...ride,
       tags: ride.ride_tags?.map((rt: { tag: unknown }) => rt.tag).filter(Boolean) ?? [],
-      signup_count: signups.filter((s) => s.status === "confirmed" || s.status === "checked_in").length,
+      signup_count: signups.filter((s) => s.status === 'confirmed' || s.status === 'checked_in')
+        .length,
       creator: ride.creator ?? null,
     };
   }) as RideWithDetails[];
@@ -47,16 +50,18 @@ export async function getRideById(rideId: string): Promise<RideWithDetails | nul
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("rides")
-    .select(`
+    .from('rides')
+    .select(
+      `
       *,
       meeting_location:meeting_locations(*),
       pace_group:pace_groups(*),
       ride_tags(tag:tags(*)),
       creator:users!rides_created_by_fkey(id, full_name, display_name, avatar_url),
       ride_signups(status)
-    `)
-    .eq("id", rideId)
+    `,
+    )
+    .eq('id', rideId)
     .single();
 
   if (error || !data) {
@@ -67,7 +72,8 @@ export async function getRideById(rideId: string): Promise<RideWithDetails | nul
   return {
     ...data,
     tags: data.ride_tags?.map((rt: { tag: unknown }) => rt.tag).filter(Boolean) ?? [],
-    signup_count: signups.filter((s) => s.status === "confirmed" || s.status === "checked_in").length,
+    signup_count: signups.filter((s) => s.status === 'confirmed' || s.status === 'checked_in')
+      .length,
     creator: data.creator ?? null,
   } as RideWithDetails;
 }
@@ -77,16 +83,18 @@ export async function getRideById(rideId: string): Promise<RideWithDetails | nul
  */
 export async function getUserSignupStatus(rideId: string) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return null;
 
   const { data } = await supabase
-    .from("ride_signups")
-    .select("id, status")
-    .eq("ride_id", rideId)
-    .eq("user_id", user.id)
-    .neq("status", "cancelled")
+    .from('ride_signups')
+    .select('id, status')
+    .eq('ride_id', rideId)
+    .eq('user_id', user.id)
+    .neq('status', 'cancelled')
     .maybeSingle();
 
   return data;
@@ -97,11 +105,12 @@ export async function getUserSignupStatus(rideId: string) {
  */
 export async function getUserNextSignup(userId: string, clubId: string) {
   const supabase = await createClient();
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split('T')[0];
 
   const { data } = await supabase
-    .from("ride_signups")
-    .select(`
+    .from('ride_signups')
+    .select(
+      `
       id, status,
       ride:rides!inner(
         id, title, ride_date, start_time, status, capacity,
@@ -109,13 +118,14 @@ export async function getUserNextSignup(userId: string, clubId: string) {
         pace_group:pace_groups(name),
         ride_signups(count)
       )
-    `)
-    .eq("user_id", userId)
-    .eq("status", "confirmed")
-    .eq("ride.club_id", clubId)
-    .gte("ride.ride_date", today)
-    .neq("ride.status", "cancelled")
-    .order("ride(ride_date)", { ascending: true })
+    `,
+    )
+    .eq('user_id', userId)
+    .eq('status', 'confirmed')
+    .eq('ride.club_id', clubId)
+    .gte('ride.ride_date', today)
+    .neq('ride.status', 'cancelled')
+    .order('ride(ride_date)', { ascending: true })
     .limit(1)
     .maybeSingle();
 
@@ -150,21 +160,23 @@ export async function getUserNextSignup(userId: string, clubId: string) {
  */
 export async function getLeaderNextLedRide(userId: string, clubId: string) {
   const supabase = await createClient();
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split('T')[0];
 
   const { data } = await supabase
-    .from("rides")
-    .select(`
+    .from('rides')
+    .select(
+      `
       id, title, ride_date, start_time, capacity,
       meeting_location:meeting_locations(name),
       ride_signups(count)
-    `)
-    .eq("club_id", clubId)
-    .eq("created_by", userId)
-    .gte("ride_date", today)
-    .neq("status", "cancelled")
-    .order("ride_date", { ascending: true })
-    .order("start_time", { ascending: true })
+    `,
+    )
+    .eq('club_id', clubId)
+    .eq('created_by', userId)
+    .gte('ride_date', today)
+    .neq('status', 'cancelled')
+    .order('ride_date', { ascending: true })
+    .order('start_time', { ascending: true })
     .limit(1)
     .maybeSingle();
 
@@ -189,23 +201,25 @@ export async function getLeaderNextLedRide(userId: string, clubId: string) {
  */
 export async function getUserNextWaitlistedRide(userId: string, clubId: string) {
   const supabase = await createClient();
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split('T')[0];
 
   const { data } = await supabase
-    .from("ride_signups")
-    .select(`
+    .from('ride_signups')
+    .select(
+      `
       id, status, waitlist_position,
       ride:rides!inner(
         id, title, ride_date, start_time, status,
         meeting_location:meeting_locations(name)
       )
-    `)
-    .eq("user_id", userId)
-    .eq("status", "waitlisted")
-    .eq("ride.club_id", clubId)
-    .gte("ride.ride_date", today)
-    .neq("ride.status", "cancelled")
-    .order("ride(ride_date)", { ascending: true })
+    `,
+    )
+    .eq('user_id', userId)
+    .eq('status', 'waitlisted')
+    .eq('ride.club_id', clubId)
+    .gte('ride.ride_date', today)
+    .neq('ride.status', 'cancelled')
+    .order('ride(ride_date)', { ascending: true })
     .limit(1)
     .maybeSingle();
 
@@ -238,17 +252,17 @@ export async function getRidesNeedingLeaderCount(clubId: string) {
   const weekFromNow = new Date(today);
   weekFromNow.setDate(weekFromNow.getDate() + 7);
 
-  const todayStr = today.toISOString().split("T")[0];
-  const weekStr = weekFromNow.toISOString().split("T")[0];
+  const todayStr = today.toISOString().split('T')[0];
+  const weekStr = weekFromNow.toISOString().split('T')[0];
 
   const { count } = await supabase
-    .from("rides")
-    .select("*", { count: "exact", head: true })
-    .eq("club_id", clubId)
-    .is("created_by", null)
-    .gte("ride_date", todayStr)
-    .lte("ride_date", weekStr)
-    .neq("status", "cancelled");
+    .from('rides')
+    .select('*', { count: 'exact', head: true })
+    .eq('club_id', clubId)
+    .is('created_by', null)
+    .gte('ride_date', todayStr)
+    .lte('ride_date', weekStr)
+    .neq('status', 'cancelled');
 
   return count ?? 0;
 }
@@ -258,18 +272,20 @@ export async function getRidesNeedingLeaderCount(clubId: string) {
  */
 export async function getLeaderWeatherWatchRide(userId: string, clubId: string) {
   const supabase = await createClient();
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split('T')[0];
 
   const { data } = await supabase
-    .from("rides")
-    .select(`
+    .from('rides')
+    .select(
+      `
       id, title, ride_date, start_time
-    `)
-    .eq("club_id", clubId)
-    .eq("created_by", userId)
-    .eq("status", "weather_watch")
-    .gte("ride_date", today)
-    .order("ride_date", { ascending: true })
+    `,
+    )
+    .eq('club_id', clubId)
+    .eq('created_by', userId)
+    .eq('status', 'weather_watch')
+    .gte('ride_date', today)
+    .order('ride_date', { ascending: true })
     .limit(1)
     .maybeSingle();
 
@@ -281,15 +297,17 @@ export async function getLeaderWeatherWatchRide(userId: string, clubId: string) 
  */
 export async function getUserClubMembership() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return null;
 
   const { data } = await supabase
-    .from("club_memberships")
-    .select("*, club:clubs(*)")
-    .eq("user_id", user.id)
-    .eq("status", "active")
+    .from('club_memberships')
+    .select('*, club:clubs(*)')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
     .single();
 
   return data;
@@ -301,11 +319,11 @@ export async function getUserClubMembership() {
 export async function getMeetingLocations(clubId: string) {
   const supabase = await createClient();
   const { data } = await supabase
-    .from("meeting_locations")
-    .select("id, name")
-    .eq("club_id", clubId)
-    .eq("is_active", true)
-    .order("name");
+    .from('meeting_locations')
+    .select('id, name')
+    .eq('club_id', clubId)
+    .eq('is_active', true)
+    .order('name');
   return data ?? [];
 }
 
@@ -315,10 +333,10 @@ export async function getMeetingLocations(clubId: string) {
 export async function getPaceGroups(clubId: string) {
   const supabase = await createClient();
   const { data } = await supabase
-    .from("pace_groups")
-    .select("id, name")
-    .eq("club_id", clubId)
-    .order("sort_order");
+    .from('pace_groups')
+    .select('id, name')
+    .eq('club_id', clubId)
+    .order('sort_order');
   return data ?? [];
 }
 
@@ -328,10 +346,10 @@ export async function getPaceGroups(clubId: string) {
 export async function getClubTags(clubId: string) {
   const supabase = await createClient();
   const { data } = await supabase
-    .from("tags")
-    .select("id, name, color")
-    .eq("club_id", clubId)
-    .order("name");
+    .from('tags')
+    .select('id, name, color')
+    .eq('club_id', clubId)
+    .order('name');
   return data ?? [];
 }
 
@@ -342,26 +360,28 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
   const supabase = await createClient();
 
   let query = supabase
-    .from("rides")
-    .select(`
+    .from('rides')
+    .select(
+      `
       id, title, ride_date, start_time, status, capacity, template_id,
       meeting_location:meeting_locations(name),
       pace_group:pace_groups(name),
       creator:users!rides_created_by_fkey(full_name, display_name),
       ride_signups(count)
-    `)
-    .eq("club_id", clubId)
-    .order("ride_date", { ascending: true })
-    .order("start_time", { ascending: true });
+    `,
+    )
+    .eq('club_id', clubId)
+    .order('ride_date', { ascending: true })
+    .order('start_time', { ascending: true });
 
   if (!isAdmin) {
-    query = query.eq("created_by", userId);
+    query = query.eq('created_by', userId);
   }
 
   const { data, error } = await query;
 
   if (error) {
-    console.error("Error fetching leader rides:", error);
+    console.error('Error fetching leader rides:', error);
     return [];
   }
 
@@ -369,7 +389,10 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
     const location = ride.meeting_location as unknown as { name: string } | null;
     const pace = ride.pace_group as unknown as { name: string } | null;
     const signups = ride.ride_signups as unknown as { count: number }[];
-    const creator = ride.creator as unknown as { full_name: string; display_name: string | null } | null;
+    const creator = ride.creator as unknown as {
+      full_name: string;
+      display_name: string | null;
+    } | null;
 
     return {
       id: ride.id,
@@ -394,23 +417,28 @@ export async function getRideSignups(rideId: string) {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("ride_signups")
-    .select(`
+    .from('ride_signups')
+    .select(
+      `
       id, status, signed_up_at, waitlist_position,
       user:users!inner(id, full_name, display_name, avatar_url)
-    `)
-    .eq("ride_id", rideId)
-    .neq("status", "cancelled")
-    .order("signed_up_at", { ascending: true });
+    `,
+    )
+    .eq('ride_id', rideId)
+    .neq('status', 'cancelled')
+    .order('signed_up_at', { ascending: true });
 
   if (error) {
-    console.error("Error fetching ride signups:", error);
+    console.error('Error fetching ride signups:', error);
     return [];
   }
 
   return (data ?? []).map((signup) => {
     const user = signup.user as unknown as {
-      id: string; full_name: string; display_name: string | null; avatar_url: string | null;
+      id: string;
+      full_name: string;
+      display_name: string | null;
+      avatar_url: string | null;
     };
     return {
       id: signup.id,
@@ -429,10 +457,7 @@ export async function getRideSignups(rideId: string) {
  */
 export async function getRideTagIds(rideId: string): Promise<string[]> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("ride_tags")
-    .select("tag_id")
-    .eq("ride_id", rideId);
+  const { data } = await supabase.from('ride_tags').select('tag_id').eq('ride_id', rideId);
   return (data ?? []).map((rt) => rt.tag_id);
 }
 
@@ -456,14 +481,15 @@ export type UserRideSignup = {
 export async function getUserRideSignups(
   userId: string,
   clubId: string,
-  filter: "upcoming" | "past" | "waitlisted",
+  filter: 'upcoming' | 'past' | 'waitlisted',
 ): Promise<UserRideSignup[]> {
   const supabase = await createClient();
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split('T')[0];
 
   let query = supabase
-    .from("ride_signups")
-    .select(`
+    .from('ride_signups')
+    .select(
+      `
       id, status, signed_up_at, waitlist_position,
       ride:rides!inner(
         id, title, ride_date, start_time, distance_km, capacity,
@@ -471,36 +497,35 @@ export async function getUserRideSignups(
         pace_group:pace_groups(name),
         ride_signups(count)
       )
-    `)
-    .eq("user_id", userId)
-    .eq("ride.club_id", clubId);
+    `,
+    )
+    .eq('user_id', userId)
+    .eq('ride.club_id', clubId);
 
   switch (filter) {
-    case "upcoming":
+    case 'upcoming':
       query = query
-        .eq("status", "confirmed")
-        .gte("ride.ride_date", today)
-        .neq("ride.status", "cancelled");
+        .eq('status', 'confirmed')
+        .gte('ride.ride_date', today)
+        .neq('ride.status', 'cancelled');
       break;
-    case "past":
-      query = query
-        .in("status", ["confirmed", "checked_in"])
-        .lt("ride.ride_date", today);
+    case 'past':
+      query = query.in('status', ['confirmed', 'checked_in']).lt('ride.ride_date', today);
       break;
-    case "waitlisted":
+    case 'waitlisted':
       query = query
-        .eq("status", "waitlisted")
-        .gte("ride.ride_date", today)
-        .neq("ride.status", "cancelled");
+        .eq('status', 'waitlisted')
+        .gte('ride.ride_date', today)
+        .neq('ride.status', 'cancelled');
       break;
   }
 
-  const { data, error } = await query.order("ride(ride_date)", {
-    ascending: filter !== "past",
+  const { data, error } = await query.order('ride(ride_date)', {
+    ascending: filter !== 'past',
   });
 
   if (error) {
-    console.error("Error fetching user ride signups:", error);
+    console.error('Error fetching user ride signups:', error);
     return [];
   }
 

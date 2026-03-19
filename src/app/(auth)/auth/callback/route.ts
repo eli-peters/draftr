@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import type { User } from "@supabase/supabase-js";
+import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import type { User } from '@supabase/supabase-js';
 
 /**
  * Auth callback route handler.
@@ -9,9 +9,9 @@ import type { User } from "@supabase/supabase-js";
  */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
-  const token_hash = searchParams.get("token_hash");
-  const type = searchParams.get("type");
+  const code = searchParams.get('code');
+  const token_hash = searchParams.get('token_hash');
+  const type = searchParams.get('type');
 
   const supabase = await createClient();
   let user: User | null = null;
@@ -26,16 +26,16 @@ export async function GET(request: Request) {
   if (!user && token_hash && type) {
     const { data, error } = await supabase.auth.verifyOtp({
       token_hash,
-      type: type as "invite" | "recovery" | "email",
+      type: type as 'invite' | 'recovery' | 'email',
     });
     if (!error) user = data.user;
   }
 
   if (user) {
     const { data: profile } = await supabase
-      .from("users")
-      .select("onboarding_completed")
-      .eq("id", user.id)
+      .from('users')
+      .select('onboarding_completed')
+      .eq('id', user.id)
       .single();
 
     if (profile?.onboarding_completed) {

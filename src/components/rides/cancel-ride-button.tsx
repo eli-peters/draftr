@@ -1,12 +1,13 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { cancelRide } from "@/lib/rides/actions";
-import { appContent } from "@/content/app";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { cancelRide } from '@/lib/rides/actions';
+import { appContent } from '@/content/app';
+import { routes } from '@/config/routes';
 
 const { rides: ridesContent, common } = appContent;
 
@@ -18,7 +19,7 @@ interface CancelRideButtonProps {
 export function CancelRideButton({ rideId, rideTitle }: CancelRideButtonProps) {
   const router = useRouter();
   const [showConfirm, setShowConfirm] = useState(false);
-  const [reason, setReason] = useState("");
+  const [reason, setReason] = useState('');
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,17 +33,13 @@ export function CancelRideButton({ rideId, rideTitle }: CancelRideButtonProps) {
     if (result.error) {
       setError(result.error);
     } else {
-      router.push("/manage");
+      router.push(routes.manage);
     }
   }
 
   if (!showConfirm) {
     return (
-      <Button
-        variant="outline"
-        className="w-full text-destructive border-destructive/30 hover:bg-destructive/10"
-        onClick={() => setShowConfirm(true)}
-      >
+      <Button variant="destructive" className="w-full" onClick={() => setShowConfirm(true)}>
         {ridesContent.edit.cancelRide}
       </Button>
     );
@@ -54,7 +51,9 @@ export function CancelRideButton({ rideId, rideTitle }: CancelRideButtonProps) {
         {ridesContent.edit.cancelConfirm(rideTitle)}
       </p>
       <div className="space-y-2">
-        <Label htmlFor="cancel-reason" className="text-sm">{ridesContent.edit.cancelReasonLabel}</Label>
+        <Label htmlFor="cancel-reason" className="text-sm">
+          {ridesContent.edit.cancelReasonLabel}
+        </Label>
         <Textarea
           id="cancel-reason"
           value={reason}

@@ -139,6 +139,10 @@ export const appContent = {
         distanceDesc: 'Distance (longest first)',
       },
     },
+    card: {
+      drop: 'Drop',
+      riders: 'riders',
+    },
     status: {
       weatherWatch: 'Weather Watch',
       weatherWatchDescription: 'Weather Watch — this ride may be affected by weather conditions.',
@@ -289,6 +293,9 @@ export const appContent = {
     avatar: {
       uploadButton: 'Change Photo',
       uploading: 'Uploading...',
+      removeButton: 'Remove Photo',
+      removing: 'Removing...',
+      removeConfirm: "Remove your profile photo? You'll revert to your initials.",
     },
     publicProfile: {
       deactivated: 'This member is no longer active.',
@@ -463,7 +470,7 @@ export const appContent = {
     },
     waitlistPromoted: {
       title: (rideTitle: string) => `You're in! Spot opened for ${rideTitle}`,
-      body: 'A spot opened up and you\'ve been promoted from the waitlist.',
+      body: "A spot opened up and you've been promoted from the waitlist.",
     },
     newRidePosted: {
       title: (rideTitle: string) => `New Ride: ${rideTitle}`,

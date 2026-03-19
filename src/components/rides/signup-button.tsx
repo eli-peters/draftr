@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useTransition } from "react";
-import { HandWaving } from "@phosphor-icons/react";
-import { signUpForRide, cancelSignUp } from "@/lib/rides/actions";
-import { Button } from "@/components/ui/button";
-import { appContent } from "@/content/app";
+import { useTransition } from 'react';
+import { HandWaving } from '@phosphor-icons/react';
+import { signUpForRide, cancelSignUp } from '@/lib/rides/actions';
+import { Button } from '@/components/ui/button';
+import { appContent } from '@/content/app';
 
 const { detail } = appContent.rides;
 

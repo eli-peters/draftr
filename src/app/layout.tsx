@@ -1,48 +1,49 @@
-import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
-import { ThemeProvider } from "@/components/theme-provider";
-import { COLOR_MODE_SCRIPT } from "@/lib/color-mode-script";
-import { appContent } from "@/content/app";
-import "./globals.css";
+import type { Metadata, Viewport } from 'next';
+import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
+import { ThemeProvider } from '@/components/theme-provider';
+import { COLOR_MODE_SCRIPT } from '@/lib/color-mode-script';
+import { appContent } from '@/content/app';
+import { defaultTheme } from '@/themes/default';
+import './globals.css';
 
 const plusJakarta = Plus_Jakarta_Sans({
-  variable: "--font-sans",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  variable: '--font-sans',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const viewport: Viewport = {
-  width: "device-width",
+  width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  viewportFit: "cover",
+  viewportFit: 'cover',
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
-    { media: "(prefers-color-scheme: dark)", color: "#201D1D" },
+    { media: '(prefers-color-scheme: light)', color: defaultTheme.colors.white },
+    { media: '(prefers-color-scheme: dark)', color: defaultTheme.colors.black },
   ],
 };
 
 export const metadata: Metadata = {
   title: appContent.meta.title,
   description: appContent.meta.description,
-  manifest: "/manifest.json",
+  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: 'default',
     title: appContent.meta.shortName,
   },
   openGraph: {
     title: appContent.meta.title,
     description: appContent.meta.description,
-    type: "website",
+    type: 'website',
   },
   icons: {
-    apple: "/icons/apple-touch-icon.png",
+    apple: '/icons/apple-touch-icon.png',
   },
 };
 
@@ -52,15 +53,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${plusJakarta.variable} ${jetbrainsMono.variable}`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${plusJakarta.variable} ${jetbrainsMono.variable}`}
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: COLOR_MODE_SCRIPT }} />
       </head>
       <body className="antialiased">
-
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

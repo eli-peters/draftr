@@ -41,8 +41,8 @@ export interface User {
   updated_at: string;
 }
 
-export type MemberRole = "rider" | "ride_leader" | "admin";
-export type MemberStatus = "active" | "inactive" | "pending";
+export type MemberRole = 'rider' | 'ride_leader' | 'admin';
+export type MemberStatus = 'active' | 'inactive' | 'pending';
 
 export interface ClubMembership {
   id: string;
@@ -82,7 +82,7 @@ export interface PaceGroup {
   created_at: string;
 }
 
-export type RideStatus = "scheduled" | "weather_watch" | "cancelled" | "completed";
+export type RideStatus = 'scheduled' | 'weather_watch' | 'cancelled' | 'completed';
 
 export interface Ride {
   id: string;
@@ -126,7 +126,7 @@ export interface Tag {
   sort_order: number;
 }
 
-export type SignupStatus = "confirmed" | "waitlisted" | "cancelled" | "checked_in";
+export type SignupStatus = 'confirmed' | 'waitlisted' | 'cancelled' | 'checked_in';
 
 export interface RideSignup {
   id: string;
@@ -139,7 +139,7 @@ export interface RideSignup {
   cancelled_at: string | null;
 }
 
-export type ReactionType = "thumbs_up" | "fire" | "suffering" | "heart" | "wind";
+export type ReactionType = 'thumbs_up' | 'fire' | 'suffering' | 'heart' | 'wind';
 
 export interface RideReaction {
   id: string;
@@ -178,7 +178,7 @@ export interface Notification {
   body: string | null;
   ride_id: string | null;
   is_read: boolean;
-  channel: "push" | "email" | "both";
+  channel: 'push' | 'email' | 'both';
   sent_at: string;
 }
 
@@ -198,7 +198,7 @@ export interface RideTemplate {
   default_route_name: string | null;
   is_drop_ride: boolean;
   is_active: boolean;
-  recurrence: "weekly" | "biweekly" | "monthly" | null;
+  recurrence: 'weekly' | 'biweekly' | 'monthly' | null;
   season_start_date: string | null;
   season_end_date: string | null;
   last_generated_date: string | null;
@@ -228,5 +228,5 @@ export interface RideWithDetails extends Ride {
   pace_group: PaceGroup | null;
   tags: Tag[];
   signup_count: number;
-  creator: Pick<User, "id" | "full_name" | "display_name" | "avatar_url"> | null;
+  creator: Pick<User, 'id' | 'full_name' | 'display_name' | 'avatar_url'> | null;
 }

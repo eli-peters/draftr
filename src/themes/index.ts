@@ -1,5 +1,5 @@
-import type { ClubOverride, ClubTheme } from "@/types/theme";
-import { defaultTheme } from "./default";
+import type { ClubOverride, ClubTheme } from '@/types/theme';
+import { defaultTheme } from './default';
 
 /**
  * Resolve a club override into a full theme by merging onto the app default.

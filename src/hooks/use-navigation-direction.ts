@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 
-type Direction = "forward" | "back" | "none";
+type Direction = 'forward' | 'back' | 'none';
 
 /**
  * Detects whether the current navigation was a forward push or a back pop.
@@ -11,7 +11,7 @@ type Direction = "forward" | "back" | "none";
  */
 export function useNavigationDirection(): Direction {
   const pathname = usePathname();
-  const [direction, setDirection] = useState<Direction>("none");
+  const [direction, setDirection] = useState<Direction>('none');
   const isPopState = useRef(false);
   const prevPathname = useRef(pathname);
 
@@ -19,18 +19,18 @@ export function useNavigationDirection(): Direction {
     function handlePopState() {
       isPopState.current = true;
     }
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   useEffect(() => {
     if (pathname === prevPathname.current) return;
 
     if (isPopState.current) {
-      setDirection("back");
+      setDirection('back');
       isPopState.current = false;
     } else {
-      setDirection("forward");
+      setDirection('forward');
     }
     prevPathname.current = pathname;
   }, [pathname]);

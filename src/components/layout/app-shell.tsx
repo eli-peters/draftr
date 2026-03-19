@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import type { NavItem } from "@/config/navigation";
-import type { Notification } from "@/components/notifications/notification-item";
-import { BottomNav } from "./bottom-nav";
-import { HeaderBar } from "./header-bar";
-import { SidebarNav } from "./sidebar-nav";
-import { PageTransitionWrapper } from "./page-transition-wrapper";
+import type { NavItem } from '@/config/navigation';
+import type { Notification } from '@/components/notifications/notification-item';
+import { BottomNav } from './bottom-nav';
+import { HeaderBar } from './header-bar';
+import { SidebarNav } from './sidebar-nav';
+import { PageTransitionWrapper } from './page-transition-wrapper';
 
 interface AppShellUser {
   name: string;
@@ -23,7 +23,14 @@ interface AppShellProps {
   unreadNotificationCount?: number;
 }
 
-export function AppShell({ children, navItems, appName, user, notifications, unreadNotificationCount }: AppShellProps) {
+export function AppShell({
+  children,
+  navItems,
+  appName,
+  user,
+  notifications,
+  unreadNotificationCount,
+}: AppShellProps) {
   return (
     <div className="min-h-screen md:flex">
       <SidebarNav items={navItems} appName={appName} />

@@ -38,17 +38,18 @@ Draftr uses **admin-gated registration**. Members don't self-register. An admin 
 ## Auth state checks
 
 The root page (`/`) checks auth state and redirects:
+
 - No session → `/sign-in`
 - Session but no profile → `/setup-profile`
 - Session + profile complete → `/rides`
 
 ## Roles
 
-| Role | Permissions |
-|------|-------------|
-| `rider` | Browse rides, sign up, view profiles, manage own notifications |
-| `ride_leader` | Everything riders can do + create/edit/cancel rides |
-| `admin` | Everything leaders can do + invite members, manage club settings, announcements |
+| Role          | Permissions                                                                     |
+| ------------- | ------------------------------------------------------------------------------- |
+| `rider`       | Browse rides, sign up, view profiles, manage own notifications                  |
+| `ride_leader` | Everything riders can do + create/edit/cancel rides                             |
+| `admin`       | Everything leaders can do + invite members, manage club settings, announcements |
 
 Roles are stored in `club_memberships.role`. A user can have different roles in different clubs (future multi-club support).
 

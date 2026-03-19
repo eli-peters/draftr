@@ -5,6 +5,7 @@ import { Plus, Trash, Pause, Play, ArrowClockwise } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetFooter, SheetTitle } from '@/components/ui/sheet';
 import { appContent } from '@/content/app';
@@ -43,9 +44,6 @@ interface RecurringRidesPanelProps {
   paceGroups: { id: string; name: string }[];
 }
 
-const selectClass =
-  'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
-
 export function RecurringRidesPanel({
   recurringRides,
   clubId,
@@ -74,11 +72,17 @@ export function RecurringRidesPanel({
         description: (fd.get('description') as string) || undefined,
         season_start_date: (fd.get('season_start_date') as string) || undefined,
         season_end_date: (fd.get('season_end_date') as string) || undefined,
-        generate_weeks_ahead: fd.get('generate_weeks_ahead') ? Number(fd.get('generate_weeks_ahead')) : undefined,
+        generate_weeks_ahead: fd.get('generate_weeks_ahead')
+          ? Number(fd.get('generate_weeks_ahead'))
+          : undefined,
         meeting_location_id: (fd.get('meeting_location_id') as string) || undefined,
         pace_group_id: (fd.get('pace_group_id') as string) || undefined,
-        default_distance_km: fd.get('default_distance_km') ? Number(fd.get('default_distance_km')) : undefined,
-        default_capacity: fd.get('default_capacity') ? Number(fd.get('default_capacity')) : undefined,
+        default_distance_km: fd.get('default_distance_km')
+          ? Number(fd.get('default_distance_km'))
+          : undefined,
+        default_capacity: fd.get('default_capacity')
+          ? Number(fd.get('default_capacity'))
+          : undefined,
       });
       setOpen(false);
     });
@@ -107,7 +111,7 @@ export function RecurringRidesPanel({
   }
 
   return (
-    <div className={isPending ? 'opacity-60 pointer-events-none' : ''}>
+    <div className={isPending ? 'opacity-pending pointer-events-none' : ''}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {rc.heading}
@@ -118,30 +122,29 @@ export function RecurringRidesPanel({
         </Button>
       </div>
 
-      {message && (
-        <p className="text-sm text-success mb-4">{message}</p>
-      )}
+      {message && <p className="text-sm text-success mb-4">{message}</p>}
 
       {recurringRides.length === 0 ? (
         <p className="text-base text-muted-foreground">{rc.noRecurring}</p>
       ) : (
         <div className="space-y-3">
           {recurringRides.map((r) => (
-            <div key={r.id} className={`rounded-xl border border-border bg-card p-5 ${!r.is_active ? 'opacity-50' : ''}`}>
+            <div
+              key={r.id}
+              className={`rounded-xl border border-border bg-card p-5 ${!r.is_active ? 'opacity-muted' : ''}`}
+            >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-bold text-foreground">{r.title}</h3>
                     {!r.is_active && (
-                      <Badge variant="outline" className="text-xs text-warning border-warning/50">
+                      <Badge variant="warning" className="text-xs">
                         {rc.paused}
                       </Badge>
                     )}
                   </div>
                   <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                    {r.day_of_week != null && (
-                      <span>{rc.dayOfWeek[r.day_of_week]}s</span>
-                    )}
+                    {r.day_of_week != null && <span>{rc.dayOfWeek[r.day_of_week]}s</span>}
                     <span>{r.start_time.slice(0, 5)}</span>
                     {r.recurrence && (
                       <Badge variant="outline" className="text-xs">
@@ -153,7 +156,8 @@ export function RecurringRidesPanel({
                   </div>
                   {(r.season_start_date || r.season_end_date) && (
                     <p className="mt-1 text-xs text-muted-foreground/70">
-                      {rc.seasonLabel}: {r.season_start_date ?? '...'} → {r.season_end_date ?? '...'}
+                      {rc.seasonLabel}: {r.season_start_date ?? '...'} →{' '}
+                      {r.season_end_date ?? '...'}
                     </p>
                   )}
                 </div>
@@ -191,24 +195,31 @@ export function RecurringRidesPanel({
       )}
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
+        <SheetContent side="bottom" className="max-h-(--sheet-height-lg) overflow-y-auto">
           <SheetHeader>
             <SheetTitle>{rc.create}</SheetTitle>
           </SheetHeader>
           <form onSubmit={handleSubmit} className="space-y-4 px-4">
             <div className="space-y-2">
               <Label htmlFor="rc-title">{form.title} *</Label>
-              <Input id="rc-title" name="title" required placeholder="e.g. Saturday Morning Social" />
+              <Input
+                id="rc-title"
+                name="title"
+                required
+                placeholder="e.g. Saturday Morning Social"
+              />
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="rc-day">{rc.dayOfWeek[0].slice(0, 3)}... *</Label>
-                <select id="rc-day" name="day_of_week" required className={selectClass}>
+                <Select id="rc-day" name="day_of_week" required>
                   <option value="">Day...</option>
                   {rc.dayOfWeek.map((day, i) => (
-                    <option key={i} value={i}>{day}</option>
+                    <option key={i} value={i}>
+                      {day}
+                    </option>
                   ))}
-                </select>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="rc-time">{form.startTime} *</Label>
@@ -216,11 +227,11 @@ export function RecurringRidesPanel({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="rc-recurrence">{rc.recurrence.weekly} *</Label>
-                <select id="rc-recurrence" name="recurrence" required className={selectClass}>
+                <Select id="rc-recurrence" name="recurrence" required>
                   <option value="weekly">{rc.recurrence.weekly}</option>
                   <option value="biweekly">{rc.recurrence.biweekly}</option>
                   <option value="monthly">{rc.recurrence.monthly}</option>
-                </select>
+                </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -236,27 +247,37 @@ export function RecurringRidesPanel({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="rc-location">{form.meetingLocation}</Label>
-                <select id="rc-location" name="meeting_location_id" className={selectClass}>
+                <Select id="rc-location" name="meeting_location_id">
                   <option value="">{form.selectLocation}</option>
                   {meetingLocations.map((loc) => (
-                    <option key={loc.id} value={loc.id}>{loc.name}</option>
+                    <option key={loc.id} value={loc.id}>
+                      {loc.name}
+                    </option>
                   ))}
-                </select>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="rc-pace">{form.paceGroup}</Label>
-                <select id="rc-pace" name="pace_group_id" className={selectClass}>
+                <Select id="rc-pace" name="pace_group_id">
                   <option value="">{form.selectPace}</option>
                   {paceGroups.map((pg) => (
-                    <option key={pg.id} value={pg.id}>{pg.name}</option>
+                    <option key={pg.id} value={pg.id}>
+                      {pg.name}
+                    </option>
                   ))}
-                </select>
+                </Select>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="rc-distance">{form.distance}</Label>
-                <Input id="rc-distance" name="default_distance_km" type="number" step="0.1" min="0" />
+                <Input
+                  id="rc-distance"
+                  name="default_distance_km"
+                  type="number"
+                  step="0.1"
+                  min="0"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="rc-capacity">{form.capacity}</Label>
@@ -264,7 +285,14 @@ export function RecurringRidesPanel({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="rc-weeks">{rc.weeksAheadLabel}</Label>
-                <Input id="rc-weeks" name="generate_weeks_ahead" type="number" min="1" max="12" defaultValue="4" />
+                <Input
+                  id="rc-weeks"
+                  name="generate_weeks_ahead"
+                  type="number"
+                  min="1"
+                  max="12"
+                  defaultValue="4"
+                />
               </div>
             </div>
             <SheetFooter>

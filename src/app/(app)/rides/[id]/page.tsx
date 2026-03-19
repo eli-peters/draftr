@@ -1,5 +1,5 @@
-import { notFound } from "next/navigation";
-import { format, parseISO } from "date-fns";
+import { notFound } from 'next/navigation';
+import { format, parseISO } from 'date-fns';
 import {
   MapPin,
   Path,
@@ -7,12 +7,14 @@ import {
   Mountains,
   ArrowSquareOut,
   CloudRain,
-} from "@phosphor-icons/react/dist/ssr";
-import { getRideById, getUserSignupStatus, getRideSignups } from "@/lib/rides/queries";
-import { SignupButton } from "@/components/rides/signup-button";
-import { SignupRoster } from "@/components/rides/signup-roster";
-import { Badge } from "@/components/ui/badge";
-import { appContent } from "@/content/app";
+} from '@phosphor-icons/react/dist/ssr';
+import { getRideById, getUserSignupStatus, getRideSignups } from '@/lib/rides/queries';
+import { SignupButton } from '@/components/rides/signup-button';
+import { SignupRoster } from '@/components/rides/signup-roster';
+import { Badge } from '@/components/ui/badge';
+import { appContent } from '@/content/app';
+import { RideStatus, SignupStatus } from '@/config/statuses';
+import { dateFormats, separators, units } from '@/config/formatting';
 
 const { detail, status: ridesStatus } = appContent.rides;
 
@@ -22,16 +24,23 @@ interface RideDetailPageProps {
 
 export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const { id } = await params;
-  const [ride, signup, signups] = await Promise.all([getRideById(id), getUserSignupStatus(id), getRideSignups(id)]);
+  const [ride, signup, signups] = await Promise.all([
+    getRideById(id),
+    getUserSignupStatus(id),
+    getRideSignups(id),
+  ]);
   if (!ride) notFound();
 
   const rideDate = parseISO(ride.ride_date);
-  const isSignedUp = signup?.status === "confirmed" || signup?.status === "waitlisted";
-  const isCancelled = ride.status === "cancelled";
+  const isSignedUp =
+    signup?.status === SignupStatus.CONFIRMED || signup?.status === SignupStatus.WAITLISTED;
+  const isCancelled = ride.status === RideStatus.CANCELLED;
 
   // Separate confirmed from waitlisted for accurate display
-  const confirmedCount = signups.filter((s) => s.status === "confirmed" || s.status === "checked_in").length;
-  const waitlistedCount = signups.filter((s) => s.status === "waitlisted").length;
+  const confirmedCount = signups.filter(
+    (s) => s.status === SignupStatus.CONFIRMED || s.status === SignupStatus.CHECKED_IN,
+  ).length;
+  const waitlistedCount = signups.filter((s) => s.status === SignupStatus.WAITLISTED).length;
 
   let spotsText: string;
   if (ride.capacity == null) {
@@ -41,16 +50,15 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   } else {
     const parts = [detail.confirmedCount(confirmedCount)];
     if (waitlistedCount > 0) parts.push(detail.waitlistedCount(waitlistedCount));
-    spotsText = parts.join(' · ');
+    spotsText = parts.join(separators.dot);
   }
 
-  const capacityPercent =
-    ride.capacity != null ? (confirmedCount / ride.capacity) * 100 : null;
+  const capacityPercent = ride.capacity != null ? (confirmedCount / ride.capacity) * 100 : null;
 
   return (
     <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
       {/* Status Banners */}
-      {ride.status === "weather_watch" && (
+      {ride.status === RideStatus.WEATHER_WATCH && (
         <div className="mb-6 flex items-center gap-2.5 rounded-xl border border-warning/20 bg-warning/10 px-5 py-4 text-base text-warning">
           <CloudRain weight="fill" className="h-5 w-5 shrink-0" />
           {ridesStatus.weatherWatchDescription}
@@ -66,27 +74,43 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       <h1 className="text-3xl font-bold tracking-tight text-foreground">{ride.title}</h1>
 
       <p className="mt-3 text-lg text-foreground/90">
-        {format(rideDate, "EEEE, MMMM d, yyyy")}
+        {format(rideDate, dateFormats.full)}
         <span className="mx-2 text-muted-foreground/50">·</span>
         <span className="tabular-nums">{ride.start_time.slice(0, 5)}</span>
-        {ride.end_time && <span className="tabular-nums"> – {ride.end_time.slice(0, 5)}</span>}
+        {ride.end_time && (
+          <span className="tabular-nums">
+            {separators.dash}
+            {ride.end_time.slice(0, 5)}
+          </span>
+        )}
       </p>
 
       {ride.pace_group && (
         <p className="mt-1.5 text-base text-muted-foreground">
           {ride.pace_group.name}
           {ride.pace_group.moving_pace_min && ride.pace_group.moving_pace_max
-            ? ` (${ride.pace_group.moving_pace_min}–${ride.pace_group.moving_pace_max} km/h)`
-            : ""}
-          {` · ${ride.is_drop_ride ? detail.dropRide : detail.noDrop}`}
+            ? ` (${ride.pace_group.moving_pace_min}–${ride.pace_group.moving_pace_max}${units.kmh})`
+            : ''}
+          {`${separators.dot}${ride.is_drop_ride ? detail.dropRide : detail.noDrop}`}
         </p>
       )}
 
       {ride.tags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
           {ride.tags.map((tag) => (
-            <Badge key={tag.id} variant="secondary" className="text-sm"
-              style={tag.color ? { backgroundColor: `${tag.color}15`, color: tag.color } : undefined}>
+            <Badge
+              key={tag.id}
+              variant="secondary"
+              className="text-sm"
+              style={
+                tag.color
+                  ? {
+                      backgroundColor: `color-mix(in srgb, ${tag.color} 15%, transparent)`,
+                      color: tag.color,
+                    }
+                  : undefined
+              }
+            >
               {tag.name}
             </Badge>
           ))}
@@ -101,7 +125,9 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             <div>
               <p className="font-medium text-foreground text-base">{ride.meeting_location.name}</p>
               {ride.meeting_location.address && (
-                <p className="text-sm text-muted-foreground mt-0.5">{ride.meeting_location.address}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {ride.meeting_location.address}
+                </p>
               )}
             </div>
           </div>
@@ -111,13 +137,15 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           {ride.distance_km != null && (
             <span className="flex items-center gap-2 text-base font-medium text-info">
               <Path weight="bold" className="h-5 w-5" />
-              {ride.distance_km} km
+              {ride.distance_km}
+              {units.km}
             </span>
           )}
           {ride.elevation_m != null && (
             <span className="flex items-center gap-2 text-base font-medium text-info">
               <Mountains weight="fill" className="h-5 w-5" />
-              {ride.elevation_m} m
+              {ride.elevation_m}
+              {units.m}
             </span>
           )}
           <span className="flex items-center gap-2 text-base font-medium">
@@ -126,15 +154,17 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           </span>
         </div>
 
-        {isSignedUp && (
-          <p className="text-base font-semibold text-primary">{detail.signedUp}</p>
-        )}
+        {isSignedUp && <p className="text-base font-semibold text-primary">{detail.signedUp}</p>}
       </div>
 
       {ride.route_url && (
         <div className="mt-8">
-          <a href={ride.route_url} target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-2 text-base font-semibold text-info hover:underline underline-offset-2">
+          <a
+            href={ride.route_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-base font-semibold text-info hover:underline underline-offset-2"
+          >
             <ArrowSquareOut weight="bold" className="h-5 w-5" />
             {ride.route_name ?? detail.viewRoute}
           </a>
@@ -143,8 +173,12 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
       {ride.organiser_notes && (
         <div className="mt-8">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{detail.organiserNotesHeading}</h2>
-          <p className="mt-3 text-base text-foreground/80 whitespace-pre-line leading-relaxed">{ride.organiser_notes}</p>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {detail.organiserNotesHeading}
+          </h2>
+          <p className="mt-3 text-base text-foreground/80 whitespace-pre-line leading-relaxed">
+            {ride.organiser_notes}
+          </p>
         </div>
       )}
 
@@ -163,11 +197,18 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       <div className="mt-10">
         {capacityPercent != null && (
           <div className="mb-5 h-0.5 w-full rounded-full bg-muted overflow-hidden">
-            <div className="h-full rounded-full bg-primary transition-all duration-500"
-              style={{ width: `${Math.min(capacityPercent, 100)}%` }} />
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-500"
+              style={{ width: `${Math.min(capacityPercent, 100)}%` }}
+            />
           </div>
         )}
-        <SignupButton rideId={ride.id} isSignedUp={isSignedUp} isCancelled={isCancelled} isFull={ride.capacity != null && confirmedCount >= ride.capacity} />
+        <SignupButton
+          rideId={ride.id}
+          isSignedUp={isSignedUp}
+          isCancelled={isCancelled}
+          isFull={ride.capacity != null && confirmedCount >= ride.capacity}
+        />
       </div>
     </div>
   );

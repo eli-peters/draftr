@@ -79,7 +79,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
   }
 
   return (
-    <div className={isPending ? 'opacity-60 pointer-events-none' : ''}>
+    <div className={isPending ? 'opacity-pending pointer-events-none' : ''}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {content.announcements.heading}
@@ -110,7 +110,8 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                     {a.body}
                   </p>
                   <p className="mt-2 text-xs text-muted-foreground">
-                    {a.created_by_name} · {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
+                    {a.created_by_name} ·{' '}
+                    {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
                   </p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
@@ -143,7 +144,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
       )}
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="bottom" className="max-h-[70vh] overflow-y-auto">
+        <SheetContent side="bottom" className="max-h-(--sheet-height-md) overflow-y-auto">
           <SheetHeader>
             <SheetTitle>
               {editingId ? content.announcements.edit : content.announcements.create}
