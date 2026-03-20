@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Draftr — Colour System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* ─── PRIMARY: Magenta #DE0387 ─── */
+    /* HSL base: ~322°, 98%, 44% */
+    --primary-50: #FEF0F7;
+    --primary-100: #FDD8EC;
+    --primary-200: #FBB1D9;
+    --primary-300: #F77DBF;
+    --primary-400: #F04AA5;
+    --primary-500: #DE0387;
+    --primary-600: #C2036F;
+    --primary-700: #9C025A;
+    --primary-800: #780247;
+    --primary-900: #570134;
+    --primary-950: #3A0123;
+
+    /* ─── SECONDARY: Muted Deep Teal ─── */
+    /* HSL base: ~194°, 48%, 32% — tamed version of the aqua concept */
+    --secondary-50: #EEF7F9;
+    --secondary-100: #D5ECF1;
+    --secondary-200: #ADD9E4;
+    --secondary-300: #7CC0D1;
+    --secondary-400: #4DA3B8;
+    --secondary-500: #2D7F94;
+    --secondary-600: #266A7C;
+    --secondary-700: #225565;
+    --secondary-800: #1E4451;
+    --secondary-900: #1A3742;
+    --secondary-950: #0F232C;
+
+    /* ─── NEUTRAL: Warm Slate ─── */
+    /* Faintly warm undertone to harmonize with the magenta primary */
+    --neutral-0: #FFFFFF;
+    --neutral-50: #F8F6F7;
+    --neutral-100: #F0ECED;
+    --neutral-200: #E2DCDE;
+    --neutral-300: #CEC6C9;
+    --neutral-400: #B0A5A9;
+    --neutral-500: #7C7074;
+    --neutral-600: #6E6367;
+    --neutral-700: #564C50;
+    --neutral-800: #3D3538;
+    --neutral-900: #272123;
+    --neutral-950: #1A1517;
+
+    /* ─── SUCCESS: Warm Green ─── */
+    --success-50: #EDFCF2;
+    --success-100: #D3F9DF;
+    --success-200: #AAF0C4;
+    --success-300: #73E2A3;
+    --success-400: #3BCC7E;
+    --success-500: #18A85C;
+    --success-600: #0A7B42;
+    --success-700: #0B6E3D;
+    --success-800: #0D5733;
+    --success-900: #0B482B;
+    --success-950: #052818;
+
+    /* ─── WARNING: Warm Amber ─── */
+    --warning-50: #FFFBEB;
+    --warning-100: #FFF3C6;
+    --warning-200: #FFE488;
+    --warning-300: #FFD04A;
+    --warning-400: #FFBB1F;
+    --warning-500: #F59A06;
+    --warning-600: #D97502;
+    --warning-700: #B45206;
+    --warning-800: #923F0C;
+    --warning-900: #78340D;
+    --warning-950: #451A02;
+
+    /* ─── ERROR: True Red (distinct from magenta) ─── */
+    --error-50: #FEF2F2;
+    --error-100: #FEE2E2;
+    --error-200: #FECACA;
+    --error-300: #FCA5A5;
+    --error-400: #F87171;
+    --error-500: #EF4444;
+    --error-600: #DC2626;
+    --error-700: #B91C1C;
+    --error-800: #991B1B;
+    --error-900: #7F1D1D;
+    --error-950: #450A0A;
+
+    /* ─── INFO: Cool Slate Blue ─── */
+    --info-50: #EFF4FC;
+    --info-100: #DEEAF9;
+    --info-200: #BDD4F2;
+    --info-300: #91B7E8;
+    --info-400: #6594DA;
+    --info-500: #4574CB;
+    --info-600: #3459AC;
+    --info-700: #2C478B;
+    --info-800: #293E73;
+    --info-900: #263660;
+    --info-950: #1A233D;
+  }
+
+  /* ─── LIGHT MODE SEMANTIC TOKENS ─── */
+  :root, [data-theme="light"] {
+    --color-bg: var(--neutral-50);
+    --color-surface: #FFFFFF;
+    --color-surface-raised: var(--neutral-50);
+    --color-surface-sunken: var(--neutral-100);
+    --color-surface-overlay: rgba(255,255,255,0.92);
+
+    --color-text-primary: var(--neutral-900);
+    --color-text-secondary: var(--neutral-500);
+    --color-text-tertiary: var(--neutral-400);
+    --color-text-on-primary: #FFFFFF;
+    --color-text-on-secondary: #FFFFFF;
+
+    --color-border-default: var(--neutral-200);
+    --color-border-subtle: var(--neutral-100);
+    --color-border-strong: var(--neutral-300);
+    --color-border-focus: var(--primary-500);
+
+    --color-primary: var(--primary-500);
+    --color-primary-hover: var(--primary-600);
+    --color-primary-active: var(--primary-700);
+    --color-primary-subtle-bg: var(--primary-50);
+    --color-primary-subtle-text: var(--primary-700);
+
+    --color-secondary: var(--secondary-600);
+    --color-secondary-hover: var(--secondary-700);
+    --color-secondary-active: var(--secondary-800);
+    --color-secondary-subtle-bg: var(--secondary-50);
+    --color-secondary-subtle-text: var(--secondary-700);
+
+    --color-success: var(--success-600);
+    --color-success-bg: var(--success-50);
+    --color-success-text: var(--success-800);
+    --color-warning: var(--warning-600);
+    --color-warning-bg: var(--warning-50);
+    --color-warning-text: var(--warning-800);
+    --color-error: var(--error-600);
+    --color-error-bg: var(--error-50);
+    --color-error-text: var(--error-800);
+    --color-info: var(--info-600);
+    --color-info-bg: var(--info-50);
+    --color-info-text: var(--info-800);
+
+    --shadow-sm: 0 1px 2px rgba(26,21,23,0.05);
+    --shadow-md: 0 4px 8px rgba(26,21,23,0.08);
+    --shadow-lg: 0 12px 24px rgba(26,21,23,0.12);
+
+    --mode-label: "Light";
+  }
+
+  /* ─── DARK MODE SEMANTIC TOKENS ─── */
+  [data-theme="dark"] {
+    --color-bg: var(--neutral-950);
+    --color-surface: var(--neutral-900);
+    --color-surface-raised: var(--neutral-800);
+    --color-surface-sunken: #110E0F;
+    --color-surface-overlay: rgba(26,21,23,0.92);
+
+    --color-text-primary: var(--neutral-50);
+    --color-text-secondary: var(--neutral-400);
+    --color-text-tertiary: var(--neutral-500);
+    --color-text-on-primary: #FFFFFF;
+    --color-text-on-secondary: #FFFFFF;
+
+    --color-border-default: var(--neutral-700);
+    --color-border-subtle: var(--neutral-800);
+    --color-border-strong: var(--neutral-600);
+    --color-border-focus: var(--primary-400);
+
+    --color-primary: var(--primary-400);
+    --color-primary-hover: var(--primary-300);
+    --color-primary-active: var(--primary-500);
+    --color-primary-subtle-bg: rgba(222,3,135,0.12);
+    --color-primary-subtle-text: var(--primary-300);
+
+    --color-secondary: var(--secondary-400);
+    --color-secondary-hover: var(--secondary-300);
+    --color-secondary-active: var(--secondary-500);
+    --color-secondary-subtle-bg: rgba(45,127,148,0.12);
+    --color-secondary-subtle-text: var(--secondary-300);
+
+    --color-success: var(--success-400);
+    --color-success-bg: rgba(24,168,92,0.12);
+    --color-success-text: var(--success-300);
+    --color-warning: var(--warning-400);
+    --color-warning-bg: rgba(245,154,6,0.12);
+    --color-warning-text: var(--warning-300);
+    --color-error: var(--error-400);
+    --color-error-bg: rgba(239,68,68,0.12);
+    --color-error-text: var(--error-300);
+    --color-info: var(--info-400);
+    --color-info-bg: rgba(69,116,203,0.12);
+    --color-info-text: var(--info-300);
+
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 8px rgba(0,0,0,0.4);
+    --shadow-lg: 0 12px 24px rgba(0,0,0,0.5);
+  }
+
+  /* ─── RESET & BASE ─── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--color-bg);
+    color: var(--color-text-primary);
+    line-height: 1.5;
+    transition: background 0.3s ease, color 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── LAYOUT ─── */
+  .page { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--color-bg);
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--color-border-subtle);
+    transition: background 0.3s ease;
+  }
+
+  .page-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .page-header h1 span {
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-300));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--color-text-secondary);
+    font-size: 0.9375rem;
+    margin-top: 0.25rem;
+  }
+
+  /* ─── THEME TOGGLE ─── */
+  .theme-toggle {
+    display: flex;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-default);
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .theme-toggle button {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .theme-toggle button.active {
+    background: var(--color-primary);
+    color: var(--color-text-on-primary);
+  }
+
+  .theme-toggle button:not(.active):hover {
+    background: var(--color-surface-raised);
+  }
+
+  /* ─── SECTIONS ─── */
+  .section {
+    margin-bottom: 3rem;
+  }
+
+  .section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.375rem;
+    letter-spacing: -0.01em;
+  }
+
+  .section-desc {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1.25rem;
+    max-width: 720px;
+    line-height: 1.6;
+  }
+
+  /* ─── COLOUR RAMP ─── */
+  .ramp-group { margin-bottom: 2rem; }
+  .ramp-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .ramp {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    gap: 4px;
+  }
+
+  .swatch {
+    aspect-ratio: 1.2;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0.375rem 0.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.625rem;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .swatch:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    z-index: 1;
+  }
+
+  .swatch-step {
+    font-weight: 600;
+    margin-bottom: 1px;
+  }
+
+  .swatch-hex { opacity: 0.8; }
+
+  .swatch.light-text .swatch-step,
+  .swatch.light-text .swatch-hex { color: #FFFFFF; }
+  .swatch.dark-text .swatch-step,
+  .swatch.dark-text .swatch-hex { color: var(--neutral-900); }
+
+  .copied-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(120%);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border-default);
+    padding: 0.625rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+    z-index: 100;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .copied-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ─── SEMANTIC TOKENS ─── */
+  .tokens-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .token-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 10px;
+    transition: border-color 0.2s;
+  }
+
+  .token-card:hover { border-color: var(--color-border-default); }
+
+  .token-swatch {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .token-info { flex: 1; min-width: 0; }
+  .token-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .token-value {
+    font-size: 0.6875rem;
+    color: var(--color-text-secondary);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .token-a11y {
+    font-size: 0.5625rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .a11y-pass { background: var(--success-100); color: var(--success-700); }
+  .a11y-fail { background: var(--error-100); color: var(--error-700); }
+  .a11y-large { background: var(--warning-100); color: var(--warning-700); }
+
+  [data-theme="dark"] .a11y-pass { background: rgba(24,168,92,0.2); color: var(--success-300); }
+  [data-theme="dark"] .a11y-fail { background: rgba(239,68,68,0.2); color: var(--error-300); }
+  [data-theme="dark"] .a11y-large { background: rgba(245,154,6,0.2); color: var(--warning-300); }
+
+  /* ─── STATE BANNERS ─── */
+  .states-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .state-banner {
+    padding: 1rem;
+    border-radius: 10px;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .state-banner .state-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 1px;
+  }
+
+  .state-banner .state-content h4 {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  .state-banner .state-content p {
+    font-size: 0.75rem;
+    opacity: 0.85;
+    line-height: 1.5;
+  }
+
+  /* ─── BUTTON PROTOTYPE ─── */
+  .button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    align-items: center;
+  }
+
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn:active { transform: scale(0.97); }
+
+  .btn-primary {
+    background: var(--color-primary);
+    color: var(--color-text-on-primary);
+  }
+  .btn-primary:hover { background: var(--color-primary-hover); }
+
+  .btn-secondary {
+    background: var(--color-secondary);
+    color: var(--color-text-on-secondary);
+  }
+  .btn-secondary:hover { background: var(--color-secondary-hover); }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border-strong);
+  }
+  .btn-outline:hover { background: var(--color-surface-raised); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-primary);
+  }
+  .btn-ghost:hover { background: var(--color-primary-subtle-bg); }
+
+  .btn-danger {
+    background: var(--color-error);
+    color: #FFFFFF;
+  }
+  .btn-danger:hover { opacity: 0.9; }
+
+  .btn-disabled {
+    background: var(--color-border-default);
+    color: var(--color-text-tertiary);
+    cursor: not-allowed;
+  }
+
+  /* ─── CARD PROTOTYPE ─── */
+  .prototype-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
+  .proto-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+  .proto-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-border-default);
+  }
+
+  .proto-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+  }
+
+  .proto-card-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .proto-card-badge {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  .proto-card-meta {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.75rem;
+  }
+
+  .proto-card-body {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+
+  .proto-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  .avatar-stack {
+    display: flex;
+  }
+  .avatar-stack .avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 9999px;
+    border: 2px solid var(--color-surface);
+    margin-left: -8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: #fff;
+  }
+  .avatar-stack .avatar:first-child { margin-left: 0; }
+
+  /* ─── INPUT PROTOTYPE ─── */
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    max-width: 360px;
+  }
+
+  .input-group + .input-group { margin-top: 1rem; }
+
+  .input-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+
+  .input-field {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--color-border-default);
+    border-radius: 8px;
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .input-field:focus {
+    border-color: var(--color-border-focus);
+    box-shadow: 0 0 0 3px rgba(222,3,135,0.12);
+  }
+
+  .input-field.input-error {
+    border-color: var(--color-error);
+  }
+  .input-field.input-error:focus {
+    box-shadow: 0 0 0 3px rgba(239,68,68,0.12);
+  }
+
+  .input-hint {
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+  }
+  .input-error-msg {
+    font-size: 0.75rem;
+    color: var(--color-error);
+  }
+
+  /* ─── SURFACES DEMO ─── */
+  .surfaces-demo {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .surface-block {
+    padding: 1.25rem;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-height: 100px;
+    justify-content: flex-end;
+  }
+
+  .surface-label {
+    font-size: 0.6875rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+  }
+
+  .surface-value {
+    font-size: 0.625rem;
+    font-family: 'JetBrains Mono', monospace;
+    opacity: 0.7;
+  }
+
+  /* ─── COLOUR THEORY SECTION ─── */
+  .theory-box {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .theory-box h3 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .theory-box p {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    line-height: 1.65;
+    margin-bottom: 0.75rem;
+  }
+
+  .theory-box p:last-child { margin-bottom: 0; }
+
+  .theory-box code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    background: var(--color-surface-sunken);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .colour-pair {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 2px;
+  }
+  .colour-pair .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    display: inline-block;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+
+  /* ─── CONTRAST TABLE ─── */
+  .contrast-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+  }
+  .contrast-table th, .contrast-table td {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+  .contrast-table th {
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .contrast-table .ratio {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 640px) {
+    .page { padding: 1.25rem 1rem 3rem; }
+    .page-header h1 { font-size: 1.5rem; }
+    .ramp { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
+    .swatch { font-size: 0.5625rem; }
+    .tokens-grid { grid-template-columns: 1fr; }
+    .states-grid { grid-template-columns: 1fr; }
+    .prototype-cards { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body data-theme="light">
+
+<div class="page">
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <h1><span>Draftr</span> Colour System</h1>
+      <p class="subtitle">Primary brand · Semantic tokens · Accessible pairings · Light & Dark</p>
+    </div>
+    <div class="theme-toggle">
+      <button class="active" onclick="setTheme('light')">☀ Light</button>
+      <button onclick="setTheme('dark')">☾ Dark</button>
+    </div>
+  </div>
+
+  <!-- COLOUR THEORY -->
+  <div class="section">
+    <h2 class="section-title">Colour theory rationale</h2>
+    <p class="section-desc">Why these colours, and why the designer's original aqua secondary doesn't work.</p>
+
+    <div class="theory-box">
+      <h3>Primary: <span class="colour-pair"><span class="dot" style="background:#DE0387"></span></span> Magenta <code>#DE0387</code></h3>
+      <p>HSL ≈ 322°, 98%, 44%. A high-chroma, warm-leaning magenta — bold, energetic, and unmistakably the hero colour. At full saturation it's a strong CTA anchor. This sits in the red-violet range on the colour wheel.</p>
+    </div>
+
+    <div class="theory-box">
+      <h3>Why the aqua <code>#00D4FF</code> fails as a secondary</h3>
+      <p>The original aqua sits at roughly 191°, 100%, 50% — a fully saturated cyan. Two problems: first, both colours are at maximum chroma (98% and 100% saturation respectively), so they compete for dominance instead of establishing hierarchy. Second, they're near-split-complementary (131° apart), which creates a jarring thermal clash — hot magenta versus icy cyan — that reads as visual noise rather than intentional contrast.</p>
+      <p>In UI, a secondary colour must <strong>recede</strong>. A secondary button at full aqua saturation demands the same visual weight as the primary CTA, destroying the hierarchy your users need to navigate quickly — especially on a mobile-first cycling app where decisions happen in seconds.</p>
+    </div>
+
+    <div class="theory-box">
+      <h3>Secondary: <span class="colour-pair"><span class="dot" style="background:#266A7C"></span></span> Muted Deep Teal <code>#266A7C</code></h3>
+      <p>Instead of fighting the magenta, the secondary is a <strong>desaturated deep teal</strong> at HSL ≈ 194°, 48%, 32%. This keeps the cool-warm polarity that makes the original pairing interesting, but tames the secondary to roughly half the primary's saturation and drops its lightness significantly. The result: the teal feels like a supporting voice — present enough to create visual variety, quiet enough to never upstage the magenta.</p>
+      <p>The 194° hue is also a <strong>near-complementary split</strong> to 322°, which colour theory favours for balanced, harmonious palettes. The low saturation prevents it from reading as "competing brand colour" and instead reads as "trusted, stable, institutional" — exactly what secondary actions should feel like.</p>
+    </div>
+
+    <div class="theory-box">
+      <h3>Neutrals: Warm Slate</h3>
+      <p>Pure <code>#000000</code> and <code>#FFFFFF</code> are harsh — they create maximum contrast that's fatiguing over long sessions. The neutrals here carry a faint warm undertone (shifted toward the magenta's red-violet neighbourhood) so backgrounds and text feel cohesive with the brand palette rather than clinically stark.</p>
+      <p>Off-white <code>#F8F6F7</code> has a barely perceptible pink warmth. Off-black <code>#1A1517</code> is a deep charcoal with a subtle reddish base. Together they create a softer, more premium foundation than pure black/white while maintaining excellent readability.</p>
+    </div>
+
+    <div class="theory-box">
+      <h3>State colours: Separated from the brand</h3>
+      <p><strong>Error</strong> uses a true red (<code>#DC2626</code>) deliberately pushed away from the magenta primary — if error and primary overlap in hue, users can't distinguish "action" from "danger" at a glance. <strong>Success</strong> uses a warm green shifted slightly toward yellow to avoid clashing with the cool teal. <strong>Warning</strong> is warm amber. <strong>Info</strong> is a muted slate-blue, cool and neutral, separated from both primary and secondary hues.</p>
+    </div>
+  </div>
+
+  <!-- PRIMARY RAMP -->
+  <div class="section">
+    <h2 class="section-title">Colour ramps</h2>
+    <p class="section-desc">Full 50–950 ramps for every palette colour. Click any swatch to copy its hex value.</p>
+
+    <div class="ramp-group">
+      <div class="ramp-label">Primary — Magenta</div>
+      <div class="ramp" id="ramp-primary"></div>
+    </div>
+    <div class="ramp-group">
+      <div class="ramp-label">Secondary — Deep Teal</div>
+      <div class="ramp" id="ramp-secondary"></div>
+    </div>
+    <div class="ramp-group">
+      <div class="ramp-label">Neutral — Warm Slate</div>
+      <div class="ramp" id="ramp-neutral"></div>
+    </div>
+    <div class="ramp-group">
+      <div class="ramp-label">Success — Warm Green</div>
+      <div class="ramp" id="ramp-success"></div>
+    </div>
+    <div class="ramp-group">
+      <div class="ramp-label">Warning — Amber</div>
+      <div class="ramp" id="ramp-warning"></div>
+    </div>
+    <div class="ramp-group">
+      <div class="ramp-label">Error — True Red</div>
+      <div class="ramp" id="ramp-error"></div>
+    </div>
+    <div class="ramp-group">
+      <div class="ramp-label">Info — Slate Blue</div>
+      <div class="ramp" id="ramp-info"></div>
+    </div>
+  </div>
+
+  <!-- SURFACES -->
+  <div class="section">
+    <h2 class="section-title">Surfaces & backgrounds</h2>
+    <p class="section-desc">The layered surface system for cards, modals, and page backgrounds. Toggle dark mode to see how these adapt.</p>
+    <div class="surfaces-demo" id="surfaces-demo"></div>
+  </div>
+
+  <!-- BORDERS -->
+  <div class="section">
+    <h2 class="section-title">Borders</h2>
+    <p class="section-desc">Three border intensities plus a focus ring colour tied to the primary.</p>
+    <div class="tokens-grid" id="borders-demo"></div>
+  </div>
+
+  <!-- SEMANTIC TEXT TOKENS -->
+  <div class="section">
+    <h2 class="section-title">Text & foreground tokens</h2>
+    <p class="section-desc">Semantic text colours with contrast ratios against the current background.</p>
+    <div class="tokens-grid" id="text-tokens"></div>
+  </div>
+
+  <!-- STATE COLOURS -->
+  <div class="section">
+    <h2 class="section-title">Semantic states</h2>
+    <p class="section-desc">Error, success, warning, and info — as banner components showing background, text, and icon treatment.</p>
+    <div class="states-grid">
+      <div class="state-banner" style="background:var(--color-success-bg); color:var(--color-success-text);">
+        <span class="state-icon">✓</span>
+        <div class="state-content">
+          <h4>Ride confirmed</h4>
+          <p>You're signed up for the Saturday morning ride. See you at 7:00 AM.</p>
+        </div>
+      </div>
+      <div class="state-banner" style="background:var(--color-warning-bg); color:var(--color-warning-text);">
+        <span class="state-icon">⚠</span>
+        <div class="state-content">
+          <h4>Weather advisory</h4>
+          <p>Rain expected after 10:00 AM. Ride leader may shorten the route.</p>
+        </div>
+      </div>
+      <div class="state-banner" style="background:var(--color-error-bg); color:var(--color-error-text);">
+        <span class="state-icon">✕</span>
+        <div class="state-content">
+          <h4>Ride cancelled</h4>
+          <p>The Sunday group ride has been cancelled due to extreme conditions.</p>
+        </div>
+      </div>
+      <div class="state-banner" style="background:var(--color-info-bg); color:var(--color-info-text);">
+        <span class="state-icon">ℹ</span>
+        <div class="state-content">
+          <h4>Route update</h4>
+          <p>The ride leader has posted an updated route. Check the details below.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCESSIBILITY CONTRAST TABLE -->
+  <div class="section">
+    <h2 class="section-title">Accessibility audit</h2>
+    <p class="section-desc">WCAG 2.1 contrast ratios for key pairings. AA requires 4.5:1 for normal text, 3:1 for large text and UI components. Ratios update when you toggle modes.</p>
+    <div style="overflow-x:auto;">
+      <table class="contrast-table" id="contrast-table">
+        <thead>
+          <tr>
+            <th>Foreground</th>
+            <th>Background</th>
+            <th>Ratio</th>
+            <th>AA Normal</th>
+            <th>AA Large</th>
+            <th>AAA</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BUTTON PROTOTYPE -->
+  <div class="section">
+    <h2 class="section-title">Buttons</h2>
+    <p class="section-desc">See how the primary and secondary interact at button-scale. The secondary recedes naturally.</p>
+    <div class="button-row">
+      <button class="btn btn-primary">Join ride</button>
+      <button class="btn btn-secondary">View details</button>
+      <button class="btn btn-outline">Cancel</button>
+      <button class="btn btn-ghost">Learn more</button>
+      <button class="btn btn-danger">Delete ride</button>
+      <button class="btn btn-disabled" disabled>Unavailable</button>
+    </div>
+    <div class="button-row">
+      <button class="btn btn-primary" style="font-size:0.75rem;padding:0.4375rem 0.875rem;">Small primary</button>
+      <button class="btn btn-secondary" style="font-size:0.75rem;padding:0.4375rem 0.875rem;">Small secondary</button>
+      <button class="btn btn-outline" style="font-size:0.75rem;padding:0.4375rem 0.875rem;">Small outline</button>
+    </div>
+  </div>
+
+  <!-- CARD PROTOTYPE -->
+  <div class="section">
+    <h2 class="section-title">Cards</h2>
+    <p class="section-desc">Ride cards using the full colour system — surfaces, borders, badges, text hierarchy, and avatar colours.</p>
+    <div class="prototype-cards">
+      <div class="proto-card">
+        <div class="proto-card-header">
+          <div>
+            <div class="proto-card-title">Saturday Morning Ride</div>
+            <div class="proto-card-meta">Sat, Mar 21 · 7:00 AM · 65 km</div>
+          </div>
+          <span class="proto-card-badge" style="background:var(--color-primary-subtle-bg);color:var(--color-primary-subtle-text);">A pace</span>
+        </div>
+        <div class="proto-card-body">High Park → Lakeshore → Humber loop. Regroup at the turnaround.</div>
+        <div class="proto-card-footer">
+          <div class="avatar-stack">
+            <span class="avatar" style="background:var(--primary-500);">EM</span>
+            <span class="avatar" style="background:var(--secondary-500);">JK</span>
+            <span class="avatar" style="background:var(--neutral-500);">+4</span>
+          </div>
+          <button class="btn btn-primary" style="font-size:0.75rem;padding:0.375rem 0.875rem;">Join ride</button>
+        </div>
+      </div>
+
+      <div class="proto-card">
+        <div class="proto-card-header">
+          <div>
+            <div class="proto-card-title">Wednesday Social Spin</div>
+            <div class="proto-card-meta">Wed, Mar 25 · 6:30 PM · 35 km</div>
+          </div>
+          <span class="proto-card-badge" style="background:var(--color-secondary-subtle-bg);color:var(--color-secondary-subtle-text);">C pace</span>
+        </div>
+        <div class="proto-card-body">Easy neighbourhood loop ending at a patio. All welcome.</div>
+        <div class="proto-card-footer">
+          <div class="avatar-stack">
+            <span class="avatar" style="background:var(--success-500);">AL</span>
+            <span class="avatar" style="background:var(--warning-600);">RP</span>
+            <span class="avatar" style="background:var(--neutral-500);">+12</span>
+          </div>
+          <button class="btn btn-secondary" style="font-size:0.75rem;padding:0.375rem 0.875rem;">View details</button>
+        </div>
+      </div>
+
+      <div class="proto-card" style="border-left: 3px solid var(--color-error);">
+        <div class="proto-card-header">
+          <div>
+            <div class="proto-card-title">Sunday Century Ride</div>
+            <div class="proto-card-meta">Sun, Mar 22 · 6:00 AM · 160 km</div>
+          </div>
+          <span class="proto-card-badge" style="background:var(--color-error-bg);color:var(--color-error-text);">Cancelled</span>
+        </div>
+        <div class="proto-card-body">Cancelled due to ice warning. Stay safe out there.</div>
+        <div class="proto-card-footer">
+          <span style="font-size:0.75rem;color:var(--color-text-tertiary);">Ride leader: Marcus T.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INPUT PROTOTYPE -->
+  <div class="section">
+    <h2 class="section-title">Form inputs</h2>
+    <p class="section-desc">Focus rings use the primary colour. Error states use the error palette.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;">
+      <div>
+        <div class="input-group">
+          <label class="input-label">Ride name</label>
+          <input class="input-field" type="text" placeholder="Saturday Morning Ride" value="Saturday Morning Ride">
+          <span class="input-hint">Give your ride a clear, descriptive name.</span>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Max riders</label>
+          <input class="input-field input-error" type="number" value="-3">
+          <span class="input-error-msg">Must be a positive number.</span>
+        </div>
+      </div>
+      <div>
+        <div class="input-group">
+          <label class="input-label">Meeting point</label>
+          <input class="input-field" type="text" placeholder="Search for a location...">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Distance (km)</label>
+          <input class="input-field" type="text" value="65" disabled style="opacity:0.5;cursor:not-allowed;">
+          <span class="input-hint">Auto-calculated from route.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="copied-toast" id="toast">Copied!</div>
+
+<script>
+// ─── THEME TOGGLE ───
+function setTheme(theme) {
+  document.body.setAttribute('data-theme', theme);
+  document.querySelectorAll('.theme-toggle button').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  renderContrastTable();
+  renderSurfaces();
+  renderBorders();
+  renderTextTokens();
+}
+
+// ─── COLOUR DATA ───
+const palettes = {
+  primary: [
+    { step: '50', hex: '#FEF0F7', dark: true },
+    { step: '100', hex: '#FDD8EC', dark: true },
+    { step: '200', hex: '#FBB1D9', dark: true },
+    { step: '300', hex: '#F77DBF', dark: true },
+    { step: '400', hex: '#F04AA5', dark: false },
+    { step: '500', hex: '#DE0387', dark: false },
+    { step: '600', hex: '#C2036F', dark: false },
+    { step: '700', hex: '#9C025A', dark: false },
+    { step: '800', hex: '#780247', dark: false },
+    { step: '900', hex: '#570134', dark: false },
+    { step: '950', hex: '#3A0123', dark: false },
+  ],
+  secondary: [
+    { step: '50', hex: '#EEF7F9', dark: true },
+    { step: '100', hex: '#D5ECF1', dark: true },
+    { step: '200', hex: '#ADD9E4', dark: true },
+    { step: '300', hex: '#7CC0D1', dark: true },
+    { step: '400', hex: '#4DA3B8', dark: false },
+    { step: '500', hex: '#2D7F94', dark: false },
+    { step: '600', hex: '#266A7C', dark: false },
+    { step: '700', hex: '#225565', dark: false },
+    { step: '800', hex: '#1E4451', dark: false },
+    { step: '900', hex: '#1A3742', dark: false },
+    { step: '950', hex: '#0F232C', dark: false },
+  ],
+  neutral: [
+    { step: '50', hex: '#F8F6F7', dark: true },
+    { step: '100', hex: '#F0ECED', dark: true },
+    { step: '200', hex: '#E2DCDE', dark: true },
+    { step: '300', hex: '#CEC6C9', dark: true },
+    { step: '400', hex: '#B0A5A9', dark: true },
+    { step: '500', hex: '#7C7074', dark: false },
+    { step: '600', hex: '#6E6367', dark: false },
+    { step: '700', hex: '#564C50', dark: false },
+    { step: '800', hex: '#3D3538', dark: false },
+    { step: '900', hex: '#272123', dark: false },
+    { step: '950', hex: '#1A1517', dark: false },
+  ],
+  success: [
+    { step: '50', hex: '#EDFCF2', dark: true },
+    { step: '100', hex: '#D3F9DF', dark: true },
+    { step: '200', hex: '#AAF0C4', dark: true },
+    { step: '300', hex: '#73E2A3', dark: true },
+    { step: '400', hex: '#3BCC7E', dark: false },
+    { step: '500', hex: '#18A85C', dark: false },
+    { step: '600', hex: '#0A7B42', dark: false },
+    { step: '700', hex: '#0B6E3D', dark: false },
+    { step: '800', hex: '#0D5733', dark: false },
+    { step: '900', hex: '#0B482B', dark: false },
+    { step: '950', hex: '#052818', dark: false },
+  ],
+  warning: [
+    { step: '50', hex: '#FFFBEB', dark: true },
+    { step: '100', hex: '#FFF3C6', dark: true },
+    { step: '200', hex: '#FFE488', dark: true },
+    { step: '300', hex: '#FFD04A', dark: true },
+    { step: '400', hex: '#FFBB1F', dark: true },
+    { step: '500', hex: '#F59A06', dark: false },
+    { step: '600', hex: '#D97502', dark: false },
+    { step: '700', hex: '#B45206', dark: false },
+    { step: '800', hex: '#923F0C', dark: false },
+    { step: '900', hex: '#78340D', dark: false },
+    { step: '950', hex: '#451A02', dark: false },
+  ],
+  error: [
+    { step: '50', hex: '#FEF2F2', dark: true },
+    { step: '100', hex: '#FEE2E2', dark: true },
+    { step: '200', hex: '#FECACA', dark: true },
+    { step: '300', hex: '#FCA5A5', dark: true },
+    { step: '400', hex: '#F87171', dark: false },
+    { step: '500', hex: '#EF4444', dark: false },
+    { step: '600', hex: '#DC2626', dark: false },
+    { step: '700', hex: '#B91C1C', dark: false },
+    { step: '800', hex: '#991B1B', dark: false },
+    { step: '900', hex: '#7F1D1D', dark: false },
+    { step: '950', hex: '#450A0A', dark: false },
+  ],
+  info: [
+    { step: '50', hex: '#EFF4FC', dark: true },
+    { step: '100', hex: '#DEEAF9', dark: true },
+    { step: '200', hex: '#BDD4F2', dark: true },
+    { step: '300', hex: '#91B7E8', dark: true },
+    { step: '400', hex: '#6594DA', dark: false },
+    { step: '500', hex: '#4574CB', dark: false },
+    { step: '600', hex: '#3459AC', dark: false },
+    { step: '700', hex: '#2C478B', dark: false },
+    { step: '800', hex: '#293E73', dark: false },
+    { step: '900', hex: '#263660', dark: false },
+    { step: '950', hex: '#1A233D', dark: false },
+  ],
+};
+
+// ─── RENDER RAMPS ───
+Object.entries(palettes).forEach(([name, steps]) => {
+  const container = document.getElementById(`ramp-${name}`);
+  if (!container) return;
+  steps.forEach(s => {
+    const swatch = document.createElement('div');
+    swatch.className = `swatch ${s.dark ? 'dark-text' : 'light-text'}`;
+    swatch.style.background = s.hex;
+    swatch.innerHTML = `<span class="swatch-step">${s.step}</span><span class="swatch-hex">${s.hex}</span>`;
+    swatch.onclick = () => copyHex(s.hex);
+    container.appendChild(swatch);
+  });
+});
+
+// ─── COPY HEX ───
+function copyHex(hex) {
+  navigator.clipboard.writeText(hex).then(() => {
+    const toast = document.getElementById('toast');
+    toast.textContent = `Copied ${hex}`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1500);
+  });
+}
+
+// ─── CONTRAST CALCULATION ───
+function hexToRgb(hex) {
+  hex = hex.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  return {
+    r: parseInt(hex.substr(0, 2), 16),
+    g: parseInt(hex.substr(2, 2), 16),
+    b: parseInt(hex.substr(4, 2), 16)
+  };
+}
+
+function luminance(r, g, b) {
+  const [rs, gs, bs] = [r, g, b].map(c => {
+    c = c / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+}
+
+function contrastRatio(hex1, hex2) {
+  const c1 = hexToRgb(hex1), c2 = hexToRgb(hex2);
+  const l1 = luminance(c1.r, c1.g, c1.b);
+  const l2 = luminance(c2.r, c2.g, c2.b);
+  const lighter = Math.max(l1, l2), darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function getResolvedColor(varName) {
+  return getComputedStyle(document.body).getPropertyValue(varName).trim();
+}
+
+function cssVarToHex(varName) {
+  const el = document.createElement('div');
+  el.style.color = `var(${varName})`;
+  document.body.appendChild(el);
+  const rgb = getComputedStyle(el).color;
+  document.body.removeChild(el);
+  const m = rgb.match(/(\d+)/g);
+  if (!m) return '#000000';
+  return '#' + m.slice(0, 3).map(n => parseInt(n).toString(16).padStart(2, '0')).join('');
+}
+
+// ─── RENDER CONTRAST TABLE ───
+function renderContrastTable() {
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  const bg = isDark ? '#1A1517' : '#F8F6F7';
+  const surface = isDark ? '#272123' : '#FFFFFF';
+
+  const pairs = [
+    { fg: 'Primary 500', fgHex: '#DE0387', bgName: 'Surface', bgHex: surface },
+    { fg: 'Primary 400', fgHex: '#F04AA5', bgName: 'Background', bgHex: bg },
+    { fg: 'Primary 600', fgHex: '#C2036F', bgName: 'Surface', bgHex: surface },
+    { fg: 'Secondary 600', fgHex: '#266A7C', bgName: 'Surface', bgHex: surface },
+    { fg: 'Secondary 400', fgHex: '#4DA3B8', bgName: isDark ? 'Surface' : 'Background', bgHex: isDark ? '#272123' : bg },
+    { fg: 'Text Primary', fgHex: isDark ? '#F8F6F7' : '#272123', bgName: 'Surface', bgHex: surface },
+    { fg: 'Text Secondary', fgHex: isDark ? '#B0A5A9' : '#7C7074', bgName: 'Surface', bgHex: surface },
+    { fg: 'Text Tertiary', fgHex: isDark ? '#8E8286' : '#B0A5A9', bgName: 'Surface', bgHex: surface },
+    { fg: 'Success', fgHex: isDark ? '#3BCC7E' : '#0A7B42', bgName: 'Surface', bgHex: surface },
+    { fg: 'Warning', fgHex: isDark ? '#FFBB1F' : '#D97502', bgName: 'Surface', bgHex: surface },
+    { fg: 'Error', fgHex: isDark ? '#F87171' : '#DC2626', bgName: 'Surface', bgHex: surface },
+    { fg: 'Info', fgHex: isDark ? '#6594DA' : '#3459AC', bgName: 'Surface', bgHex: surface },
+    { fg: 'White on Primary', fgHex: '#FFFFFF', bgName: 'Primary 500', bgHex: '#DE0387' },
+    { fg: 'White on Secondary', fgHex: '#FFFFFF', bgName: 'Secondary 600', bgHex: '#266A7C' },
+    { fg: 'White on Error', fgHex: '#FFFFFF', bgName: 'Error 600', bgHex: '#DC2626' },
+  ];
+
+  const tbody = document.querySelector('#contrast-table tbody');
+  tbody.innerHTML = '';
+
+  pairs.forEach(p => {
+    const ratio = contrastRatio(p.fgHex, p.bgHex);
+    const aaNormal = ratio >= 4.5;
+    const aaLarge = ratio >= 3;
+    const aaa = ratio >= 7;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="colour-pair"><span class="dot" style="background:${p.fgHex}"></span></span> ${p.fg} <code style="font-size:0.625rem;opacity:0.6">${p.fgHex}</code></td>
+      <td><span class="colour-pair"><span class="dot" style="background:${p.bgHex}"></span></span> ${p.bgName} <code style="font-size:0.625rem;opacity:0.6">${p.bgHex}</code></td>
+      <td class="ratio">${ratio.toFixed(2)}:1</td>
+      <td><span class="token-a11y ${aaNormal ? 'a11y-pass' : 'a11y-fail'}">${aaNormal ? 'Pass' : 'Fail'}</span></td>
+      <td><span class="token-a11y ${aaLarge ? 'a11y-pass' : 'a11y-fail'}">${aaLarge ? 'Pass' : 'Fail'}</span></td>
+      <td><span class="token-a11y ${aaa ? 'a11y-pass' : 'a11y-fail'}">${aaa ? 'Pass' : 'Fail'}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ─── RENDER SURFACES ───
+function renderSurfaces() {
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  const container = document.getElementById('surfaces-demo');
+  const surfaces = isDark ? [
+    { name: 'Background', token: '--color-bg', hex: '#1A1517', textColor: '#F8F6F7' },
+    { name: 'Surface', token: '--color-surface', hex: '#272123', textColor: '#F8F6F7' },
+    { name: 'Surface Raised', token: '--color-surface-raised', hex: '#3D3538', textColor: '#F8F6F7' },
+    { name: 'Surface Sunken', token: '--color-surface-sunken', hex: '#110E0F', textColor: '#F8F6F7' },
+  ] : [
+    { name: 'Background', token: '--color-bg', hex: '#F8F6F7', textColor: '#272123' },
+    { name: 'Surface', token: '--color-surface', hex: '#FFFFFF', textColor: '#272123' },
+    { name: 'Surface Raised', token: '--color-surface-raised', hex: '#F8F6F7', textColor: '#272123' },
+    { name: 'Surface Sunken', token: '--color-surface-sunken', hex: '#F0ECED', textColor: '#272123' },
+  ];
+  container.innerHTML = '';
+  surfaces.forEach(s => {
+    const block = document.createElement('div');
+    block.className = 'surface-block';
+    block.style.background = s.hex;
+    block.style.color = s.textColor;
+    block.style.border = `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`;
+    block.innerHTML = `<span class="surface-label">${s.name}</span><span class="surface-value">${s.token}</span><span class="surface-value">${s.hex}</span>`;
+    container.appendChild(block);
+  });
+}
+
+// ─── RENDER BORDERS ───
+function renderBorders() {
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  const container = document.getElementById('borders-demo');
+  const borders = isDark ? [
+    { name: 'border-subtle', hex: '#3D3538', desc: 'Card separators, subtle dividers' },
+    { name: 'border-default', hex: '#564C50', desc: 'Input borders, card outlines' },
+    { name: 'border-strong', hex: '#6E6367', desc: 'Active outlines, emphasis' },
+    { name: 'border-focus', hex: '#F04AA5', desc: 'Focus rings on inputs' },
+  ] : [
+    { name: 'border-subtle', hex: '#F0ECED', desc: 'Card separators, subtle dividers' },
+    { name: 'border-default', hex: '#E2DCDE', desc: 'Input borders, card outlines' },
+    { name: 'border-strong', hex: '#CEC6C9', desc: 'Active outlines, emphasis' },
+    { name: 'border-focus', hex: '#DE0387', desc: 'Focus rings on inputs' },
+  ];
+  container.innerHTML = '';
+  borders.forEach(b => {
+    const card = document.createElement('div');
+    card.className = 'token-card';
+    card.innerHTML = `
+      <div class="token-swatch" style="background:transparent;border:3px solid ${b.hex};"></div>
+      <div class="token-info">
+        <div class="token-name">--color-${b.name}</div>
+        <div class="token-value">${b.hex} · ${b.desc}</div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// ─── RENDER TEXT TOKENS ───
+function renderTextTokens() {
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  const bg = isDark ? '#272123' : '#FFFFFF';
+  const tokens = isDark ? [
+    { name: 'text-primary', hex: '#F8F6F7', desc: 'Headings, body text' },
+    { name: 'text-secondary', hex: '#B0A5A9', desc: 'Captions, metadata' },
+    { name: 'text-tertiary', hex: '#8E8286', desc: 'Hints, placeholders' },
+    { name: 'text-on-primary', hex: '#FFFFFF', desc: 'Text on primary buttons' },
+  ] : [
+    { name: 'text-primary', hex: '#272123', desc: 'Headings, body text' },
+    { name: 'text-secondary', hex: '#7C7074', desc: 'Captions, metadata' },
+    { name: 'text-tertiary', hex: '#B0A5A9', desc: 'Hints, placeholders' },
+    { name: 'text-on-primary', hex: '#FFFFFF', desc: 'Text on primary buttons' },
+  ];
+  const container = document.getElementById('text-tokens');
+  container.innerHTML = '';
+  tokens.forEach(t => {
+    const ratio = contrastRatio(t.hex, bg);
+    const passes = ratio >= 4.5;
+    const passesLarge = ratio >= 3;
+    const card = document.createElement('div');
+    card.className = 'token-card';
+    card.innerHTML = `
+      <div class="token-swatch" style="background:${t.hex};"></div>
+      <div class="token-info">
+        <div class="token-name">--color-${t.name}</div>
+        <div class="token-value">${t.hex} · ${t.desc}</div>
+      </div>
+      <span class="token-a11y ${passes ? 'a11y-pass' : passesLarge ? 'a11y-large' : 'a11y-fail'}">${ratio.toFixed(1)}:1 ${passes ? 'AA' : passesLarge ? 'AA18' : '✕'}</span>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// ─── INIT ───
+renderContrastTable();
+renderSurfaces();
+renderBorders();
+renderTextTokens();
+</script>
+</body>
+</html>
