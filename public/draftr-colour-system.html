@@ -763,6 +763,144 @@
     font-weight: 500;
   }
 
+  /* ─── TOKEN MAP ─── */
+  .token-map-section { margin-bottom: 2.5rem; }
+  .token-map-section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .token-map-row {
+    display: grid;
+    grid-template-columns: 40px 1fr 24px 1fr;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .token-map-row:last-child { border-bottom: none; }
+
+  .tm-swatch {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    border: 1px solid rgba(0,0,0,0.06);
+    flex-shrink: 0;
+  }
+
+  .tm-primitive, .tm-semantic {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  .tm-name {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tm-hex {
+    font-size: 0.625rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--color-text-tertiary);
+  }
+
+  .tm-usage {
+    font-size: 0.625rem;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+  }
+
+  .tm-arrow {
+    color: var(--color-text-tertiary);
+    font-size: 0.875rem;
+    text-align: center;
+    user-select: none;
+  }
+
+  .tm-layer-badge {
+    display: inline-block;
+    font-size: 0.5625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+  }
+
+  .tm-layer-primitive {
+    background: var(--color-surface-sunken);
+    color: var(--color-text-secondary);
+  }
+
+  .tm-layer-semantic {
+    background: var(--color-primary-subtle-bg);
+    color: var(--color-primary-subtle-text);
+  }
+
+  .naming-guide {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .naming-rule {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  .naming-rule h4 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.375rem;
+    color: var(--color-text-primary);
+  }
+
+  .naming-rule p {
+    font-size: 0.6875rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    margin-bottom: 0.375rem;
+  }
+
+  .naming-rule p:last-child { margin-bottom: 0; }
+
+  .naming-rule code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.625rem;
+    background: var(--color-surface-sunken);
+    padding: 2px 5px;
+    border-radius: 3px;
+  }
+
+  .token-map-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  @media (max-width: 840px) {
+    .token-map-grid { grid-template-columns: 1fr; }
+    .token-map-row { grid-template-columns: 36px 1fr 20px 1fr; gap: 0.5rem; }
+  }
+
   /* ─── RESPONSIVE ─── */
   @media (max-width: 640px) {
     .page { padding: 1.25rem 1rem 3rem; }
@@ -857,6 +995,42 @@
       <div class="ramp-label">Info — Slate Blue</div>
       <div class="ramp" id="ramp-info"></div>
     </div>
+  </div>
+
+  <!-- PRIMITIVE → SEMANTIC TOKEN MAP -->
+  <div class="section">
+    <h2 class="section-title">Primitive → Semantic token map</h2>
+    <p class="section-desc">Two-layer architecture: brand primitives are the raw colour ramps (what Figma styles reference). Semantic tokens describe <em>intent</em> — what the colour <em>does</em>, not what it <em>is</em>. Designers work in primitives; engineers consume semantics. This map shows how they connect. Values update when you toggle modes.</p>
+
+    <!-- NAMING CONVENTIONS -->
+    <div style="margin-bottom:2rem;">
+      <h3 style="font-size:0.875rem;font-weight:600;margin-bottom:0.75rem;">Naming conventions</h3>
+      <div class="naming-guide">
+        <div class="naming-rule">
+          <h4>Primitives: colour/scale</h4>
+          <p>Named by hue family and numeric step. Steps are brightness, not importance. 50 = lightest, 950 = darkest.</p>
+          <p><code>primary/500</code> · <code>neutral/200</code> · <code>error/600</code></p>
+        </div>
+        <div class="naming-rule">
+          <h4>Semantics: category/role/modifier</h4>
+          <p>Named by <em>what they do</em>. Three segments: category (surface, text, border, action), role (primary, secondary, success), optional modifier (hover, subtle, on-*).</p>
+          <p><code>surface/default</code> · <code>text/primary</code> · <code>action/primary/hover</code></p>
+        </div>
+        <div class="naming-rule">
+          <h4>Never use hex in code — only tokens</h4>
+          <p>Components reference semantic tokens. When the mode flips (or a club rebrands), only the mapping changes — zero component edits.</p>
+          <p><code>bg-[surface/default]</code> not <code>bg-[#FFFFFF]</code></p>
+        </div>
+        <div class="naming-rule">
+          <h4>"on-*" pattern for contrast pairs</h4>
+          <p>Any filled surface gets a paired <code>on-*</code> token for its foreground. This guarantees accessible contrast without guessing.</p>
+          <p><code>action/primary</code> → <code>text/on-primary</code></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- THE MAP -->
+    <div class="token-map-grid" id="token-map-grid"></div>
   </div>
 
   <!-- SURFACES -->
@@ -1059,6 +1233,7 @@ function setTheme(theme) {
   renderSurfaces();
   renderBorders();
   renderTextTokens();
+  renderTokenMap();
 }
 
 // ─── COLOUR DATA ───
@@ -1359,11 +1534,119 @@ function renderTextTokens() {
   });
 }
 
+// ─── RENDER TOKEN MAP ───
+function renderTokenMap() {
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  const grid = document.getElementById('token-map-grid');
+
+  const sections = [
+    {
+      title: 'Surfaces',
+      tokens: [
+        { semantic: 'surface/default', usage: 'Cards, modals, popovers', prim: isDark ? 'neutral/900' : 'neutral/0', hex: isDark ? '#272123' : '#FFFFFF' },
+        { semantic: 'surface/page', usage: 'Page background', prim: isDark ? 'neutral/950' : 'neutral/50', hex: isDark ? '#1A1517' : '#F8F6F7' },
+        { semantic: 'surface/raised', usage: 'Elevated cards, tooltips', prim: isDark ? 'neutral/800' : 'neutral/50', hex: isDark ? '#3D3538' : '#F8F6F7' },
+        { semantic: 'surface/sunken', usage: 'Inset areas, code blocks', prim: isDark ? 'custom' : 'neutral/100', hex: isDark ? '#110E0F' : '#F0ECED' },
+        { semantic: 'surface/overlay', usage: 'Modal backdrops, scrims', prim: 'neutral/0 @ 92%', hex: isDark ? 'rgba(26,21,23,0.92)' : 'rgba(255,255,255,0.92)' },
+      ]
+    },
+    {
+      title: 'Text & foreground',
+      tokens: [
+        { semantic: 'text/primary', usage: 'Headings, body copy', prim: isDark ? 'neutral/50' : 'neutral/900', hex: isDark ? '#F8F6F7' : '#272123' },
+        { semantic: 'text/secondary', usage: 'Captions, metadata, labels', prim: isDark ? 'neutral/400' : 'neutral/500', hex: isDark ? '#B0A5A9' : '#7C7074' },
+        { semantic: 'text/tertiary', usage: 'Placeholders, hints, disabled', prim: isDark ? 'neutral/500' : 'neutral/400', hex: isDark ? '#7C7074' : '#B0A5A9' },
+        { semantic: 'text/on-primary', usage: 'Text on primary fills', prim: 'neutral/0', hex: '#FFFFFF' },
+        { semantic: 'text/on-secondary', usage: 'Text on secondary fills', prim: 'neutral/0', hex: '#FFFFFF' },
+      ]
+    },
+    {
+      title: 'Borders & dividers',
+      tokens: [
+        { semantic: 'border/subtle', usage: 'Card edges, table rows', prim: isDark ? 'neutral/800' : 'neutral/100', hex: isDark ? '#3D3538' : '#F0ECED' },
+        { semantic: 'border/default', usage: 'Input borders, outlines', prim: isDark ? 'neutral/700' : 'neutral/200', hex: isDark ? '#564C50' : '#E2DCDE' },
+        { semantic: 'border/strong', usage: 'Active outlines, emphasis', prim: isDark ? 'neutral/600' : 'neutral/300', hex: isDark ? '#6E6367' : '#CEC6C9' },
+        { semantic: 'border/focus', usage: 'Focus rings', prim: isDark ? 'primary/400' : 'primary/500', hex: isDark ? '#F04AA5' : '#DE0387' },
+      ]
+    },
+    {
+      title: 'Actions (buttons, links)',
+      tokens: [
+        { semantic: 'action/primary', usage: 'Primary CTA fill', prim: isDark ? 'primary/400' : 'primary/500', hex: isDark ? '#F04AA5' : '#DE0387' },
+        { semantic: 'action/primary/hover', usage: 'Primary CTA hover', prim: isDark ? 'primary/300' : 'primary/600', hex: isDark ? '#F77DBF' : '#C2036F' },
+        { semantic: 'action/primary/active', usage: 'Primary CTA pressed', prim: isDark ? 'primary/500' : 'primary/700', hex: isDark ? '#DE0387' : '#9C025A' },
+        { semantic: 'action/primary/subtle-bg', usage: 'Ghost button bg, badge bg', prim: isDark ? 'primary/500 @ 12%' : 'primary/50', hex: isDark ? 'rgba(222,3,135,0.12)' : '#FEF0F7' },
+        { semantic: 'action/primary/subtle-text', usage: 'Ghost button text, badge text', prim: isDark ? 'primary/300' : 'primary/700', hex: isDark ? '#F77DBF' : '#9C025A' },
+        { semantic: 'action/secondary', usage: 'Secondary button fill', prim: isDark ? 'secondary/400' : 'secondary/600', hex: isDark ? '#4DA3B8' : '#266A7C' },
+        { semantic: 'action/secondary/hover', usage: 'Secondary button hover', prim: isDark ? 'secondary/300' : 'secondary/700', hex: isDark ? '#7CC0D1' : '#225565' },
+        { semantic: 'action/secondary/subtle-bg', usage: 'Secondary ghost bg', prim: isDark ? 'secondary/500 @ 12%' : 'secondary/50', hex: isDark ? 'rgba(45,127,148,0.12)' : '#EEF7F9' },
+        { semantic: 'action/secondary/subtle-text', usage: 'Secondary ghost text', prim: isDark ? 'secondary/300' : 'secondary/700', hex: isDark ? '#7CC0D1' : '#225565' },
+      ]
+    },
+    {
+      title: 'Feedback states',
+      tokens: [
+        { semantic: 'feedback/success', usage: 'Success icon, inline text', prim: isDark ? 'success/400' : 'success/600', hex: isDark ? '#3BCC7E' : '#0A7B42' },
+        { semantic: 'feedback/success/bg', usage: 'Success banner background', prim: isDark ? 'success/500 @ 12%' : 'success/50', hex: isDark ? 'rgba(24,168,92,0.12)' : '#EDFCF2' },
+        { semantic: 'feedback/success/text', usage: 'Success banner copy', prim: isDark ? 'success/300' : 'success/800', hex: isDark ? '#73E2A3' : '#0D5733' },
+        { semantic: 'feedback/warning', usage: 'Warning icon, inline text', prim: isDark ? 'warning/400' : 'warning/600', hex: isDark ? '#FFBB1F' : '#D97502' },
+        { semantic: 'feedback/warning/bg', usage: 'Warning banner background', prim: isDark ? 'warning/500 @ 12%' : 'warning/50', hex: isDark ? 'rgba(245,154,6,0.12)' : '#FFFBEB' },
+        { semantic: 'feedback/warning/text', usage: 'Warning banner copy', prim: isDark ? 'warning/300' : 'warning/800', hex: isDark ? '#FFD04A' : '#923F0C' },
+        { semantic: 'feedback/error', usage: 'Error icon, inline text', prim: isDark ? 'error/400' : 'error/600', hex: isDark ? '#F87171' : '#DC2626' },
+        { semantic: 'feedback/error/bg', usage: 'Error banner background', prim: isDark ? 'error/500 @ 12%' : 'error/50', hex: isDark ? 'rgba(239,68,68,0.12)' : '#FEF2F2' },
+        { semantic: 'feedback/error/text', usage: 'Error banner copy', prim: isDark ? 'error/300' : 'error/800', hex: isDark ? '#FCA5A5' : '#991B1B' },
+        { semantic: 'feedback/info', usage: 'Info icon, inline text', prim: isDark ? 'info/400' : 'info/600', hex: isDark ? '#6594DA' : '#3459AC' },
+        { semantic: 'feedback/info/bg', usage: 'Info banner background', prim: isDark ? 'info/500 @ 12%' : 'info/50', hex: isDark ? 'rgba(69,116,203,0.12)' : '#EFF4FC' },
+        { semantic: 'feedback/info/text', usage: 'Info banner copy', prim: isDark ? 'info/300' : 'info/800', hex: isDark ? '#91B7E8' : '#293E73' },
+      ]
+    },
+  ];
+
+  grid.innerHTML = '';
+
+  // Split into two columns
+  const leftCol = document.createElement('div');
+  const rightCol = document.createElement('div');
+
+  sections.forEach((section, i) => {
+    const col = i < 3 ? leftCol : rightCol;
+    const block = document.createElement('div');
+    block.className = 'token-map-section';
+    block.innerHTML = `<div class="token-map-section-title">${section.title}</div>`;
+
+    section.tokens.forEach(t => {
+      const isRgba = t.hex.startsWith('rgba');
+      const swatchBg = isRgba ? t.hex : t.hex;
+      const row = document.createElement('div');
+      row.className = 'token-map-row';
+      row.innerHTML = `
+        <div class="tm-swatch" style="background:${swatchBg};"></div>
+        <div class="tm-primitive">
+          <span class="tm-name">${t.prim}</span>
+          <span class="tm-hex">${t.hex}</span>
+        </div>
+        <div class="tm-arrow">→</div>
+        <div class="tm-semantic">
+          <span class="tm-name">${t.semantic}</span>
+          <span class="tm-usage">${t.usage}</span>
+        </div>
+      `;
+      block.appendChild(row);
+    });
+
+    col.appendChild(block);
+  });
+
+  grid.appendChild(leftCol);
+  grid.appendChild(rightCol);
+}
+
 // ─── INIT ───
 renderContrastTable();
 renderSurfaces();
 renderBorders();
 renderTextTokens();
+renderTokenMap();
 </script>
 </body>
 </html>
