@@ -717,3 +717,131 @@ export async function cancelRide(rideId: string, reason: string) {
   revalidatePath('/');
   return { success: true };
 }
+
+// ---------------------------------------------------------------------------
+// Comments
+// ---------------------------------------------------------------------------
+
+const COMMENT_MAX_LENGTH = 500;
+
+/**
+ * Validate comment body length and return the trimmed string.
+ * Returns an error string if invalid, or the trimmed body if valid.
+ */
+function validateCommentBody(body: string): { trimmed: string } | { error: string } {
+  const trimmed = body.trim();
+  if (!trimmed) return { error: errors.commentEmpty };
+  if (trimmed.length > COMMENT_MAX_LENGTH) {
+    return { error: errors.commentTooLong(COMMENT_MAX_LENGTH) };
+  }
+  return { trimmed };
+}
+
+/**
+ * Verify the caller can modify a comment (own comments, or any comment if admin).
+ * Returns the comment data if allowed, or an error string if denied.
+ */
+async function checkCommentPermission(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  commentId: string,
+): Promise<{ comment: { ride_id: string; user_id: string } } | { error: string }> {
+  const { data: comment } = await supabase
+    .from('ride_comments')
+    .select('ride_id, user_id')
+    .eq('id', commentId)
+    .single();
+
+  if (!comment) return { error: errors.commentNotFound };
+
+  if (comment.user_id !== userId) {
+    const { data: membership } = await supabase
+      .from('club_memberships')
+      .select('role')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .single();
+
+    if (membership?.role !== 'admin') {
+      return { error: errors.notAuthorized };
+    }
+  }
+
+  return { comment };
+}
+
+/**
+ * Add a comment to a ride.
+ */
+export async function addComment(rideId: string, body: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: common.notAuthenticated };
+
+  const validation = validateCommentBody(body);
+  if ('error' in validation) return { error: validation.error };
+
+  const { error } = await supabase.from('ride_comments').insert({
+    ride_id: rideId,
+    user_id: user.id,
+    body: validation.trimmed,
+  });
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/rides/${rideId}`);
+  return { success: true };
+}
+
+/**
+ * Edit a comment (own comments only — RLS enforced).
+ */
+export async function editComment(commentId: string, body: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: common.notAuthenticated };
+
+  const validation = validateCommentBody(body);
+  if ('error' in validation) return { error: validation.error };
+
+  const permission = await checkCommentPermission(supabase, user.id, commentId);
+  if ('error' in permission) return { error: permission.error };
+
+  const { error } = await supabase
+    .from('ride_comments')
+    .update({ body: validation.trimmed, updated_at: new Date().toISOString() })
+    .eq('id', commentId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/rides/${permission.comment.ride_id}`);
+  return { success: true };
+}
+
+/**
+ * Delete a comment (own comments, or any comment if admin).
+ */
+export async function deleteComment(commentId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: common.notAuthenticated };
+
+  const permission = await checkCommentPermission(supabase, user.id, commentId);
+  if ('error' in permission) return { error: permission.error };
+
+  const { error } = await supabase.from('ride_comments').delete().eq('id', commentId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/rides/${permission.comment.ride_id}`);
+  return { success: true };
+}

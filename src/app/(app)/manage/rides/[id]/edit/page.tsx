@@ -54,6 +54,14 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
     redirect(routes.ride(id));
   }
 
+  // Past rides cannot be edited
+  const rideDate = new Date(ride.ride_date + 'T00:00:00');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (rideDate < today) {
+    redirect(routes.ride(id));
+  }
+
   // Leaders can only edit rides they created; admins can edit any ride
   if (userRole === 'ride_leader' && ride.created_by !== userId) {
     redirect(routes.ride(id));

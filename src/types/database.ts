@@ -118,6 +118,21 @@ export interface RidePickup {
   sort_order: number;
 }
 
+export interface RidePickupWithLocation extends RidePickup {
+  location: { name: string; address: string | null };
+}
+
+export interface CommentWithUser {
+  id: string;
+  ride_id: string;
+  user_id: string;
+  body: string;
+  created_at: string;
+  updated_at: string;
+  user_name: string;
+  avatar_url: string | null;
+}
+
 export interface Tag {
   id: string;
   club_id: string;

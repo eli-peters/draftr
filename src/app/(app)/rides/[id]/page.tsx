@@ -7,17 +7,21 @@ import {
   Mountains,
   ArrowSquareOut,
   CloudRain,
+  Copy,
 } from '@phosphor-icons/react/dist/ssr';
 import Link from 'next/link';
-import { Copy } from '@phosphor-icons/react/dist/ssr';
 import {
   getRideById,
   getUserSignupStatus,
   getRideSignups,
   getUserClubMembership,
+  getRideComments,
+  getRidePickups,
 } from '@/lib/rides/queries';
 import { SignupButton } from '@/components/rides/signup-button';
 import { SignupRoster } from '@/components/rides/signup-roster';
+import { RideComments } from '@/components/rides/ride-comments';
+import { RidePickups } from '@/components/rides/ride-pickups';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CapacityBar } from '@/components/ui/capacity-bar';
@@ -36,22 +40,29 @@ interface RideDetailPageProps {
 
 export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const { id } = await params;
-  const [ride, signup, signups, membership] = await Promise.all([
+  const [ride, signup, signups, membership, comments, pickups] = await Promise.all([
     getRideById(id),
     getUserSignupStatus(id),
     getRideSignups(id),
     getUserClubMembership(),
+    getRideComments(id),
+    getRidePickups(id),
   ]);
   if (!ride) notFound();
 
   const rideDate = parseISO(ride.ride_date);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const isPast = rideDate < today;
   const isSignedUp =
     signup?.status === SignupStatus.CONFIRMED || signup?.status === SignupStatus.WAITLISTED;
   const isCancelled = ride.status === RideStatus.CANCELLED;
 
   const userRole = (membership?.role as UserRole) ?? 'rider';
   const isCreator = membership?.user_id === ride.created_by;
-  const canEdit = userRole === 'admin' || (userRole === 'ride_leader' && isCreator);
+  const hasEditRole = userRole === 'admin' || (userRole === 'ride_leader' && isCreator);
+  const canEdit = !isPast && !isCancelled && hasEditRole;
+  const currentUserId = membership?.user_id ?? null;
 
   // Separate confirmed from waitlisted for accurate display
   const confirmedCount = signups.filter(
@@ -122,16 +133,16 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       )}
 
       {/* Edit / Duplicate actions for authorized users */}
-      {canEdit && (
+      {(canEdit || (hasEditRole && (isCancelled || isPast))) && (
         <div className="mt-4 flex gap-2">
-          {!isCancelled && (
+          {canEdit && (
             <Link href={routes.manageEditRide(ride.id)}>
               <Button variant="outline" size="sm">
                 {appContent.rides.edit.heading}
               </Button>
             </Link>
           )}
-          {isCancelled && (
+          {hasEditRole && (isCancelled || isPast) && (
             <Link href={`${routes.manageNewRide}?duplicate=${ride.id}`}>
               <Button variant="outline" size="sm">
                 <Copy className="h-4 w-4 mr-1.5" />
@@ -180,6 +191,9 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           </div>
         )}
 
+        {/* Pickup points (rolling start locations) */}
+        {pickups.length > 0 && <RidePickups pickups={pickups} />}
+
         <div className="flex items-center gap-5 rounded-xl border border-border bg-card p-5">
           {ride.distance_km != null && (
             <span className="flex items-center gap-2 text-base font-medium text-info">
@@ -220,9 +234,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
       {ride.organiser_notes && (
         <div className="mt-8">
-          <SectionHeading>
-            {detail.organiserNotesHeading}
-          </SectionHeading>
+          <SectionHeading>{detail.organiserNotesHeading}</SectionHeading>
           <p className="mt-3 text-base text-foreground/80 whitespace-pre-line leading-relaxed">
             {ride.organiser_notes}
           </p>
@@ -248,6 +260,17 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           isSignedUp={isSignedUp}
           isCancelled={isCancelled}
           isFull={ride.capacity != null && confirmedCount >= ride.capacity}
+        />
+      </div>
+
+      {/* Comments */}
+      <div className="mt-8">
+        <RideComments
+          rideId={ride.id}
+          comments={comments}
+          currentUserId={currentUserId}
+          userRole={userRole}
+          isCancelled={isCancelled}
         />
       </div>
     </div>
