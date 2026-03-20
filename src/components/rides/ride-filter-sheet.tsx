@@ -1,29 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FunnelSimple } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Sheet, SheetContent, SheetHeader, SheetFooter, SheetTitle } from '@/components/ui/sheet';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { appContent } from '@/content/app';
+import { RideFilterContent } from './ride-filter-content';
+import type { SortOption, DateRange } from './ride-filter-content';
+
+export type { SortOption, DateRange };
 
 const { rides: ridesContent } = appContent;
-
-export type SortOption = 'date_asc' | 'date_desc' | 'distance_asc' | 'distance_desc';
-
-const sortOptions: { value: SortOption; label: string }[] = [
-  { value: 'date_asc', label: ridesContent.filter.sort.dateAsc },
-  { value: 'date_desc', label: ridesContent.filter.sort.dateDesc },
-  { value: 'distance_asc', label: ridesContent.filter.sort.distanceAsc },
-  { value: 'distance_desc', label: ridesContent.filter.sort.distanceDesc },
-];
-
-export interface DateRange {
-  from: string;
-  to: string;
-}
 
 interface RideFilterSheetProps {
   paceGroups: { id: string; name: string }[];
@@ -51,6 +40,12 @@ export function RideFilterSheet({
   onApply,
   onClear,
 }: RideFilterSheetProps) {
+  const isMobile = useIsMobile();
+
+  // Defer Base UI Dialog to client-only to prevent hydration ID mismatch
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const [open, setOpen] = useState(false);
   const [pendingPaceGroups, setPendingPaceGroups] = useState<string[]>([]);
   const [pendingTags, setPendingTags] = useState<string[]>([]);
@@ -61,6 +56,13 @@ export function RideFilterSheet({
     activePaceGroupIds.length +
     activeTagIds.length +
     (activeDateRange.from || activeDateRange.to ? 1 : 0);
+
+  const hasActiveFilters =
+    pendingPaceGroups.length > 0 ||
+    pendingTags.length > 0 ||
+    pendingDateRange.from !== '' ||
+    pendingDateRange.to !== '' ||
+    pendingSort !== 'date_asc';
 
   function handleOpenChange(nextOpen: boolean) {
     if (nextOpen) {
@@ -94,149 +96,65 @@ export function RideFilterSheet({
 
   return (
     <>
-      <Button variant="outline" size="sm" onClick={() => handleOpenChange(true)}>
+      <Button
+        variant={activeCount > 0 ? 'default' : 'outline'}
+        size="sm"
+        onClick={() => handleOpenChange(true)}
+      >
         <FunnelSimple className="h-4 w-4" />
         {ridesContent.filter.button}
         {activeCount > 0 && (
-          <Badge variant="default" size="sm" className="ml-1">
+          <Badge variant="outline" size="sm" className="ml-1">
             {ridesContent.filter.activeCount(activeCount)}
           </Badge>
         )}
       </Button>
 
-      <Sheet open={open} onOpenChange={handleOpenChange}>
-        <SheetContent side="bottom" className="max-h-(--sheet-height-md) overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{ridesContent.filter.heading}</SheetTitle>
-          </SheetHeader>
+      {mounted && (
+        <Sheet open={open} onOpenChange={handleOpenChange}>
+          <SheetContent
+            side={isMobile ? 'bottom' : 'right'}
+            className={
+              isMobile
+                ? 'flex max-h-(--sheet-height-lg) flex-col'
+                : 'flex w-(--sheet-width-filter) flex-col'
+            }
+          >
+            {/* Header with title and clear action */}
+            <SheetHeader className="flex-row items-center justify-between">
+              <SheetTitle>{ridesContent.filter.heading}</SheetTitle>
+              {hasActiveFilters && (
+                <Button variant="link" size="sm" onClick={handleClear}>
+                  {ridesContent.filter.clearAll}
+                </Button>
+              )}
+            </SheetHeader>
 
-          <div className="space-y-6 px-4">
-            {/* Pace Groups */}
-            {paceGroups.length > 0 && (
-              <div className="space-y-2">
-                <Label>{ridesContent.filter.paceGroupLabel}</Label>
-                <div className="flex flex-wrap gap-2">
-                  {paceGroups.map((pg) => {
-                    const isSelected = pendingPaceGroups.includes(pg.id);
-                    return (
-                      <Badge
-                        key={pg.id}
-                        variant={isSelected ? 'default' : 'outline'}
-                        size="lg"
-                        className="cursor-pointer"
-                        onClick={() => togglePaceGroup(pg.id)}
-                      >
-                        {pg.name}
-                      </Badge>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Tags */}
-            {tags.length > 0 && (
-              <div className="space-y-2">
-                <Label>{ridesContent.filter.tagsLabel}</Label>
-                <div className="flex flex-wrap gap-2">
-                  {tags.map((tag) => {
-                    const isSelected = pendingTags.includes(tag.id);
-                    return (
-                      <Badge
-                        key={tag.id}
-                        variant={isSelected ? 'default' : 'outline'}
-                        size="lg"
-                        className="cursor-pointer"
-                        style={
-                          isSelected && tag.color
-                            ? {
-                                backgroundColor: tag.color,
-                                color: 'var(--primary-foreground)',
-                                borderColor: tag.color,
-                              }
-                            : tag.color
-                              ? {
-                                  borderColor: `color-mix(in srgb, ${tag.color} 60%, transparent)`,
-                                  color: tag.color,
-                                }
-                              : undefined
-                        }
-                        onClick={() => toggleTag(tag.id)}
-                      >
-                        {tag.name}
-                      </Badge>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Date Range */}
-            <div className="space-y-2">
-              <Label>{ridesContent.filter.dateRangeLabel}</Label>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <span className="text-xs text-muted-foreground">
-                    {ridesContent.filter.dateFrom}
-                  </span>
-                  <Input
-                    type="date"
-                    value={pendingDateRange.from}
-                    onChange={(e) =>
-                      setPendingDateRange((prev) => ({ ...prev, from: e.target.value }))
-                    }
-                  />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-xs text-muted-foreground">
-                    {ridesContent.filter.dateTo}
-                  </span>
-                  <Input
-                    type="date"
-                    value={pendingDateRange.to}
-                    onChange={(e) =>
-                      setPendingDateRange((prev) => ({ ...prev, to: e.target.value }))
-                    }
-                  />
-                </div>
-              </div>
+            {/* Scrollable filter content */}
+            <div className="flex-1 overflow-y-auto">
+              <RideFilterContent
+                paceGroups={paceGroups}
+                tags={tags}
+                pendingPaceGroups={pendingPaceGroups}
+                pendingTags={pendingTags}
+                pendingDateRange={pendingDateRange}
+                pendingSort={pendingSort}
+                onTogglePaceGroup={togglePaceGroup}
+                onToggleTag={toggleTag}
+                onDateRangeChange={setPendingDateRange}
+                onSortChange={setPendingSort}
+              />
             </div>
 
-            {/* Sort */}
-            <div className="space-y-2">
-              <Label>{ridesContent.filter.sortLabel}</Label>
-              <div className="flex flex-wrap gap-2">
-                {sortOptions.map((opt) => (
-                  <Badge
-                    key={opt.value}
-                    variant={pendingSort === opt.value ? 'default' : 'outline'}
-                    size="lg"
-                    className="cursor-pointer"
-                    onClick={() => setPendingSort(opt.value)}
-                  >
-                    {opt.label}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <SheetFooter className="flex-row gap-3">
-            {(pendingPaceGroups.length > 0 ||
-              pendingTags.length > 0 ||
-              pendingDateRange.from ||
-              pendingDateRange.to ||
-              pendingSort !== 'date_asc') && (
-              <Button variant="ghost" className="flex-1" onClick={handleClear}>
-                {ridesContent.filter.clearAll}
+            {/* Footer with apply button */}
+            <SheetFooter className="border-t border-border pt-3">
+              <Button className="w-full" onClick={handleApply}>
+                {ridesContent.filter.apply}
               </Button>
-            )}
-            <Button className="flex-1" onClick={handleApply}>
-              {ridesContent.filter.apply}
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+      )}
     </>
   );
 }
