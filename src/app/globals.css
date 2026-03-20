@@ -143,7 +143,7 @@
  * Components use bg-primary, text-muted-foreground, etc. unchanged.
  */
 :root {
-  /* shadcn bridge */
+  /* ── shadcn bridge ── */
   --background: var(--surface-page);
   --foreground: var(--text-primary);
   --card: var(--surface-default);
@@ -163,7 +163,7 @@
   --input: var(--border-default);
   --ring: var(--border-focus);
 
-  /* Status — via feedback semantic tokens */
+  /* ── Status — via feedback semantic tokens ── */
   --info: var(--feedback-info-default);
   --info-foreground: var(--text-on-primary);
   --warning: var(--feedback-warning-default);
@@ -171,7 +171,7 @@
   --success: var(--feedback-success-default);
   --success-foreground: var(--text-on-primary);
 
-  /* Component-level tokens */
+  /* ── Component-level color tokens ── */
   --input-bg: transparent;
   --input-bg-disabled: color-mix(in srgb, var(--border-default) 50%, transparent);
   --input-border-invalid: var(--action-danger-default);
@@ -183,31 +183,32 @@
   --tabs-trigger-active-text: var(--text-primary);
   --destructive-focus-bg: color-mix(in srgb, var(--action-danger-default) 10%, transparent);
 
-  /* Layout */
-  --sheet-height-md: 70vh;
-  --sheet-height-lg: 85vh;
-  --sheet-width-filter: 24rem;
-  --overlay: rgba(0, 0, 0, 0.1);
-  --overlay-heavy: rgba(0, 0, 0, 0.4);
-
-  /* Motion */
-  --duration-fast: 150ms;
-  --duration-normal: 250ms;
-  --duration-slow: 350ms;
-
-  /* Shadows — warm undertone matching the neutral palette */
-  --shadow-sm: 0 1px 2px rgba(26, 21, 23, 0.05);
-  --shadow-md: 0 4px 8px rgba(26, 21, 23, 0.08);
-  --shadow-lg: 0 12px 24px rgba(26, 21, 23, 0.12);
-
-  /* Charts */
+  /* ── Charts ── */
   --chart-1: var(--color-primary-500);
   --chart-2: var(--color-error-500);
   --chart-3: var(--color-secondary-500);
   --chart-4: var(--color-neutral-400);
   --chart-5: var(--color-info-500);
 
+  /* ── Layout ── */
+  --sheet-height-md: 70vh;
+  --sheet-height-lg: 85vh;
+  --sheet-width-filter: 24rem;
+  --overlay: color-mix(in srgb, var(--color-neutral-950) 10%, transparent);
+  --overlay-heavy: color-mix(in srgb, var(--color-neutral-950) 40%, transparent);
+
+  /* ── Radius ── */
   --radius: 0.625rem;
+
+  /* ── Shadows — warm undertone matching the neutral palette ── */
+  --shadow-sm: 0 1px 2px color-mix(in srgb, var(--color-neutral-950) 5%, transparent);
+  --shadow-md: 0 4px 8px color-mix(in srgb, var(--color-neutral-950) 8%, transparent);
+  --shadow-lg: 0 12px 24px color-mix(in srgb, var(--color-neutral-950) 12%, transparent);
+
+  /* ── Motion ── */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 350ms;
 }
 
 /*
@@ -216,33 +217,35 @@
  * in the generated tokens.css. Only component-level overrides needed here.
  */
 .dark {
-  /* Component-level dark overrides */
+  /* ── Component-level color tokens ── */
   --input-bg: color-mix(in srgb, var(--border-default) 30%, transparent);
   --input-bg-disabled: color-mix(in srgb, var(--border-default) 80%, transparent);
   --input-border-invalid: color-mix(in srgb, var(--action-danger-default) 50%, transparent);
   --input-ring-invalid: color-mix(in srgb, var(--action-danger-default) 40%, transparent);
-  --tabs-list-bg: color-mix(in srgb, white 5%, transparent);
+  --tabs-list-bg: color-mix(in srgb, var(--color-neutral-0) 5%, transparent);
   --tabs-trigger-text: var(--text-secondary);
   --tabs-trigger-active-bg: color-mix(in srgb, var(--border-default) 30%, transparent);
   --tabs-trigger-active-border: var(--border-default);
   --tabs-trigger-active-text: var(--action-primary-default);
   --destructive-focus-bg: color-mix(in srgb, var(--action-danger-default) 20%, transparent);
-  --overlay: rgba(255, 255, 255, 0.05);
-  --overlay-heavy: rgba(0, 0, 0, 0.6);
 
-  /* Dark shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.5);
-
-  /* Dark chart colours */
+  /* ── Charts ── */
   --chart-1: var(--color-primary-400);
   --chart-2: var(--color-error-400);
   --chart-3: var(--color-secondary-400);
   --chart-4: var(--color-neutral-500);
   --chart-5: var(--color-info-400);
 
-  /* Dark warning/success foreground needs dark text on bright badges */
+  /* ── Layout ── */
+  --overlay: color-mix(in srgb, var(--color-neutral-0) 5%, transparent);
+  --overlay-heavy: color-mix(in srgb, var(--color-neutral-950) 60%, transparent);
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 2px color-mix(in srgb, var(--color-neutral-950) 30%, transparent);
+  --shadow-md: 0 4px 8px color-mix(in srgb, var(--color-neutral-950) 40%, transparent);
+  --shadow-lg: 0 12px 24px color-mix(in srgb, var(--color-neutral-950) 50%, transparent);
+
+  /* ── shadcn bridge overrides ── */
   --warning-foreground: var(--color-neutral-900);
   --success-foreground: var(--color-neutral-900);
 }
