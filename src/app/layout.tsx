@@ -1,20 +1,26 @@
 import type { Metadata, Viewport } from 'next';
-import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
+import { Outfit, DM_Sans, JetBrains_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { COLOR_MODE_SCRIPT } from '@/lib/color-mode-script';
 import { appContent } from '@/content/app';
-import { defaultTheme } from '@/themes/default';
 import './globals.css';
 
-const plusJakarta = Plus_Jakarta_Sans({
-  variable: '--font-sans',
+const outfit = Outfit({
+  variable: '--font-outfit',
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
+  weight: ['600', '700', '800'],
+});
+
+const dmSans = DM_Sans({
+  variable: '--font-dm-sans',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  variable: '--font-geist-mono',
+  variable: '--font-jetbrains-mono',
   subsets: ['latin'],
+  weight: ['400', '500', '600'],
 });
 
 export const viewport: Viewport = {
@@ -23,8 +29,8 @@ export const viewport: Viewport = {
   maximumScale: 1,
   viewportFit: 'cover',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: defaultTheme.colors.white },
-    { media: '(prefers-color-scheme: dark)', color: defaultTheme.colors.black },
+    { media: '(prefers-color-scheme: light)', color: '#F8F6F7' },
+    { media: '(prefers-color-scheme: dark)', color: '#1A1517' },
   ],
 };
 
@@ -43,7 +49,32 @@ export const metadata: Metadata = {
     type: 'website',
   },
   icons: {
-    apple: '/icons/apple-touch-icon.png',
+    icon: [
+      {
+        url: '/icons/favicon-light.png',
+        type: 'image/png',
+        sizes: '32x32',
+        media: '(prefers-color-scheme: light)',
+      },
+      {
+        url: '/icons/favicon-dark.png',
+        type: 'image/png',
+        sizes: '32x32',
+        media: '(prefers-color-scheme: dark)',
+      },
+    ],
+    apple: [
+      {
+        url: '/icons/apple-touch-icon-light.png',
+        sizes: '180x180',
+        media: '(prefers-color-scheme: light)',
+      },
+      {
+        url: '/icons/apple-touch-icon-dark.png',
+        sizes: '180x180',
+        media: '(prefers-color-scheme: dark)',
+      },
+    ],
   },
 };
 
@@ -56,7 +87,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${plusJakarta.variable} ${jetbrainsMono.variable}`}
+      className={`${outfit.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: COLOR_MODE_SCRIPT }} />
