@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { MapPin, Users, CaretRight, CloudRain, ArrowsClockwise } from '@phosphor-icons/react';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { CapacityBar } from '@/components/ui/capacity-bar';
+import { MetadataItem } from '@/components/ui/metadata-item';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   RideFilterSheet,
@@ -12,6 +15,7 @@ import {
   type DateRange,
 } from '@/components/rides/ride-filter-sheet';
 import { sortRides } from '@/lib/rides/sort';
+import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { RideStatus } from '@/config/statuses';
@@ -37,14 +41,11 @@ export interface ManageRideData {
 }
 
 function ManageRideItem({ ride }: { ride: ManageRideData }) {
-  const capacityPercent = ride.capacity != null ? (ride.signup_count / ride.capacity) * 100 : 0;
   const isCancelled = ride.status === RideStatus.CANCELLED;
 
   return (
     <Link href={routes.manageEditRide(ride.id)} className="block group">
-      <div
-        className={`rounded-xl border border-border bg-card p-5 mb-3 ${isCancelled ? 'opacity-disabled' : ''}`}
-      >
+      <Card className={cn('p-5 mb-3', isCancelled && 'opacity-disabled')}>
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -73,17 +74,13 @@ function ManageRideItem({ ride }: { ride: ManageRideData }) {
                 {ride.start_time.slice(0, 5)}
               </span>
               {ride.meeting_location_name && (
-                <span className="flex items-center gap-1.5">
-                  <MapPin className="h-3.5 w-3.5" />
-                  {ride.meeting_location_name}
-                </span>
+                <MetadataItem icon={MapPin}>{ride.meeting_location_name}</MetadataItem>
               )}
-              <span className="flex items-center gap-1.5">
-                <Users className="h-3.5 w-3.5" />
+              <MetadataItem icon={Users}>
                 {ride.capacity != null
                   ? `${ride.signup_count}/${ride.capacity}`
                   : ride.signup_count}
-              </span>
+              </MetadataItem>
             </div>
             {ride.created_by_name && (
               <p className="mt-1.5 text-sm text-muted-foreground/60">
@@ -93,15 +90,14 @@ function ManageRideItem({ ride }: { ride: ManageRideData }) {
           </div>
           <CaretRight className="ml-2 h-4 w-4 shrink-0 text-muted-foreground/40" />
         </div>
-        {ride.capacity != null && !isCancelled && (
-          <div className="mt-4 h-0.5 w-full rounded-full bg-muted overflow-hidden">
-            <div
-              className="h-full rounded-full bg-primary transition-all duration-500"
-              style={{ width: `${Math.min(capacityPercent, 100)}%` }}
-            />
-          </div>
+        {!isCancelled && (
+          <CapacityBar
+            signupCount={ride.signup_count}
+            capacity={ride.capacity}
+            className="mt-4"
+          />
         )}
-      </div>
+      </Card>
     </Link>
   );
 }

@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { updateProfile, uploadAvatar, removeAvatar } from '@/lib/profile/actions';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
@@ -179,9 +180,9 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
 
       {/* Emergency Contact */}
       <div className="space-y-4 rounded-xl border border-border p-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <SectionHeading as="h3">
           {profileContent.sections.emergencyContact}
-        </h3>
+        </SectionHeading>
         <p className="text-xs text-muted-foreground">
           {profileContent.emergencyContact.visibilityNote}
         </p>

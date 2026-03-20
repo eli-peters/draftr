@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Plus, Bicycle, UsersThree, ChartLineUp } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { StatsGrid } from '@/components/dashboard/stats-grid';
 import {
   getUserClubMembership,
   getLeaderRides,
@@ -67,37 +68,14 @@ export default async function ManagePage() {
       </div>
 
       {isAdmin && stats && (
-        <div className="mt-8 grid grid-cols-3 gap-3">
-          <div className="rounded-xl border border-border bg-card p-5">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-              <Bicycle className="h-5 w-5 text-primary" />
-            </div>
-            <p className="text-4xl font-bold tabular-nums text-foreground">{stats.totalRides}</p>
-            <p className="text-sm font-medium text-muted-foreground mt-2">
-              {content.stats.totalRides}
-            </p>
-          </div>
-          <div className="rounded-xl border border-border bg-card p-5">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-              <UsersThree className="h-5 w-5 text-primary" />
-            </div>
-            <p className="text-4xl font-bold tabular-nums text-foreground">{stats.activeMembers}</p>
-            <p className="text-sm font-medium text-muted-foreground mt-2">
-              {content.stats.activeMembers}
-            </p>
-          </div>
-          <div className="rounded-xl border border-border bg-card p-5">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-              <ChartLineUp className="h-5 w-5 text-primary" />
-            </div>
-            <p className="text-4xl font-bold tabular-nums text-foreground">
-              {stats.signupsThisWeek}
-            </p>
-            <p className="text-sm font-medium text-muted-foreground mt-2">
-              {content.stats.signupsThisWeek}
-            </p>
-          </div>
-        </div>
+        <StatsGrid
+          className="mt-8 grid-cols-3 sm:grid-cols-3"
+          stats={[
+            { label: content.stats.totalRides, value: stats.totalRides, icon: Bicycle },
+            { label: content.stats.activeMembers, value: stats.activeMembers, icon: UsersThree },
+            { label: content.stats.signupsThisWeek, value: stats.signupsThisWeek, icon: ChartLineUp },
+          ]}
+        />
       )}
 
       {isAdmin ? (

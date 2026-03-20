@@ -4,6 +4,8 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTransition, useCallback } from 'react';
 import { Bicycle, ArrowClockwise } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { RideCard } from '@/components/rides/ride-card';
 import {
   RideFilterSheet,
@@ -89,9 +91,7 @@ export function FilterableRideFeed({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-baseline gap-2">
           {heading && (
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {heading}
-            </h2>
+            <SectionHeading>{heading}</SectionHeading>
           )}
           {hasFilters && sorted.length > 0 && (
             <span className="text-xs text-muted-foreground/70">
@@ -129,17 +129,12 @@ export function FilterableRideFeed({
           ))}
         </div>
       ) : (
-        <div className="mt-12 flex flex-col items-center justify-center text-center py-8">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/8">
-            <Bicycle weight="duotone" className="h-10 w-10 text-primary/60" />
-          </div>
-          <h2 className="mt-4 text-lg font-semibold text-foreground">
-            {hasFilters ? ridesContent.filter.noResults.title : emptyTitle}
-          </h2>
-          <p className="mt-2 text-base text-muted-foreground max-w-80">
-            {hasFilters ? ridesContent.filter.noResults.description : emptyDescription}
-          </p>
-        </div>
+        <EmptyState
+          title={hasFilters ? ridesContent.filter.noResults.title : emptyTitle}
+          description={hasFilters ? ridesContent.filter.noResults.description : emptyDescription}
+          icon={Bicycle}
+          className="mt-12"
+        />
       )}
     </section>
   );

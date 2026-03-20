@@ -9,6 +9,9 @@ import {
   ArrowsClockwise,
 } from '@phosphor-icons/react/dist/ssr';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { CapacityBar } from '@/components/ui/capacity-bar';
+import { MetadataItem } from '@/components/ui/metadata-item';
 import { appContent } from '@/content/app';
 import { getRelativeDay } from '@/lib/utils';
 import { RideStatus } from '@/config/statuses';
@@ -27,11 +30,10 @@ export function RideCard({ ride }: RideCardProps) {
   const relativeDay = getRelativeDay(rideDate, dateFormats.dayShort);
   const spotsText =
     ride.capacity != null ? `${ride.signup_count}/${ride.capacity}` : `${ride.signup_count}`;
-  const capacityPercent = ride.capacity != null ? (ride.signup_count / ride.capacity) * 100 : null;
 
   return (
     <Link href={routes.ride(ride.id)} className="group block">
-      <div className="rounded-xl border border-border bg-card p-6 mb-4">
+      <Card className="p-6 mb-4">
         {/* Date + time + status */}
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold text-primary uppercase tracking-wide">
@@ -67,29 +69,21 @@ export function RideCard({ ride }: RideCardProps) {
         {/* Details Row */}
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
           {ride.meeting_location && (
-            <span className="flex items-center gap-1.5">
-              <MapPin className="h-4 w-4" />
-              {ride.meeting_location.name}
-            </span>
+            <MetadataItem icon={MapPin}>{ride.meeting_location.name}</MetadataItem>
           )}
           {ride.distance_km != null && (
-            <span className="flex items-center gap-1.5 text-info">
-              <Path className="h-4 w-4" />
+            <MetadataItem icon={Path} className="text-info">
               {ride.distance_km}
               {units.km}
-            </span>
+            </MetadataItem>
           )}
           {ride.elevation_m != null && (
-            <span className="flex items-center gap-1.5 text-info">
-              <Mountains className="h-4 w-4" />
+            <MetadataItem icon={Mountains} className="text-info">
               {ride.elevation_m}
               {units.m}
-            </span>
+            </MetadataItem>
           )}
-          <span className="flex items-center gap-1.5">
-            <Users className="h-4 w-4" />
-            {spotsText}
-          </span>
+          <MetadataItem icon={Users}>{spotsText}</MetadataItem>
         </div>
 
         {/* Tags */}
@@ -116,15 +110,8 @@ export function RideCard({ ride }: RideCardProps) {
         )}
 
         {/* Capacity line */}
-        {capacityPercent != null && (
-          <div className="mt-5 h-0.5 w-full rounded-full bg-muted overflow-hidden">
-            <div
-              className="h-full rounded-full bg-primary transition-all duration-500"
-              style={{ width: `${Math.min(capacityPercent, 100)}%` }}
-            />
-          </div>
-        )}
-      </div>
+        <CapacityBar signupCount={ride.signup_count} capacity={ride.capacity} className="mt-5" />
+      </Card>
     </Link>
   );
 }

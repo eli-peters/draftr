@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Megaphone, X } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
 import { appContent } from '@/content/app';
 
 const { dashboard: content } = appContent;
@@ -22,13 +23,15 @@ export function AnnouncementBanner({ announcement }: AnnouncementBannerProps) {
 
   return (
     <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 relative">
-      <button
+      <Button
+        variant="ghost"
+        size="icon-sm"
         onClick={() => setDismissed(true)}
-        className="absolute top-3 right-3 p-1 text-muted-foreground/50 hover:text-foreground transition-colors"
+        className="absolute top-3 right-3 text-muted-foreground/50 hover:text-foreground"
         aria-label={content.announcementBanner.dismiss}
       >
         <X className="h-4 w-4" />
-      </button>
+      </Button>
       <div className="flex items-start gap-3 pr-6">
         <Megaphone className="h-5 w-5 text-primary shrink-0 mt-0.5" />
         <div className="min-w-0">

@@ -1,4 +1,6 @@
 import { AnimatedCounter } from '@/components/motion/animated-counter';
+import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 interface StatItem {
   label: string;
@@ -11,13 +13,14 @@ interface StatItem {
 
 interface StatsGridProps {
   stats: StatItem[];
+  className?: string;
 }
 
-export function StatsGrid({ stats }: StatsGridProps) {
+export function StatsGrid({ stats, className }: StatsGridProps) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <div className={cn('grid grid-cols-2 gap-3 sm:grid-cols-4', className)}>
       {stats.map((stat) => (
-        <div key={stat.label} className="rounded-xl border border-border bg-card p-5">
+        <Card key={stat.label} className="p-5">
           {stat.icon && (
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
               <stat.icon className="h-5 w-5 text-primary" />
@@ -30,7 +33,7 @@ export function StatsGrid({ stats }: StatsGridProps) {
             className="text-4xl font-bold tabular-nums text-foreground"
           />
           <p className="text-sm font-medium text-muted-foreground mt-2">{stat.label}</p>
-        </div>
+        </Card>
       ))}
     </div>
   );

@@ -21,6 +21,7 @@ import { GreetingSection } from '@/components/dashboard/greeting-section';
 import { ActionBar } from '@/components/dashboard/action-bar';
 import { FilterableRideFeed } from '@/components/rides/filterable-ride-feed';
 import { AnnouncementBanner } from '@/components/dashboard/announcement-banner';
+import { EmptyState } from '@/components/ui/empty-state';
 import type { UserRole } from '@/config/navigation';
 
 const { dashboard } = appContent;
@@ -112,15 +113,12 @@ export default async function HomePage() {
           </Suspense>
         </div>
       ) : (
-        <div className="mt-12 flex flex-col items-center justify-center text-center py-8">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/8">
-            <Bicycle weight="duotone" className="h-10 w-10 text-primary/60" />
-          </div>
-          <h2 className="mt-4 text-lg font-semibold text-foreground">{dashboard.noRides}</h2>
-          <p className="mt-2 text-base text-muted-foreground max-w-80">
-            {dashboard.noRidesDescription}
-          </p>
-        </div>
+        <EmptyState
+          title={dashboard.noRides}
+          description={dashboard.noRidesDescription}
+          icon={Bicycle}
+          className="mt-12"
+        />
       )}
     </DashboardShell>
   );

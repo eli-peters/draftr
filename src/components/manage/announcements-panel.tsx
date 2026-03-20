@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { Sheet, SheetContent, SheetHeader, SheetFooter, SheetTitle } from '@/components/ui/sheet';
 import { appContent } from '@/content/app';
 import {
@@ -81,9 +83,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
   return (
     <div className={isPending ? 'opacity-pending pointer-events-none' : ''}>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {content.announcements.heading}
-        </h2>
+        <SectionHeading>{content.announcements.heading}</SectionHeading>
         <Button size="sm" variant="outline" onClick={handleNew}>
           <Plus className="h-4 w-4 mr-1.5" />
           {content.announcements.create}
@@ -95,7 +95,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
       ) : (
         <div className="space-y-3">
           {announcements.map((a) => (
-            <div key={a.id} className="rounded-xl border border-border bg-card p-5">
+            <Card key={a.id} className="p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -115,30 +115,36 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                   </p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
                     onClick={() => handleTogglePin(a.id, a.is_pinned)}
-                    className="p-1.5 text-muted-foreground/50 hover:text-primary transition-colors"
+                    className="text-muted-foreground/50 hover:text-primary"
                     title={a.is_pinned ? content.announcements.unpin : content.announcements.pin}
                   >
                     <PushPin weight={a.is_pinned ? 'fill' : undefined} className="h-4 w-4" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
                     onClick={() => handleEdit(a)}
-                    className="p-1.5 text-muted-foreground/50 hover:text-foreground transition-colors"
+                    className="text-muted-foreground/50 hover:text-foreground"
                     title={content.announcements.edit}
                   >
                     <PencilSimple className="h-4 w-4" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
                     onClick={() => handleDelete(a.id)}
-                    className="p-1.5 text-muted-foreground/50 hover:text-destructive transition-colors"
+                    className="text-muted-foreground/50 hover:text-destructive"
                     title={content.announcements.delete}
                   >
                     <Trash className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}

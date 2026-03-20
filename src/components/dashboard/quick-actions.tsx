@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { Plus, EnvelopeSimple, UsersThree } from '@phosphor-icons/react/dist/ssr';
+import { Card } from '@/components/ui/card';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import type { UserRole } from '@/config/navigation';
@@ -48,16 +50,14 @@ export function QuickActions({ role }: { role: UserRole }) {
 
   return (
     <section>
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-        {content.admin.quickActions}
-      </h2>
+      <SectionHeading className="mb-4">{content.admin.quickActions}</SectionHeading>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {actions.map((action) => (
           <Link key={action.label} href={action.href} className="group block">
-            <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-5">
+            <Card className="flex items-center gap-3 p-5">
               <action.icon className="h-5 w-5 text-primary" />
               <span className="text-base font-medium text-foreground">{action.label}</span>
-            </div>
+            </Card>
           </Link>
         ))}
       </div>
