@@ -1,0 +1,197 @@
+'use client';
+
+import { useState, useTransition } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { SectionHeading } from '@/components/ui/section-heading';
+import { addComment, editComment, deleteComment } from '@/lib/rides/actions';
+import { appContent } from '@/content/app';
+import { getInitials } from '@/lib/utils';
+import type { CommentWithUser } from '@/types/database';
+
+const content = appContent.rides.comments;
+const CHAR_LIMIT = 500;
+
+interface RideCommentsProps {
+  rideId: string;
+  comments: CommentWithUser[];
+  currentUserId: string | null;
+  userRole: string;
+  isCancelled: boolean;
+}
+
+export function RideComments({
+  rideId,
+  comments,
+  currentUserId,
+  userRole,
+  isCancelled,
+}: RideCommentsProps) {
+  return (
+    <div>
+      <SectionHeading>{content.heading}</SectionHeading>
+
+      {comments.length === 0 && (
+        <p className="mt-3 text-sm text-muted-foreground">{content.noComments}</p>
+      )}
+
+      {comments.length > 0 && (
+        <div className="mt-3 space-y-1">
+          {comments.map((comment) => (
+            <CommentRow
+              key={comment.id}
+              comment={comment}
+              currentUserId={currentUserId}
+              isAdmin={userRole === 'admin'}
+            />
+          ))}
+        </div>
+      )}
+
+      {currentUserId && !isCancelled && <AddCommentForm rideId={rideId} />}
+    </div>
+  );
+}
+
+function CommentRow({
+  comment,
+  currentUserId,
+  isAdmin,
+}: {
+  comment: CommentWithUser;
+  currentUserId: string | null;
+  isAdmin: boolean;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editBody, setEditBody] = useState(comment.body);
+  const [isPending, startTransition] = useTransition();
+
+  const isOwn = currentUserId === comment.user_id;
+  const canModify = isOwn || isAdmin;
+  const wasEdited = comment.updated_at !== comment.created_at;
+
+  function handleSaveEdit() {
+    startTransition(async () => {
+      const result = await editComment(comment.id, editBody);
+      if (result.success) setIsEditing(false);
+    });
+  }
+
+  function handleDelete() {
+    if (!confirm(content.deleteConfirm)) return;
+    startTransition(async () => {
+      await deleteComment(comment.id);
+    });
+  }
+
+  return (
+    <div className="flex gap-3 rounded-lg px-2 py-2.5">
+      <Avatar className="h-8 w-8 shrink-0">
+        {comment.avatar_url && <AvatarImage src={comment.avatar_url} alt={comment.user_name} />}
+        <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
+          {getInitials(comment.user_name)}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline gap-2">
+          <span className="text-sm font-medium text-foreground">{comment.user_name}</span>
+          <span className="text-xs text-muted-foreground">
+            {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+          </span>
+          {wasEdited && (
+            <span className="text-xs text-muted-foreground italic">{content.edited}</span>
+          )}
+        </div>
+
+        {isEditing ? (
+          <div className="mt-1.5 space-y-2">
+            <Textarea
+              value={editBody}
+              onChange={(e) => setEditBody(e.target.value)}
+              maxLength={CHAR_LIMIT}
+              rows={2}
+              className="text-sm"
+            />
+            <div className="flex items-center gap-2">
+              <Button size="sm" onClick={handleSaveEdit} disabled={isPending || !editBody.trim()}>
+                {content.save}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setIsEditing(false);
+                  setEditBody(comment.body);
+                }}
+              >
+                {content.cancelEdit}
+              </Button>
+              <span className="text-xs text-muted-foreground ml-auto">
+                {content.charLimit(editBody.length, CHAR_LIMIT)}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <p className="mt-0.5 text-sm text-foreground/80 whitespace-pre-line">{comment.body}</p>
+        )}
+
+        {canModify && !isEditing && (
+          <div className="mt-1 flex gap-3">
+            {isOwn && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {content.edit}
+              </button>
+            )}
+            <button
+              onClick={handleDelete}
+              disabled={isPending}
+              className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+            >
+              {content.delete}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AddCommentForm({ rideId }: { rideId: string }) {
+  const [body, setBody] = useState('');
+  const [isPending, startTransition] = useTransition();
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!body.trim()) return;
+    startTransition(async () => {
+      const result = await addComment(rideId, body);
+      if (result.success) setBody('');
+    });
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-4 space-y-2">
+      <Textarea
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        placeholder={content.placeholder}
+        maxLength={CHAR_LIMIT}
+        rows={2}
+        className="text-sm"
+      />
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-muted-foreground">
+          {content.charLimit(body.length, CHAR_LIMIT)}
+        </span>
+        <Button type="submit" size="sm" disabled={isPending || !body.trim()}>
+          {content.submit}
+        </Button>
+      </div>
+    </form>
+  );
+}

@@ -1,5 +1,28 @@
 import { createClient } from '@/lib/supabase/server';
-import type { RideWithDetails } from '@/types/database';
+import type { RideWithDetails, CommentWithUser, RidePickupWithLocation } from '@/types/database';
+
+/** Select string shared by queries that return RideWithDetails. */
+const RIDE_WITH_DETAILS_SELECT = `
+  *,
+  meeting_location:meeting_locations(*),
+  pace_group:pace_groups(*),
+  ride_tags(tag:tags(*)),
+  creator:users!rides_created_by_fkey(id, full_name, display_name, avatar_url),
+  ride_signups(status)
+`;
+
+/** Map a raw Supabase ride row (with joins) into a RideWithDetails shape. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toRideWithDetails(ride: any): RideWithDetails {
+  const signups = (ride.ride_signups ?? []) as { status: string }[];
+  return {
+    ...ride,
+    tags: ride.ride_tags?.map((rt: { tag: unknown }) => rt.tag).filter(Boolean) ?? [],
+    signup_count: signups.filter((s) => s.status === 'confirmed' || s.status === 'checked_in')
+      .length,
+    creator: ride.creator ?? null,
+  } as RideWithDetails;
+}
 
 /**
  * Fetch upcoming rides for a club, with joined relations.
@@ -10,16 +33,7 @@ export async function getUpcomingRides(clubId: string): Promise<RideWithDetails[
 
   const { data, error } = await supabase
     .from('rides')
-    .select(
-      `
-      *,
-      meeting_location:meeting_locations(*),
-      pace_group:pace_groups(*),
-      ride_tags(tag:tags(*)),
-      creator:users!rides_created_by_fkey(id, full_name, display_name, avatar_url),
-      ride_signups(status)
-    `,
-    )
+    .select(RIDE_WITH_DETAILS_SELECT)
     .eq('club_id', clubId)
     .gte('ride_date', today)
     .neq('status', 'cancelled')
@@ -31,16 +45,7 @@ export async function getUpcomingRides(clubId: string): Promise<RideWithDetails[
     return [];
   }
 
-  return (data ?? []).map((ride) => {
-    const signups = (ride.ride_signups ?? []) as { status: string }[];
-    return {
-      ...ride,
-      tags: ride.ride_tags?.map((rt: { tag: unknown }) => rt.tag).filter(Boolean) ?? [],
-      signup_count: signups.filter((s) => s.status === 'confirmed' || s.status === 'checked_in')
-        .length,
-      creator: ride.creator ?? null,
-    };
-  }) as RideWithDetails[];
+  return (data ?? []).map(toRideWithDetails);
 }
 
 /**
@@ -51,16 +56,7 @@ export async function getRideById(rideId: string): Promise<RideWithDetails | nul
 
   const { data, error } = await supabase
     .from('rides')
-    .select(
-      `
-      *,
-      meeting_location:meeting_locations(*),
-      pace_group:pace_groups(*),
-      ride_tags(tag:tags(*)),
-      creator:users!rides_created_by_fkey(id, full_name, display_name, avatar_url),
-      ride_signups(status)
-    `,
-    )
+    .select(RIDE_WITH_DETAILS_SELECT)
     .eq('id', rideId)
     .single();
 
@@ -68,14 +64,7 @@ export async function getRideById(rideId: string): Promise<RideWithDetails | nul
     return null;
   }
 
-  const signups = (data.ride_signups ?? []) as { status: string }[];
-  return {
-    ...data,
-    tags: data.ride_tags?.map((rt: { tag: unknown }) => rt.tag).filter(Boolean) ?? [],
-    signup_count: signups.filter((s) => s.status === 'confirmed' || s.status === 'checked_in')
-      .length,
-    creator: data.creator ?? null,
-  } as RideWithDetails;
+  return toRideWithDetails(data);
 }
 
 /**
@@ -563,4 +552,73 @@ export async function getUserRideSignups(
       waitlist_position: signup.waitlist_position,
     };
   });
+}
+
+/**
+ * Fetch comments for a ride with user info, ordered oldest first.
+ */
+export async function getRideComments(rideId: string): Promise<CommentWithUser[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('ride_comments')
+    .select(
+      `
+      id, ride_id, user_id, body, created_at, updated_at,
+      user:users!inner(full_name, display_name, avatar_url)
+    `,
+    )
+    .eq('ride_id', rideId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching ride comments:', error);
+    return [];
+  }
+
+  return (data ?? []).map((comment) => {
+    const user = comment.user as unknown as {
+      full_name: string;
+      display_name: string | null;
+      avatar_url: string | null;
+    };
+    return {
+      id: comment.id,
+      ride_id: comment.ride_id,
+      user_id: comment.user_id,
+      body: comment.body,
+      created_at: comment.created_at,
+      updated_at: comment.updated_at,
+      user_name: user.display_name ?? user.full_name,
+      avatar_url: user.avatar_url,
+    };
+  });
+}
+
+/**
+ * Fetch pickup locations for a ride, ordered by sort_order.
+ */
+export async function getRidePickups(rideId: string): Promise<RidePickupWithLocation[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('ride_pickups')
+    .select(
+      `
+      id, ride_id, location_id, pickup_time, notes, sort_order,
+      location:meeting_locations!inner(name, address)
+    `,
+    )
+    .eq('ride_id', rideId)
+    .order('sort_order', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching ride pickups:', error);
+    return [];
+  }
+
+  return (data ?? []).map((pickup) => ({
+    ...pickup,
+    location: pickup.location as unknown as { name: string; address: string | null },
+  })) as RidePickupWithLocation[];
 }

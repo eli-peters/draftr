@@ -240,6 +240,22 @@ export const appContent = {
       waitlisted: 'Waitlisted',
       leader: 'Leader',
     },
+    comments: {
+      heading: 'Comments',
+      placeholder: 'Add a comment...',
+      submit: 'Post',
+      edit: 'Edit',
+      save: 'Save',
+      cancelEdit: 'Cancel',
+      delete: 'Delete',
+      deleteConfirm: 'Delete this comment?',
+      edited: '(edited)',
+      charLimit: (current: number, max: number) => `${current}/${max}`,
+      noComments: 'No comments yet. Be the first!',
+    },
+    pickups: {
+      heading: 'Pickup Points',
+    },
   },
 
   myRides: {
@@ -480,6 +496,9 @@ export const appContent = {
     cannotDeactivateSelf: 'Cannot deactivate yourself',
     lastAdmin: 'Cannot change role — this is the only admin in the club.',
     noFileProvided: 'No file provided',
+    commentEmpty: 'Comment cannot be empty.',
+    commentNotFound: 'Comment not found.',
+    commentTooLong: (max: number) => `Comment must be ${max} characters or fewer.`,
   },
 
   notificationMessages: {
