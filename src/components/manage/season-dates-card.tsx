@@ -2,8 +2,10 @@
 
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { updateSeasonDates } from '@/lib/manage/actions';
 
@@ -33,10 +35,10 @@ export function SeasonDatesCard({ clubId, seasonStart, seasonEnd }: SeasonDatesC
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+    <Card className="p-5">
+      <SectionHeading as="h3" className="mb-1">
         {season.heading}
-      </h3>
+      </SectionHeading>
       <p className="text-sm text-muted-foreground mb-4">{season.description}</p>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -59,6 +61,6 @@ export function SeasonDatesCard({ clubId, seasonStart, seasonEnd }: SeasonDatesC
         </Button>
         {message && <p className="text-sm text-success">{message}</p>}
       </div>
-    </div>
+    </Card>
   );
 }

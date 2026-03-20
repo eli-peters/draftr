@@ -2,6 +2,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Copy } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
+import { SectionHeading } from '@/components/ui/section-heading';
 import {
   getUserClubMembership,
   getRideById,
@@ -107,9 +108,7 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
 
       {/* Signups section */}
       <div className="mt-12">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-          {ridesContent.edit.signups}
-        </h2>
+        <SectionHeading className="mb-4">{ridesContent.edit.signups}</SectionHeading>
         <SignupRoster signups={signups} createdBy={ride.created_by} />
         <div className="mt-4">
           <WalkUpRiderForm

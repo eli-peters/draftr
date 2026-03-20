@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { AppearanceSetting } from '@/components/settings/appearance-setting';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { formatPhoneDisplay } from '@/lib/phone';
 import { routes } from '@/config/routes';
@@ -94,9 +95,9 @@ export default async function ProfilePage() {
 
       {/* About */}
       <div className="mt-8">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <SectionHeading>
           {content.sections.about}
-        </h2>
+        </SectionHeading>
         {profile.bio ? (
           <p className="mt-3 text-base text-foreground/75 leading-relaxed">{profile.bio}</p>
         ) : (
@@ -107,9 +108,9 @@ export default async function ProfilePage() {
       {/* Preferences */}
       {profile.preferred_pace_group && (
         <div className="mt-8">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <SectionHeading>
             {content.sections.preferences}
-          </h2>
+          </SectionHeading>
           <div className="mt-3">
             <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-5">
               <Bicycle className="h-5 w-5 text-primary" />
@@ -126,9 +127,9 @@ export default async function ProfilePage() {
 
       {/* Emergency Contact */}
       <div className="mt-8">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <SectionHeading>
           {content.sections.emergencyContact}
-        </h2>
+        </SectionHeading>
         {ec?.emergency_contact_name ? (
           <div className="mt-3 flex items-center gap-3 rounded-xl border border-border bg-card p-5">
             <FirstAidKit className="h-5 w-5 text-destructive" />
@@ -155,9 +156,9 @@ export default async function ProfilePage() {
 
       {/* Recent Rides */}
       <div className="mt-8">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <SectionHeading>
           {content.recentRides}
-        </h2>
+        </SectionHeading>
         {recentRides.length === 0 ? (
           <p className="mt-3 text-base text-muted-foreground">{content.noRidesYet}</p>
         ) : (

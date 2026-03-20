@@ -11,6 +11,10 @@ import {
   FlagPennant,
   CloudRain,
 } from '@phosphor-icons/react/dist/ssr';
+import { Card } from '@/components/ui/card';
+import { CapacityBar } from '@/components/ui/capacity-bar';
+import { MetadataItem } from '@/components/ui/metadata-item';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { getRelativeDay } from '@/lib/utils';
@@ -78,16 +82,14 @@ function ActionCard({
 }) {
   return (
     <Link href={href} className="group block">
-      <div className="rounded-xl border border-border bg-card p-5">
+      <Card className="p-5">
         <div className="flex items-center gap-2 mb-3">
           <Icon className="h-4 w-4 text-primary" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {label}
-          </span>
+          <SectionHeading as="span">{label}</SectionHeading>
           <CaretRight className="ml-auto h-3.5 w-3.5 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5" />
         </div>
         {children}
-      </div>
+      </Card>
     </Link>
   );
 }
@@ -130,10 +132,7 @@ export function ActionBar({
               {getRelativeDay(parseISO(nextSignup.ride_date))} · {nextSignup.start_time.slice(0, 5)}
             </span>
             {nextSignup.meeting_location_name && (
-              <span className="flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5" />
-                {nextSignup.meeting_location_name}
-              </span>
+              <MetadataItem icon={MapPin}>{nextSignup.meeting_location_name}</MetadataItem>
             )}
           </div>
         </ActionCard>
@@ -154,9 +153,9 @@ export function ActionBar({
               {getRelativeDay(parseISO(nextWaitlistedRide.ride_date))} ·{' '}
               {nextWaitlistedRide.start_time.slice(0, 5)}
             </span>
-            <span className="flex items-center gap-1 text-warning">
+            <MetadataItem className="text-warning">
               {appContent.myRides.waitlistPosition(nextWaitlistedRide.waitlist_position)}
-            </span>
+            </MetadataItem>
           </div>
         </ActionCard>
       )}
@@ -176,21 +175,15 @@ export function ActionBar({
               {getRelativeDay(parseISO(nextLedRide.ride_date))} ·{' '}
               {nextLedRide.start_time.slice(0, 5)}
             </span>
-            <span className="flex items-center gap-1">
-              <Users className="h-3.5 w-3.5" />
+            <MetadataItem icon={Users}>
               {content.actionBar.signedUp(nextLedRide.signup_count, nextLedRide.capacity)}
-            </span>
+            </MetadataItem>
           </div>
-          {nextLedRide.capacity != null && (
-            <div className="mt-3 h-0.5 w-full rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full rounded-full bg-primary transition-all duration-500"
-                style={{
-                  width: `${Math.min((nextLedRide.signup_count / nextLedRide.capacity) * 100, 100)}%`,
-                }}
-              />
-            </div>
-          )}
+          <CapacityBar
+            signupCount={nextLedRide.signup_count}
+            capacity={nextLedRide.capacity}
+            className="mt-3"
+          />
         </ActionCard>
       )}
 

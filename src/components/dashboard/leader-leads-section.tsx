@@ -1,6 +1,11 @@
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { MapPin, Users, CaretRight, FlagBanner } from '@phosphor-icons/react/dist/ssr';
+import { Card } from '@/components/ui/card';
+import { CapacityBar } from '@/components/ui/capacity-bar';
+import { MetadataItem } from '@/components/ui/metadata-item';
+import { EmptyState } from '@/components/ui/empty-state';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { dateFormats, separators } from '@/config/formatting';
 import { routes } from '@/config/routes';
@@ -19,11 +24,9 @@ interface LeadRide {
 }
 
 function LeadRideItem({ ride }: { ride: LeadRide }) {
-  const capacityPercent = ride.capacity != null ? (ride.signup_count / ride.capacity) * 100 : 0;
-
   return (
     <Link href={routes.ride(ride.id)} className="group block">
-      <div className="rounded-xl border border-border bg-card p-5 mb-3">
+      <Card className="p-5 mb-3">
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
             <h3 className="text-base font-semibold text-foreground truncate">{ride.title}</h3>
@@ -33,27 +36,18 @@ function LeadRideItem({ ride }: { ride: LeadRide }) {
                 {separators.at}
                 {ride.start_time}
               </span>
-              <span className="flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5" />
-                {ride.location}
-              </span>
-              <span className="flex items-center gap-1">
-                <Users className="h-3.5 w-3.5" />
-                {content.leader.signups(ride.signup_count)}
-              </span>
+              <MetadataItem icon={MapPin}>{ride.location}</MetadataItem>
+              <MetadataItem icon={Users}>{content.leader.signups(ride.signup_count)}</MetadataItem>
             </div>
           </div>
           <CaretRight className="ml-2 h-4 w-4 shrink-0 text-muted-foreground/40" />
         </div>
-        {ride.capacity != null && (
-          <div className="mt-4 h-0.5 w-full rounded-full bg-muted overflow-hidden">
-            <div
-              className="h-full rounded-full bg-primary transition-all duration-500"
-              style={{ width: `${Math.min(capacityPercent, 100)}%` }}
-            />
-          </div>
-        )}
-      </div>
+        <CapacityBar
+          signupCount={ride.signup_count}
+          capacity={ride.capacity}
+          className="mt-4"
+        />
+      </Card>
     </Link>
   );
 }
@@ -61,19 +55,13 @@ function LeadRideItem({ ride }: { ride: LeadRide }) {
 export function LeaderLeadsSection({ leads }: { leads: LeadRide[] }) {
   return (
     <section>
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-        {content.leader.yourLeads}
-      </h2>
+      <SectionHeading className="mb-4">{content.leader.yourLeads}</SectionHeading>
       {leads.length === 0 ? (
-        <div className="py-8 flex flex-col items-center text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/8">
-            <FlagBanner weight="duotone" className="h-10 w-10 text-primary/60" />
-          </div>
-          <p className="mt-4 text-base font-medium text-foreground">{content.leader.noLeads}</p>
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            {content.leader.noLeadsDescription}
-          </p>
-        </div>
+        <EmptyState
+          title={content.leader.noLeads}
+          description={content.leader.noLeadsDescription}
+          icon={FlagBanner}
+        />
       ) : (
         <div>
           {leads.map((ride) => (

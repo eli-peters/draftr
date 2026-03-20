@@ -3,6 +3,9 @@
 import Link from 'next/link';
 import { BellSimple } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
+import { cn } from '@/lib/utils';
 import { NotificationItem } from '@/components/notifications/notification-item';
 import { markNotificationRead, markAllNotificationsRead } from '@/lib/notifications/actions';
 import { routes } from '@/config/routes';
@@ -63,25 +66,22 @@ export function NotificationsList({
       </div>
 
       {notifications.length === 0 ? (
-        <div className="mt-12 flex flex-1 flex-col items-center justify-center text-center py-8">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/8">
-            <BellSimple weight="duotone" className="h-10 w-10 text-primary/60" />
-          </div>
-          <p className="mt-4 text-lg font-semibold text-foreground">{emptyTitle}</p>
-          <p className="mt-2 text-base text-muted-foreground max-w-80">{emptyDescription}</p>
-        </div>
+        <EmptyState
+          title={emptyTitle}
+          description={emptyDescription}
+          icon={BellSimple}
+          className="mt-12 flex-1"
+        />
       ) : (
         <div className="mt-6 space-y-3">
           {notifications.map((notification) => {
             const content = (
-              <div
-                className={`rounded-xl border border-border bg-card p-5 ${
-                  notification.is_read ? 'opacity-disabled' : 'cursor-pointer'
-                }`}
+              <Card
+                className={cn('p-5', notification.is_read ? 'opacity-disabled' : 'cursor-pointer')}
                 onClick={!notification.is_read ? () => handleMarkRead(notification.id) : undefined}
               >
                 <NotificationItem notification={notification} />
-              </div>
+              </Card>
             );
 
             const href = getNotificationHref(notification);

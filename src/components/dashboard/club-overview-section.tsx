@@ -1,6 +1,7 @@
 'use client';
 
 import { Bicycle, UsersThree, ChartLineUp, TrendUp } from '@phosphor-icons/react';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { StatsGrid } from './stats-grid';
 
@@ -31,9 +32,7 @@ const clubStatItems = [
 export function ClubOverviewSection() {
   return (
     <section>
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-        {dashContent.admin.clubOverview}
-      </h2>
+      <SectionHeading className="mb-4">{dashContent.admin.clubOverview}</SectionHeading>
       <StatsGrid stats={clubStatItems} />
     </section>
   );

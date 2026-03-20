@@ -13,7 +13,11 @@ import {
 } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
+import { MetadataItem } from '@/components/ui/metadata-item';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { dateFormats, separators, units } from '@/config/formatting';
@@ -35,8 +39,8 @@ function RideListItem({
 
   return (
     <Link href={routes.ride(ride.id)} className="group block">
-      <div
-        className={`rounded-xl border border-border bg-card p-5 mb-3 ${isPast ? 'opacity-disabled' : ''}`}
+      <Card
+        className={cn('p-5 mb-3', isPast && 'opacity-disabled')}
       >
         <div className="flex items-center justify-between">
           <h3 className="text-base font-bold text-foreground truncate">{ride.title}</h3>
@@ -55,55 +59,18 @@ function RideListItem({
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
           {ride.meeting_location_name && (
-            <span className="flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5" />
-              {ride.meeting_location_name}
-            </span>
+            <MetadataItem icon={MapPin}>{ride.meeting_location_name}</MetadataItem>
           )}
           {ride.distance_km != null && (
-            <span className="flex items-center gap-1.5 text-info">
-              <Path className="h-3.5 w-3.5" />
+            <MetadataItem icon={Path} className="text-info">
               {ride.distance_km}
               {units.km}
-            </span>
+            </MetadataItem>
           )}
-          <span className="flex items-center gap-1.5">
-            <Users className="h-3.5 w-3.5" />
-            {spotsText}
-          </span>
+          <MetadataItem icon={Users}>{spotsText}</MetadataItem>
         </div>
-      </div>
+      </Card>
     </Link>
-  );
-}
-
-function EmptyState({
-  title,
-  description,
-  cta,
-  icon: Icon,
-}: {
-  title: string;
-  description: string;
-  cta?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  icon?: React.ComponentType<any>;
-}) {
-  return (
-    <div className="mt-12 flex flex-col items-center justify-center text-center py-8">
-      {Icon && (
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/8">
-          <Icon weight="duotone" className="h-10 w-10 text-primary/60" />
-        </div>
-      )}
-      <p className={`${Icon ? 'mt-4' : ''} text-lg font-semibold text-foreground`}>{title}</p>
-      <p className="mt-2 text-base text-muted-foreground max-w-80">{description}</p>
-      {cta && (
-        <Link href={routes.rides} className="mt-4">
-          <Button size="sm">{cta}</Button>
-        </Link>
-      )}
-    </div>
   );
 }
 
@@ -127,9 +94,13 @@ export function MyRidesTabs({ upcoming, past, waitlisted }: MyRidesTabsProps) {
           <EmptyState
             title={myRides.emptyState.upcoming.title}
             description={myRides.emptyState.upcoming.description}
-            cta={myRides.emptyState.upcoming.cta}
             icon={Bicycle}
-          />
+            className="mt-12"
+          >
+            <Link href={routes.rides} className="mt-4">
+              <Button size="sm">{myRides.emptyState.upcoming.cta}</Button>
+            </Link>
+          </EmptyState>
         ) : (
           <div className="mt-4">
             {upcoming.map((ride) => (
@@ -145,6 +116,7 @@ export function MyRidesTabs({ upcoming, past, waitlisted }: MyRidesTabsProps) {
             title={myRides.emptyState.past.title}
             description={myRides.emptyState.past.description}
             icon={ClockCountdown}
+            className="mt-12"
           />
         ) : (
           <div className="mt-4">
@@ -161,6 +133,7 @@ export function MyRidesTabs({ upcoming, past, waitlisted }: MyRidesTabsProps) {
             title={myRides.emptyState.waitlisted.title}
             description={myRides.emptyState.waitlisted.description}
             icon={Queue}
+            className="mt-12"
           />
         ) : (
           <div className="mt-4">

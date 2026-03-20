@@ -5,6 +5,7 @@ import { Monitor, Sun, Moon } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/components/theme-provider';
 import { appContent } from '@/content/app';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { cn } from '@/lib/utils';
 import type { ColorMode } from '@/types/theme';
 
@@ -29,9 +30,7 @@ export function AppearanceSetting() {
 
   return (
     <div>
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {content.heading}
-      </h2>
+      <SectionHeading>{content.heading}</SectionHeading>
       <div className="mt-3 inline-flex rounded-lg bg-muted p-1">
         {options.map(({ value, label, icon: Icon }) => (
           <Button

@@ -1,6 +1,7 @@
 import { formatDistanceToNow } from 'date-fns';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { getInitials } from '@/lib/utils';
 import { SignupStatus } from '@/config/statuses';
@@ -52,9 +53,9 @@ export function SignupRoster({ signups, createdBy }: SignupRosterProps) {
       ))}
       {waitlisted.length > 0 && (
         <>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-3 pb-1">
+          <SectionHeading as="p" className="pt-3 pb-1">
             {ridesContent.roster.waitlisted}
-          </p>
+          </SectionHeading>
           {waitlisted.map((signup) => (
             <SignupRow key={signup.id} signup={signup} isLeader={signup.user_id === createdBy} />
           ))}

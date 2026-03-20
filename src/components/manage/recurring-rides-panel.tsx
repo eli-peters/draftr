@@ -7,7 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { Sheet, SheetContent, SheetHeader, SheetFooter, SheetTitle } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
 import {
   createRecurringRide,
@@ -113,9 +116,7 @@ export function RecurringRidesPanel({
   return (
     <div className={isPending ? 'opacity-pending pointer-events-none' : ''}>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {rc.heading}
-        </h2>
+        <SectionHeading>{rc.heading}</SectionHeading>
         <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
           <Plus className="h-4 w-4 mr-1.5" />
           {rc.create}
@@ -129,9 +130,9 @@ export function RecurringRidesPanel({
       ) : (
         <div className="space-y-3">
           {recurringRides.map((r) => (
-            <div
+            <Card
               key={r.id}
-              className={`rounded-xl border border-border bg-card p-5 ${!r.is_active ? 'opacity-muted' : ''}`}
+              className={cn('p-5', !r.is_active && 'opacity-muted')}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -162,16 +163,20 @@ export function RecurringRidesPanel({
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
                     onClick={() => handleGenerate(r.id)}
-                    className="p-1.5 text-muted-foreground/50 hover:text-primary transition-colors"
+                    className="text-muted-foreground/50 hover:text-primary"
                     title={rc.generateNow}
                   >
                     <ArrowClockwise className="h-4 w-4" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
                     onClick={() => handleToggle(r.id, r.is_active)}
-                    className="p-1.5 text-muted-foreground/50 hover:text-foreground transition-colors"
+                    className="text-muted-foreground/50 hover:text-foreground"
                     title={r.is_active ? rc.pause : rc.resume}
                   >
                     {r.is_active ? (
@@ -179,17 +184,19 @@ export function RecurringRidesPanel({
                     ) : (
                       <Play className="h-4 w-4" />
                     )}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
                     onClick={() => handleDelete(r.id)}
-                    className="p-1.5 text-muted-foreground/50 hover:text-destructive transition-colors"
+                    className="text-muted-foreground/50 hover:text-destructive"
                     title={rc.delete}
                   >
                     <Trash className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}

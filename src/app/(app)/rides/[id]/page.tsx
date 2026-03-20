@@ -20,6 +20,8 @@ import { SignupButton } from '@/components/rides/signup-button';
 import { SignupRoster } from '@/components/rides/signup-roster';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CapacityBar } from '@/components/ui/capacity-bar';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { RideStatus, SignupStatus } from '@/config/statuses';
 import { dateFormats, separators, units } from '@/config/formatting';
@@ -67,8 +69,6 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
     if (waitlistedCount > 0) parts.push(detail.waitlistedCount(waitlistedCount));
     spotsText = parts.join(separators.dot);
   }
-
-  const capacityPercent = ride.capacity != null ? (confirmedCount / ride.capacity) * 100 : null;
 
   return (
     <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
@@ -220,9 +220,9 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
       {ride.organiser_notes && (
         <div className="mt-8">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <SectionHeading>
             {detail.organiserNotesHeading}
-          </h2>
+          </SectionHeading>
           <p className="mt-3 text-base text-foreground/80 whitespace-pre-line leading-relaxed">
             {ride.organiser_notes}
           </p>
@@ -232,9 +232,9 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       {/* Signed-up riders */}
       {signups.length > 0 && (
         <div className="mt-8">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <SectionHeading>
             {detail.ridersHeading(confirmedCount, waitlistedCount, ride.capacity)}
-          </h2>
+          </SectionHeading>
           <div className="mt-3 rounded-xl border border-border bg-card p-3">
             <SignupRoster signups={signups} createdBy={ride.created_by} />
           </div>
@@ -242,14 +242,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       )}
 
       <div className="mt-10">
-        {capacityPercent != null && (
-          <div className="mb-5 h-0.5 w-full rounded-full bg-muted overflow-hidden">
-            <div
-              className="h-full rounded-full bg-primary transition-all duration-500"
-              style={{ width: `${Math.min(capacityPercent, 100)}%` }}
-            />
-          </div>
-        )}
+        <CapacityBar signupCount={confirmedCount} capacity={ride.capacity} className="mb-5" />
         <SignupButton
           rideId={ride.id}
           isSignedUp={isSignedUp}

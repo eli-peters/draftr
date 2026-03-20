@@ -5,6 +5,7 @@ import { Bicycle, Path, CaretRight } from '@phosphor-icons/react/dist/ssr';
 import { createClient } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { MemberStatus } from '@/config/statuses';
@@ -116,9 +117,9 @@ export default async function PublicProfilePage({
       {/* About */}
       {profile.bio && (
         <div className="mt-8">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <SectionHeading>
             {content.sections.about}
-          </h2>
+          </SectionHeading>
           <p className="mt-3 text-base text-foreground/75 leading-relaxed">{profile.bio}</p>
         </div>
       )}
@@ -126,9 +127,9 @@ export default async function PublicProfilePage({
       {/* Preferences */}
       {profile.preferred_pace_group && (
         <div className="mt-8">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <SectionHeading>
             {content.sections.preferences}
-          </h2>
+          </SectionHeading>
           <div className="mt-3">
             <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-5">
               <Bicycle className="h-5 w-5 text-primary" />
@@ -146,9 +147,9 @@ export default async function PublicProfilePage({
       {/* Recent Rides */}
       {recentRides.length > 0 && (
         <div className="mt-8">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <SectionHeading>
             {content.recentRides}
-          </h2>
+          </SectionHeading>
           <div className="mt-3 space-y-2">
             {recentRides.map((ride) => (
               <Link key={ride.id} href={routes.ride(ride.id)} className="block group">
