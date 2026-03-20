@@ -132,6 +132,7 @@
   --destructive-focus-bg: color-mix(in srgb, var(--destructive) 10%, transparent);
   --sheet-height-md: 70vh;
   --sheet-height-lg: 85vh;
+  --sheet-width-filter: 24rem;
   --overlay: rgba(0, 0, 0, 0.1);
   --overlay-heavy: rgba(0, 0, 0, 0.4);
 
