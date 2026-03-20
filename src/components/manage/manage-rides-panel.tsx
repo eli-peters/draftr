@@ -51,9 +51,7 @@ function ManageRideItem({ ride }: { ride: ManageRideData }) {
             <div className="flex items-center gap-2">
               <h3 className="text-base font-bold text-foreground truncate">{ride.title}</h3>
               {ride.template_id && (
-                <ArrowsClockwise
-                  className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50"
-                />
+                <ArrowsClockwise className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
               )}
               {ride.status === RideStatus.WEATHER_WATCH && (
                 <Badge variant="warning" className="shrink-0 text-sm gap-1">
@@ -91,11 +89,7 @@ function ManageRideItem({ ride }: { ride: ManageRideData }) {
           <CaretRight className="ml-2 h-4 w-4 shrink-0 text-muted-foreground/40" />
         </div>
         {!isCancelled && (
-          <CapacityBar
-            signupCount={ride.signup_count}
-            capacity={ride.capacity}
-            className="mt-4"
-          />
+          <CapacityBar signupCount={ride.signup_count} capacity={ride.capacity} className="mt-4" />
         )}
       </Card>
     </Link>
@@ -154,11 +148,7 @@ export function ManageRidesPanel({ rides, paceGroups, tags }: ManageRidesPanelPr
   const hasFilters = activeCount > 0 || sortBy !== 'date_asc';
 
   const visibleRides =
-    activeTab === 'upcoming'
-      ? upcomingRides
-      : activeTab === 'past'
-        ? pastRides
-        : cancelledRides;
+    activeTab === 'upcoming' ? upcomingRides : activeTab === 'past' ? pastRides : cancelledRides;
 
   function handleApply(
     newPaceIds: string[],

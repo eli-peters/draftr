@@ -1,25 +1,22 @@
 /**
  * Theme type definitions.
  *
- * Layer 1: Brand primitives — raw colour values. The app ships a default set;
- *          clubs can selectively override specific primitives.
- * Layer 2: Semantic tokens — what components actually use (mapped from primitives
- *          via color-mix() in globals.css).
+ * Layer 1: Brand primitives — seed colours for each colour family.
+ *          The app ships a default set (Draftr magenta + teal); clubs can
+ *          selectively override specific seeds.
+ * Layer 2: Semantic tokens — what components actually use (mapped from
+ *          primitive ramps in globals.css via generated tokens.css).
  */
 
 export interface BrandPrimitives {
-  /** Primary brand colour (CTAs, links, active states) */
+  /** Primary brand colour — maps to --color-primary-500 (CTAs, links, active states) */
   primary: string;
-  /** Secondary/danger colour (warnings, destructive actions) */
-  danger: string;
-  /** Tertiary accent (subtle accents, hover states) */
-  accent: string;
-  /** Near-black for text and dark backgrounds */
-  black: string;
-  /** White for light backgrounds and text on dark */
-  white: string;
-  /** Muted grey for secondary text, borders, disabled states */
-  muted: string;
+  /** Secondary brand colour — maps to --color-secondary-500 (supporting actions, badges) */
+  secondary: string;
+  /** Neutral base — maps to --color-neutral-500 (text, backgrounds, borders). Optional — defaults to warm slate. */
+  neutral?: string;
+  /** Error/danger base — maps to --color-error-500 (destructive actions). Optional — defaults to system red. */
+  danger?: string;
 }
 
 /** User's color mode preference */
@@ -31,7 +28,7 @@ export interface ClubTheme {
   slug: string;
   /** Display name */
   name: string;
-  /** Brand primitive colours (complete set) */
+  /** Brand primitive colours (complete set of required seeds) */
   colors: BrandPrimitives;
   /** Club logo URL (optional — may come from DB) */
   logoUrl?: string;

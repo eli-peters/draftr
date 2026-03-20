@@ -90,9 +90,7 @@ export function FilterableRideFeed({
     <section>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-baseline gap-2">
-          {heading && (
-            <SectionHeading>{heading}</SectionHeading>
-          )}
+          {heading && <SectionHeading>{heading}</SectionHeading>}
           {hasFilters && sorted.length > 0 && (
             <span className="text-xs text-muted-foreground/70">
               {ridesContent.filter.showingCount(sorted.length)}

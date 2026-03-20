@@ -95,9 +95,7 @@ export default async function ProfilePage() {
 
       {/* About */}
       <div className="mt-8">
-        <SectionHeading>
-          {content.sections.about}
-        </SectionHeading>
+        <SectionHeading>{content.sections.about}</SectionHeading>
         {profile.bio ? (
           <p className="mt-3 text-base text-foreground/75 leading-relaxed">{profile.bio}</p>
         ) : (
@@ -108,9 +106,7 @@ export default async function ProfilePage() {
       {/* Preferences */}
       {profile.preferred_pace_group && (
         <div className="mt-8">
-          <SectionHeading>
-            {content.sections.preferences}
-          </SectionHeading>
+          <SectionHeading>{content.sections.preferences}</SectionHeading>
           <div className="mt-3">
             <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-5">
               <Bicycle className="h-5 w-5 text-primary" />
@@ -127,9 +123,7 @@ export default async function ProfilePage() {
 
       {/* Emergency Contact */}
       <div className="mt-8">
-        <SectionHeading>
-          {content.sections.emergencyContact}
-        </SectionHeading>
+        <SectionHeading>{content.sections.emergencyContact}</SectionHeading>
         {ec?.emergency_contact_name ? (
           <div className="mt-3 flex items-center gap-3 rounded-xl border border-border bg-card p-5">
             <FirstAidKit className="h-5 w-5 text-destructive" />
@@ -156,9 +150,7 @@ export default async function ProfilePage() {
 
       {/* Recent Rides */}
       <div className="mt-8">
-        <SectionHeading>
-          {content.recentRides}
-        </SectionHeading>
+        <SectionHeading>{content.recentRides}</SectionHeading>
         {recentRides.length === 0 ? (
           <p className="mt-3 text-base text-muted-foreground">{content.noRidesYet}</p>
         ) : (

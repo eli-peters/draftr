@@ -180,9 +180,7 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
 
       {/* Emergency Contact */}
       <div className="space-y-4 rounded-xl border border-border p-4">
-        <SectionHeading as="h3">
-          {profileContent.sections.emergencyContact}
-        </SectionHeading>
+        <SectionHeading as="h3">{profileContent.sections.emergencyContact}</SectionHeading>
         <p className="text-xs text-muted-foreground">
           {profileContent.emergencyContact.visibilityNote}
         </p>

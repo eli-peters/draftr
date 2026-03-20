@@ -1,60 +1,63 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
+@import '../tokens/generated/tokens.css';
 
 @custom-variant dark (&:is(.dark *));
 
 /*
  * Theme Architecture
  * ==================
- * Layer 1: Brand primitives (--brand-*) — injected at runtime by ThemeProvider
- *          from themes/*.ts. Swapping clubs = swapping these values.
+ * Layer 1: Primitive ramps (--color-{family}-{step}) — auto-generated from
+ *          src/tokens/primitives.json. 7 families × 11+ steps each.
  *
- * Layer 2: Semantic tokens (--primary, --background, etc.) — what shadcn/ui
- *          and all components actually use. These reference brand primitives.
+ * Layer 2: Semantic tokens (--surface-*, --text-*, --border-*, --action-*,
+ *          --feedback-*) — auto-generated from src/tokens/semantics.json.
+ *          Explicit light/dark values. Describe *intent*, not *hue*.
  *
- * Components NEVER use --brand-* directly. Always go through semantic tokens.
+ * Layer 3: shadcn bridge (--primary, --background, etc.) — hand-maintained
+ *          below. Maps semantic tokens to shadcn/ui's expected names so all
+ *          existing components work without changes.
+ *
+ * Components NEVER use primitives directly. Use semantic tokens or shadcn
+ * bridge tokens via Tailwind classes.
  */
 
 @theme inline {
+  /* shadcn bridge → Tailwind */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-overlay: var(--overlay);
+  --color-overlay-heavy: var(--overlay-heavy);
+
+  /* Component-level tokens */
   --color-input-bg: var(--input-bg);
   --color-input-bg-disabled: var(--input-bg-disabled);
   --color-input-border-invalid: var(--input-border-invalid);
@@ -65,71 +68,122 @@
   --color-tabs-trigger-active-border: var(--tabs-trigger-active-border);
   --color-tabs-trigger-active-text: var(--tabs-trigger-active-text);
   --color-destructive-focus-bg: var(--destructive-focus-bg);
-  --color-overlay: var(--overlay);
-  --color-overlay-heavy: var(--overlay-heavy);
+
+  /* Semantic tokens → Tailwind (new vocabulary) */
+  --color-surface-default: var(--surface-default);
+  --color-surface-page: var(--surface-page);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-on-primary: var(--text-on-primary);
+  --color-text-on-secondary: var(--text-on-secondary);
+  --color-text-on-error: var(--text-on-error);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-border-focus: var(--border-focus);
+  --color-action-primary: var(--action-primary-default);
+  --color-action-primary-hover: var(--action-primary-hover);
+  --color-action-primary-active: var(--action-primary-active);
+  --color-action-primary-subtle-bg: var(--action-primary-subtle-bg);
+  --color-action-primary-subtle-text: var(--action-primary-subtle-text);
+  --color-action-secondary: var(--action-secondary-default);
+  --color-action-secondary-hover: var(--action-secondary-hover);
+  --color-action-secondary-active: var(--action-secondary-active);
+  --color-action-secondary-subtle-bg: var(--action-secondary-subtle-bg);
+  --color-action-secondary-subtle-text: var(--action-secondary-subtle-text);
+  --color-action-danger: var(--action-danger-default);
+  --color-action-danger-hover: var(--action-danger-hover);
+  --color-action-disabled-bg: var(--action-disabled-bg);
+  --color-action-disabled-text: var(--action-disabled-text);
+  --color-feedback-success: var(--feedback-success-default);
+  --color-feedback-success-bg: var(--feedback-success-bg);
+  --color-feedback-success-text: var(--feedback-success-text);
+  --color-feedback-warning: var(--feedback-warning-default);
+  --color-feedback-warning-bg: var(--feedback-warning-bg);
+  --color-feedback-warning-text: var(--feedback-warning-text);
+  --color-feedback-error: var(--feedback-error-default);
+  --color-feedback-error-bg: var(--feedback-error-bg);
+  --color-feedback-error-text: var(--feedback-error-text);
+  --color-feedback-info: var(--feedback-info-default);
+  --color-feedback-info-bg: var(--feedback-info-bg);
+  --color-feedback-info-text: var(--feedback-info-text);
+
+  /* Radius */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Typography sizes */
   --text-micro: 0.6rem;
   --text-compact: 0.8rem;
+
+  /* Opacity */
   --opacity-disabled: 0.4;
   --opacity-muted: 0.5;
   --opacity-pending: 0.6;
   --opacity-subtle: 0.8;
+
+  /* Fonts */
+  --font-display: var(--font-outfit);
+  --font-sans: var(--font-dm-sans);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 /*
  * Light mode
- * Brand primitives are set by ThemeProvider at runtime.
- * Semantic tokens below map them to shadcn's expected variable names.
+ * shadcn bridge — maps semantic tokens to shadcn-expected names.
+ * Components use bg-primary, text-muted-foreground, etc. unchanged.
  */
 :root {
-  /* Brand primitives — defaults for SSR / before ThemeProvider hydrates */
-  --brand-primary: #86142f;
-  --brand-danger: #c10f33;
-  --brand-accent: #0085b6;
-  --brand-black: #201d1d;
-  --brand-white: #ffffff;
-  --brand-muted: #999fa3;
+  /* shadcn bridge */
+  --background: var(--surface-page);
+  --foreground: var(--text-primary);
+  --card: var(--surface-default);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface-default);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--action-primary-default);
+  --primary-foreground: var(--text-on-primary);
+  --secondary: var(--surface-raised);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--surface-sunken);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--surface-raised);
+  --accent-foreground: var(--text-primary);
+  --destructive: var(--action-danger-default);
+  --border: var(--border-default);
+  --input: var(--border-default);
+  --ring: var(--border-focus);
 
-  /* Semantic tokens */
-  --background: #f8f8f7;
-  --foreground: var(--brand-black);
-  --card: var(--brand-white);
-  --card-foreground: var(--brand-black);
-  --popover: var(--brand-white);
-  --popover-foreground: var(--brand-black);
-  --primary: var(--brand-primary);
-  --primary-foreground: var(--brand-white);
-  --secondary: color-mix(in oklch, var(--brand-muted) 20%, var(--brand-white));
-  --secondary-foreground: var(--brand-black);
-  --muted: color-mix(in oklch, var(--brand-muted) 15%, var(--brand-white));
-  --muted-foreground: var(--brand-muted);
-  --accent: color-mix(in oklch, var(--brand-accent) 10%, var(--brand-white));
-  --accent-foreground: var(--brand-black);
-  --destructive: var(--brand-danger);
-  --border: color-mix(in oklch, var(--brand-muted) 30%, var(--brand-white));
-  --input: color-mix(in oklch, var(--brand-muted) 30%, var(--brand-white));
-  --ring: var(--brand-primary);
+  /* Status — via feedback semantic tokens */
+  --info: var(--feedback-info-default);
+  --info-foreground: var(--text-on-primary);
+  --warning: var(--feedback-warning-default);
+  --warning-foreground: var(--text-on-primary);
+  --success: var(--feedback-success-default);
+  --success-foreground: var(--text-on-primary);
 
-  /* Info — cyan in its secondary role */
-  --info: var(--brand-accent);
-  --info-foreground: var(--brand-white);
-
-  /* Status colours — universal, not brand-specific */
-  --warning: #d97706;
-  --warning-foreground: var(--brand-white);
-  --success: #059669;
-  --success-foreground: var(--brand-white);
-
-  /* Component-level tokens — avoid dark: overrides in components */
+  /* Component-level tokens */
   --input-bg: transparent;
-  --input-bg-disabled: color-mix(in srgb, var(--input) 50%, transparent);
-  --input-border-invalid: var(--destructive);
-  --input-ring-invalid: color-mix(in srgb, var(--destructive) 20%, transparent);
-  --tabs-list-bg: var(--muted);
-  --tabs-trigger-text: color-mix(in srgb, var(--foreground) 60%, transparent);
-  --tabs-trigger-active-bg: var(--background);
+  --input-bg-disabled: color-mix(in srgb, var(--border-default) 50%, transparent);
+  --input-border-invalid: var(--action-danger-default);
+  --input-ring-invalid: color-mix(in srgb, var(--action-danger-default) 20%, transparent);
+  --tabs-list-bg: var(--surface-sunken);
+  --tabs-trigger-text: color-mix(in srgb, var(--text-primary) 60%, transparent);
+  --tabs-trigger-active-bg: var(--surface-page);
   --tabs-trigger-active-border: transparent;
-  --tabs-trigger-active-text: var(--foreground);
-  --destructive-focus-bg: color-mix(in srgb, var(--destructive) 10%, transparent);
+  --tabs-trigger-active-text: var(--text-primary);
+  --destructive-focus-bg: color-mix(in srgb, var(--action-danger-default) 10%, transparent);
+
+  /* Layout */
   --sheet-height-md: 70vh;
   --sheet-height-lg: 85vh;
   --sheet-width-filter: 24rem;
@@ -141,72 +195,56 @@
   --duration-normal: 250ms;
   --duration-slow: 350ms;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  /* Shadows — warm undertone matching the neutral palette */
+  --shadow-sm: 0 1px 2px rgba(26, 21, 23, 0.05);
+  --shadow-md: 0 4px 8px rgba(26, 21, 23, 0.08);
+  --shadow-lg: 0 12px 24px rgba(26, 21, 23, 0.12);
 
   /* Charts */
-  --chart-1: var(--brand-primary);
-  --chart-2: var(--brand-danger);
-  --chart-3: var(--brand-accent);
-  --chart-4: var(--brand-muted);
-  --chart-5: color-mix(in oklch, var(--brand-primary) 60%, var(--brand-black));
+  --chart-1: var(--color-primary-500);
+  --chart-2: var(--color-error-500);
+  --chart-3: var(--color-secondary-500);
+  --chart-4: var(--color-neutral-400);
+  --chart-5: var(--color-info-500);
+
   --radius: 0.625rem;
 }
 
 /*
  * Dark mode
- * Semantic tokens are overridden using the same brand primitives.
- * Any club providing 6 brand colours gets both modes automatically.
+ * The bridge references semantic tokens which already change via .dark
+ * in the generated tokens.css. Only component-level overrides needed here.
  */
 .dark {
-  --background: var(--brand-black);
-  --foreground: color-mix(in oklch, var(--brand-white) 93%, var(--brand-muted));
-  --card: color-mix(in oklch, var(--brand-black) 90%, var(--brand-white));
-  --card-foreground: color-mix(in oklch, var(--brand-white) 93%, var(--brand-muted));
-  --popover: color-mix(in oklch, var(--brand-black) 90%, var(--brand-white));
-  --popover-foreground: color-mix(in oklch, var(--brand-white) 93%, var(--brand-muted));
-  --primary: var(--brand-primary);
-  --primary-foreground: var(--brand-white);
-  --secondary: color-mix(in oklch, var(--brand-muted) 15%, var(--brand-black));
-  --secondary-foreground: color-mix(in oklch, var(--brand-white) 85%, var(--brand-muted));
-  --muted: color-mix(in oklch, var(--brand-black) 85%, var(--brand-white));
-  --muted-foreground: var(--brand-muted);
-  --accent: color-mix(in oklch, var(--brand-accent) 15%, var(--brand-black));
-  --accent-foreground: color-mix(in oklch, var(--brand-white) 90%, var(--brand-muted));
-  --destructive: color-mix(in oklch, var(--brand-danger) 90%, var(--brand-white));
-  --border: color-mix(in oklch, var(--brand-white) 10%, transparent);
-  --input: color-mix(in oklch, var(--brand-white) 15%, transparent);
-  --ring: var(--brand-primary);
-
-  --info: var(--brand-accent);
-  --info-foreground: var(--brand-white);
-
-  --warning: #fbbf24;
-  --warning-foreground: var(--brand-black);
-  --success: #34d399;
-  --success-foreground: var(--brand-black);
-
-  --chart-1: var(--brand-primary);
-  --chart-2: color-mix(in oklch, var(--brand-danger) 85%, var(--brand-white));
-  --chart-3: var(--brand-accent);
-  --chart-4: var(--brand-muted);
-  --chart-5: color-mix(in oklch, var(--brand-primary) 70%, var(--brand-white));
-
   /* Component-level dark overrides */
-  --input-bg: color-mix(in srgb, var(--input) 30%, transparent);
-  --input-bg-disabled: color-mix(in srgb, var(--input) 80%, transparent);
-  --input-border-invalid: color-mix(in srgb, var(--destructive) 50%, transparent);
-  --input-ring-invalid: color-mix(in srgb, var(--destructive) 40%, transparent);
+  --input-bg: color-mix(in srgb, var(--border-default) 30%, transparent);
+  --input-bg-disabled: color-mix(in srgb, var(--border-default) 80%, transparent);
+  --input-border-invalid: color-mix(in srgb, var(--action-danger-default) 50%, transparent);
+  --input-ring-invalid: color-mix(in srgb, var(--action-danger-default) 40%, transparent);
   --tabs-list-bg: color-mix(in srgb, white 5%, transparent);
-  --tabs-trigger-text: var(--muted-foreground);
-  --tabs-trigger-active-bg: color-mix(in srgb, var(--input) 30%, transparent);
-  --tabs-trigger-active-border: var(--input);
-  --tabs-trigger-active-text: var(--primary);
-  --destructive-focus-bg: color-mix(in srgb, var(--destructive) 20%, transparent);
+  --tabs-trigger-text: var(--text-secondary);
+  --tabs-trigger-active-bg: color-mix(in srgb, var(--border-default) 30%, transparent);
+  --tabs-trigger-active-border: var(--border-default);
+  --tabs-trigger-active-text: var(--action-primary-default);
+  --destructive-focus-bg: color-mix(in srgb, var(--action-danger-default) 20%, transparent);
   --overlay: rgba(255, 255, 255, 0.05);
   --overlay-heavy: rgba(0, 0, 0, 0.6);
+
+  /* Dark shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.5);
+
+  /* Dark chart colours */
+  --chart-1: var(--color-primary-400);
+  --chart-2: var(--color-error-400);
+  --chart-3: var(--color-secondary-400);
+  --chart-4: var(--color-neutral-500);
+  --chart-5: var(--color-info-400);
+
+  /* Dark warning/success foreground needs dark text on bright badges */
+  --warning-foreground: var(--color-neutral-900);
+  --success-foreground: var(--color-neutral-900);
 }
 
 @layer base {
@@ -218,6 +256,14 @@
   }
   html {
     @apply font-sans scroll-smooth;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
   }
 }
 

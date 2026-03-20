@@ -73,7 +73,11 @@ export default async function ManagePage() {
           stats={[
             { label: content.stats.totalRides, value: stats.totalRides, icon: Bicycle },
             { label: content.stats.activeMembers, value: stats.activeMembers, icon: UsersThree },
-            { label: content.stats.signupsThisWeek, value: stats.signupsThisWeek, icon: ChartLineUp },
+            {
+              label: content.stats.signupsThisWeek,
+              value: stats.signupsThisWeek,
+              icon: ChartLineUp,
+            },
           ]}
         />
       )}

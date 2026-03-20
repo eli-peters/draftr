@@ -39,9 +39,7 @@ function RideListItem({
 
   return (
     <Link href={routes.ride(ride.id)} className="group block">
-      <Card
-        className={cn('p-5 mb-3', isPast && 'opacity-disabled')}
-      >
+      <Card className={cn('p-5 mb-3', isPast && 'opacity-disabled')}>
         <div className="flex items-center justify-between">
           <h3 className="text-base font-bold text-foreground truncate">{ride.title}</h3>
           <div className="flex items-center gap-2 shrink-0 ml-2">

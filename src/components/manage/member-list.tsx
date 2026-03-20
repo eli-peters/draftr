@@ -140,9 +140,7 @@ export function MemberList({ members, clubId, currentUserId }: MemberListProps) 
     <div className={isPending ? 'opacity-pending pointer-events-none' : ''}>
       {/* Search */}
       <div className="relative mb-3">
-        <MagnifyingGlass
-          className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
-        />
+        <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -263,9 +261,7 @@ function MemberRow({
   const metaLine = metaParts.join(separators.dot);
 
   return (
-    <Card
-      className={cn('p-4 mb-2', isInactive && 'opacity-muted')}
-    >
+    <Card className={cn('p-4 mb-2', isInactive && 'opacity-muted')}>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <Avatar className="h-9 w-9 shrink-0">

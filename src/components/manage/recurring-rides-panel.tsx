@@ -130,10 +130,7 @@ export function RecurringRidesPanel({
       ) : (
         <div className="space-y-3">
           {recurringRides.map((r) => (
-            <Card
-              key={r.id}
-              className={cn('p-5', !r.is_active && 'opacity-muted')}
-            >
+            <Card key={r.id} className={cn('p-5', !r.is_active && 'opacity-muted')}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -179,11 +176,7 @@ export function RecurringRidesPanel({
                     className="text-muted-foreground/50 hover:text-foreground"
                     title={r.is_active ? rc.pause : rc.resume}
                   >
-                    {r.is_active ? (
-                      <Pause className="h-4 w-4" />
-                    ) : (
-                      <Play className="h-4 w-4" />
-                    )}
+                    {r.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                   </Button>
                   <Button
                     variant="ghost"

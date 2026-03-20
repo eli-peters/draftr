@@ -12,12 +12,7 @@ import { MemberList } from '@/components/manage/member-list';
 import { ManageRidesPanel } from '@/components/manage/manage-rides-panel';
 import { AnnouncementsPanel } from '@/components/manage/announcements-panel';
 import { RecurringRidesPanel } from '@/components/manage/recurring-rides-panel';
-import {
-  Bicycle,
-  Users,
-  CalendarDots,
-  ChartLineUp,
-} from '@phosphor-icons/react';
+import { Bicycle, Users, CalendarDots, ChartLineUp } from '@phosphor-icons/react';
 import type { RideWithDetails } from '@/types/database';
 import type { Notification } from '@/components/notifications/notification-item';
 
@@ -133,7 +128,7 @@ const mockUserRides = {
       ride_date: nextWeekISO,
       start_time: '09:00:00',
       pace_group_name: 'C Group (24–28 km/h)',
-      meeting_location_name: 'Mooney\'s Bay',
+      meeting_location_name: "Mooney's Bay",
       distance_km: 40,
       signup_count: 8,
       capacity: 12,
@@ -148,7 +143,7 @@ const mockUserRides = {
       ride_date: lastWeekISO,
       start_time: '06:30:00',
       pace_group_name: 'B Group',
-      meeting_location_name: 'Dow\'s Lake',
+      meeting_location_name: "Dow's Lake",
       distance_km: 35,
       signup_count: 10,
       capacity: 15,
@@ -177,8 +172,8 @@ const mockNotifications: Notification[] = [
   {
     id: 'n-1',
     type: 'signup_confirmed',
-    title: 'You\'re signed up for Saturday Morning Social',
-    body: 'You\'re confirmed for the ride on Saturday. See you at Britannia Park at 7:30 AM.',
+    title: "You're signed up for Saturday Morning Social",
+    body: "You're confirmed for the ride on Saturday. See you at Britannia Park at 7:30 AM.",
     ride_id: 'ride-1',
     is_read: false,
     sent_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
@@ -196,7 +191,7 @@ const mockNotifications: Notification[] = [
     id: 'n-3',
     type: 'announcement',
     title: 'Season opener BBQ — April 5',
-    body: 'Join us for the annual kickoff at Mooney\'s Bay. Bikes and burgers!',
+    body: "Join us for the annual kickoff at Mooney's Bay. Bikes and burgers!",
     ride_id: null,
     is_read: true,
     sent_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
@@ -204,8 +199,8 @@ const mockNotifications: Notification[] = [
   {
     id: 'n-4',
     type: 'waitlist_promoted',
-    title: 'You\'ve been promoted from the waitlist!',
-    body: 'A spot opened up on Sunday Recovery Spin. You\'re now confirmed.',
+    title: "You've been promoted from the waitlist!",
+    body: "A spot opened up on Sunday Recovery Spin. You're now confirmed.",
     ride_id: 'ride-2',
     is_read: true,
     sent_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
@@ -314,7 +309,7 @@ const mockAnnouncements = [
   {
     id: 'ann-1',
     title: 'Season Opener BBQ — April 5',
-    body: 'Join us for the annual kickoff at Mooney\'s Bay pavilion. Bikes optional, burgers mandatory. Families welcome! We\'ll have a short club update at 1 PM followed by food and drinks.',
+    body: "Join us for the annual kickoff at Mooney's Bay pavilion. Bikes optional, burgers mandatory. Families welcome! We'll have a short club update at 1 PM followed by food and drinks.",
     is_pinned: true,
     published_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
     created_by_name: 'Alex Johnson',
@@ -372,7 +367,7 @@ const mockPaceGroups = [
 
 const mockLocations = [
   { id: 'loc-1', name: 'Britannia Park' },
-  { id: 'loc-2', name: 'Mooney\'s Bay' },
+  { id: 'loc-2', name: "Mooney's Bay" },
 ];
 
 const mockTags = [
@@ -426,7 +421,7 @@ export default function CardShowcasePage() {
             title: 'Sunday Recovery Spin',
             ride_date: nextWeekISO,
             start_time: '09:00:00',
-            meeting_location_name: 'Mooney\'s Bay',
+            meeting_location_name: "Mooney's Bay",
             signup_count: 8,
             capacity: 12,
           }}
@@ -491,7 +486,7 @@ export default function CardShowcasePage() {
               signup_count: 8,
               capacity: 12,
               pace_group: 'C Group',
-              location: 'Mooney\'s Bay',
+              location: "Mooney's Bay",
             },
           ]}
         />
@@ -519,39 +514,24 @@ export default function CardShowcasePage() {
 
       {/* 8. Season Dates Card */}
       <Section title="8. Season Dates Card">
-        <SeasonDatesCard
-          clubId="club-1"
-          seasonStart="2026-04-01"
-          seasonEnd="2026-10-31"
-        />
+        <SeasonDatesCard clubId="club-1" seasonStart="2026-04-01" seasonEnd="2026-10-31" />
       </Section>
 
       {/* 9. Member List */}
       <Section title="9. Member List">
         <div className="max-w-none">
-          <MemberList
-            members={mockMembers}
-            clubId="club-1"
-            currentUserId="user-1"
-          />
+          <MemberList members={mockMembers} clubId="club-1" currentUserId="user-1" />
         </div>
       </Section>
 
       {/* 10. Manage Rides Panel */}
       <Section title="10. Manage Rides Panel">
-        <ManageRidesPanel
-          rides={mockManageRides}
-          paceGroups={mockPaceGroups}
-          tags={mockTags}
-        />
+        <ManageRidesPanel rides={mockManageRides} paceGroups={mockPaceGroups} tags={mockTags} />
       </Section>
 
       {/* 11. Announcements Panel */}
       <Section title="11. Announcements Panel">
-        <AnnouncementsPanel
-          announcements={mockAnnouncements}
-          clubId="club-1"
-        />
+        <AnnouncementsPanel announcements={mockAnnouncements} clubId="club-1" />
       </Section>
 
       {/* 12. Recurring Rides Panel */}

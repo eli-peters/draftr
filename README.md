@@ -37,16 +37,16 @@ Draftr replaces clunky, outdated cycling club tools with a modern, mobile-first 
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 16 (App Router) |
-| Language | TypeScript 5 |
-| Styling | Tailwind CSS v4 (CSS-first config) |
-| Components | shadcn/ui (Base UI primitives) |
-| Icons | Phosphor Icons |
-| Backend | Supabase (PostgreSQL + Auth + Realtime + Storage) |
-| Hosting | Vercel |
-| Testing | Vitest + React Testing Library + Playwright |
+| Layer      | Technology                                        |
+| ---------- | ------------------------------------------------- |
+| Framework  | Next.js 16 (App Router)                           |
+| Language   | TypeScript 5                                      |
+| Styling    | Tailwind CSS v4 (CSS-first config)                |
+| Components | shadcn/ui (Base UI primitives)                    |
+| Icons      | Phosphor Icons                                    |
+| Backend    | Supabase (PostgreSQL + Auth + Realtime + Storage) |
+| Hosting    | Vercel                                            |
+| Testing    | Vitest + React Testing Library + Playwright       |
 
 ## Getting Started
 

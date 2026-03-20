@@ -47,4 +47,3 @@ const clubOverrides: Record<string, ClubOverride> = {
 ## Dark mode
 
 Managed by `ThemeProvider`. Three modes: `light`, `dark`, `system` (default). The `.dark` class is toggled on `<html>`. All semantic tokens have dark mode mappings in `globals.css` — any club providing brand overrides gets both modes automatically.
-

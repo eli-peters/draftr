@@ -1,0 +1,149 @@
+{
+  "color": {
+    "$description": "Draftr brand primitives — raw colour ramps plus alpha variants. Import as a Figma Variable collection named 'Primitives'.",
+    "primary": {
+      "$description": "Magenta — brand hero colour. HSL → 322°, 98%, 44%",
+      "50": { "$type": "color", "$value": "#FEF0F7" },
+      "100": { "$type": "color", "$value": "#FDD8EC" },
+      "200": { "$type": "color", "$value": "#FBB1D9" },
+      "300": { "$type": "color", "$value": "#F77DBF" },
+      "400": { "$type": "color", "$value": "#F04AA5" },
+      "500": { "$type": "color", "$value": "#DE0387" },
+      "600": { "$type": "color", "$value": "#C2036F" },
+      "700": { "$type": "color", "$value": "#9C025A" },
+      "800": { "$type": "color", "$value": "#780247" },
+      "900": { "$type": "color", "$value": "#570134" },
+      "950": { "$type": "color", "$value": "#3A0123" },
+      "500-alpha-12": {
+        "$type": "color",
+        "$value": "#DE03871F",
+        "$description": "primary/500 at 12% opacity — subtle tint for ghost buttons, badge fills"
+      }
+    },
+    "secondary": {
+      "$description": "Muted deep teal — supporting colour. HSL → 194°, 48%, 32%",
+      "50": { "$type": "color", "$value": "#EEF7F9" },
+      "100": { "$type": "color", "$value": "#D5ECF1" },
+      "200": { "$type": "color", "$value": "#ADD9E4" },
+      "300": { "$type": "color", "$value": "#7CC0D1" },
+      "400": { "$type": "color", "$value": "#4DA3B8" },
+      "500": { "$type": "color", "$value": "#2D7F94" },
+      "600": { "$type": "color", "$value": "#266A7C" },
+      "700": { "$type": "color", "$value": "#225565" },
+      "800": { "$type": "color", "$value": "#1E4451" },
+      "900": { "$type": "color", "$value": "#1A3742" },
+      "950": { "$type": "color", "$value": "#0F232C" },
+      "500-alpha-12": {
+        "$type": "color",
+        "$value": "#2D7F941F",
+        "$description": "secondary/500 at 12% opacity — subtle tint for secondary ghost buttons"
+      }
+    },
+    "neutral": {
+      "$description": "Warm slate — faint pink undertone to harmonize with magenta primary",
+      "0": { "$type": "color", "$value": "#FFFFFF" },
+      "50": { "$type": "color", "$value": "#F8F6F7" },
+      "100": { "$type": "color", "$value": "#F0ECED" },
+      "200": { "$type": "color", "$value": "#E2DCDE" },
+      "300": { "$type": "color", "$value": "#CEC6C9" },
+      "400": { "$type": "color", "$value": "#B0A5A9" },
+      "500": { "$type": "color", "$value": "#7C7074" },
+      "600": { "$type": "color", "$value": "#6E6367" },
+      "700": { "$type": "color", "$value": "#564C50" },
+      "800": { "$type": "color", "$value": "#3D3538" },
+      "900": { "$type": "color", "$value": "#272123" },
+      "950": { "$type": "color", "$value": "#1A1517" },
+      "975": {
+        "$type": "color",
+        "$value": "#110E0F",
+        "$description": "Deepest surface — dark mode sunken/inset areas"
+      },
+      "0-alpha-92": {
+        "$type": "color",
+        "$value": "#FFFFFFEB",
+        "$description": "White at 92% opacity — light mode overlay/scrim"
+      },
+      "950-alpha-92": {
+        "$type": "color",
+        "$value": "#1A1517EB",
+        "$description": "Off-black at 92% opacity — dark mode overlay/scrim"
+      }
+    },
+    "success": {
+      "$description": "Warm green — shifted slightly warm to harmonize with the palette",
+      "50": { "$type": "color", "$value": "#EDFCF2" },
+      "100": { "$type": "color", "$value": "#D3F9DF" },
+      "200": { "$type": "color", "$value": "#AAF0C4" },
+      "300": { "$type": "color", "$value": "#73E2A3" },
+      "400": { "$type": "color", "$value": "#3BCC7E" },
+      "500": { "$type": "color", "$value": "#18A85C" },
+      "600": { "$type": "color", "$value": "#0A7B42" },
+      "700": { "$type": "color", "$value": "#0B6E3D" },
+      "800": { "$type": "color", "$value": "#0D5733" },
+      "900": { "$type": "color", "$value": "#0B482B" },
+      "950": { "$type": "color", "$value": "#052818" },
+      "500-alpha-12": {
+        "$type": "color",
+        "$value": "#18A85C1F",
+        "$description": "success/500 at 12% opacity — success banner bg in dark mode"
+      }
+    },
+    "warning": {
+      "$description": "Warm amber",
+      "50": { "$type": "color", "$value": "#FFFBEB" },
+      "100": { "$type": "color", "$value": "#FFF3C6" },
+      "200": { "$type": "color", "$value": "#FFE488" },
+      "300": { "$type": "color", "$value": "#FFD04A" },
+      "400": { "$type": "color", "$value": "#FFBB1F" },
+      "500": { "$type": "color", "$value": "#F59A06" },
+      "600": { "$type": "color", "$value": "#D97502" },
+      "700": { "$type": "color", "$value": "#B45206" },
+      "800": { "$type": "color", "$value": "#923F0C" },
+      "900": { "$type": "color", "$value": "#78340D" },
+      "950": { "$type": "color", "$value": "#451A02" },
+      "500-alpha-12": {
+        "$type": "color",
+        "$value": "#F59A061F",
+        "$description": "warning/500 at 12% opacity — warning banner bg in dark mode"
+      }
+    },
+    "error": {
+      "$description": "True red — deliberately separated from primary magenta on the hue wheel",
+      "50": { "$type": "color", "$value": "#FEF2F2" },
+      "100": { "$type": "color", "$value": "#FEE2E2" },
+      "200": { "$type": "color", "$value": "#FECACA" },
+      "300": { "$type": "color", "$value": "#FCA5A5" },
+      "400": { "$type": "color", "$value": "#F87171" },
+      "500": { "$type": "color", "$value": "#EF4444" },
+      "600": { "$type": "color", "$value": "#DC2626" },
+      "700": { "$type": "color", "$value": "#B91C1C" },
+      "800": { "$type": "color", "$value": "#991B1B" },
+      "900": { "$type": "color", "$value": "#7F1D1D" },
+      "950": { "$type": "color", "$value": "#450A0A" },
+      "500-alpha-12": {
+        "$type": "color",
+        "$value": "#EF44441F",
+        "$description": "error/500 at 12% opacity — error banner bg in dark mode"
+      }
+    },
+    "info": {
+      "$description": "Cool slate blue — neutral, separated from primary and secondary hues",
+      "50": { "$type": "color", "$value": "#EFF4FC" },
+      "100": { "$type": "color", "$value": "#DEEAF9" },
+      "200": { "$type": "color", "$value": "#BDD4F2" },
+      "300": { "$type": "color", "$value": "#91B7E8" },
+      "400": { "$type": "color", "$value": "#6594DA" },
+      "500": { "$type": "color", "$value": "#4574CB" },
+      "600": { "$type": "color", "$value": "#3459AC" },
+      "700": { "$type": "color", "$value": "#2C478B" },
+      "800": { "$type": "color", "$value": "#293E73" },
+      "900": { "$type": "color", "$value": "#263660" },
+      "950": { "$type": "color", "$value": "#1A233D" },
+      "500-alpha-12": {
+        "$type": "color",
+        "$value": "#4574CB1F",
+        "$description": "info/500 at 12% opacity — info banner bg in dark mode"
+      }
+    }
+  }
+}

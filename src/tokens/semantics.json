@@ -1,0 +1,562 @@
+{
+  "$description": "Draftr semantic tokens — import as a Figma Variable collection named 'Semantic'. Create two modes: 'Light' and 'Dark'. Every $value aliases a primitive from the 'Primitives' collection using {path.to.primitive} syntax. Zero hardcoded values.",
+  "surface": {
+    "default": {
+      "$type": "color",
+      "$description": "Cards, modals, popovers, dialogs",
+      "$value": "{color.neutral.0}",
+      "$extensions": {
+        "com.figma": {
+          "modes": {
+            "Light": "{color.neutral.0}",
+            "Dark": "{color.neutral.900}"
+          }
+        }
+      }
+    },
+    "page": {
+      "$type": "color",
+      "$description": "Page background, app shell",
+      "$value": "{color.neutral.50}",
+      "$extensions": {
+        "com.figma": {
+          "modes": {
+            "Light": "{color.neutral.50}",
+            "Dark": "{color.neutral.950}"
+          }
+        }
+      }
+    },
+    "raised": {
+      "$type": "color",
+      "$description": "Elevated cards, tooltips, dropdown menus",
+      "$value": "{color.neutral.50}",
+      "$extensions": {
+        "com.figma": {
+          "modes": {
+            "Light": "{color.neutral.50}",
+            "Dark": "{color.neutral.800}"
+          }
+        }
+      }
+    },
+    "sunken": {
+      "$type": "color",
+      "$description": "Inset areas, code blocks, well containers",
+      "$value": "{color.neutral.100}",
+      "$extensions": {
+        "com.figma": {
+          "modes": {
+            "Light": "{color.neutral.100}",
+            "Dark": "{color.neutral.975}"
+          }
+        }
+      }
+    },
+    "overlay": {
+      "$type": "color",
+      "$description": "Modal backdrop, scrim behind drawers",
+      "$value": "{color.neutral.0-alpha-92}",
+      "$extensions": {
+        "com.figma": {
+          "modes": {
+            "Light": "{color.neutral.0-alpha-92}",
+            "Dark": "{color.neutral.950-alpha-92}"
+          }
+        }
+      }
+    }
+  },
+  "text": {
+    "primary": {
+      "$type": "color",
+      "$description": "Headings, body copy, high-emphasis text",
+      "$value": "{color.neutral.900}",
+      "$extensions": {
+        "com.figma": {
+          "modes": {
+            "Light": "{color.neutral.900}",
+            "Dark": "{color.neutral.50}"
+          }
+        }
+      }
+    },
+    "secondary": {
+      "$type": "color",
+      "$description": "Captions, metadata, labels, supporting copy",
+      "$value": "{color.neutral.500}",
+      "$extensions": {
+        "com.figma": {
+          "modes": {
+            "Light": "{color.neutral.500}",
+            "Dark": "{color.neutral.400}"
+          }
+        }
+      }
+    },
+    "tertiary": {
+      "$type": "color",
+      "$description": "Placeholders, hints, disabled text (decorative — exempt from AA normal)",
+      "$value": "{color.neutral.400}",
+      "$extensions": {
+        "com.figma": {
+          "modes": {
+            "Light": "{color.neutral.400}",
+            "Dark": "{color.neutral.500}"
+          }
+        }
+      }
+    },
+    "on-primary": {
+      "$type": "color",
+      "$description": "Foreground on primary-filled surfaces (buttons, badges)",
+      "$value": "{color.neutral.0}",
+      "$extensions": {
+        "com.figma": {
+          "modes": {
+            "Light": "{color.neutral.0}",
+            "Dark": "{color.neutral.0}"
+          }
+        }
+      }
+    },
+    "on-secondary": {
+      "$type": "color",
+      "$description": "Foreground on secondary-filled surfaces",
+      "$value": "{color.neutral.0}",
+      "$extensions": {
+        "com.figma": {
+          "modes": {
+            "Light": "{color.neutral.0}",
+            "Dark": "{color.neutral.0}"
+          }
+        }
+      }
+    },
+    "on-error": {
+      "$type": "color",
+      "$description": "Foreground on error-filled surfaces",
+      "$value": "{color.neutral.0}",
+      "$extensions": {
+        "com.figma": {
+          "modes": {
+            "Light": "{color.neutral.0}",
+            "Dark": "{color.neutral.0}"
+          }
+        }
+      }
+    }
+  },
+  "border": {
+    "subtle": {
+      "$type": "color",
+      "$description": "Card edges, table row dividers, section separators",
+      "$value": "{color.neutral.100}",
+      "$extensions": {
+        "com.figma": {
+          "modes": {
+            "Light": "{color.neutral.100}",
+            "Dark": "{color.neutral.800}"
+          }
+        }
+      }
+    },
+    "default": {
+      "$type": "color",
+      "$description": "Input borders, card outlines, standard dividers",
+      "$value": "{color.neutral.200}",
+      "$extensions": {
+        "com.figma": {
+          "modes": {
+            "Light": "{color.neutral.200}",
+            "Dark": "{color.neutral.700}"
+          }
+        }
+      }
+    },
+    "strong": {
+      "$type": "color",
+      "$description": "Active outlines, hover borders, emphasis dividers",
+      "$value": "{color.neutral.300}",
+      "$extensions": {
+        "com.figma": {
+          "modes": {
+            "Light": "{color.neutral.300}",
+            "Dark": "{color.neutral.600}"
+          }
+        }
+      }
+    },
+    "focus": {
+      "$type": "color",
+      "$description": "Focus rings on inputs, buttons, interactive elements",
+      "$value": "{color.primary.500}",
+      "$extensions": {
+        "com.figma": {
+          "modes": {
+            "Light": "{color.primary.500}",
+            "Dark": "{color.primary.400}"
+          }
+        }
+      }
+    }
+  },
+  "action": {
+    "primary": {
+      "default": {
+        "$type": "color",
+        "$description": "Primary CTA fill — Join ride, Submit, Confirm",
+        "$value": "{color.primary.500}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.primary.500}",
+              "Dark": "{color.primary.400}"
+            }
+          }
+        }
+      },
+      "hover": {
+        "$type": "color",
+        "$description": "Primary CTA hover state",
+        "$value": "{color.primary.600}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.primary.600}",
+              "Dark": "{color.primary.300}"
+            }
+          }
+        }
+      },
+      "active": {
+        "$type": "color",
+        "$description": "Primary CTA pressed / active state",
+        "$value": "{color.primary.700}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.primary.700}",
+              "Dark": "{color.primary.500}"
+            }
+          }
+        }
+      },
+      "subtle-bg": {
+        "$type": "color",
+        "$description": "Ghost button background, badge background, selected row tint",
+        "$value": "{color.primary.50}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.primary.50}",
+              "Dark": "{color.primary.500-alpha-12}"
+            }
+          }
+        }
+      },
+      "subtle-text": {
+        "$type": "color",
+        "$description": "Ghost button text, badge text, link text",
+        "$value": "{color.primary.700}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.primary.700}",
+              "Dark": "{color.primary.300}"
+            }
+          }
+        }
+      }
+    },
+    "secondary": {
+      "default": {
+        "$type": "color",
+        "$description": "Secondary button fill — View details, Learn more",
+        "$value": "{color.secondary.600}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.secondary.600}",
+              "Dark": "{color.secondary.400}"
+            }
+          }
+        }
+      },
+      "hover": {
+        "$type": "color",
+        "$description": "Secondary button hover state",
+        "$value": "{color.secondary.700}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.secondary.700}",
+              "Dark": "{color.secondary.300}"
+            }
+          }
+        }
+      },
+      "active": {
+        "$type": "color",
+        "$description": "Secondary button pressed / active state",
+        "$value": "{color.secondary.800}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.secondary.800}",
+              "Dark": "{color.secondary.500}"
+            }
+          }
+        }
+      },
+      "subtle-bg": {
+        "$type": "color",
+        "$description": "Secondary ghost button background, secondary badge tint",
+        "$value": "{color.secondary.50}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.secondary.50}",
+              "Dark": "{color.secondary.500-alpha-12}"
+            }
+          }
+        }
+      },
+      "subtle-text": {
+        "$type": "color",
+        "$description": "Secondary ghost button text, secondary badge text",
+        "$value": "{color.secondary.700}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.secondary.700}",
+              "Dark": "{color.secondary.300}"
+            }
+          }
+        }
+      }
+    },
+    "danger": {
+      "default": {
+        "$type": "color",
+        "$description": "Destructive action fill — Delete, Remove, Cancel ride",
+        "$value": "{color.error.600}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.error.600}",
+              "Dark": "{color.error.500}"
+            }
+          }
+        }
+      },
+      "hover": {
+        "$type": "color",
+        "$description": "Destructive action hover state",
+        "$value": "{color.error.700}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.error.700}",
+              "Dark": "{color.error.400}"
+            }
+          }
+        }
+      }
+    },
+    "disabled": {
+      "bg": {
+        "$type": "color",
+        "$description": "Disabled button fill",
+        "$value": "{color.neutral.200}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.200}",
+              "Dark": "{color.neutral.700}"
+            }
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$description": "Disabled button text, disabled input text",
+        "$value": "{color.neutral.400}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.400}",
+              "Dark": "{color.neutral.500}"
+            }
+          }
+        }
+      }
+    }
+  },
+  "feedback": {
+    "success": {
+      "default": {
+        "$type": "color",
+        "$description": "Success icon, inline validation text",
+        "$value": "{color.success.600}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.success.600}",
+              "Dark": "{color.success.400}"
+            }
+          }
+        }
+      },
+      "bg": {
+        "$type": "color",
+        "$description": "Success banner / toast background",
+        "$value": "{color.success.50}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.success.50}",
+              "Dark": "{color.success.500-alpha-12}"
+            }
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$description": "Success banner body text",
+        "$value": "{color.success.800}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.success.800}",
+              "Dark": "{color.success.300}"
+            }
+          }
+        }
+      }
+    },
+    "warning": {
+      "default": {
+        "$type": "color",
+        "$description": "Warning icon, inline caution text",
+        "$value": "{color.warning.600}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.warning.600}",
+              "Dark": "{color.warning.400}"
+            }
+          }
+        }
+      },
+      "bg": {
+        "$type": "color",
+        "$description": "Warning banner / toast background",
+        "$value": "{color.warning.50}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.warning.50}",
+              "Dark": "{color.warning.500-alpha-12}"
+            }
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$description": "Warning banner body text",
+        "$value": "{color.warning.800}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.warning.800}",
+              "Dark": "{color.warning.300}"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "default": {
+        "$type": "color",
+        "$description": "Error icon, inline validation error text",
+        "$value": "{color.error.600}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.error.600}",
+              "Dark": "{color.error.400}"
+            }
+          }
+        }
+      },
+      "bg": {
+        "$type": "color",
+        "$description": "Error banner / toast background",
+        "$value": "{color.error.50}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.error.50}",
+              "Dark": "{color.error.500-alpha-12}"
+            }
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$description": "Error banner body text",
+        "$value": "{color.error.800}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.error.800}",
+              "Dark": "{color.error.300}"
+            }
+          }
+        }
+      }
+    },
+    "info": {
+      "default": {
+        "$type": "color",
+        "$description": "Info icon, inline informational text",
+        "$value": "{color.info.600}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.info.600}",
+              "Dark": "{color.info.400}"
+            }
+          }
+        }
+      },
+      "bg": {
+        "$type": "color",
+        "$description": "Info banner / toast background",
+        "$value": "{color.info.50}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.info.50}",
+              "Dark": "{color.info.500-alpha-12}"
+            }
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$description": "Info banner body text",
+        "$value": "{color.info.800}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.info.800}",
+              "Dark": "{color.info.300}"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -22,10 +22,7 @@ export interface DateRange {
   to: string;
 }
 
-function getTagStyle(
-  isSelected: boolean,
-  color: string | null,
-): React.CSSProperties | undefined {
+function getTagStyle(isSelected: boolean, color: string | null): React.CSSProperties | undefined {
   if (isSelected && color) {
     return {
       backgroundColor: color,

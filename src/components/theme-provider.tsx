@@ -50,6 +50,10 @@ interface ThemeProviderProps {
  *
  * Club switching = passing a different `club` prop.
  * Color mode is persisted in localStorage and respects OS preference.
+ *
+ * For the default Draftr theme, all primitive values are baked into
+ * the generated tokens.css. ThemeProvider only injects overrides when
+ * a non-default club is active.
  */
 export function ThemeProvider({ children, club = defaultTheme }: ThemeProviderProps) {
   const [colorMode, setColorModeState] = useState<ColorMode>(readStoredMode);
@@ -87,17 +91,30 @@ export function ThemeProvider({ children, club = defaultTheme }: ThemeProviderPr
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
-  // Inject brand primitives as CSS custom properties
+  // Inject brand primitive overrides for non-default clubs.
+  // For the default theme, tokens.css already has the correct values.
   useEffect(() => {
     const root = document.documentElement;
-    const { colors } = club;
+    const isDefault = club.slug === defaultTheme.slug;
 
-    root.style.setProperty('--brand-primary', colors.primary);
-    root.style.setProperty('--brand-danger', colors.danger);
-    root.style.setProperty('--brand-accent', colors.accent);
-    root.style.setProperty('--brand-black', colors.black);
-    root.style.setProperty('--brand-white', colors.white);
-    root.style.setProperty('--brand-muted', colors.muted);
+    if (isDefault) {
+      // Clear any previously injected overrides
+      root.style.removeProperty('--color-primary-500');
+      root.style.removeProperty('--color-secondary-500');
+      return;
+    }
+
+    // Club override — inject seed colours as the 500-step primitives.
+    // Components reference semantic tokens which reference these primitives.
+    const { colors } = club;
+    root.style.setProperty('--color-primary-500', colors.primary);
+    root.style.setProperty('--color-secondary-500', colors.secondary);
+    if (colors.neutral) {
+      root.style.setProperty('--color-neutral-500', colors.neutral);
+    }
+    if (colors.danger) {
+      root.style.setProperty('--color-error-500', colors.danger);
+    }
   }, [club]);
 
   const setColorMode = useCallback((mode: ColorMode) => {

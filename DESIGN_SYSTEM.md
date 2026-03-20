@@ -6,52 +6,61 @@ Single source of truth for all visual and UI decisions. Reference this file when
 
 ## 1. Colour Architecture
 
-### Layer 1 — Brand Primitives
+### Three-Layer System
 
-Source of truth: `src/themes/default.ts` (TypeScript).
-Injected as CSS custom properties by `ThemeProvider` at runtime.
+```
+Layer 1: Primitive Ramps    → --color-{family}-{step}     (auto-generated from JSON)
+Layer 2: Semantic Tokens    → --surface-*, --text-*, etc.  (auto-generated from JSON)
+Layer 3: shadcn Bridge      → --primary, --background      (hand-maintained in globals.css)
+```
 
-**App defaults:**
+### Layer 1 — Primitive Ramps
 
-| Token             | Hex       | Usage                           |
-| ----------------- | --------- | ------------------------------- |
-| `--brand-primary` | `#86142F` | CTAs, links, active states      |
-| `--brand-danger`  | `#C10F33` | Cancel, warnings, destructive   |
-| `--brand-accent`  | `#0085B6` | Subtle accents, hover states    |
-| `--brand-black`   | `#201D1D` | Text, dark mode background      |
-| `--brand-white`   | `#FFFFFF` | Light backgrounds, text on dark |
-| `--brand-muted`   | `#999FA3` | Muted text, borders, disabled   |
+Source of truth: `src/tokens/primitives.json` (synced from Figma).
+Generated into CSS by `npm run tokens:build`.
 
-Clubs can selectively override specific primitives; unspecified tokens fall back to these defaults.
+**7 colour families, each with full 50–950 ramp:**
 
-### Layer 2 — Semantic Tokens (what components use)
+| Family    | Base (500) | Description                      |
+| --------- | ---------- | -------------------------------- |
+| primary   | `#DE0387`  | Magenta — hero brand colour      |
+| secondary | `#2D7F94`  | Muted deep teal — supporting     |
+| neutral   | `#7C7074`  | Warm slate — pink undertone      |
+| success   | `#18A85C`  | Warm green                       |
+| warning   | `#F59A06`  | Warm amber                       |
+| error     | `#EF4444`  | True red (distinct from magenta) |
+| info      | `#4574CB`  | Cool slate blue                  |
 
-Defined in `src/app/globals.css`. Components **never** reference `--brand-*` directly.
+CSS variable format: `--color-primary-500`, `--color-neutral-100`, etc.
 
-| Semantic Token         | Light Mode Source      | Dark Mode Source              |
-| ---------------------- | ---------------------- | ----------------------------- |
-| `--primary`            | `--brand-primary`      | `--brand-primary`             |
-| `--primary-foreground` | `--brand-white`        | `--brand-white`               |
-| `--destructive`        | `--brand-danger`       | `--brand-danger` (brightened) |
-| `--background`         | `--brand-white`        | `--brand-black`               |
-| `--foreground`         | `--brand-black`        | `--brand-white` (softened)    |
-| `--muted`              | `--brand-muted` at 15% | `--brand-black` lightened     |
-| `--muted-foreground`   | `--brand-muted`        | `--brand-muted`               |
-| `--border`             | `--brand-muted` at 30% | `--brand-white` at 10%        |
-| `--card`               | `--brand-white`        | `--brand-black` lightened     |
-| `--ring`               | `--brand-primary`      | `--brand-primary`             |
+### Layer 2 — Semantic Tokens
 
-### Accessibility
+Source of truth: `src/tokens/semantics.json` (synced from Figma).
+Describes _intent_, not _hue_. Has explicit light/dark mode values.
 
-Some brand colours may not meet WCAG AA contrast ratios (4.5:1 for text, 3:1 for large text). When using brand colours on white or dark backgrounds, test and adjust. The `color-mix()` functions in `globals.css` help derive accessible variants.
+| Category | Examples                                            | Usage                        |
+| -------- | --------------------------------------------------- | ---------------------------- |
+| surface  | `--surface-default`, `--surface-page`, `-raised`    | Backgrounds, cards, modals   |
+| text     | `--text-primary`, `--text-secondary`, `--text-on-*` | Foreground text              |
+| border   | `--border-subtle`, `--border-default`, `-focus`     | Edges, dividers, focus rings |
+| action   | `--action-primary-default`, `--action-danger-*`     | Buttons, CTAs, interactive   |
+| feedback | `--feedback-success-*`, `--feedback-error-*`        | Banners, toasts, validation  |
+
+### Layer 3 — shadcn Bridge
+
+Maps semantic tokens to shadcn/ui's expected names (`--primary`, `--background`, etc.) so all existing components work without changes. Hand-maintained in `globals.css`.
 
 ### Switching Clubs
 
-1. Create a club override in `src/themes/clubs/` with only the primitives that differ
+1. Create a club override in `src/themes/clubs/` with `primary` and `secondary` seed colours
 2. Register it in `src/themes/index.ts`
 3. Pass the resolved theme to `<ThemeProvider club={resolvedTheme}>`
-4. CSS custom properties update → semantic tokens recalculate → app re-skins
+4. ThemeProvider injects seed colours → CSS primitives update → semantics recalculate
 5. No component changes needed
+
+### Updating Tokens
+
+See `docs/updating-tokens.md` for the full designer/developer workflow.
 
 ---
 
@@ -59,30 +68,32 @@ Some brand colours may not meet WCAG AA contrast ratios (4.5:1 for text, 3:1 for
 
 ### Font Stack
 
-| Purpose    | Font              | Weights  | CSS Variable        |
-| ---------- | ----------------- | -------- | ------------------- |
-| Headings   | Plus Jakarta Sans | 600, 700 | `--font-sans`       |
-| Body       | Plus Jakarta Sans | 400, 500 | `--font-sans`       |
-| Mono/Stats | JetBrains Mono    | 400, 500 | `--font-geist-mono` |
+| Purpose | Font           | Weights            | CSS Variable     |
+| ------- | -------------- | ------------------ | ---------------- |
+| Display | Outfit         | 600, 700, 800      | `--font-display` |
+| Body    | DM Sans        | 400, 500, 600, 700 | `--font-sans`    |
+| Data    | JetBrains Mono | 400, 500, 600      | `--font-mono`    |
 
-### Type Scale (mobile-first, rem)
+Headings automatically use `font-display` (Outfit) via the `@layer base` rule. Body text uses `font-sans` (DM Sans). Data/stats use `font-mono` (JetBrains Mono).
 
-| Name    | Size            | Usage                  |
-| ------- | --------------- | ---------------------- |
-| Display | 1.875rem / 30px | Page titles            |
-| H1      | 1.5rem / 24px   | Section headers        |
-| H2      | 1.25rem / 20px  | Card titles            |
-| H3      | 1.125rem / 18px | Subsections            |
-| Body    | 1rem / 16px     | Default text           |
-| Body-sm | 0.875rem / 14px | Secondary info         |
-| Caption | 0.75rem / 12px  | Timestamps, labels     |
-| Mono    | 0.875rem / 14px | Stats, distances, pace |
+### Type Scale (mobile-first)
 
-### Line Heights
-
-- Headings: `1.2`
-- Body: `1.5`
-- Mono: `1.4`
+| Token       | Size | Font    | Weight | Usage                         |
+| ----------- | ---- | ------- | ------ | ----------------------------- |
+| display/2xl | 48px | Outfit  | 800    | Hero headlines, onboarding    |
+| display/xl  | 40px | Outfit  | 700    | Page titles                   |
+| display/lg  | 32px | Outfit  | 700    | Section headers               |
+| heading/lg  | 24px | Outfit  | 600    | Card titles, ride names       |
+| heading/md  | 20px | Outfit  | 600    | Subsections, dialog titles    |
+| heading/sm  | 18px | Outfit  | 600    | List group headers            |
+| body/lg     | 16px | DM Sans | 400    | Primary body, descriptions    |
+| body/md     | 14px | DM Sans | 400    | Standard body, buttons        |
+| body/sm     | 13px | DM Sans | 400    | Secondary body, helper text   |
+| caption     | 12px | DM Sans | 500    | Timestamps, metadata          |
+| overline    | 11px | DM Sans | 600    | Section labels, table headers |
+| data/lg     | 24px | JB Mono | 600    | Hero stats, dashboard         |
+| data/md     | 16px | JB Mono | 500    | Inline stats, leaderboard     |
+| data/sm     | 12px | JB Mono | 400    | Secondary data, token values  |
 
 ---
 
@@ -117,11 +128,13 @@ Some brand colours may not meet WCAG AA contrast ratios (4.5:1 for text, 3:1 for
 
 ## 5. Shadows (Elevation)
 
-| Level | Value                         | Usage                     |
-| ----- | ----------------------------- | ------------------------- |
-| sm    | `0 1px 2px rgba(0,0,0,0.05)`  | Cards at rest             |
-| md    | `0 4px 6px rgba(0,0,0,0.07)`  | Cards on hover, dropdowns |
-| lg    | `0 10px 15px rgba(0,0,0,0.1)` | Modals, bottom sheets     |
+Warm undertone matching the neutral palette (rgba based on neutral-950):
+
+| Level | Light                             | Dark                          | Usage                     |
+| ----- | --------------------------------- | ----------------------------- | ------------------------- |
+| sm    | `0 1px 2px rgba(26,21,23,0.05)`   | `0 1px 2px rgba(0,0,0,0.3)`   | Cards at rest             |
+| md    | `0 4px 8px rgba(26,21,23,0.08)`   | `0 4px 8px rgba(0,0,0,0.4)`   | Cards on hover, dropdowns |
+| lg    | `0 12px 24px rgba(26,21,23,0.12)` | `0 12px 24px rgba(0,0,0,0.5)` | Modals, bottom sheets     |
 
 ---
 
@@ -214,16 +227,16 @@ All: `rounded-full`
 - FOUC prevention: inline `<script>` in `<head>` applies `.dark` before React hydrates
 - Both modes are equal — neither is the "primary" design target
 
-| Token           | Light                                   | Dark                                                                         |
-| --------------- | --------------------------------------- | ---------------------------------------------------------------------------- |
-| `--background`  | `#F8F8F7`                               | `var(--brand-black)` (#201D1D)                                               |
-| `--card`        | `var(--brand-white)`                    | `color-mix(in oklch, var(--brand-black) 90%, var(--brand-white))` (~#2A2626) |
-| `--foreground`  | `var(--brand-black)`                    | `color-mix(in oklch, var(--brand-white) 93%, var(--brand-muted))`            |
-| `--border`      | `color-mix(… --brand-muted 30%, white)` | `color-mix(in oklch, var(--brand-white) 10%, transparent)`                   |
-| `--primary`     | `var(--brand-primary)`                  | `var(--brand-primary)` (shared)                                              |
-| `--destructive` | `var(--brand-danger)`                   | `color-mix(in oklch, var(--brand-danger) 90%, var(--brand-white))`           |
+Light and dark values are defined explicitly in `src/tokens/semantics.json` (no `color-mix()` derivation for semantics). Each semantic token has separate Light and Dark aliases pointing to different primitive ramp steps.
 
-Dark tokens derive from the same brand primitives via `color-mix()`. Any club providing 6 brand colours gets both modes automatically.
+| Semantic Token      | Light Primitive  | Dark Primitive |
+| ------------------- | ---------------- | -------------- |
+| `--surface-default` | neutral/0 (#FFF) | neutral/900    |
+| `--surface-page`    | neutral/50       | neutral/950    |
+| `--text-primary`    | neutral/900      | neutral/50     |
+| `--action-primary`  | primary/500      | primary/400    |
+| `--border-default`  | neutral/200      | neutral/700    |
+| `--feedback-error`  | error/600        | error/400      |
 
 ---
 
@@ -242,25 +255,28 @@ Dark tokens derive from the same brand primitives via `color-mix()`. Any club pr
 ## 10. Theming Architecture
 
 ```
-src/themes/default.ts            → App default brand primitives (source of truth)
-src/themes/clubs/                → Club-specific overrides (partial primitives)
-src/themes/index.ts              → Theme registry + resolveClubTheme()
-src/components/theme-provider.tsx → Injects --brand-* CSS vars at runtime
-src/app/globals.css              → Semantic tokens reference --brand-* vars
+src/tokens/primitives.json        → Canonical colour ramps (synced from Figma)
+src/tokens/semantics.json          → Canonical semantic mappings (synced from Figma)
+src/tokens/generated/tokens.css    → Auto-generated CSS (npm run tokens:build)
+src/app/globals.css                → shadcn bridge + component tokens (hand-maintained)
+src/themes/default.ts              → App default seed colours
+src/themes/clubs/                  → Club-specific overrides (partial seeds)
+src/themes/index.ts                → Theme registry + resolveClubTheme()
+src/components/theme-provider.tsx  → Injects seed overrides for non-default clubs
 ```
 
-Club overrides merge onto the default. CSS `color-mix()` formulas recalculate automatically.
+Club overrides provide `primary` and `secondary` seed colours. ThemeProvider injects these, overriding the CSS primitive values. Semantic tokens auto-update via `var()` references.
 
 ---
 
 ## 11. File Architecture (Separation of Concerns)
 
-| Layer           | Location              | Rule                                                                          |
-| --------------- | --------------------- | ----------------------------------------------------------------------------- |
-| Content/copy    | `src/content/`        | All user-facing strings. Never inline.                                        |
-| Design tokens   | `src/app/globals.css` | CSS custom properties via `@theme`                                            |
-| Theme/brand     | `src/themes/`         | Default + club overrides                                                      |
-| App config      | `src/config/`         | Routes, navigation, formatting, status constants                              |
-| Business config | Database (Supabase)   | Pace groups, locations, tags, rules                                           |
-| Environment     | `.env.local`          | API keys, URLs                                                                |
-| Components      | `src/components/`     | Pure, data-driven, props/context only                                         |
+| Layer           | Location              | Rule                                             |
+| --------------- | --------------------- | ------------------------------------------------ |
+| Content/copy    | `src/content/`        | All user-facing strings. Never inline.           |
+| Design tokens   | `src/app/globals.css` | CSS custom properties via `@theme`               |
+| Theme/brand     | `src/themes/`         | Default + club overrides                         |
+| App config      | `src/config/`         | Routes, navigation, formatting, status constants |
+| Business config | Database (Supabase)   | Pace groups, locations, tags, rules              |
+| Environment     | `.env.local`          | API keys, URLs                                   |
+| Components      | `src/components/`     | Pure, data-driven, props/context only            |

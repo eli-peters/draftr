@@ -34,23 +34,23 @@ Draftr is a cycling club management PWA. It replaces the Cycle Club App with a m
 
 ### Separation of Concerns
 
-| Layer           | Location              | Rule                            |
-| --------------- | --------------------- | ------------------------------- |
-| Content/copy    | `src/content/`        | Structured objects, CMS-ready   |
-| Design tokens   | `src/app/globals.css` | CSS custom properties           |
-| Theme/brand     | `src/themes/`         | Typed ClubTheme configs         |
+| Layer           | Location              | Rule                                             |
+| --------------- | --------------------- | ------------------------------------------------ |
+| Content/copy    | `src/content/`        | Structured objects, CMS-ready                    |
+| Design tokens   | `src/app/globals.css` | CSS custom properties                            |
+| Theme/brand     | `src/themes/`         | Typed ClubTheme configs                          |
 | App config      | `src/config/`         | Routes, navigation, formatting, status constants |
-| Business config | Database              | Pace groups, locations, tags    |
-| Environment     | `.env.local`          | API keys, URLs                  |
-| Components      | `src/components/`     | Pure, data-driven, props only   |
+| Business config | Database              | Pace groups, locations, tags                     |
+| Environment     | `.env.local`          | API keys, URLs                                   |
+| Components      | `src/components/`     | Pure, data-driven, props only                    |
 
 ## Project Structure
 
 ```
 src/
 ├── app/                    → Routes and pages
-│   ├── globals.css         → Tailwind v4 theme + semantic tokens
-│   ├── layout.tsx          → Root layout (ThemeProvider, fonts)
+│   ├── globals.css         → shadcn bridge + component tokens (imports generated CSS)
+│   ├── layout.tsx          → Root layout (ThemeProvider, fonts: Outfit, DM Sans, JetBrains Mono)
 │   └── (app)/              → Authenticated app routes
 ├── components/
 │   ├── ui/                 → shadcn/ui components
@@ -61,6 +61,10 @@ src/
 │   ├── utils.ts            → cn() helper
 │   └── supabase/           → Client, server, middleware helpers
 ├── themes/                 → Default theme + club overrides
+├── tokens/                 → Design token system
+│   ├── primitives.json     → Canonical colour ramps (from Figma)
+│   ├── semantics.json      → Canonical semantic mappings (from Figma)
+│   └── generated/          → Auto-generated CSS (npm run tokens:build)
 ├── test/                   → Vitest setup + test files
 ├── types/                  → TypeScript type definitions
 └── proxy.ts                → Next.js proxy config (Supabase session refresh)
@@ -68,18 +72,22 @@ src/
 
 ## Theming Architecture
 
-Two-layer system:
+Three-layer system:
 
-1. **Brand primitives** (`--brand-primary`, `--brand-danger`, etc.) — set by ThemeProvider from `src/themes/*.ts`
-2. **Semantic tokens** (`--primary`, `--destructive`, `--background`, etc.) — defined in `globals.css`, reference brand primitives
+1. **Primitive ramps** (`--color-{family}-{step}`) — auto-generated from `src/tokens/primitives.json`. 7 colour families × 11+ steps each.
+2. **Semantic tokens** (`--surface-*`, `--text-*`, `--border-*`, `--action-*`, `--feedback-*`) — auto-generated from `src/tokens/semantics.json`. Explicit light/dark mode values. Describe _intent_, not _hue_.
+3. **shadcn bridge** (`--primary`, `--background`, etc.) — hand-maintained in `globals.css`. Maps semantic tokens to shadcn/ui's expected names so existing components work unchanged.
 
-The app ships a default theme (all 6 primitives). Clubs selectively override specific primitives (e.g., just `primary` + `accent`); unspecified tokens fall back to the app default. This maintains visual consistency across all clubs.
+The app ships a default theme with full colour ramps baked into CSS. Clubs provide `primary` and `secondary` seed colours; ThemeProvider injects these to override the 500-step primitives. Semantic tokens auto-update via `var()` references.
+
+Token update workflow: see `docs/updating-tokens.md`.
 
 ## Commands
 
 ```bash
-npm run dev          # Start dev server
-npm run build        # Production build
+npm run dev          # Start dev server (auto-runs tokens:build)
+npm run build        # Production build (auto-runs tokens:build)
+npm run tokens:build # Regenerate CSS from token JSON files
 npm run lint         # ESLint
 npm run format       # Prettier — format all files
 npm run format:check # Prettier — check without writing

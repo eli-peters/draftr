@@ -42,11 +42,7 @@ function LeadRideItem({ ride }: { ride: LeadRide }) {
           </div>
           <CaretRight className="ml-2 h-4 w-4 shrink-0 text-muted-foreground/40" />
         </div>
-        <CapacityBar
-          signupCount={ride.signup_count}
-          capacity={ride.capacity}
-          className="mt-4"
-        />
+        <CapacityBar signupCount={ride.signup_count} capacity={ride.capacity} className="mt-4" />
       </Card>
     </Link>
   );

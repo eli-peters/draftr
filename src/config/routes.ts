@@ -13,4 +13,5 @@ export const routes = {
   profileEdit: '/profile/edit',
   publicProfile: (userId: string) => `/profile/${userId}`,
   notifications: '/notifications',
+  styleGuide: '/style-guide',
 } as const;
