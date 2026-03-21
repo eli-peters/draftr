@@ -469,6 +469,7 @@ export type UserRideSignup = {
   capacity: number | null;
   signed_up_at: string | null;
   waitlist_position: number | null;
+  signup_status: 'confirmed' | 'waitlisted' | 'checked_in';
 };
 
 /**
@@ -550,6 +551,7 @@ export async function getUserRideSignups(
       capacity: ride.capacity,
       signed_up_at: signup.signed_up_at,
       waitlist_position: signup.waitlist_position,
+      signup_status: signup.status as UserRideSignup['signup_status'],
     };
   });
 }

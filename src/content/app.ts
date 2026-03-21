@@ -14,7 +14,7 @@ export const appContent = {
   nav: {
     home: 'Home',
     rides: 'Rides',
-    myRides: 'My Rides',
+    myRides: 'My Schedule',
     notifications: 'Notifications',
     profile: 'Profile',
     manage: 'Manage',
@@ -148,6 +148,9 @@ export const appContent = {
       distance: 'distance',
       elevation: 'elevation',
       time: 'time',
+      joinRide: 'Join ride',
+      spotsRemaining: (remaining: number) => `${remaining} spots left`,
+      ledBy: (name: string) => `Led by ${name}`,
     },
     status: {
       weatherWatch: 'Weather Watch',
@@ -262,11 +265,10 @@ export const appContent = {
   },
 
   myRides: {
-    heading: 'My Rides',
-    tabs: {
+    heading: 'My Schedule',
+    sections: {
       upcoming: 'Upcoming',
       past: 'Past',
-      waitlisted: 'Waitlisted',
     },
     emptyState: {
       upcoming: {
@@ -278,10 +280,17 @@ export const appContent = {
         title: 'No past rides yet',
         description: 'Your completed rides will show up here.',
       },
-      waitlisted: {
-        title: 'No waitlisted rides',
-        description: "If a ride is full, you'll be added to the waitlist automatically.",
-      },
+    },
+    status: {
+      confirmed: 'CONFIRMED',
+      waitlisted: (position: number) => `WAITLISTED \u00b7 #${position}`,
+      completed: 'COMPLETED',
+    },
+    actions: {
+      cancelSignup: 'Cancel signup',
+      leaveWaitlist: 'Leave waitlist',
+      getDirections: 'Get directions',
+      viewDetails: 'View details',
     },
     signedUpOn: 'Signed up',
     waitlistPosition: (position: number) => `#${position} on waitlist`,
