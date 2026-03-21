@@ -12,7 +12,13 @@ import { Card } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { SectionHeading } from '@/components/ui/section-heading';
-import { Sheet, SheetContent, SheetHeader, SheetFooter, SheetTitle } from '@/components/ui/sheet';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerFooter,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { appContent } from '@/content/app';
 import {
@@ -199,20 +205,19 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
       )}
 
       {mounted && (
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetContent
-            side={isMobile ? 'bottom' : 'right'}
+        <Drawer open={open} onOpenChange={setOpen} direction={isMobile ? 'bottom' : 'right'}>
+          <DrawerContent
             className={
               isMobile
-                ? 'flex max-h-(--sheet-height-md) flex-col overflow-y-auto'
-                : 'flex w-(--sheet-width-sidebar) flex-col overflow-y-auto'
+                ? 'max-h-(--drawer-height-md) overflow-y-auto'
+                : 'w-(--drawer-width-sidebar) overflow-y-auto'
             }
           >
-            <SheetHeader>
-              <SheetTitle>
+            <DrawerHeader>
+              <DrawerTitle>
                 {editingId ? content.announcements.edit : content.announcements.create}
-              </SheetTitle>
-            </SheetHeader>
+              </DrawerTitle>
+            </DrawerHeader>
             <div className="space-y-4 px-4">
               <div className="space-y-2">
                 <Label>{content.announcements.titleLabel}</Label>
@@ -264,13 +269,13 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                 </p>
               </div>
             </div>
-            <SheetFooter>
+            <DrawerFooter>
               <Button onClick={handleSubmit} disabled={!title.trim() || !body.trim()}>
                 {editingId ? common.save : content.announcements.create}
               </Button>
-            </SheetFooter>
-          </SheetContent>
-        </Sheet>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
       )}
     </div>
   );

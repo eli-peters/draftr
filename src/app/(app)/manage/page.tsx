@@ -12,7 +12,7 @@ import {
 } from '@/lib/rides/queries';
 import { getClubMembers, getClubStats, getClubAnnouncements } from '@/lib/manage/queries';
 import { createClient } from '@/lib/supabase/server';
-import { InviteMemberDialog } from '@/components/manage/invite-member-dialog';
+import { InviteMemberDrawer } from '@/components/manage/invite-member-drawer';
 import { MemberList } from '@/components/manage/member-list';
 import { ManageRidesPanel } from '@/components/manage/manage-rides-panel';
 import { AnnouncementsPanel } from '@/components/manage/announcements-panel';
@@ -99,7 +99,7 @@ export default async function ManagePage() {
                 <p className="text-sm text-muted-foreground font-medium">
                   {content.members.totalMembers(members.length)}
                 </p>
-                <InviteMemberDialog clubId={membership.club_id} />
+                <InviteMemberDrawer clubId={membership.club_id} />
               </div>
               <MemberList members={members} clubId={membership.club_id} currentUserId={user.id} />
             </div>

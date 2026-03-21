@@ -8,10 +8,10 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { RideCard } from '@/components/rides/ride-card';
 import {
-  RideFilterSheet,
+  RideFilterDrawer,
   type SortOption,
   type DateRange,
-} from '@/components/rides/ride-filter-sheet';
+} from '@/components/rides/ride-filter-drawer';
 import { sortRides } from '@/lib/rides/sort';
 import { appContent } from '@/content/app';
 import type { RideWithDetails } from '@/types/database';
@@ -109,7 +109,7 @@ export function FilterableRideFeed({
           >
             <ArrowClockwise className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
-          <RideFilterSheet
+          <RideFilterDrawer
             paceGroups={paceGroups}
             tags={tags}
             activePaceGroupIds={paceIds}

@@ -1,4 +1,4 @@
-import type { SortOption } from '@/components/rides/ride-filter-sheet';
+import type { SortOption } from '@/components/rides/ride-filter-drawer';
 
 /** Minimal shape required for ride sorting. */
 interface Sortable {

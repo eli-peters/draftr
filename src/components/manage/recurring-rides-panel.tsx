@@ -9,7 +9,13 @@ import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { SectionHeading } from '@/components/ui/section-heading';
-import { Sheet, SheetContent, SheetHeader, SheetFooter, SheetTitle } from '@/components/ui/sheet';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerFooter,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { appContent } from '@/content/app';
@@ -200,18 +206,17 @@ export function RecurringRidesPanel({
       )}
 
       {mounted && (
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetContent
-            side={isMobile ? 'bottom' : 'right'}
+        <Drawer open={open} onOpenChange={setOpen} direction={isMobile ? 'bottom' : 'right'}>
+          <DrawerContent
             className={
               isMobile
-                ? 'flex max-h-(--sheet-height-lg) flex-col overflow-y-auto'
-                : 'flex w-(--sheet-width-sidebar) flex-col overflow-y-auto'
+                ? 'max-h-(--drawer-height-lg) overflow-y-auto'
+                : 'w-(--drawer-width-sidebar) overflow-y-auto'
             }
           >
-            <SheetHeader>
-              <SheetTitle>{rc.create}</SheetTitle>
-            </SheetHeader>
+            <DrawerHeader>
+              <DrawerTitle>{rc.create}</DrawerTitle>
+            </DrawerHeader>
             <form onSubmit={handleSubmit} className="space-y-4 px-4">
               <div className="space-y-2">
                 <Label htmlFor="rc-title">{form.title} *</Label>
@@ -308,12 +313,12 @@ export function RecurringRidesPanel({
                   />
                 </div>
               </div>
-              <SheetFooter>
+              <DrawerFooter>
                 <Button type="submit">{rc.create}</Button>
-              </SheetFooter>
+              </DrawerFooter>
             </form>
-          </SheetContent>
-        </Sheet>
+          </DrawerContent>
+        </Drawer>
       )}
     </div>
   );

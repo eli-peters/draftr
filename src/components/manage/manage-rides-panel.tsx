@@ -10,10 +10,10 @@ import { CapacityBar } from '@/components/ui/capacity-bar';
 import { MetadataItem } from '@/components/ui/metadata-item';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
-  RideFilterSheet,
+  RideFilterDrawer,
   type SortOption,
   type DateRange,
-} from '@/components/rides/ride-filter-sheet';
+} from '@/components/rides/ride-filter-drawer';
 import { sortRides } from '@/lib/rides/sort';
 import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
@@ -186,7 +186,7 @@ export function ManageRidesPanel({ rides, paceGroups, tags }: ManageRidesPanelPr
           ) : (
             <span />
           )}
-          <RideFilterSheet
+          <RideFilterDrawer
             paceGroups={paceGroups}
             tags={tags}
             activePaceGroupIds={paceIds}

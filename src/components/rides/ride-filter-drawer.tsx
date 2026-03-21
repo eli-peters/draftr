@@ -4,7 +4,13 @@ import { useEffect, useState } from 'react';
 import { FunnelSimple } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Sheet, SheetContent, SheetHeader, SheetFooter, SheetTitle } from '@/components/ui/sheet';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerFooter,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { appContent } from '@/content/app';
 import { RideFilterContent } from './ride-filter-content';
@@ -14,7 +20,7 @@ export type { SortOption, DateRange };
 
 const { rides: ridesContent } = appContent;
 
-interface RideFilterSheetProps {
+interface RideFilterDrawerProps {
   paceGroups: { id: string; name: string }[];
   tags: { id: string; name: string; color: string | null }[];
   activePaceGroupIds: string[];
@@ -30,7 +36,7 @@ interface RideFilterSheetProps {
   onClear: () => void;
 }
 
-export function RideFilterSheet({
+export function RideFilterDrawer({
   paceGroups,
   tags,
   activePaceGroupIds,
@@ -39,10 +45,10 @@ export function RideFilterSheet({
   activeSort,
   onApply,
   onClear,
-}: RideFilterSheetProps) {
+}: RideFilterDrawerProps) {
   const isMobile = useIsMobile();
 
-  // Defer Base UI Dialog to client-only to prevent hydration ID mismatch
+  // Defer to client-only to prevent hydration mismatch
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -111,24 +117,23 @@ export function RideFilterSheet({
       </Button>
 
       {mounted && (
-        <Sheet open={open} onOpenChange={handleOpenChange}>
-          <SheetContent
-            side={isMobile ? 'bottom' : 'right'}
-            className={
-              isMobile
-                ? 'flex max-h-(--sheet-height-lg) flex-col'
-                : 'flex w-(--sheet-width-sidebar) flex-col'
-            }
+        <Drawer
+          open={open}
+          onOpenChange={handleOpenChange}
+          direction={isMobile ? 'bottom' : 'right'}
+        >
+          <DrawerContent
+            className={isMobile ? 'max-h-(--drawer-height-lg)' : 'w-(--drawer-width-sidebar)'}
           >
             {/* Header with title and clear action */}
-            <SheetHeader className="flex-row items-center justify-between">
-              <SheetTitle>{ridesContent.filter.heading}</SheetTitle>
+            <DrawerHeader className="flex-row items-center justify-between">
+              <DrawerTitle>{ridesContent.filter.heading}</DrawerTitle>
               {hasActiveFilters && (
                 <Button variant="link" size="sm" onClick={handleClear}>
                   {ridesContent.filter.clearAll}
                 </Button>
               )}
-            </SheetHeader>
+            </DrawerHeader>
 
             {/* Scrollable filter content */}
             <div className="flex-1 overflow-y-auto">
@@ -147,13 +152,13 @@ export function RideFilterSheet({
             </div>
 
             {/* Footer with apply button */}
-            <SheetFooter className="border-t border-border pt-3">
+            <DrawerFooter className="border-t border-border pt-3">
               <Button className="w-full" onClick={handleApply}>
                 {ridesContent.filter.apply}
               </Button>
-            </SheetFooter>
-          </SheetContent>
-        </Sheet>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
       )}
     </>
   );

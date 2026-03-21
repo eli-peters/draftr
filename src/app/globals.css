@@ -230,9 +230,9 @@
   --chart-5: var(--color-info-500);
 
   /* ── Layout ── */
-  --sheet-height-md: 70vh;
-  --sheet-height-lg: 85vh;
-  --sheet-width-sidebar: 28rem;
+  --drawer-height-md: 70vh;
+  --drawer-height-lg: 85vh;
+  --drawer-width-sidebar: 28rem;
   --overlay: color-mix(in srgb, var(--color-neutral-950) 10%, transparent);
   --overlay-heavy: color-mix(in srgb, var(--color-neutral-950) 40%, transparent);
 
