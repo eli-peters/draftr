@@ -151,7 +151,7 @@ function generateSemantics(): string {
   const lines: string[] = [];
 
   // Collect all categories
-  const categories = ['surface', 'text', 'border', 'action', 'feedback'];
+  const categories = ['surface', 'text', 'border', 'action', 'feedback', 'accent', 'badge'];
   const allLight: string[] = [];
   const allDark: string[] = [];
 
@@ -209,7 +209,8 @@ function main() {
 
   // Count what was generated
   const primCount = (output.match(/--color-\w+-/g) || []).length;
-  const semCount = (output.match(/--(?:surface|text|border|action|feedback)-/g) || []).length;
+  const semCount = (output.match(/--(?:surface|text|border|action|feedback|accent|badge)-/g) || [])
+    .length;
   console.log(
     `✓ Generated ${OUTPUT_PATH.replace(ROOT + '/', '')}\n` +
       `  ${primCount} primitive vars, ${semCount} semantic vars (light + dark)`,

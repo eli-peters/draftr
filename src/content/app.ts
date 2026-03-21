@@ -145,6 +145,9 @@ export const appContent = {
     card: {
       drop: 'Drop',
       riders: 'riders',
+      distance: 'distance',
+      elevation: 'elevation',
+      time: 'time',
     },
     status: {
       weatherWatch: 'Weather Watch',

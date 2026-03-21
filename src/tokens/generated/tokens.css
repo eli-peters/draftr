@@ -164,6 +164,44 @@
   --feedback-info-default: var(--color-info-600);
   --feedback-info-bg: var(--color-info-50);
   --feedback-info-text: var(--color-info-800);
+
+  /* accent */
+  --accent-primary-default: var(--color-primary-500);
+  --accent-primary-muted: var(--color-primary-300);
+  --accent-primary-subtle: var(--color-primary-50);
+  --accent-secondary-default: var(--color-secondary-600);
+  --accent-secondary-muted: var(--color-secondary-300);
+  --accent-secondary-subtle: var(--color-secondary-50);
+  --accent-neutral-default: var(--color-neutral-500);
+  --accent-neutral-muted: var(--color-neutral-300);
+
+  /* badge */
+  --badge-pace-social-bg: var(--color-neutral-100);
+  --badge-pace-social-text: var(--color-neutral-500);
+  --badge-pace-intermediate-bg: var(--color-secondary-50);
+  --badge-pace-intermediate-text: var(--color-secondary-700);
+  --badge-pace-advanced-bg: var(--color-primary-50);
+  --badge-pace-advanced-text: var(--color-primary-700);
+  --badge-pace-elite-bg: var(--color-error-50);
+  --badge-pace-elite-text: var(--color-error-800);
+  --badge-status-cancelled-bg: var(--color-error-50);
+  --badge-status-cancelled-text: var(--color-error-800);
+  --badge-status-full-bg: var(--color-warning-50);
+  --badge-status-full-text: var(--color-warning-800);
+  --badge-status-confirmed-bg: var(--color-success-50);
+  --badge-status-confirmed-text: var(--color-success-800);
+  --badge-status-paused-bg: var(--color-neutral-100);
+  --badge-status-paused-text: var(--color-neutral-400);
+  --badge-role-leader-bg: var(--color-secondary-50);
+  --badge-role-leader-text: var(--color-secondary-700);
+  --badge-role-admin-bg: var(--color-primary-50);
+  --badge-role-admin-text: var(--color-primary-700);
+  --badge-role-new-bg: var(--color-neutral-100);
+  --badge-role-new-text: var(--color-neutral-500);
+  --badge-vibe-bg: var(--color-neutral-100);
+  --badge-vibe-text: var(--color-neutral-400);
+  --badge-count-bg: var(--color-neutral-300);
+  --badge-count-text: var(--color-neutral-900);
 }
 
 /* === Semantic Tokens (Dark) === */
@@ -219,4 +257,42 @@
   --feedback-info-default: var(--color-info-400);
   --feedback-info-bg: var(--color-info-500-alpha-12);
   --feedback-info-text: var(--color-info-300);
+
+  /* accent */
+  --accent-primary-default: var(--color-primary-400);
+  --accent-primary-muted: var(--color-primary-700);
+  --accent-primary-subtle: var(--color-primary-700);
+  --accent-secondary-default: var(--color-secondary-400);
+  --accent-secondary-muted: var(--color-secondary-700);
+  --accent-secondary-subtle: var(--color-secondary-500-alpha-12);
+  --accent-neutral-default: var(--color-neutral-400);
+  --accent-neutral-muted: var(--color-neutral-600);
+
+  /* badge */
+  --badge-pace-social-bg: var(--color-neutral-800);
+  --badge-pace-social-text: var(--color-neutral-400);
+  --badge-pace-intermediate-bg: var(--color-secondary-500-alpha-12);
+  --badge-pace-intermediate-text: var(--color-secondary-300);
+  --badge-pace-advanced-bg: var(--color-primary-500-alpha-12);
+  --badge-pace-advanced-text: var(--color-primary-300);
+  --badge-pace-elite-bg: var(--color-error-300);
+  --badge-pace-elite-text: var(--color-error-300);
+  --badge-status-cancelled-bg: var(--color-error-500-alpha-12);
+  --badge-status-cancelled-text: var(--color-error-300);
+  --badge-status-full-bg: var(--color-warning-500-alpha-12);
+  --badge-status-full-text: var(--color-warning-300);
+  --badge-status-confirmed-bg: var(--color-success-500-alpha-12);
+  --badge-status-confirmed-text: var(--color-success-300);
+  --badge-status-paused-bg: var(--color-neutral-800);
+  --badge-status-paused-text: var(--color-neutral-500);
+  --badge-role-leader-bg: var(--color-secondary-500-alpha-12);
+  --badge-role-leader-text: var(--color-secondary-300);
+  --badge-role-admin-bg: var(--color-primary-500-alpha-12);
+  --badge-role-admin-text: var(--color-primary-300);
+  --badge-role-new-bg: var(--color-neutral-800);
+  --badge-role-new-text: var(--color-neutral-400);
+  --badge-vibe-bg: var(--color-neutral-800);
+  --badge-vibe-text: var(--color-neutral-500);
+  --badge-count-bg: var(--color-neutral-600);
+  --badge-count-text: var(--color-neutral-50);
 }

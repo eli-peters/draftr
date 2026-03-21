@@ -16,6 +16,24 @@ const badgeVariants = cva(
         warning:
           'bg-warning/10 text-warning border-warning/50 focus-visible:ring-warning/20 [a]:hover:bg-warning/20',
         outline: 'border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground',
+        'pace-social': 'bg-badge-pace-social-bg text-badge-pace-social-text',
+        'pace-intermediate': 'bg-badge-pace-intermediate-bg text-badge-pace-intermediate-text',
+        'pace-advanced': 'bg-badge-pace-advanced-bg text-badge-pace-advanced-text',
+        'pace-elite': 'bg-badge-pace-elite-bg text-badge-pace-elite-text',
+        'status-cancelled': 'bg-badge-status-cancelled-bg text-badge-status-cancelled-text',
+        'status-full': 'bg-badge-status-full-bg text-badge-status-full-text',
+        'status-confirmed': 'bg-badge-status-confirmed-bg text-badge-status-confirmed-text',
+        'status-paused': 'bg-badge-status-paused-bg text-badge-status-paused-text',
+        'role-leader': 'bg-badge-role-leader-bg text-badge-role-leader-text',
+        'role-admin': 'bg-badge-role-admin-bg text-badge-role-admin-text',
+        'role-new': 'bg-badge-role-new-bg text-badge-role-new-text',
+        vibe: 'bg-badge-vibe-bg text-badge-vibe-text',
+        count: 'bg-badge-count-bg text-badge-count-text',
+      },
+      shape: {
+        pill: 'rounded-full',
+        rounded: 'rounded-md',
+        subtle: 'rounded',
       },
       size: {
         default: 'h-[1.375rem] px-2.5 py-0.5 text-xs',
@@ -26,6 +44,7 @@ const badgeVariants = cva(
     defaultVariants: {
       variant: 'default',
       size: 'default',
+      shape: 'pill',
     },
   },
 );
@@ -34,6 +53,7 @@ function Badge({
   className,
   variant = 'default',
   size = 'default',
+  shape = 'pill',
   render,
   ...props
 }: useRender.ComponentProps<'span'> & VariantProps<typeof badgeVariants>) {
@@ -41,7 +61,7 @@ function Badge({
     defaultTagName: 'span',
     props: mergeProps<'span'>(
       {
-        className: cn(badgeVariants({ variant, size }), className),
+        className: cn(badgeVariants({ variant, size, shape }), className),
       },
       props,
     ),

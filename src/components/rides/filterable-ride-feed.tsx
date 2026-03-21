@@ -121,7 +121,7 @@ export function FilterableRideFeed({
       </div>
 
       {sorted.length > 0 ? (
-        <div>
+        <div className="flex flex-col gap-4">
           {sorted.map((ride) => (
             <RideCard key={ride.id} ride={ride} />
           ))}

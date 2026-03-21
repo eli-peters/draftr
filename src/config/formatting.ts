@@ -28,3 +28,18 @@ export const units = {
   m: ' m',
   kmh: ' km/h',
 } as const;
+
+/** Map pace group names (from DB) to badge variant keys */
+export const paceVariantMap: Record<string, string> = {
+  social: 'pace-social',
+  intermediate: 'pace-intermediate',
+  'intermediate a': 'pace-intermediate',
+  'intermediate b': 'pace-intermediate',
+  advanced: 'pace-advanced',
+  elite: 'pace-elite',
+} as const;
+
+/** Get badge variant for a pace group name, falling back to social */
+export function getPaceBadgeVariant(paceGroupName: string): string {
+  return paceVariantMap[paceGroupName.toLowerCase()] ?? 'pace-social';
+}

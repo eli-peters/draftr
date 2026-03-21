@@ -558,5 +558,463 @@
         }
       }
     }
+  },
+  "accent": {
+    "primary": {
+      "default": {
+        "$type": "color",
+        "$description": "Primary-flavoured icon fill — ride icons, navigation icons, feature icons",
+        "$value": "{color.primary.500}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.primary.500}",
+              "Dark": "{color.primary.400}"
+            }
+          }
+        }
+      },
+      "muted": {
+        "$type": "color",
+        "$description": "Softer primary accent — low-emphasis icons, decorative borders, divider accents",
+        "$value": "{color.primary.300}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.primary.300}",
+              "Dark": "{color.primary.700}"
+            }
+          }
+        }
+      },
+      "subtle": {
+        "$type": "color",
+        "$description": "Very soft primary wash — icon backgrounds, tinted containers, feature card tints",
+        "$value": "{color.primary.50}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.primary.50}",
+              "Dark": "{color.primary.700}"
+            }
+          }
+        }
+      }
+    },
+    "secondary": {
+      "default": {
+        "$type": "color",
+        "$description": "Secondary-flavoured icon fill — informational icons, route/map icons",
+        "$value": "{color.secondary.600}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.secondary.600}",
+              "Dark": "{color.secondary.400}"
+            }
+          }
+        }
+      },
+      "muted": {
+        "$type": "color",
+        "$description": "Softer secondary accent — supporting icons, decorative teal touches",
+        "$value": "{color.secondary.300}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.secondary.300}",
+              "Dark": "{color.secondary.700}"
+            }
+          }
+        }
+      },
+      "subtle": {
+        "$type": "color",
+        "$description": "Very soft secondary wash — icon backgrounds, tinted containers",
+        "$value": "{color.secondary.50}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.secondary.50}",
+              "Dark": "{color.secondary.500-alpha-12}"
+            }
+          }
+        }
+      }
+    },
+    "neutral": {
+      "default": {
+        "$type": "color",
+        "$description": "Neutral icon fill — tertiary icons, muted UI chrome",
+        "$value": "{color.neutral.500}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.500}",
+              "Dark": "{color.neutral.400}"
+            }
+          }
+        }
+      },
+      "muted": {
+        "$type": "color",
+        "$description": "Soft neutral — very low-emphasis icons, decorative dividers, separator dots",
+        "$value": "{color.neutral.300}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.300}",
+              "Dark": "{color.neutral.600}"
+            }
+          }
+        }
+      }
+    }
+  },
+  "badge": {
+    "pace": {
+      "social": {
+        "bg": {
+          "$type": "color",
+          "$value": "{color.neutral.100}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.neutral.100}",
+                "Dark": "{color.neutral.800}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$value": "{color.neutral.500}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.neutral.500}",
+                "Dark": "{color.neutral.400}"
+              }
+            }
+          }
+        }
+      },
+      "intermediate": {
+        "bg": {
+          "$type": "color",
+          "$value": "{color.secondary.50}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.secondary.50}",
+                "Dark": "{color.secondary.500-alpha-12}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$value": "{color.secondary.700}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.secondary.700}",
+                "Dark": "{color.secondary.300}"
+              }
+            }
+          }
+        }
+      },
+      "advanced": {
+        "bg": {
+          "$type": "color",
+          "$value": "{color.primary.50}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.primary.50}",
+                "Dark": "{color.primary.500-alpha-12}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$value": "{color.primary.700}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.primary.700}",
+                "Dark": "{color.primary.300}"
+              }
+            }
+          }
+        }
+      },
+      "elite": {
+        "bg": {
+          "$type": "color",
+          "$value": "{color.error.50}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.error.50}",
+                "Dark": "{color.error.300}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$value": "{color.error.800}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.error.800}",
+                "Dark": "{color.error.300}"
+              }
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "cancelled": {
+        "bg": {
+          "$type": "color",
+          "$value": "{color.error.50}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.error.50}",
+                "Dark": "{color.error.500-alpha-12}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$value": "{color.error.800}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.error.800}",
+                "Dark": "{color.error.300}"
+              }
+            }
+          }
+        }
+      },
+      "full": {
+        "bg": {
+          "$type": "color",
+          "$value": "{color.warning.50}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.warning.50}",
+                "Dark": "{color.warning.500-alpha-12}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$value": "{color.warning.800}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.warning.800}",
+                "Dark": "{color.warning.300}"
+              }
+            }
+          }
+        }
+      },
+      "confirmed": {
+        "bg": {
+          "$type": "color",
+          "$value": "{color.success.50}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.success.50}",
+                "Dark": "{color.success.500-alpha-12}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$value": "{color.success.800}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.success.800}",
+                "Dark": "{color.success.300}"
+              }
+            }
+          }
+        }
+      },
+      "paused": {
+        "bg": {
+          "$type": "color",
+          "$value": "{color.neutral.100}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.neutral.100}",
+                "Dark": "{color.neutral.800}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$value": "{color.neutral.400}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.neutral.400}",
+                "Dark": "{color.neutral.500}"
+              }
+            }
+          }
+        }
+      }
+    },
+    "role": {
+      "leader": {
+        "bg": {
+          "$type": "color",
+          "$value": "{color.secondary.50}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.secondary.50}",
+                "Dark": "{color.secondary.500-alpha-12}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$value": "{color.secondary.700}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.secondary.700}",
+                "Dark": "{color.secondary.300}"
+              }
+            }
+          }
+        }
+      },
+      "admin": {
+        "bg": {
+          "$type": "color",
+          "$value": "{color.primary.50}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.primary.50}",
+                "Dark": "{color.primary.500-alpha-12}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$value": "{color.primary.700}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.primary.700}",
+                "Dark": "{color.primary.300}"
+              }
+            }
+          }
+        }
+      },
+      "new": {
+        "bg": {
+          "$type": "color",
+          "$value": "{color.neutral.100}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.neutral.100}",
+                "Dark": "{color.neutral.800}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$value": "{color.neutral.500}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.neutral.500}",
+                "Dark": "{color.neutral.400}"
+              }
+            }
+          }
+        }
+      }
+    },
+    "vibe": {
+      "bg": {
+        "$type": "color",
+        "$value": "{color.neutral.100}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.100}",
+              "Dark": "{color.neutral.800}"
+            }
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{color.neutral.400}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.400}",
+              "Dark": "{color.neutral.500}"
+            }
+          }
+        }
+      }
+    },
+    "count": {
+      "bg": {
+        "$type": "color",
+        "$value": "{color.neutral.300}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.300}",
+              "Dark": "{color.neutral.600}"
+            }
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{color.neutral.900}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.900}",
+              "Dark": "{color.neutral.50}"
+            }
+          }
+        }
+      }
+    }
   }
 }

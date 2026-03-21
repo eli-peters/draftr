@@ -112,6 +112,44 @@
   --color-feedback-info-bg: var(--feedback-info-bg);
   --color-feedback-info-text: var(--feedback-info-text);
 
+  /* Accent tokens → Tailwind */
+  --color-accent-primary-default: var(--accent-primary-default);
+  --color-accent-primary-muted: var(--accent-primary-muted);
+  --color-accent-primary-subtle: var(--accent-primary-subtle);
+  --color-accent-secondary-default: var(--accent-secondary-default);
+  --color-accent-secondary-muted: var(--accent-secondary-muted);
+  --color-accent-secondary-subtle: var(--accent-secondary-subtle);
+  --color-accent-neutral-default: var(--accent-neutral-default);
+  --color-accent-neutral-muted: var(--accent-neutral-muted);
+
+  /* Badge tokens → Tailwind */
+  --color-badge-pace-social-bg: var(--badge-pace-social-bg);
+  --color-badge-pace-social-text: var(--badge-pace-social-text);
+  --color-badge-pace-intermediate-bg: var(--badge-pace-intermediate-bg);
+  --color-badge-pace-intermediate-text: var(--badge-pace-intermediate-text);
+  --color-badge-pace-advanced-bg: var(--badge-pace-advanced-bg);
+  --color-badge-pace-advanced-text: var(--badge-pace-advanced-text);
+  --color-badge-pace-elite-bg: var(--badge-pace-elite-bg);
+  --color-badge-pace-elite-text: var(--badge-pace-elite-text);
+  --color-badge-status-cancelled-bg: var(--badge-status-cancelled-bg);
+  --color-badge-status-cancelled-text: var(--badge-status-cancelled-text);
+  --color-badge-status-full-bg: var(--badge-status-full-bg);
+  --color-badge-status-full-text: var(--badge-status-full-text);
+  --color-badge-status-confirmed-bg: var(--badge-status-confirmed-bg);
+  --color-badge-status-confirmed-text: var(--badge-status-confirmed-text);
+  --color-badge-status-paused-bg: var(--badge-status-paused-bg);
+  --color-badge-status-paused-text: var(--badge-status-paused-text);
+  --color-badge-role-leader-bg: var(--badge-role-leader-bg);
+  --color-badge-role-leader-text: var(--badge-role-leader-text);
+  --color-badge-role-admin-bg: var(--badge-role-admin-bg);
+  --color-badge-role-admin-text: var(--badge-role-admin-text);
+  --color-badge-role-new-bg: var(--badge-role-new-bg);
+  --color-badge-role-new-text: var(--badge-role-new-text);
+  --color-badge-vibe-bg: var(--badge-vibe-bg);
+  --color-badge-vibe-text: var(--badge-vibe-text);
+  --color-badge-count-bg: var(--badge-count-bg);
+  --color-badge-count-text: var(--badge-count-text);
+
   /* Radius */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
