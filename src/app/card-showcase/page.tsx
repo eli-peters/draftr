@@ -317,8 +317,9 @@ const mockAnnouncements = [
     body: "Join us for the annual kickoff at Mooney's Bay pavilion. Bikes optional, burgers mandatory. Families welcome! We'll have a short club update at 1 PM followed by food and drinks.",
     is_pinned: true,
     published_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+    expires_at: null,
     created_by_name: 'Alex Johnson',
-    announcement_type: 'info',
+    announcement_type: 'info' as const,
     is_dismissible: true,
   },
   {
@@ -327,8 +328,9 @@ const mockAnnouncements = [
     body: 'The new club kit design is finalized. Place your order by March 30 to guarantee sizing. Payment via e-transfer.',
     is_pinned: false,
     published_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
+    expires_at: null,
     created_by_name: 'Sam Rivera',
-    announcement_type: 'warning',
+    announcement_type: 'warning' as const,
     is_dismissible: true,
   },
 ];
