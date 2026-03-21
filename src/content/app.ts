@@ -14,7 +14,7 @@ export const appContent = {
   nav: {
     home: 'Home',
     rides: 'Rides',
-    myRides: 'My Schedule',
+    schedule: 'Schedule',
     notifications: 'Notifications',
     profile: 'Profile',
     manage: 'Manage',
@@ -277,8 +277,8 @@ export const appContent = {
     },
   },
 
-  myRides: {
-    heading: 'My Schedule',
+  schedule: {
+    heading: 'Schedule',
     sections: {
       upcoming: 'Upcoming',
       past: 'Past',
@@ -475,6 +475,16 @@ export const appContent = {
       edit: 'Edit',
       noAnnouncements: 'No announcements yet.',
       pinned: 'Pinned',
+      typeLabel: 'Banner Type',
+      dismissibleLabel: 'Members can dismiss',
+      expiryLabel: 'Expires on',
+      expiryDescription: 'Auto-expires after 30 days if not set',
+      typeOptions: {
+        info: 'Information',
+        warning: 'Warning',
+        danger: 'Urgent',
+        success: 'Good News',
+      },
     },
     recurringRides: {
       heading: 'Recurring Rides',

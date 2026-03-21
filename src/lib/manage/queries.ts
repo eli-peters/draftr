@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import type { AnnouncementType } from '@/types/database';
 
 export interface ClubMember {
   user_id: string;
@@ -70,7 +71,7 @@ export async function getPendingMemberCount(clubId: string): Promise<number> {
 }
 
 /**
- * Fetch announcements for a club.
+ * Fetch announcements for a club (admin panel).
  */
 export async function getClubAnnouncements(clubId: string) {
   const supabase = await createClient();
@@ -79,6 +80,7 @@ export async function getClubAnnouncements(clubId: string) {
     .select(
       `
       id, title, body, is_pinned, published_at, expires_at,
+      announcement_type, is_dismissible,
       creator:users!announcements_created_by_fkey(display_name, full_name)
     `,
     )
@@ -103,6 +105,8 @@ export async function getClubAnnouncements(clubId: string) {
       is_pinned: a.is_pinned,
       published_at: a.published_at,
       expires_at: a.expires_at,
+      announcement_type: a.announcement_type as AnnouncementType,
+      is_dismissible: a.is_dismissible,
       created_by_name: creator?.display_name ?? creator?.full_name ?? null,
     };
   });
@@ -145,25 +149,49 @@ export async function getClubRideTemplates(clubId: string) {
 }
 
 /**
- * Fetch the current pinned announcement for a club (max one).
+ * Fetch the pinned announcement for a club (max one).
+ * Filters out expired announcements and announcements the user has dismissed.
  */
-export async function getPinnedAnnouncement(clubId: string) {
+export async function getPinnedAnnouncement(clubId: string, userId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from('announcements')
     .select(
       `
-      id, title, body, published_at,
+      id, title, body, published_at, expires_at, max_duration_days,
+      announcement_type, is_dismissible,
       creator:users!announcements_created_by_fkey(display_name, full_name)
     `,
     )
     .eq('club_id', clubId)
     .eq('is_pinned', true)
+    .or('expires_at.is.null,expires_at.gt.now()')
     .order('published_at', { ascending: false })
     .limit(1)
     .maybeSingle();
 
   if (!data) return null;
+
+  // Check max_duration_days safety guardrail (expires_at already filtered in query)
+  const now = new Date();
+  if (!data.expires_at && data.max_duration_days) {
+    const published = new Date(data.published_at);
+    const guardrailExpiry = new Date(published);
+    guardrailExpiry.setDate(guardrailExpiry.getDate() + data.max_duration_days);
+    if (guardrailExpiry < now) return null;
+  }
+
+  // Check if this user has dismissed this announcement
+  if (data.is_dismissible) {
+    const { data: dismissal } = await supabase
+      .from('announcement_dismissals')
+      .select('id')
+      .eq('announcement_id', data.id)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (dismissal) return null;
+  }
 
   const creator = data.creator as unknown as {
     display_name: string | null;
@@ -174,6 +202,8 @@ export async function getPinnedAnnouncement(clubId: string) {
     title: data.title,
     body: data.body,
     published_at: data.published_at,
+    announcement_type: data.announcement_type as AnnouncementType,
+    is_dismissible: data.is_dismissible,
     created_by_name: creator?.display_name ?? creator?.full_name ?? null,
   };
 }

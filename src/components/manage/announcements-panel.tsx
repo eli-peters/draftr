@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { PushPin, Trash, PencilSimple, Plus } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
@@ -9,8 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { Select } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { Sheet, SheetContent, SheetHeader, SheetFooter, SheetTitle } from '@/components/ui/sheet';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { appContent } from '@/content/app';
 import {
   createAnnouncement,
@@ -18,8 +21,25 @@ import {
   deleteAnnouncement,
   toggleAnnouncementPin,
 } from '@/lib/manage/actions';
+import type { AnnouncementType } from '@/types/database';
 
 const { manage: content, common } = appContent;
+
+const announcementTypes: AnnouncementType[] = ['info', 'warning', 'danger', 'success'];
+
+/**
+ * Static badge styles per type — Tailwind v4 requires full class strings to be scannable.
+ * "danger" maps to the "error" feedback token family.
+ */
+const typeBadgeStyles: Record<AnnouncementType, string> = {
+  info: 'bg-(--feedback-info-bg) text-(--feedback-info-text) border-(--feedback-info-default)/20',
+  warning:
+    'bg-(--feedback-warning-bg) text-(--feedback-warning-text) border-(--feedback-warning-default)/20',
+  danger:
+    'bg-(--feedback-error-bg) text-(--feedback-error-text) border-(--feedback-error-default)/20',
+  success:
+    'bg-(--feedback-success-bg) text-(--feedback-success-text) border-(--feedback-success-default)/20',
+};
 
 interface AnnouncementData {
   id: string;
@@ -27,7 +47,10 @@ interface AnnouncementData {
   body: string;
   is_pinned: boolean;
   published_at: string;
+  expires_at: string | null;
   created_by_name: string | null;
+  announcement_type: AnnouncementType;
+  is_dismissible: boolean;
 }
 
 interface AnnouncementsPanelProps {
@@ -36,16 +59,26 @@ interface AnnouncementsPanelProps {
 }
 
 export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanelProps) {
+  const isMobile = useIsMobile();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
+  const [announcementType, setAnnouncementType] = useState<AnnouncementType>('info');
+  const [isDismissible, setIsDismissible] = useState(true);
+  const [expiresAt, setExpiresAt] = useState('');
   const [isPending, startTransition] = useTransition();
 
   function handleNew() {
     setEditingId(null);
     setTitle('');
     setBody('');
+    setAnnouncementType('info');
+    setIsDismissible(true);
+    setExpiresAt('');
     setOpen(true);
   }
 
@@ -53,16 +86,26 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
     setEditingId(a.id);
     setTitle(a.title);
     setBody(a.body);
+    setAnnouncementType(a.announcement_type);
+    setIsDismissible(a.is_dismissible);
+    setExpiresAt(a.expires_at?.split('T')[0] ?? '');
     setOpen(true);
   }
 
   function handleSubmit() {
     if (!title.trim() || !body.trim()) return;
     startTransition(async () => {
+      const payload = {
+        title,
+        body,
+        announcement_type: announcementType,
+        is_dismissible: isDismissible,
+        expires_at: expiresAt || null,
+      };
       if (editingId) {
-        await updateAnnouncement(editingId, { title, body });
+        await updateAnnouncement(editingId, payload);
       } else {
-        await createAnnouncement(clubId, { title, body });
+        await createAnnouncement(clubId, payload);
       }
       setOpen(false);
     });
@@ -105,12 +148,18 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                         {content.announcements.pinned}
                       </Badge>
                     )}
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${typeBadgeStyles[a.announcement_type] ?? ''}`}
+                    >
+                      {content.announcements.typeOptions[a.announcement_type]}
+                    </Badge>
                   </div>
                   <p className="mt-1.5 text-sm text-foreground/75 leading-relaxed line-clamp-3">
                     {a.body}
                   </p>
                   <p className="mt-2 text-xs text-muted-foreground">
-                    {a.created_by_name} ·{' '}
+                    {a.created_by_name} &middot;{' '}
                     {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
                   </p>
                 </div>
@@ -149,39 +198,80 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
         </div>
       )}
 
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="bottom" className="max-h-(--sheet-height-md) overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>
-              {editingId ? content.announcements.edit : content.announcements.create}
-            </SheetTitle>
-          </SheetHeader>
-          <div className="space-y-4 px-4">
-            <div className="space-y-2">
-              <Label>{content.announcements.titleLabel}</Label>
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder={content.announcements.titlePlaceholder}
-              />
+      {mounted && (
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetContent
+            side={isMobile ? 'bottom' : 'right'}
+            className={
+              isMobile
+                ? 'flex max-h-(--sheet-height-md) flex-col overflow-y-auto'
+                : 'flex w-(--sheet-width-sidebar) flex-col overflow-y-auto'
+            }
+          >
+            <SheetHeader>
+              <SheetTitle>
+                {editingId ? content.announcements.edit : content.announcements.create}
+              </SheetTitle>
+            </SheetHeader>
+            <div className="space-y-4 px-4">
+              <div className="space-y-2">
+                <Label>{content.announcements.titleLabel}</Label>
+                <Input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder={content.announcements.titlePlaceholder}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{content.announcements.bodyLabel}</Label>
+                <Textarea
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  placeholder={content.announcements.bodyPlaceholder}
+                  rows={4}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{content.announcements.typeLabel}</Label>
+                <Select
+                  value={announcementType}
+                  onChange={(e) => setAnnouncementType(e.target.value as AnnouncementType)}
+                >
+                  {announcementTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {content.announcements.typeOptions[type]}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="dismissible-toggle">{content.announcements.dismissibleLabel}</Label>
+                <Switch
+                  id="dismissible-toggle"
+                  checked={isDismissible}
+                  onCheckedChange={setIsDismissible}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{content.announcements.expiryLabel}</Label>
+                <Input
+                  type="date"
+                  value={expiresAt}
+                  onChange={(e) => setExpiresAt(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {content.announcements.expiryDescription}
+                </p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>{content.announcements.bodyLabel}</Label>
-              <Textarea
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                placeholder={content.announcements.bodyPlaceholder}
-                rows={4}
-              />
-            </div>
-          </div>
-          <SheetFooter>
-            <Button onClick={handleSubmit} disabled={!title.trim() || !body.trim()}>
-              {editingId ? common.save : content.announcements.create}
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+            <SheetFooter>
+              <Button onClick={handleSubmit} disabled={!title.trim() || !body.trim()}>
+                {editingId ? common.save : content.announcements.create}
+              </Button>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }

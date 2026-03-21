@@ -7,6 +7,8 @@ import { getInitials } from '@/lib/utils';
 import { getUserClubMembership } from '@/lib/rides/queries';
 import { createClient } from '@/lib/supabase/server';
 import { getUserNotifications } from '@/lib/notifications/queries';
+import { getPinnedAnnouncement } from '@/lib/manage/queries';
+import { AnnouncementBanner } from '@/components/dashboard/announcement-banner';
 
 /**
  * Authenticated app layout with navigation shell.
@@ -41,8 +43,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const userName = profile.display_name ?? profile.full_name ?? 'User';
   const userEmail = profile.email ?? authUser.email ?? '';
 
-  // Fetch recent notifications for the header bell
-  const notifications = await getUserNotifications(authUser.id);
+  const [notifications, pinnedAnnouncement] = await Promise.all([
+    getUserNotifications(authUser.id),
+    membership ? getPinnedAnnouncement(membership.club_id, authUser.id) : null,
+  ]);
   const recentNotifications = notifications.slice(0, 5);
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
@@ -58,6 +62,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       }}
       notifications={recentNotifications}
       unreadNotificationCount={unreadCount}
+      banner={
+        pinnedAnnouncement ? <AnnouncementBanner announcement={pinnedAnnouncement} /> : undefined
+      }
     >
       {children}
     </AppShell>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { Plus, Trash, Pause, Play, ArrowClockwise } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/card';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { Sheet, SheetContent, SheetHeader, SheetFooter, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { appContent } from '@/content/app';
 import {
   createRecurringRide,
@@ -53,6 +54,10 @@ export function RecurringRidesPanel({
   meetingLocations,
   paceGroups,
 }: RecurringRidesPanelProps) {
+  const isMobile = useIsMobile();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
@@ -194,113 +199,122 @@ export function RecurringRidesPanel({
         </div>
       )}
 
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="bottom" className="max-h-(--sheet-height-lg) overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{rc.create}</SheetTitle>
-          </SheetHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 px-4">
-            <div className="space-y-2">
-              <Label htmlFor="rc-title">{form.title} *</Label>
-              <Input
-                id="rc-title"
-                name="title"
-                required
-                placeholder="e.g. Saturday Morning Social"
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
+      {mounted && (
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetContent
+            side={isMobile ? 'bottom' : 'right'}
+            className={
+              isMobile
+                ? 'flex max-h-(--sheet-height-lg) flex-col overflow-y-auto'
+                : 'flex w-(--sheet-width-sidebar) flex-col overflow-y-auto'
+            }
+          >
+            <SheetHeader>
+              <SheetTitle>{rc.create}</SheetTitle>
+            </SheetHeader>
+            <form onSubmit={handleSubmit} className="space-y-4 px-4">
               <div className="space-y-2">
-                <Label htmlFor="rc-day">{rc.dayOfWeek[0].slice(0, 3)}... *</Label>
-                <Select id="rc-day" name="day_of_week" required>
-                  <option value="">Day...</option>
-                  {rc.dayOfWeek.map((day, i) => (
-                    <option key={i} value={i}>
-                      {day}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="rc-time">{form.startTime} *</Label>
-                <Input id="rc-time" name="start_time" type="time" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="rc-recurrence">{rc.recurrence.weekly} *</Label>
-                <Select id="rc-recurrence" name="recurrence" required>
-                  <option value="weekly">{rc.recurrence.weekly}</option>
-                  <option value="biweekly">{rc.recurrence.biweekly}</option>
-                  <option value="monthly">{rc.recurrence.monthly}</option>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="rc-season-start">{rc.seasonStartLabel}</Label>
-                <Input id="rc-season-start" name="season_start_date" type="date" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="rc-season-end">{rc.seasonEndLabel}</Label>
-                <Input id="rc-season-end" name="season_end_date" type="date" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="rc-location">{form.meetingLocation}</Label>
-                <Select id="rc-location" name="meeting_location_id">
-                  <option value="">{form.selectLocation}</option>
-                  {meetingLocations.map((loc) => (
-                    <option key={loc.id} value={loc.id}>
-                      {loc.name}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="rc-pace">{form.paceGroup}</Label>
-                <Select id="rc-pace" name="pace_group_id">
-                  <option value="">{form.selectPace}</option>
-                  {paceGroups.map((pg) => (
-                    <option key={pg.id} value={pg.id}>
-                      {pg.name}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="rc-distance">{form.distance}</Label>
+                <Label htmlFor="rc-title">{form.title} *</Label>
                 <Input
-                  id="rc-distance"
-                  name="default_distance_km"
-                  type="number"
-                  step="0.1"
-                  min="0"
+                  id="rc-title"
+                  name="title"
+                  required
+                  placeholder="e.g. Saturday Morning Social"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="rc-capacity">{form.capacity}</Label>
-                <Input id="rc-capacity" name="default_capacity" type="number" min="1" />
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="rc-day">{rc.dayOfWeek[0].slice(0, 3)}... *</Label>
+                  <Select id="rc-day" name="day_of_week" required>
+                    <option value="">Day...</option>
+                    {rc.dayOfWeek.map((day, i) => (
+                      <option key={i} value={i}>
+                        {day}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="rc-time">{form.startTime} *</Label>
+                  <Input id="rc-time" name="start_time" type="time" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="rc-recurrence">{rc.recurrence.weekly} *</Label>
+                  <Select id="rc-recurrence" name="recurrence" required>
+                    <option value="weekly">{rc.recurrence.weekly}</option>
+                    <option value="biweekly">{rc.recurrence.biweekly}</option>
+                    <option value="monthly">{rc.recurrence.monthly}</option>
+                  </Select>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="rc-weeks">{rc.weeksAheadLabel}</Label>
-                <Input
-                  id="rc-weeks"
-                  name="generate_weeks_ahead"
-                  type="number"
-                  min="1"
-                  max="12"
-                  defaultValue="4"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="rc-season-start">{rc.seasonStartLabel}</Label>
+                  <Input id="rc-season-start" name="season_start_date" type="date" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="rc-season-end">{rc.seasonEndLabel}</Label>
+                  <Input id="rc-season-end" name="season_end_date" type="date" />
+                </div>
               </div>
-            </div>
-            <SheetFooter>
-              <Button type="submit">{rc.create}</Button>
-            </SheetFooter>
-          </form>
-        </SheetContent>
-      </Sheet>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="rc-location">{form.meetingLocation}</Label>
+                  <Select id="rc-location" name="meeting_location_id">
+                    <option value="">{form.selectLocation}</option>
+                    {meetingLocations.map((loc) => (
+                      <option key={loc.id} value={loc.id}>
+                        {loc.name}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="rc-pace">{form.paceGroup}</Label>
+                  <Select id="rc-pace" name="pace_group_id">
+                    <option value="">{form.selectPace}</option>
+                    {paceGroups.map((pg) => (
+                      <option key={pg.id} value={pg.id}>
+                        {pg.name}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="rc-distance">{form.distance}</Label>
+                  <Input
+                    id="rc-distance"
+                    name="default_distance_km"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="rc-capacity">{form.capacity}</Label>
+                  <Input id="rc-capacity" name="default_capacity" type="number" min="1" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="rc-weeks">{rc.weeksAheadLabel}</Label>
+                  <Input
+                    id="rc-weeks"
+                    name="generate_weeks_ahead"
+                    type="number"
+                    min="1"
+                    max="12"
+                    defaultValue="4"
+                  />
+                </div>
+              </div>
+              <SheetFooter>
+                <Button type="submit">{rc.create}</Button>
+              </SheetFooter>
+            </form>
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }

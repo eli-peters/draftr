@@ -12,7 +12,7 @@ import {
   getPaceGroups,
   getClubTags,
 } from '@/lib/rides/queries';
-import { getPendingMemberCount, getPinnedAnnouncement } from '@/lib/manage/queries';
+import { getPendingMemberCount } from '@/lib/manage/queries';
 import { createClient } from '@/lib/supabase/server';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
@@ -20,7 +20,7 @@ import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { GreetingSection } from '@/components/dashboard/greeting-section';
 import { ActionBar } from '@/components/dashboard/action-bar';
 import { FilterableRideFeed } from '@/components/rides/filterable-ride-feed';
-import { AnnouncementBanner } from '@/components/dashboard/announcement-banner';
+
 import { EmptyState } from '@/components/ui/empty-state';
 import type { UserRole } from '@/config/navigation';
 
@@ -54,7 +54,6 @@ export default async function HomePage() {
     weatherWatchRide,
     pendingMemberCount,
     ridesNeedingLeaderCount,
-    pinnedAnnouncement,
     rides,
     paceGroups,
     tags,
@@ -65,7 +64,6 @@ export default async function HomePage() {
     isLeader ? getLeaderWeatherWatchRide(userId, membership.club_id) : null,
     isAdmin ? getPendingMemberCount(membership.club_id) : 0,
     isAdmin ? getRidesNeedingLeaderCount(membership.club_id) : 0,
-    getPinnedAnnouncement(membership.club_id),
     getUpcomingRides(membership.club_id, userId),
     getPaceGroups(membership.club_id),
     getClubTags(membership.club_id),
@@ -90,13 +88,6 @@ export default async function HomePage() {
           userRole={userRole}
         />
       </div>
-
-      {/* Pinned announcement banner */}
-      {pinnedAnnouncement && (
-        <div className="mt-6">
-          <AnnouncementBanner announcement={pinnedAnnouncement} />
-        </div>
-      )}
 
       {/* Ride feed — identical for all roles */}
       {rides.length > 0 ? (

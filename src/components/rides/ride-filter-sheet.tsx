@@ -117,7 +117,7 @@ export function RideFilterSheet({
             className={
               isMobile
                 ? 'flex max-h-(--sheet-height-lg) flex-col'
-                : 'flex w-(--sheet-width-filter) flex-col'
+                : 'flex w-(--sheet-width-sidebar) flex-col'
             }
           >
             {/* Header with title and clear action */}

@@ -318,6 +318,8 @@ const mockAnnouncements = [
     is_pinned: true,
     published_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
     created_by_name: 'Alex Johnson',
+    announcement_type: 'info',
+    is_dismissible: true,
   },
   {
     id: 'ann-2',
@@ -326,6 +328,8 @@ const mockAnnouncements = [
     is_pinned: false,
     published_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
     created_by_name: 'Sam Rivera',
+    announcement_type: 'warning',
+    is_dismissible: true,
   },
 ];
 
@@ -497,8 +501,8 @@ export default function CardShowcasePage() {
         />
       </Section>
 
-      {/* 6. My Schedule Sections */}
-      <Section title="6. My Schedule Sections">
+      {/* 6. Schedule Sections */}
+      <Section title="6. Schedule Sections">
         <MyScheduleSections
           upcoming={[...mockUserRides.upcoming, ...mockUserRides.waitlisted]}
           past={mockUserRides.past}

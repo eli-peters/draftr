@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { appContent } from '@/content/app';
-import type { MemberRole, MemberStatus } from '@/types/database';
+import type { AnnouncementType, MemberRole, MemberStatus } from '@/types/database';
 
 const { common, errors } = appContent;
 
@@ -114,7 +114,13 @@ export async function approveMember(clubId: string, userId: string) {
  */
 export async function createAnnouncement(
   clubId: string,
-  data: { title: string; body: string; is_pinned?: boolean },
+  data: {
+    title: string;
+    body: string;
+    announcement_type?: AnnouncementType;
+    is_dismissible?: boolean;
+    expires_at?: string | null;
+  },
 ) {
   const supabase = await createClient();
   const {
@@ -129,7 +135,9 @@ export async function createAnnouncement(
       created_by: user.id,
       title: data.title,
       body: data.body,
-      is_pinned: data.is_pinned ?? false,
+      announcement_type: data.announcement_type ?? 'info',
+      is_dismissible: data.is_dismissible ?? true,
+      expires_at: data.expires_at ?? null,
     })
     .select('id')
     .single();
@@ -170,7 +178,13 @@ export async function createAnnouncement(
  */
 export async function updateAnnouncement(
   announcementId: string,
-  data: { title: string; body: string; is_pinned?: boolean },
+  data: {
+    title: string;
+    body: string;
+    announcement_type?: AnnouncementType;
+    is_dismissible?: boolean;
+    expires_at?: string | null;
+  },
 ) {
   const supabase = await createClient();
   const {
@@ -183,7 +197,9 @@ export async function updateAnnouncement(
     .update({
       title: data.title,
       body: data.body,
-      is_pinned: data.is_pinned ?? false,
+      announcement_type: data.announcement_type ?? 'info',
+      is_dismissible: data.is_dismissible ?? true,
+      expires_at: data.expires_at ?? null,
     })
     .eq('id', announcementId);
 
@@ -212,7 +228,33 @@ export async function deleteAnnouncement(announcementId: string) {
 }
 
 /**
+ * Dismiss an announcement for the current user.
+ * Persists the dismissal so it survives page refreshes and device switches.
+ */
+export async function dismissAnnouncement(announcementId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: common.notAuthenticated };
+
+  const { error } = await supabase.from('announcement_dismissals').upsert(
+    {
+      announcement_id: announcementId,
+      user_id: user.id,
+    },
+    { onConflict: 'announcement_id,user_id' },
+  );
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/');
+  return { success: true };
+}
+
+/**
  * Toggle pin on an announcement.
+ * Enforces one-pinned-max per club: pinning one unpins all others.
  */
 export async function toggleAnnouncementPin(
   announcementId: string,

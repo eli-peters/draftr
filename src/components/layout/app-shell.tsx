@@ -1,6 +1,8 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import type { NavItem } from '@/config/navigation';
+import { routes } from '@/config/routes';
 import type { Notification } from '@/components/notifications/notification-item';
 import { BottomNav } from './bottom-nav';
 import { HeaderBar } from './header-bar';
@@ -21,6 +23,7 @@ interface AppShellProps {
   user: AppShellUser;
   notifications?: Notification[];
   unreadNotificationCount?: number;
+  banner?: React.ReactNode;
 }
 
 export function AppShell({
@@ -30,7 +33,11 @@ export function AppShell({
   user,
   notifications,
   unreadNotificationCount,
+  banner,
 }: AppShellProps) {
+  const pathname = usePathname();
+  const isHome = pathname === routes.home;
+
   return (
     <div className="min-h-screen md:flex">
       <SidebarNav items={navItems} appName={appName} />
@@ -44,6 +51,8 @@ export function AppShell({
           notifications={notifications ?? []}
           unreadNotificationCount={unreadNotificationCount ?? 0}
         />
+
+        {isHome && banner}
 
         <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col pb-20 md:pb-0">
           <PageTransitionWrapper>{children}</PageTransitionWrapper>
