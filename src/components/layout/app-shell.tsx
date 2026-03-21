@@ -19,7 +19,6 @@ interface AppShellUser {
 interface AppShellProps {
   children: React.ReactNode;
   navItems: NavItem[];
-  appName: string;
   user: AppShellUser;
   notifications?: Notification[];
   unreadNotificationCount?: number;
@@ -29,7 +28,6 @@ interface AppShellProps {
 export function AppShell({
   children,
   navItems,
-  appName,
   user,
   notifications,
   unreadNotificationCount,
@@ -40,7 +38,7 @@ export function AppShell({
 
   return (
     <div className="min-h-screen md:flex">
-      <SidebarNav items={navItems} appName={appName} />
+      <SidebarNav items={navItems} />
 
       <div className="flex min-h-screen flex-1 flex-col">
         <HeaderBar

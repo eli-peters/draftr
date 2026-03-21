@@ -1,8 +1,10 @@
 'use client';
 
-import { UsersThree } from '@phosphor-icons/react/dist/ssr';
+import Link from 'next/link';
 import { NotificationBell } from './notification-bell';
 import { AvatarMenu } from './avatar-menu';
+import { AppLogo } from './app-logo';
+import { routes } from '@/config/routes';
 import type { Notification } from '@/components/notifications/notification-item';
 
 interface HeaderBarProps {
@@ -27,13 +29,11 @@ export function HeaderBar({
   unreadNotificationCount,
 }: HeaderBarProps) {
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background px-5 md:px-8 pt-[env(safe-area-inset-top)]">
+    <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-surface-default px-5 md:px-8 pt-[env(safe-area-inset-top)]">
       {/* Left: team logo (mobile only — sidebar has brand on desktop) */}
-      <div className="flex items-center gap-2 md:hidden">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-          <UsersThree className="h-4.5 w-4.5 text-primary" />
-        </div>
-      </div>
+      <Link href={routes.home} className="flex items-center gap-2 md:hidden">
+        <AppLogo className="h-7 w-7 text-primary" />
+      </Link>
 
       {/* Spacer on desktop to push right items to the end */}
       <div className="hidden md:block" />

@@ -53,7 +53,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <AppShell
       navItems={navItems}
-      appName={appContent.meta.shortName}
       user={{
         name: userName,
         email: userEmail,

@@ -5,28 +5,26 @@ import { usePathname } from 'next/navigation';
 import type { NavItem } from '@/config/navigation';
 import { NavIcon } from './nav-icon';
 import { cn } from '@/lib/utils';
+import { AppLogo } from './app-logo';
+import { routes } from '@/config/routes';
 
 interface SidebarNavProps {
   items: NavItem[];
-  appName: string;
 }
 
 /**
  * Desktop sidebar navigation.
  * Hidden on mobile (below md breakpoint).
  */
-export function SidebarNav({ items, appName }: SidebarNavProps) {
+export function SidebarNav({ items }: SidebarNavProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:w-60 md:flex-col md:border-r md:border-border md:bg-background">
+    <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:w-60 md:flex-col md:border-r md:border-border md:bg-surface-default">
       {/* Brand header */}
-      <div className="flex h-14 items-center gap-3 px-5 border-b border-border">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-          <span className="text-sm font-bold text-primary-foreground tracking-tight">D</span>
-        </div>
-        <span className="text-lg font-bold tracking-tight text-foreground">{appName}</span>
-      </div>
+      <Link href={routes.home} className="flex h-14 items-center gap-3 px-5 border-b border-border">
+        <AppLogo className="h-7 w-7 text-primary" />
+      </Link>
 
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
         {items.map((item) => {
