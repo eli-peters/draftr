@@ -24,7 +24,7 @@ import { AnnouncementBanner } from '@/components/dashboard/announcement-banner';
 import { EmptyState } from '@/components/ui/empty-state';
 import type { UserRole } from '@/config/navigation';
 
-const { dashboard } = appContent;
+const { dashboard, rides: ridesContent } = appContent;
 
 export default async function HomePage() {
   const membership = await getUserClubMembership();
@@ -34,13 +34,15 @@ export default async function HomePage() {
   const isLeader = userRole === 'ride_leader' || userRole === 'admin';
   const isAdmin = userRole === 'admin';
 
+  const userId = membership.user_id;
+
+  // Fetch profile for greeting
   const supabase = await createClient();
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
-  const { data: profile } = authUser
-    ? await supabase.from('users').select('display_name, full_name').eq('id', authUser.id).single()
-    : { data: null };
+  const { data: profile } = await supabase
+    .from('users')
+    .select('display_name, full_name')
+    .eq('id', userId)
+    .single();
 
   const firstName = profile?.display_name ?? profile?.full_name?.split(' ')[0] ?? '';
 
@@ -57,22 +59,20 @@ export default async function HomePage() {
     paceGroups,
     tags,
   ] = await Promise.all([
-    authUser ? getUserNextSignup(authUser.id, membership.club_id) : null,
-    isLeader && authUser ? getLeaderNextLedRide(authUser.id, membership.club_id) : null,
-    authUser ? getUserNextWaitlistedRide(authUser.id, membership.club_id) : null,
-    isLeader && authUser ? getLeaderWeatherWatchRide(authUser.id, membership.club_id) : null,
+    getUserNextSignup(userId, membership.club_id),
+    isLeader ? getLeaderNextLedRide(userId, membership.club_id) : null,
+    getUserNextWaitlistedRide(userId, membership.club_id),
+    isLeader ? getLeaderWeatherWatchRide(userId, membership.club_id) : null,
     isAdmin ? getPendingMemberCount(membership.club_id) : 0,
     isAdmin ? getRidesNeedingLeaderCount(membership.club_id) : 0,
     getPinnedAnnouncement(membership.club_id),
-    getUpcomingRides(membership.club_id),
+    getUpcomingRides(membership.club_id, userId),
     getPaceGroups(membership.club_id),
     getClubTags(membership.club_id),
   ]);
 
   const subtitle =
-    rides.length > 0
-      ? `${rides.length} ride${rides.length === 1 ? '' : 's'} coming up`
-      : dashboard.noRidesDescription;
+    rides.length > 0 ? ridesContent.feed.ridesComingUp(rides.length) : dashboard.noRidesDescription;
 
   return (
     <DashboardShell>
@@ -109,6 +109,7 @@ export default async function HomePage() {
               heading={dashboard.feed.heading}
               emptyTitle={dashboard.noRides}
               emptyDescription={dashboard.noRidesDescription}
+              cardVariant="home"
             />
           </Suspense>
         </div>

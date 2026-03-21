@@ -1,22 +1,44 @@
-import { Path, Users, Mountains, Clock, WarningCircle, XCircle } from '@phosphor-icons/react/dist/ssr';
-import { Badge } from '@/components/ui/badge';
+import { ArrowsClockwise, Users, WarningCircle, XCircle } from '@phosphor-icons/react/dist/ssr';
 import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
-import { units } from '@/config/formatting';
+import { separators, units, formatTime } from '@/config/formatting';
 import { RideStatus } from '@/config/statuses';
 
 const { rides: ridesContent } = appContent;
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Shared styles — design system token classes
 // ---------------------------------------------------------------------------
 
-function nonNullable<T>(value: T): value is NonNullable<T> {
-  return value != null;
+/** overline token: font-sans text-[0.6875rem] font-semibold uppercase tracking-[0.06em] */
+export const OVERLINE = 'font-sans text-[0.6875rem] font-semibold uppercase tracking-[0.06em]';
+
+// ---------------------------------------------------------------------------
+// CardBanner — universal full-width card header banner
+// ---------------------------------------------------------------------------
+
+interface CardBannerProps {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  bgClass: string;
+  textClass: string;
+}
+
+export function CardBanner({ icon: Icon, label, bgClass, textClass }: CardBannerProps) {
+  return (
+    <div className={cn('flex w-full items-center gap-2 overflow-clip px-6 py-2', bgClass)}>
+      <Icon className={cn('size-3.5 shrink-0', textClass)} />
+      <span
+        className={cn('font-sans text-xs font-medium leading-4.25 whitespace-nowrap', textClass)}
+      >
+        {label}
+      </span>
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
-// RideBanner
+// RideBanner — convenience wrapper for ride status banners
 // ---------------------------------------------------------------------------
 
 interface RideBannerProps {
@@ -27,31 +49,40 @@ export function RideBanner({ type }: RideBannerProps) {
   const isWarning = type === RideStatus.WEATHER_WATCH;
 
   return (
-    <div
-      className={cn(
-        'flex w-full items-center gap-2 overflow-clip px-6 py-2',
-        isWarning ? 'bg-feedback-warning-bg' : 'bg-feedback-error-bg',
-      )}
-    >
-      {isWarning ? (
-        <WarningCircle className="size-3.5 shrink-0 text-feedback-warning-text" />
-      ) : (
-        <XCircle className="size-3.5 shrink-0 text-feedback-error-text" />
-      )}
-      <span
-        className={cn(
-          'font-sans text-xs font-medium leading-[17px] tracking-[0.012px] whitespace-nowrap',
-          isWarning ? 'text-feedback-warning-text' : 'text-feedback-error-text',
-        )}
-      >
-        {isWarning ? ridesContent.status.weatherWatch : ridesContent.status.cancelled}
+    <CardBanner
+      icon={isWarning ? WarningCircle : XCircle}
+      label={isWarning ? ridesContent.status.weatherWatch : ridesContent.status.cancelled}
+      bgClass={isWarning ? 'bg-feedback-warning-bg' : 'bg-feedback-error-bg'}
+      textClass={isWarning ? 'text-feedback-warning-text' : 'text-feedback-error-text'}
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// DateTimeRow — shared date + separator + time row
+// ---------------------------------------------------------------------------
+
+interface DateTimeRowProps {
+  date: string;
+  time: string;
+  isRecurring?: boolean;
+}
+
+export function DateTimeRow({ date, time, isRecurring }: DateTimeRowProps) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className={cn(OVERLINE, 'text-primary')}>{date}</span>
+      <span className="font-sans text-[13px] font-bold leading-5 text-muted-foreground/40">
+        {separators.dot.trim()}
       </span>
+      <span className={cn(OVERLINE, 'text-muted-foreground')}>{time}</span>
+      {isRecurring && <ArrowsClockwise className="h-3.5 w-3.5 text-muted-foreground/50" />}
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// MetadataStatsLarge — stacked value + label columns
+// MetadataStats — stacked label/value columns (Distance, Elevation)
 // ---------------------------------------------------------------------------
 
 interface MetadataStatsProps {
@@ -59,89 +90,30 @@ interface MetadataStatsProps {
   elevationM: number | null;
 }
 
-export function MetadataStatsLarge({ distanceKm, elevationM }: MetadataStatsProps) {
+export function MetadataStats({ distanceKm, elevationM }: MetadataStatsProps) {
   const items = [
     distanceKm != null
-      ? { value: `${distanceKm}${units.km}`, label: ridesContent.card.distance }
+      ? { label: ridesContent.card.distance, value: `${distanceKm}${units.km}` }
       : null,
     elevationM != null
-      ? { value: `${elevationM}${units.m}`, label: ridesContent.card.elevation }
+      ? { label: ridesContent.card.elevation, value: `${elevationM}${units.m}` }
       : null,
-  ].filter(nonNullable);
+  ].filter(Boolean) as { label: string; value: string }[];
 
   if (items.length === 0) return null;
 
   return (
-    <div className="flex items-start gap-6">
+    <div className="flex items-start gap-4.5">
       {items.map((item) => (
         <div key={item.label} className="flex flex-col items-start">
-          <span className="font-mono text-base font-medium leading-[21px] tracking-[-0.16px] text-text-primary">
-            {item.value}
-          </span>
-          <span className="font-mono text-xs font-normal leading-[17px] text-text-secondary">
+          <span className="font-sans text-[0.6875rem] font-normal leading-5 text-muted-foreground">
             {item.label}
           </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// MetadataStatsMedium — inline row with icons
-// ---------------------------------------------------------------------------
-
-export function MetadataStatsMedium({ distanceKm, elevationM }: MetadataStatsProps) {
-  const items = [
-    distanceKm != null ? { icon: Path, value: `${distanceKm}${units.km}` } : null,
-    elevationM != null ? { icon: Mountains, value: `${elevationM}${units.m}` } : null,
-  ].filter(nonNullable);
-
-  if (items.length === 0) return null;
-
-  return (
-    <div className="flex items-center gap-4">
-      {items.map((item) => (
-        <div key={item.value} className="flex items-center gap-1">
-          <item.icon className="size-[11px] text-text-primary" />
-          <span className="font-mono text-[10px] font-normal leading-3.5 text-text-primary">
+          <span className="font-mono text-xs font-bold leading-4.25 text-foreground">
             {item.value}
           </span>
         </div>
       ))}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// VibeTags — row of small tags with overflow "+N"
-// ---------------------------------------------------------------------------
-
-interface VibeTagsProps {
-  tags: { id: string; name: string }[];
-  maxVisible?: number;
-}
-
-const VIBE_TAG_CLASS = 'px-1.5 py-1 text-[10px] leading-3.5 tracking-[0.2px]';
-
-export function VibeTags({ tags, maxVisible = 3 }: VibeTagsProps) {
-  if (tags.length === 0) return null;
-
-  const visible = tags.slice(0, maxVisible);
-  const overflowCount = tags.length - maxVisible;
-
-  return (
-    <div className="flex flex-wrap items-start gap-1.5">
-      {visible.map((tag) => (
-        <Badge key={tag.id} variant="vibe" shape="subtle" size="sm" className={VIBE_TAG_CLASS}>
-          {tag.name}
-        </Badge>
-      ))}
-      {overflowCount > 0 && (
-        <Badge variant="vibe" shape="subtle" size="sm" className={VIBE_TAG_CLASS}>
-          +{overflowCount}
-        </Badge>
-      )}
     </div>
   );
 }
@@ -160,8 +132,8 @@ export function RiderCount({ signupCount, capacity }: RiderCountProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <Users className="size-4 text-text-tertiary" />
-      <span className="font-mono text-[10px] font-normal leading-3.5 text-text-tertiary">
+      <Users className="size-4 text-muted-foreground" />
+      <span className="font-mono text-[10px] font-normal leading-3.5 text-muted-foreground">
         {spotsText}
       </span>
     </div>
@@ -185,9 +157,9 @@ export function CapacityBarLarge({ signupCount, capacity }: CapacityBarLargeProp
   return (
     <div className="flex w-full items-center gap-2">
       <div className="relative flex flex-1 overflow-clip rounded-full">
-        <div className="h-1 w-full bg-accent-primary-subtle" />
+        <div className="h-1 w-full bg-muted" />
         <div
-          className="absolute left-0 top-0 h-1 rounded-full bg-accent-primary-default"
+          className="absolute left-0 top-0 h-1 rounded-full bg-primary"
           style={{ width: `${percent}%` }}
         />
       </div>

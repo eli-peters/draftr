@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Outfit, DM_Sans, JetBrains_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from '@/components/ui/sonner';
 import { COLOR_MODE_SCRIPT } from '@/lib/color-mode-script';
 import { appContent } from '@/content/app';
 import './globals.css';
@@ -93,7 +94,10 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: COLOR_MODE_SCRIPT }} />
       </head>
       <body className="antialiased">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

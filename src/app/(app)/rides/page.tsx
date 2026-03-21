@@ -18,7 +18,7 @@ export default async function RidesPage() {
   if (!membership) redirect(routes.signIn);
 
   const [rides, paceGroups, tags] = await Promise.all([
-    getUpcomingRides(membership.club_id),
+    getUpcomingRides(membership.club_id, membership.user_id),
     getPaceGroups(membership.club_id),
     getClubTags(membership.club_id),
   ]);
@@ -31,7 +31,7 @@ export default async function RidesPage() {
         </h1>
         <p className="mt-2 text-base text-muted-foreground">
           {rides.length > 0
-            ? `${rides.length} ride${rides.length === 1 ? '' : 's'} coming up`
+            ? ridesContent.feed.ridesComingUp(rides.length)
             : ridesContent.feed.emptyState.description}
         </p>
       </div>

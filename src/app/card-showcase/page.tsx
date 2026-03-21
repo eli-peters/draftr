@@ -5,7 +5,7 @@ import { ActionBar } from '@/components/dashboard/action-bar';
 import { QuickActions } from '@/components/dashboard/quick-actions';
 import { StatsGrid } from '@/components/dashboard/stats-grid';
 import { LeaderLeadsSection } from '@/components/dashboard/leader-leads-section';
-import { MyRidesTabs } from '@/app/(app)/my-rides/my-rides-tabs';
+import { MyScheduleSections } from '@/app/(app)/my-rides/my-schedule-sections';
 import { NotificationsList } from '@/app/(app)/notifications/notifications-list';
 import { SeasonDatesCard } from '@/components/manage/season-dates-card';
 import { MemberList } from '@/components/manage/member-list';
@@ -84,6 +84,7 @@ const mockRide: RideWithDetails = {
   ],
   signup_count: 14,
   creator: { id: 'user-1', full_name: 'Alex Johnson', display_name: null, avatar_url: null },
+  current_user_signup_status: null,
 };
 
 const mockWeatherRide: RideWithDetails = {
@@ -121,6 +122,7 @@ const mockUserRides = {
       capacity: 20,
       signed_up_at: '2026-03-15T10:00:00Z',
       waitlist_position: null,
+      signup_status: 'confirmed' as const,
     },
     {
       id: 'ride-2',
@@ -134,6 +136,7 @@ const mockUserRides = {
       capacity: 12,
       signed_up_at: '2026-03-16T10:00:00Z',
       waitlist_position: null,
+      signup_status: 'confirmed' as const,
     },
   ],
   past: [
@@ -149,6 +152,7 @@ const mockUserRides = {
       capacity: 15,
       signed_up_at: '2026-03-10T08:00:00Z',
       waitlist_position: null,
+      signup_status: 'checked_in' as const,
     },
   ],
   waitlisted: [
@@ -164,6 +168,7 @@ const mockUserRides = {
       capacity: 15,
       signed_up_at: '2026-03-18T12:00:00Z',
       waitlist_position: 2,
+      signup_status: 'waitlisted' as const,
     },
   ],
 };
@@ -492,12 +497,11 @@ export default function CardShowcasePage() {
         />
       </Section>
 
-      {/* 6. My Rides Tabs */}
-      <Section title="6. My Rides Tabs">
-        <MyRidesTabs
-          upcoming={mockUserRides.upcoming}
+      {/* 6. My Schedule Sections */}
+      <Section title="6. My Schedule Sections">
+        <MyScheduleSections
+          upcoming={[...mockUserRides.upcoming, ...mockUserRides.waitlisted]}
           past={mockUserRides.past}
-          waitlisted={mockUserRides.waitlisted}
         />
       </Section>
 

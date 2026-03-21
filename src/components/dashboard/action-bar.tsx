@@ -14,8 +14,9 @@ import {
 import { Card } from '@/components/ui/card';
 import { CapacityBar } from '@/components/ui/capacity-bar';
 import { MetadataItem } from '@/components/ui/metadata-item';
-import { SectionHeading } from '@/components/ui/section-heading';
+import { OVERLINE } from '@/components/rides/ride-card-parts';
 import { appContent } from '@/content/app';
+import { separators, formatTime } from '@/config/formatting';
 import { routes } from '@/config/routes';
 import { getRelativeDay } from '@/lib/utils';
 import type { UserRole } from '@/config/navigation';
@@ -83,9 +84,9 @@ function ActionCard({
   return (
     <Link href={href} className="group block">
       <Card className="p-5">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="mb-3 flex items-center gap-2">
           <Icon className="h-4 w-4 text-primary" />
-          <SectionHeading as="span">{label}</SectionHeading>
+          <span className={`${OVERLINE} text-muted-foreground`}>{label}</span>
           <CaretRight className="ml-auto h-3.5 w-3.5 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5" />
         </div>
         {children}
@@ -124,12 +125,14 @@ export function ActionBar({
           icon={CalendarDots}
           href={routes.ride(nextSignup.id)}
         >
-          <h3 className="text-base font-semibold text-foreground leading-tight">
+          <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
             {nextSignup.title}
           </h3>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            <span className="font-medium text-primary">
-              {getRelativeDay(parseISO(nextSignup.ride_date))} · {nextSignup.start_time.slice(0, 5)}
+            <span className={`${OVERLINE} text-primary`}>
+              {getRelativeDay(parseISO(nextSignup.ride_date))}
+              {separators.dot}
+              {formatTime(nextSignup.start_time)}
             </span>
             {nextSignup.meeting_location_name && (
               <MetadataItem icon={MapPin}>{nextSignup.meeting_location_name}</MetadataItem>
@@ -145,13 +148,14 @@ export function ActionBar({
           icon={Queue}
           href={routes.ride(nextWaitlistedRide.id)}
         >
-          <h3 className="text-base font-semibold text-foreground leading-tight">
+          <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
             {nextWaitlistedRide.title}
           </h3>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            <span className="font-medium text-primary">
-              {getRelativeDay(parseISO(nextWaitlistedRide.ride_date))} ·{' '}
-              {nextWaitlistedRide.start_time.slice(0, 5)}
+            <span className={`${OVERLINE} text-primary`}>
+              {getRelativeDay(parseISO(nextWaitlistedRide.ride_date))}
+              {separators.dot}
+              {formatTime(nextWaitlistedRide.start_time)}
             </span>
             <MetadataItem className="text-warning">
               {appContent.myRides.waitlistPosition(nextWaitlistedRide.waitlist_position)}
@@ -167,13 +171,14 @@ export function ActionBar({
           icon={FlagBanner}
           href={routes.ride(nextLedRide.id)}
         >
-          <h3 className="text-base font-semibold text-foreground leading-tight">
+          <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
             {nextLedRide.title}
           </h3>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            <span className="font-medium text-primary">
-              {getRelativeDay(parseISO(nextLedRide.ride_date))} ·{' '}
-              {nextLedRide.start_time.slice(0, 5)}
+            <span className={`${OVERLINE} text-primary`}>
+              {getRelativeDay(parseISO(nextLedRide.ride_date))}
+              {separators.dot}
+              {formatTime(nextLedRide.start_time)}
             </span>
             <MetadataItem icon={Users}>
               {content.actionBar.signedUp(nextLedRide.signup_count, nextLedRide.capacity)}
@@ -194,7 +199,7 @@ export function ActionBar({
           icon={CloudRain}
           href={routes.ride(weatherWatchRide.id)}
         >
-          <h3 className="text-base font-semibold text-foreground leading-tight">
+          <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
             {weatherWatchRide.title}
           </h3>
           <p className="mt-1 text-sm text-warning">

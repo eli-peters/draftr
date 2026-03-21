@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { SignupStatus } from '@/config/statuses';
 import type { RideWithDetails, CommentWithUser, RidePickupWithLocation } from '@/types/database';
 
 /** Select string shared by queries that return RideWithDetails. */
@@ -8,26 +9,39 @@ const RIDE_WITH_DETAILS_SELECT = `
   pace_group:pace_groups(*),
   ride_tags(tag:tags(*)),
   creator:users!rides_created_by_fkey(id, full_name, display_name, avatar_url),
-  ride_signups(status)
+  ride_signups(status, user_id)
 `;
 
 /** Map a raw Supabase ride row (with joins) into a RideWithDetails shape. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function toRideWithDetails(ride: any): RideWithDetails {
-  const signups = (ride.ride_signups ?? []) as { status: string }[];
+function toRideWithDetails(ride: any, currentUserId?: string): RideWithDetails {
+  const signups = (ride.ride_signups ?? []) as { status: string; user_id: string }[];
+  const userSignup = currentUserId
+    ? signups.find(
+        (s) =>
+          s.user_id === currentUserId &&
+          (s.status === SignupStatus.CONFIRMED || s.status === SignupStatus.WAITLISTED),
+      )
+    : undefined;
+
   return {
     ...ride,
     tags: ride.ride_tags?.map((rt: { tag: unknown }) => rt.tag).filter(Boolean) ?? [],
-    signup_count: signups.filter((s) => s.status === 'confirmed' || s.status === 'checked_in')
-      .length,
+    signup_count: signups.filter(
+      (s) => s.status === SignupStatus.CONFIRMED || s.status === SignupStatus.CHECKED_IN,
+    ).length,
     creator: ride.creator ?? null,
+    current_user_signup_status: (userSignup?.status as 'confirmed' | 'waitlisted') ?? null,
   } as RideWithDetails;
 }
 
 /**
  * Fetch upcoming rides for a club, with joined relations.
  */
-export async function getUpcomingRides(clubId: string): Promise<RideWithDetails[]> {
+export async function getUpcomingRides(
+  clubId: string,
+  userId?: string,
+): Promise<RideWithDetails[]> {
   const supabase = await createClient();
   const today = new Date().toISOString().split('T')[0];
 
@@ -45,7 +59,7 @@ export async function getUpcomingRides(clubId: string): Promise<RideWithDetails[
     return [];
   }
 
-  return (data ?? []).map(toRideWithDetails);
+  return (data ?? []).map((ride) => toRideWithDetails(ride, userId));
 }
 
 /**
@@ -299,7 +313,9 @@ export async function getUserClubMembership() {
     .eq('status', 'active')
     .single();
 
-  return data;
+  if (!data) return null;
+
+  return { ...data, user_id: user.id };
 }
 
 /**

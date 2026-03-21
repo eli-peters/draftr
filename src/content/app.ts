@@ -113,6 +113,7 @@ export const appContent = {
   rides: {
     feed: {
       heading: 'Upcoming Rides',
+      ridesComingUp: (count: number) => `${count} ride${count === 1 ? '' : 's'} coming up`,
       emptyState: {
         title: 'No upcoming rides',
         description: 'Check back soon — ride leaders will post new rides here.',
@@ -145,10 +146,22 @@ export const appContent = {
     card: {
       drop: 'Drop',
       riders: 'riders',
-      distance: 'distance',
-      elevation: 'elevation',
-      time: 'time',
+      distance: 'Distance',
+      elevation: 'Elevation',
+      time: 'Time',
       joinRide: 'Join ride',
+      joinWaitlist: 'Join waitlist',
+      signedUp: 'Signed up',
+      signupSuccess: (rideName: string) => `You're in for ${rideName}`,
+      signupDescription: "You'll get a reminder before the ride",
+      waitlisted: 'Waitlisted',
+      waitlistSuccess: (rideName: string) => `On the waitlist for ${rideName}`,
+      waitlistDescription: "We'll notify you if a spot opens up",
+      signupError: "Couldn't sign up — try again",
+      undone: (rideName: string) => `Removed from ${rideName}`,
+      undoneDescription: 'You can rejoin anytime before the ride',
+      undo: 'Undo',
+      rateLimited: 'Easy there — give it a moment',
       spotsRemaining: (remaining: number) => `${remaining} spots left`,
       ledBy: (name: string) => `Led by ${name}`,
     },

@@ -25,6 +25,7 @@ interface FilterableRideFeedProps {
   heading?: string;
   emptyTitle: string;
   emptyDescription: string;
+  cardVariant?: 'home' | 'rides';
 }
 
 export function FilterableRideFeed({
@@ -34,6 +35,7 @@ export function FilterableRideFeed({
   heading,
   emptyTitle,
   emptyDescription,
+  cardVariant = 'rides',
 }: FilterableRideFeedProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -123,7 +125,7 @@ export function FilterableRideFeed({
       {sorted.length > 0 ? (
         <div className="flex flex-col gap-4">
           {sorted.map((ride) => (
-            <RideCard key={ride.id} ride={ride} />
+            <RideCard key={ride.id} ride={ride} variant={cardVariant} />
           ))}
         </div>
       ) : (

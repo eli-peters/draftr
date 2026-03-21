@@ -22,6 +22,11 @@ export const separators = {
   at: ' at ',
 } as const;
 
+/** Format a time string (HH:MM:SS) to display format (HH:MM) */
+export function formatTime(time: string): string {
+  return time.slice(0, 5);
+}
+
 /** Measurement unit suffixes */
 export const units = {
   km: ' km',

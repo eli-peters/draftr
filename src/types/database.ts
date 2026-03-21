@@ -244,4 +244,5 @@ export interface RideWithDetails extends Ride {
   tags: Tag[];
   signup_count: number;
   creator: Pick<User, 'id' | 'full_name' | 'display_name' | 'avatar_url'> | null;
+  current_user_signup_status: 'confirmed' | 'waitlisted' | null;
 }
