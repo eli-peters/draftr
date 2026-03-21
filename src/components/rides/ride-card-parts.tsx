@@ -1,29 +1,30 @@
-import {
-  MapPin,
-  Path,
-  Users,
-  Mountains,
-  Clock,
-  WarningCircle,
-  XCircle,
-} from '@phosphor-icons/react/dist/ssr';
+import { Path, Users, Mountains, Clock, WarningCircle, XCircle } from '@phosphor-icons/react/dist/ssr';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
 import { units } from '@/config/formatting';
+import { RideStatus } from '@/config/statuses';
 
 const { rides: ridesContent } = appContent;
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function nonNullable<T>(value: T): value is NonNullable<T> {
+  return value != null;
+}
 
 // ---------------------------------------------------------------------------
 // RideBanner
 // ---------------------------------------------------------------------------
 
 interface RideBannerProps {
-  type: 'weather_watch' | 'cancelled';
+  type: typeof RideStatus.WEATHER_WATCH | typeof RideStatus.CANCELLED;
 }
 
 export function RideBanner({ type }: RideBannerProps) {
-  const isWarning = type === 'weather_watch';
+  const isWarning = type === RideStatus.WEATHER_WATCH;
 
   return (
     <div
@@ -53,23 +54,12 @@ export function RideBanner({ type }: RideBannerProps) {
 // MetadataStatsLarge — stacked value + label columns
 // ---------------------------------------------------------------------------
 
-interface MetadataStatsLargeProps {
+interface MetadataStatsProps {
   distanceKm: number | null;
   elevationM: number | null;
-  estimatedMinutes: number | null;
 }
 
-function formatDuration(minutes: number): string {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return `${hours}:${mins.toString().padStart(2, '0')}`;
-}
-
-export function MetadataStatsLarge({
-  distanceKm,
-  elevationM,
-  estimatedMinutes,
-}: MetadataStatsLargeProps) {
+export function MetadataStatsLarge({ distanceKm, elevationM }: MetadataStatsProps) {
   const items = [
     distanceKm != null
       ? { value: `${distanceKm}${units.km}`, label: ridesContent.card.distance }
@@ -77,10 +67,7 @@ export function MetadataStatsLarge({
     elevationM != null
       ? { value: `${elevationM}${units.m}`, label: ridesContent.card.elevation }
       : null,
-    estimatedMinutes != null
-      ? { value: formatDuration(estimatedMinutes), label: ridesContent.card.time }
-      : null,
-  ].filter(Boolean) as { value: string; label: string }[];
+  ].filter(nonNullable);
 
   if (items.length === 0) return null;
 
@@ -104,22 +91,11 @@ export function MetadataStatsLarge({
 // MetadataStatsMedium — inline row with icons
 // ---------------------------------------------------------------------------
 
-interface MetadataStatsMediumProps {
-  distanceKm: number | null;
-  elevationM: number | null;
-  estimatedMinutes: number | null;
-}
-
-export function MetadataStatsMedium({
-  distanceKm,
-  elevationM,
-  estimatedMinutes,
-}: MetadataStatsMediumProps) {
+export function MetadataStatsMedium({ distanceKm, elevationM }: MetadataStatsProps) {
   const items = [
     distanceKm != null ? { icon: Path, value: `${distanceKm}${units.km}` } : null,
     elevationM != null ? { icon: Mountains, value: `${elevationM}${units.m}` } : null,
-    estimatedMinutes != null ? { icon: Clock, value: formatDuration(estimatedMinutes) } : null,
-  ].filter(Boolean) as { icon: React.ComponentType<{ className?: string }>; value: string }[];
+  ].filter(nonNullable);
 
   if (items.length === 0) return null;
 
@@ -128,7 +104,7 @@ export function MetadataStatsMedium({
       {items.map((item) => (
         <div key={item.value} className="flex items-center gap-1">
           <item.icon className="size-[11px] text-text-primary" />
-          <span className="font-mono text-[10px] font-normal leading-[14px] text-text-primary">
+          <span className="font-mono text-[10px] font-normal leading-3.5 text-text-primary">
             {item.value}
           </span>
         </div>
@@ -146,6 +122,8 @@ interface VibeTagsProps {
   maxVisible?: number;
 }
 
+const VIBE_TAG_CLASS = 'px-1.5 py-1 text-[10px] leading-3.5 tracking-[0.2px]';
+
 export function VibeTags({ tags, maxVisible = 3 }: VibeTagsProps) {
   if (tags.length === 0) return null;
 
@@ -155,26 +133,37 @@ export function VibeTags({ tags, maxVisible = 3 }: VibeTagsProps) {
   return (
     <div className="flex flex-wrap items-start gap-1.5">
       {visible.map((tag) => (
-        <Badge
-          key={tag.id}
-          variant="vibe"
-          shape="subtle"
-          size="sm"
-          className="px-1.5 py-1 text-[10px] leading-[14px] tracking-[0.2px]"
-        >
+        <Badge key={tag.id} variant="vibe" shape="subtle" size="sm" className={VIBE_TAG_CLASS}>
           {tag.name}
         </Badge>
       ))}
       {overflowCount > 0 && (
-        <Badge
-          variant="vibe"
-          shape="subtle"
-          size="sm"
-          className="px-1.5 py-1 text-[10px] leading-[14px] tracking-[0.2px]"
-        >
+        <Badge variant="vibe" shape="subtle" size="sm" className={VIBE_TAG_CLASS}>
           +{overflowCount}
         </Badge>
       )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// RiderCount — icon + count text
+// ---------------------------------------------------------------------------
+
+interface RiderCountProps {
+  signupCount: number;
+  capacity: number | null;
+}
+
+export function RiderCount({ signupCount, capacity }: RiderCountProps) {
+  const spotsText = capacity != null ? `${signupCount}/${capacity}` : `${signupCount}`;
+
+  return (
+    <div className="flex items-center gap-2">
+      <Users className="size-4 text-text-tertiary" />
+      <span className="font-mono text-[10px] font-normal leading-3.5 text-text-tertiary">
+        {spotsText}
+      </span>
     </div>
   );
 }
@@ -192,7 +181,6 @@ export function CapacityBarLarge({ signupCount, capacity }: CapacityBarLargeProp
   if (capacity == null) return null;
 
   const percent = Math.min((signupCount / capacity) * 100, 100);
-  const spotsText = `${signupCount}/${capacity}`;
 
   return (
     <div className="flex w-full items-center gap-2">
@@ -203,53 +191,7 @@ export function CapacityBarLarge({ signupCount, capacity }: CapacityBarLargeProp
           style={{ width: `${percent}%` }}
         />
       </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <Users className="size-4 text-text-tertiary" />
-        <span className="font-mono text-[10px] font-normal leading-[14px] text-text-tertiary">
-          {spotsText}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// RiderCount — standalone icon + count for medium card
-// ---------------------------------------------------------------------------
-
-interface RiderCountProps {
-  signupCount: number;
-  capacity: number | null;
-}
-
-export function RiderCount({ signupCount, capacity }: RiderCountProps) {
-  const spotsText = capacity != null ? `${signupCount}/${capacity}` : `${signupCount}`;
-
-  return (
-    <div className="flex items-center gap-2">
-      <Users className="size-4 text-text-tertiary" />
-      <span className="font-mono text-[10px] font-normal leading-[14px] text-text-tertiary">
-        {spotsText}
-      </span>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// LocationRow — MapPin icon + location name
-// ---------------------------------------------------------------------------
-
-interface LocationRowProps {
-  name: string;
-}
-
-export function LocationRow({ name }: LocationRowProps) {
-  return (
-    <div className="flex items-center gap-1">
-      <MapPin className="size-4 shrink-0 text-text-secondary" />
-      <span className="font-sans text-[13px] font-normal leading-5 text-text-secondary">
-        {name}
-      </span>
+      <RiderCount signupCount={signupCount} capacity={capacity} />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from '@/components/theme-provider';
 import { styleGuideContent as content } from '@/content/style-guide';
 import primitivesData from '@/tokens/primitives.json';
+import semanticsData from '@/tokens/semantics.json';
 
 // ---------------------------------------------------------------------------
 // Types & data
@@ -45,61 +46,53 @@ function needsLightText(hex: string): boolean {
   return luminance < 0.5;
 }
 
-// Semantic token definitions for the token map
-const SEMANTIC_SECTIONS = [
-  {
-    title: 'Surfaces',
-    tokens: [
-      { name: '--surface-default', desc: 'Cards, modals, popovers' },
-      { name: '--surface-page', desc: 'Page background' },
-      { name: '--surface-raised', desc: 'Elevated cards, tooltips' },
-      { name: '--surface-sunken', desc: 'Inset areas, code blocks' },
-      { name: '--surface-overlay', desc: 'Modal backdrop, scrim' },
-    ],
-  },
-  {
-    title: 'Text',
-    tokens: [
-      { name: '--text-primary', desc: 'Headings, body copy' },
-      { name: '--text-secondary', desc: 'Captions, metadata' },
-      { name: '--text-tertiary', desc: 'Placeholders, hints' },
-      { name: '--text-on-primary', desc: 'On primary fills' },
-    ],
-  },
-  {
-    title: 'Borders',
-    tokens: [
-      { name: '--border-subtle', desc: 'Card edges, dividers' },
-      { name: '--border-default', desc: 'Input borders, outlines' },
-      { name: '--border-strong', desc: 'Active outlines' },
-      { name: '--border-focus', desc: 'Focus rings' },
-    ],
-  },
-  {
-    title: 'Actions',
-    tokens: [
-      { name: '--action-primary-default', desc: 'Primary CTA fill' },
-      { name: '--action-primary-hover', desc: 'Primary hover' },
-      { name: '--action-primary-subtle-bg', desc: 'Ghost button bg' },
-      { name: '--action-secondary-default', desc: 'Secondary CTA fill' },
-      { name: '--action-danger-default', desc: 'Destructive fill' },
-      { name: '--action-disabled-bg', desc: 'Disabled fill' },
-    ],
-  },
-  {
-    title: 'Feedback',
-    tokens: [
-      { name: '--feedback-success-default', desc: 'Success icon/text' },
-      { name: '--feedback-success-bg', desc: 'Success banner bg' },
-      { name: '--feedback-warning-default', desc: 'Warning icon/text' },
-      { name: '--feedback-warning-bg', desc: 'Warning banner bg' },
-      { name: '--feedback-error-default', desc: 'Error icon/text' },
-      { name: '--feedback-error-bg', desc: 'Error banner bg' },
-      { name: '--feedback-info-default', desc: 'Info icon/text' },
-      { name: '--feedback-info-bg', desc: 'Info banner bg' },
-    ],
-  },
-];
+// Build semantic sections dynamically from semantics.json
+// Mirrors the recursive walk in build-tokens.ts — tokens auto-update when JSON changes
+interface SemanticToken {
+  name: string;
+  desc: string;
+}
+interface SemanticSection {
+  title: string;
+  tokens: SemanticToken[];
+}
+
+const CATEGORY_TITLES: Record<string, string> = {
+  surface: 'Surfaces',
+  text: 'Text',
+  border: 'Borders',
+  action: 'Actions',
+  feedback: 'Feedback',
+  accent: 'Accents',
+  badge: 'Badges',
+};
+
+function collectTokens(obj: Record<string, unknown>, prefix: string): SemanticToken[] {
+  const tokens: SemanticToken[] = [];
+  for (const [key, value] of Object.entries(obj)) {
+    if (key.startsWith('$')) continue;
+    const node = value as Record<string, unknown>;
+    const path = prefix ? `${prefix}-${key}` : key;
+    if (node.$type === 'color') {
+      const desc = (node.$description as string) ?? path.replaceAll('-', ' ');
+      tokens.push({ name: `--${path}`, desc });
+    } else {
+      tokens.push(...collectTokens(node, path));
+    }
+  }
+  return tokens;
+}
+
+// Categories in the same order as build-tokens.ts
+const SEMANTIC_CATEGORIES = ['surface', 'text', 'border', 'action', 'feedback', 'accent', 'badge'];
+const semanticsJson = semanticsData as unknown as Record<string, unknown>;
+
+const SEMANTIC_SECTIONS: SemanticSection[] = SEMANTIC_CATEGORIES.filter(
+  (cat) => semanticsJson[cat],
+).map((cat) => ({
+  title: CATEGORY_TITLES[cat] ?? cat,
+  tokens: collectTokens(semanticsJson[cat] as Record<string, unknown>, cat),
+}));
 
 // ---------------------------------------------------------------------------
 // Components

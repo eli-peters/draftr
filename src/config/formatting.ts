@@ -29,17 +29,25 @@ export const units = {
   kmh: ' km/h',
 } as const;
 
+import type { BadgeVariant } from '@/components/ui/badge';
+
+/** Pace-level badge variants */
+type PaceBadgeVariant = Extract<
+  BadgeVariant,
+  'pace-social' | 'pace-intermediate' | 'pace-advanced' | 'pace-elite'
+>;
+
 /** Map pace group names (from DB) to badge variant keys */
-export const paceVariantMap: Record<string, string> = {
+const paceVariantMap: Record<string, PaceBadgeVariant> = {
   social: 'pace-social',
   intermediate: 'pace-intermediate',
   'intermediate a': 'pace-intermediate',
   'intermediate b': 'pace-intermediate',
   advanced: 'pace-advanced',
   elite: 'pace-elite',
-} as const;
+};
 
 /** Get badge variant for a pace group name, falling back to social */
-export function getPaceBadgeVariant(paceGroupName: string): string {
+export function getPaceBadgeVariant(paceGroupName: string): PaceBadgeVariant {
   return paceVariantMap[paceGroupName.toLowerCase()] ?? 'pace-social';
 }
