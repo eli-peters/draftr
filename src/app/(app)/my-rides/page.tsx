@@ -4,7 +4,7 @@ import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { MyScheduleSections } from './my-schedule-sections';
 
-const { myRides } = appContent;
+const { schedule } = appContent;
 
 export default async function MySchedulePage() {
   const membership = await getUserClubMembership();
@@ -25,7 +25,7 @@ export default async function MySchedulePage() {
 
   return (
     <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
-      <h1 className="text-3xl font-bold tracking-tight text-foreground">{myRides.heading}</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-foreground">{schedule.heading}</h1>
       <MyScheduleSections upcoming={upcomingAll} past={past} />
     </div>
   );

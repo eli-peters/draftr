@@ -4,7 +4,7 @@ export const routes = {
   setupProfile: '/setup-profile',
   rides: '/rides',
   ride: (id: string) => `/rides/${id}`,
-  myRides: '/my-rides',
+  schedule: '/my-rides',
   manage: '/manage',
   manageNewRide: '/manage/rides/new',
   manageEditRide: (id: string) => `/manage/rides/${id}/edit`,

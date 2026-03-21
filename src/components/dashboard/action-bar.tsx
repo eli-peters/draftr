@@ -158,7 +158,7 @@ export function ActionBar({
               {formatTime(nextWaitlistedRide.start_time)}
             </span>
             <MetadataItem className="text-warning">
-              {appContent.myRides.waitlistPosition(nextWaitlistedRide.waitlist_position)}
+              {appContent.schedule.waitlistPosition(nextWaitlistedRide.waitlist_position)}
             </MetadataItem>
           </div>
         </ActionCard>

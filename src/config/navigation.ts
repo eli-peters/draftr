@@ -33,7 +33,7 @@ export const primaryNav: NavItem[] = [
   },
   {
     href: '/my-rides',
-    label: appContent.nav.myRides,
+    label: appContent.nav.schedule,
     icon: 'calendar-check',
   },
   {

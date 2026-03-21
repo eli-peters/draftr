@@ -12,7 +12,7 @@ import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import type { UserRideSignup } from '@/lib/rides/queries';
 
-const { myRides } = appContent;
+const { schedule } = appContent;
 
 interface MyScheduleSectionsProps {
   upcoming: UserRideSignup[];
@@ -33,16 +33,16 @@ export function MyScheduleSections({ upcoming, past }: MyScheduleSectionsProps) 
     <div className="mt-6 flex flex-col gap-10">
       {/* Upcoming section */}
       <section>
-        <SectionHeading className="mb-4">{myRides.sections.upcoming}</SectionHeading>
+        <SectionHeading className="mb-4">{schedule.sections.upcoming}</SectionHeading>
         {upcoming.length === 0 ? (
           <EmptyState
-            title={myRides.emptyState.upcoming.title}
-            description={myRides.emptyState.upcoming.description}
+            title={schedule.emptyState.upcoming.title}
+            description={schedule.emptyState.upcoming.description}
             icon={Bicycle}
             className="mt-8"
           >
             <Link href={routes.rides} className="mt-4">
-              <Button size="sm">{myRides.emptyState.upcoming.cta}</Button>
+              <Button size="sm">{schedule.emptyState.upcoming.cta}</Button>
             </Link>
           </EmptyState>
         ) : (
@@ -56,11 +56,11 @@ export function MyScheduleSections({ upcoming, past }: MyScheduleSectionsProps) 
 
       {/* Past section */}
       <section>
-        <SectionHeading className="mb-4">{myRides.sections.past}</SectionHeading>
+        <SectionHeading className="mb-4">{schedule.sections.past}</SectionHeading>
         {past.length === 0 ? (
           <EmptyState
-            title={myRides.emptyState.past.title}
-            description={myRides.emptyState.past.description}
+            title={schedule.emptyState.past.title}
+            description={schedule.emptyState.past.description}
             icon={ClockCountdown}
             className="mt-8"
           />

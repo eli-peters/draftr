@@ -13,7 +13,7 @@ import { dateFormats, formatTime } from '@/config/formatting';
 import { routes } from '@/config/routes';
 import type { UserRideSignup } from '@/lib/rides/queries';
 
-const { myRides } = appContent;
+const { schedule } = appContent;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -62,10 +62,10 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
   const statusKey = isCompleted ? 'completed' : isWaitlisted ? 'waitlisted' : 'confirmed';
   const bannerConfig = statusBannerConfig[statusKey];
   const statusLabel = isCompleted
-    ? myRides.status.completed
+    ? schedule.status.completed
     : isWaitlisted
-      ? myRides.status.waitlisted(ride.waitlist_position ?? 0)
-      : myRides.status.confirmed;
+      ? schedule.status.waitlisted(ride.waitlist_position ?? 0)
+      : schedule.status.confirmed;
 
   function handleAction(action: ScheduleAction) {
     if (action === 'view-details' || action === 'get-directions') {
@@ -105,10 +105,10 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
                 className="border-destructive/30 text-destructive hover:bg-destructive/10"
                 onClick={() => handleAction('cancel-signup')}
               >
-                {myRides.actions.cancelSignup}
+                {schedule.actions.cancelSignup}
               </Button>
               <Button variant="outline" size="xs" onClick={() => handleAction('get-directions')}>
-                {myRides.actions.getDirections}
+                {schedule.actions.getDirections}
               </Button>
             </>
           )}
@@ -120,16 +120,16 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
                 className="border-warning/30 text-warning hover:bg-warning/10"
                 onClick={() => handleAction('leave-waitlist')}
               >
-                {myRides.actions.leaveWaitlist}
+                {schedule.actions.leaveWaitlist}
               </Button>
               <Button variant="outline" size="xs" onClick={() => handleAction('get-directions')}>
-                {myRides.actions.getDirections}
+                {schedule.actions.getDirections}
               </Button>
             </>
           )}
           {statusKey === 'completed' && (
             <Button variant="outline" size="xs" onClick={() => handleAction('view-details')}>
-              {myRides.actions.viewDetails}
+              {schedule.actions.viewDetails}
             </Button>
           )}
         </div>
