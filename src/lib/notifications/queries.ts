@@ -14,8 +14,8 @@ export async function getUserNotifications(userId: string): Promise<Notification
     .order('sent_at', { ascending: false })
     .limit(50);
 
-  if (error) {
-    console.error('Error fetching notifications:', error);
+  if (error?.message) {
+    console.error('Error fetching notifications:', error.message, error.code, error.details);
     return [];
   }
 
@@ -34,8 +34,8 @@ export async function getUnreadNotificationCount(userId: string): Promise<number
     .eq('user_id', userId)
     .eq('is_read', false);
 
-  if (error) {
-    console.error('Error fetching unread count:', error);
+  if (error?.message) {
+    console.error('Error fetching unread count:', error.message, error.code, error.details);
     return 0;
   }
 

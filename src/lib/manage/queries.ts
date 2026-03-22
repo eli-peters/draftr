@@ -30,8 +30,8 @@ export async function getClubMembers(clubId: string): Promise<ClubMember[]> {
     .eq('club_id', clubId)
     .order('joined_at', { ascending: true });
 
-  if (error) {
-    console.error('Error fetching club members:', error);
+  if (error?.message) {
+    console.error('Error fetching club members:', error.message, error.code, error.details);
     return [];
   }
 
@@ -88,8 +88,8 @@ export async function getClubAnnouncements(clubId: string) {
     .order('is_pinned', { ascending: false })
     .order('published_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching announcements:', error);
+  if (error?.message) {
+    console.error('Error fetching announcements:', error.message, error.code, error.details);
     return [];
   }
 
@@ -132,8 +132,8 @@ export async function getClubRideTemplates(clubId: string) {
     .order('is_active', { ascending: false })
     .order('title');
 
-  if (error) {
-    console.error('Error fetching ride templates:', error);
+  if (error?.message) {
+    console.error('Error fetching ride templates:', error.message, error.code, error.details);
     return [];
   }
 

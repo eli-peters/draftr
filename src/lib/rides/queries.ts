@@ -54,8 +54,8 @@ export async function getUpcomingRides(
     .order('ride_date', { ascending: true })
     .order('start_time', { ascending: true });
 
-  if (error) {
-    console.error('Error fetching rides:', error);
+  if (error?.message) {
+    console.error('Error fetching rides:', error.message, error.code, error.details);
     return [];
   }
 
@@ -386,8 +386,8 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
 
   const { data, error } = await query;
 
-  if (error) {
-    console.error('Error fetching leader rides:', error);
+  if (error?.message) {
+    console.error('Error fetching leader rides:', error.message, error.code, error.details);
     return [];
   }
 
@@ -440,8 +440,8 @@ export async function getRideSignups(rideId: string) {
     .neq('status', 'cancelled')
     .order('signed_up_at', { ascending: true });
 
-  if (error) {
-    console.error('Error fetching ride signups:', error);
+  if (error?.message) {
+    console.error('Error fetching ride signups:', error.message, error.code, error.details);
     return [];
   }
 
@@ -537,8 +537,8 @@ export async function getUserRideSignups(
     ascending: filter !== 'past',
   });
 
-  if (error) {
-    console.error('Error fetching user ride signups:', error);
+  if (error?.message) {
+    console.error('Error fetching user ride signups:', error.message, error.code, error.details);
     return [];
   }
 
@@ -589,8 +589,8 @@ export async function getRideComments(rideId: string): Promise<CommentWithUser[]
     .eq('ride_id', rideId)
     .order('created_at', { ascending: true });
 
-  if (error) {
-    console.error('Error fetching ride comments:', error);
+  if (error?.message) {
+    console.error('Error fetching ride comments:', error.message, error.code, error.details);
     return [];
   }
 
@@ -630,8 +630,8 @@ export async function getRidePickups(rideId: string): Promise<RidePickupWithLoca
     .eq('ride_id', rideId)
     .order('sort_order', { ascending: true });
 
-  if (error) {
-    console.error('Error fetching ride pickups:', error);
+  if (error?.message) {
+    console.error('Error fetching ride pickups:', error.message, error.code, error.details);
     return [];
   }
 

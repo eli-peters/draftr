@@ -111,8 +111,8 @@ export async function getUserRecentRides(userId: string, limit = 5): Promise<Rec
     .order('ride(ride_date)', { ascending: false })
     .limit(limit);
 
-  if (error) {
-    console.error('Error fetching recent rides:', error);
+  if (error?.message) {
+    console.error('Error fetching recent rides:', error.message, error.code, error.details);
     return [];
   }
 
