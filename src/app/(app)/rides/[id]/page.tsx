@@ -22,10 +22,13 @@ import { SignupButton } from '@/components/rides/signup-button';
 import { SignupRoster } from '@/components/rides/signup-roster';
 import { RideComments } from '@/components/rides/ride-comments';
 import { RidePickups } from '@/components/rides/ride-pickups';
+import { DashboardShell } from '@/components/dashboard/dashboard-shell';
+import { PageHeader } from '@/components/layout/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CapacityBar } from '@/components/ui/capacity-bar';
 import { SectionHeading } from '@/components/ui/section-heading';
+import { RideWeatherDetail } from '@/components/weather/ride-weather-detail';
 import { appContent } from '@/content/app';
 import { RideStatus, SignupStatus } from '@/config/statuses';
 import { dateFormats, separators, units } from '@/config/formatting';
@@ -82,7 +85,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   }
 
   return (
-    <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
+    <DashboardShell>
       {/* Status Banners */}
       {ride.status === RideStatus.WEATHER_WATCH && (
         <div className="mb-6 flex items-center gap-2.5 rounded-xl border border-warning/20 bg-warning/10 px-5 py-4 text-base text-warning">
@@ -97,7 +100,30 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         </div>
       )}
 
-      <h1 className="text-3xl font-bold tracking-tight text-foreground">{ride.title}</h1>
+      <PageHeader
+        title={ride.title}
+        actions={
+          (canEdit || (hasEditRole && (isCancelled || isPast))) ? (
+            <>
+              {canEdit && (
+                <Link href={routes.manageEditRide(ride.id)}>
+                  <Button variant="outline" size="sm">
+                    {appContent.rides.edit.heading}
+                  </Button>
+                </Link>
+              )}
+              {hasEditRole && (isCancelled || isPast) && (
+                <Link href={`${routes.manageNewRide}?duplicate=${ride.id}`}>
+                  <Button variant="outline" size="sm">
+                    <Copy className="h-4 w-4 mr-1.5" />
+                    {detail.duplicateAsNew}
+                  </Button>
+                </Link>
+              )}
+            </>
+          ) : undefined
+        }
+      />
 
       <p className="mt-3 text-lg text-foreground/90">
         {format(rideDate, dateFormats.full)}
@@ -132,26 +158,6 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         </p>
       )}
 
-      {/* Edit / Duplicate actions for authorized users */}
-      {(canEdit || (hasEditRole && (isCancelled || isPast))) && (
-        <div className="mt-4 flex gap-2">
-          {canEdit && (
-            <Link href={routes.manageEditRide(ride.id)}>
-              <Button variant="outline" size="sm">
-                {appContent.rides.edit.heading}
-              </Button>
-            </Link>
-          )}
-          {hasEditRole && (isCancelled || isPast) && (
-            <Link href={`${routes.manageNewRide}?duplicate=${ride.id}`}>
-              <Button variant="outline" size="sm">
-                <Copy className="h-4 w-4 mr-1.5" />
-                {detail.duplicateAsNew}
-              </Button>
-            </Link>
-          )}
-        </div>
-      )}
 
       {ride.tags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
@@ -218,6 +224,9 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         {isSignedUp && <p className="text-base font-semibold text-primary">{detail.signedUp}</p>}
       </div>
 
+      {/* Weather forecast */}
+      <RideWeatherDetail weather={ride.weather} />
+
       {ride.route_url && (
         <div className="mt-8">
           <a
@@ -273,6 +282,6 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           isCancelled={isCancelled}
         />
       </div>
-    </div>
+    </DashboardShell>
   );
 }

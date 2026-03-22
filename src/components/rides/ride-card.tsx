@@ -4,6 +4,7 @@ import { Users } from '@phosphor-icons/react/dist/ssr';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { RideBanner, DateTimeRow, MetadataStats } from '@/components/rides/ride-card-parts';
+import { RideWeatherBadge } from '@/components/weather/ride-weather-badge';
 import { CardSignupButton } from '@/components/rides/card-signup-button';
 import { appContent } from '@/content/app';
 import { cn, getRelativeDay } from '@/lib/utils';
@@ -92,11 +93,14 @@ function HomeLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boo
   return (
     <div className={cn('flex flex-col gap-3 px-6', hasBanner ? 'pb-5 pt-4' : 'py-5')}>
       <div className="flex flex-col gap-1">
-        <DateTimeRow
-          date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
-          time={formatTime(ride.start_time)}
-          isRecurring={!!ride.template_id}
-        />
+        <div className="flex items-center justify-between">
+          <DateTimeRow
+            date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
+            time={formatTime(ride.start_time)}
+            isRecurring={!!ride.template_id}
+          />
+          <RideWeatherBadge weather={ride.weather} />
+        </div>
         {/* heading/sm token */}
         <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
           {ride.title}
@@ -127,11 +131,14 @@ function RidesLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: bo
   return (
     <div className={cn('flex flex-col gap-3 px-6', hasBanner ? 'pb-6 pt-4' : 'p-6')}>
       <div className="flex flex-col gap-1">
-        <DateTimeRow
-          date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
-          time={formatTime(ride.start_time)}
-          isRecurring={!!ride.template_id}
-        />
+        <div className="flex items-center justify-between">
+          <DateTimeRow
+            date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
+            time={formatTime(ride.start_time)}
+            isRecurring={!!ride.template_id}
+          />
+          <RideWeatherBadge weather={ride.weather} />
+        </div>
         {/* heading/md token */}
         <h3 className="font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
           {ride.title}

@@ -6,6 +6,7 @@ import { CheckCircle, Hourglass } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CardBanner, DateTimeRow } from '@/components/rides/ride-card-parts';
+import { RideWeatherBadge } from '@/components/weather/ride-weather-badge';
 import { appContent } from '@/content/app';
 import { cn, getRelativeDay } from '@/lib/utils';
 import { SignupStatus } from '@/config/statuses';
@@ -86,10 +87,13 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
 
       <div className="flex flex-col gap-3 px-6 pb-6 pt-4">
         <div className="flex flex-col gap-1">
-          <DateTimeRow
-            date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
-            time={formatTime(ride.start_time)}
-          />
+          <div className="flex items-center justify-between">
+            <DateTimeRow
+              date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
+              time={formatTime(ride.start_time)}
+            />
+            <RideWeatherBadge weather={ride.weather} />
+          </div>
           {/* heading/sm token */}
           <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
             {ride.title}

@@ -32,6 +32,9 @@ export const units = {
   km: ' km',
   m: ' m',
   kmh: ' km/h',
+  celsius: '°C',
+  percent: '%',
+  mm: ' mm',
 } as const;
 
 import type { BadgeVariant } from '@/components/ui/badge';
