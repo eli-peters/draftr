@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Wind } from '@phosphor-icons/react';
+import { Wind } from '@phosphor-icons/react/dist/ssr';
 import { WeatherIcon } from '@/components/weather/weather-icon';
 import { appContent } from '@/content/app';
-import { getWeatherCondition, GEOLOCATION_TIMEOUT_MS, GEOLOCATION_MAX_AGE_MS } from '@/config/weather';
+import { getWeatherCondition, getConditionColorClass, GEOLOCATION_TIMEOUT_MS, GEOLOCATION_MAX_AGE_MS } from '@/config/weather';
 import { units } from '@/config/formatting';
+import { cn } from '@/lib/utils';
 import type { CurrentWeatherData } from '@/lib/weather/api';
 
 const { weather: weatherContent } = appContent;
@@ -70,7 +71,7 @@ export function CurrentWeather() {
       <WeatherIcon
         weatherCode={weather.weather_code}
         isDay={weather.is_day}
-        className="size-8 text-muted-foreground"
+        className={cn('size-8', getConditionColorClass(weather.weather_code, weather.is_day))}
       />
 
       <div className="flex flex-col">

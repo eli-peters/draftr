@@ -9,7 +9,7 @@ import {
   Megaphone,
   Info,
   Queue,
-} from '@phosphor-icons/react';
+} from '@phosphor-icons/react/dist/ssr';
 import { appContent } from '@/content/app';
 
 export type NotificationType = keyof typeof appContent.notifications.types;

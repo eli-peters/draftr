@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
-import { UserPlus } from '@phosphor-icons/react';
+import { UserPlus } from '@phosphor-icons/react/dist/ssr';
 import { appContent } from '@/content/app';
 import { addWalkUpRider } from '@/lib/rides/actions';
 

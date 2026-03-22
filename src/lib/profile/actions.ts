@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, getUser } from '@/lib/supabase/server';
 import { appContent } from '@/content/app';
 import { toE164 } from '@/lib/phone';
 
@@ -20,9 +20,7 @@ interface UpdateProfileData {
  */
 export async function updateProfile(data: UpdateProfileData) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) return { error: common.notAuthenticated };
 
@@ -56,9 +54,7 @@ export async function updateProfile(data: UpdateProfileData) {
  */
 export async function uploadAvatar(formData: FormData) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) return { error: common.notAuthenticated };
 
@@ -96,9 +92,7 @@ export async function uploadAvatar(formData: FormData) {
  */
 export async function removeAvatar() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) return { error: common.notAuthenticated };
 

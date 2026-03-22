@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, getUser } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { appContent } from '@/content/app';
 import { RideStatus } from '@/config/statuses';
@@ -48,9 +48,7 @@ async function checkRideEditPermission(
  */
 export async function signUpForRide(rideId: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) {
     return { error: common.notAuthenticated };
@@ -135,9 +133,7 @@ export async function signUpForRide(rideId: string) {
  */
 export async function cancelSignUp(rideId: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) {
     return { error: common.notAuthenticated };
@@ -262,9 +258,7 @@ export interface CreateRideData {
  */
 export async function createRide(data: CreateRideData) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) return { error: common.notAuthenticated };
 
@@ -414,9 +408,7 @@ export interface UpdateRideData {
  */
 export async function updateRide(rideId: string, data: UpdateRideData) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) return { error: common.notAuthenticated };
 
@@ -504,9 +496,7 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
  */
 export async function updateRecurringSeries(rideId: string, data: UpdateRideData) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) return { error: common.notAuthenticated };
 
@@ -594,9 +584,7 @@ export async function updateRecurringSeries(rideId: string, data: UpdateRideData
  */
 export async function addWalkUpRider(rideId: string, riderUserId: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) return { error: common.notAuthenticated };
 
@@ -657,9 +645,7 @@ export async function addWalkUpRider(rideId: string, riderUserId: string) {
  */
 export async function cancelRide(rideId: string, reason: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) return { error: common.notAuthenticated };
 
@@ -775,9 +761,7 @@ async function checkCommentPermission(
  */
 export async function addComment(rideId: string, body: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) return { error: common.notAuthenticated };
 
@@ -801,9 +785,7 @@ export async function addComment(rideId: string, body: string) {
  */
 export async function editComment(commentId: string, body: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) return { error: common.notAuthenticated };
 
@@ -829,9 +811,7 @@ export async function editComment(commentId: string, body: string) {
  */
 export async function deleteComment(commentId: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) return { error: common.notAuthenticated };
 

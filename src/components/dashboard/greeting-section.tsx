@@ -7,9 +7,11 @@ const { dashboard } = appContent;
 
 function getGreeting(): string {
   const hour = new Date().getHours();
+  if (hour < 5) return dashboard.greeting.night;
   if (hour < 12) return dashboard.greeting.morning;
-  if (hour < 18) return dashboard.greeting.afternoon;
-  return dashboard.greeting.evening;
+  if (hour < 17) return dashboard.greeting.afternoon;
+  if (hour < 21) return dashboard.greeting.evening;
+  return dashboard.greeting.night;
 }
 
 interface GreetingSectionProps {

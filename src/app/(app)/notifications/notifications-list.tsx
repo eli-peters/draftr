@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { BellSimple } from '@phosphor-icons/react';
+import { BellSimple } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';

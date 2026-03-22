@@ -1,6 +1,6 @@
 'use client';
 
-import { WarningCircle } from '@phosphor-icons/react';
+import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { appContent } from '@/content/app';

@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Bicycle, ClockCountdown } from '@phosphor-icons/react';
+import { Bicycle, ClockCountdown } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SectionHeading } from '@/components/ui/section-heading';

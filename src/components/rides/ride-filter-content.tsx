@@ -1,6 +1,5 @@
 'use client';
 
-import type React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,26 +21,9 @@ export interface DateRange {
   to: string;
 }
 
-function getTagStyle(isSelected: boolean, color: string | null): React.CSSProperties | undefined {
-  if (isSelected && color) {
-    return {
-      backgroundColor: color,
-      color: 'var(--primary-foreground)',
-      borderColor: color,
-    };
-  }
-  if (color) {
-    return {
-      borderColor: `color-mix(in srgb, ${color} 60%, transparent)`,
-      color,
-    };
-  }
-  return undefined;
-}
-
 interface RideFilterContentProps {
-  paceGroups: { id: string; name: string }[];
-  tags: { id: string; name: string; color: string | null }[];
+  paceGroups: { id: string; name: string; sort_order: number }[];
+  tags: { id: string; name: string }[];
   pendingPaceGroups: string[];
   pendingTags: string[];
   pendingDateRange: DateRange;
@@ -80,10 +62,11 @@ export function RideFilterContent({
           <div className="flex flex-wrap gap-2">
             {paceGroups.map((pg) => {
               const isSelected = pendingPaceGroups.includes(pg.id);
+              const paceVariant = `pace-${Math.min(Math.max(pg.sort_order, 1), 8)}` as import('@/components/ui/badge').BadgeVariant;
               return (
                 <Badge
                   key={pg.id}
-                  variant={isSelected ? 'default' : 'outline'}
+                  variant={isSelected ? paceVariant : 'outline'}
                   size="lg"
                   className="cursor-pointer"
                   onClick={() => onTogglePaceGroup(pg.id)}
@@ -116,7 +99,6 @@ export function RideFilterContent({
                   variant={isSelected ? 'default' : 'outline'}
                   size="lg"
                   className="cursor-pointer"
-                  style={getTagStyle(isSelected, tag.color)}
                   onClick={() => onToggleTag(tag.id)}
                 >
                   {tag.name}

@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Bicycle, Path, CaretRight } from '@phosphor-icons/react/dist/ssr';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, getUser } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { SectionHeading } from '@/components/ui/section-heading';
@@ -23,11 +23,10 @@ export default async function PublicProfilePage({
   const { userId } = await params;
 
   // Ensure the viewer is authenticated
-  const supabase = await createClient();
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
+  const authUser = await getUser();
   if (!authUser) redirect(routes.signIn);
+
+  const supabase = await createClient();
 
   // If viewing your own profile, redirect to the main profile page
   if (authUser.id === userId) redirect(routes.profile);

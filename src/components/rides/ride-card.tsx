@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { format, parseISO } from 'date-fns';
 import { Users } from '@phosphor-icons/react/dist/ssr';
-import { Badge } from '@/components/ui/badge';
+import { Badge, type BadgeVariant } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { RideBanner, DateTimeRow, MetadataStats } from '@/components/rides/ride-card-parts';
 import { RideWeatherBadge } from '@/components/weather/ride-weather-badge';
@@ -15,16 +15,48 @@ import type { RideWithDetails } from '@/types/database';
 
 const { rides: ridesContent } = appContent;
 
+const MAX_VISIBLE_TAGS = 3;
+
+// ---------------------------------------------------------------------------
+// Shared: TagRow — up to 3 vibe tag chips + "+N more" overflow
+// ---------------------------------------------------------------------------
+
+function TagRow({ tags }: { tags: { id: string; name: string }[] }) {
+  if (tags.length === 0) return null;
+
+  const visible = tags.slice(0, MAX_VISIBLE_TAGS);
+  const overflow = tags.length - MAX_VISIBLE_TAGS;
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {visible.map((tag) => (
+        <Badge key={tag.id} variant="secondary" size="sm">
+          {tag.name}
+        </Badge>
+      ))}
+      {overflow > 0 && (
+        <span className="text-xs text-muted-foreground">{ridesContent.card.moreTags(overflow)}</span>
+      )}
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Shared: PaceAndCount — bottom row with pace badge + rider count
 // ---------------------------------------------------------------------------
 
+function getPaceVariant(sortOrder: number): BadgeVariant {
+  return `pace-${Math.min(Math.max(sortOrder, 1), 8)}` as BadgeVariant;
+}
+
 function PaceAndCount({
   paceGroupName,
+  paceGroupSortOrder,
   signupCount,
   capacity,
 }: {
   paceGroupName: string | null;
+  paceGroupSortOrder: number | null;
   signupCount: number;
   capacity: number | null;
 }) {
@@ -35,7 +67,7 @@ function PaceAndCount({
   return (
     <div className="flex items-center justify-between">
       {paceGroupName ? (
-        <Badge variant="secondary" size="sm">
+        <Badge variant={paceGroupSortOrder ? getPaceVariant(paceGroupSortOrder) : 'secondary'} size="sm">
           {paceGroupName}
         </Badge>
       ) : (
@@ -107,10 +139,13 @@ function HomeLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boo
         </h3>
       </div>
 
+      <TagRow tags={ride.tags} />
+
       <MetadataStats distanceKm={ride.distance_km} elevationM={ride.elevation_m} />
 
       <PaceAndCount
         paceGroupName={ride.pace_group?.name ?? null}
+        paceGroupSortOrder={ride.pace_group?.sort_order ?? null}
         signupCount={ride.signup_count}
         capacity={ride.capacity}
       />
@@ -149,10 +184,13 @@ function RidesLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: bo
         <p className="line-clamp-2 text-sm text-muted-foreground">{ride.description}</p>
       )}
 
+      <TagRow tags={ride.tags} />
+
       <MetadataStats distanceKm={ride.distance_km} elevationM={ride.elevation_m} />
 
       <PaceAndCount
         paceGroupName={ride.pace_group?.name ?? null}
+        paceGroupSortOrder={ride.pace_group?.sort_order ?? null}
         signupCount={ride.signup_count}
         capacity={ride.capacity}
       />

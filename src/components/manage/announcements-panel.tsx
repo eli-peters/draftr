@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { PushPin, Trash, PencilSimple, Plus } from '@phosphor-icons/react';
+import { PushPin, Trash, PencilSimple, Plus } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

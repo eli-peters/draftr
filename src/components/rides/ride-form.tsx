@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowsClockwise } from '@phosphor-icons/react';
+import { ArrowsClockwise } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -44,7 +44,7 @@ interface RideFormProps {
   clubId: string;
   meetingLocations: { id: string; name: string }[];
   paceGroups: { id: string; name: string }[];
-  tags: { id: string; name: string; color: string | null }[];
+  tags: { id: string; name: string }[];
   rideId?: string;
   templateId?: string;
   initialData?: RideFormInitialData;
@@ -306,20 +306,6 @@ export function RideForm({
                 variant={isSelected ? 'default' : 'outline'}
                 size="lg"
                 className="cursor-pointer"
-                style={
-                  isSelected && tag.color
-                    ? {
-                        backgroundColor: tag.color,
-                        color: 'var(--primary-foreground)',
-                        borderColor: tag.color,
-                      }
-                    : tag.color
-                      ? {
-                          borderColor: `color-mix(in srgb, ${tag.color} 60%, transparent)`,
-                          color: tag.color,
-                        }
-                      : undefined
-                }
                 onClick={() => toggleTag(tag.id)}
               >
                 {tag.name}

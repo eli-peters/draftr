@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Monitor, Sun, Moon } from '@phosphor-icons/react';
+import { Monitor, Sun, Moon } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/components/theme-provider';
 import { appContent } from '@/content/app';

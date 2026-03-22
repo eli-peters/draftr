@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { getUser } from '@/lib/supabase/server';
 import { getUserNotifications } from '@/lib/notifications/queries';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
@@ -9,10 +9,7 @@ import { NotificationsList } from './notifications-list';
 const { notifications: content } = appContent;
 
 export default async function NotificationsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect(routes.signIn);
 
   const notifications = await getUserNotifications(user.id);

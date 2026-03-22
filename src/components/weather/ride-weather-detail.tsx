@@ -2,7 +2,7 @@ import { Wind, Drop, CloudRain } from '@phosphor-icons/react/dist/ssr';
 import { WeatherIcon } from '@/components/weather/weather-icon';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
-import { getWeatherCondition, getWeatherSeverity, getSeverityColorClass } from '@/config/weather';
+import { getWeatherCondition, getWeatherSeverity, getSeverityColorClass, getConditionColorClass } from '@/config/weather';
 import { units } from '@/config/formatting';
 import { cn } from '@/lib/utils';
 import type { RideWeatherSnapshot } from '@/types/database';
@@ -41,7 +41,7 @@ export function RideWeatherDetail({ weather }: RideWeatherDetailProps) {
           <WeatherIcon
             weatherCode={weather.weather_code}
             isDay={weather.is_day}
-            className="size-10 text-muted-foreground"
+            className={cn('size-10', getConditionColorClass(weather.weather_code, weather.is_day))}
           />
           <div>
             <span className="text-lg font-semibold text-foreground">{condition.label}</span>

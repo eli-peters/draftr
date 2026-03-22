@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useTransition } from 'react';
 import { toast } from 'sonner';
-import { ArrowCounterClockwise, CheckCircle, Hourglass, SpinnerGap } from '@phosphor-icons/react';
+import { ArrowCounterClockwise, CheckCircle, Hourglass, SpinnerGap } from '@phosphor-icons/react/dist/ssr';
 import { signUpForRide, cancelSignUp } from '@/lib/rides/actions';
 import { Button } from '@/components/ui/button';
 import { appContent } from '@/content/app';
@@ -13,29 +13,7 @@ const { card } = appContent.rides;
 // Cooldown between same-direction actions to prevent rapid toggle (ms)
 const ACTION_COOLDOWN_MS = 5000;
 
-// Inline styles for toast action buttons — uses Sonner's actionButtonStyle API
-// to reliably override Sonner's runtime-injected CSS (which beats external stylesheets).
-const ACTION_BUTTON_BASE: React.CSSProperties = {
-  fontFamily: 'var(--font-sans)',
-  fontWeight: 600,
-  borderRadius: 'var(--radius)',
-};
-
-function actionButtonStyle(tokenPrefix: string): React.CSSProperties {
-  return {
-    ...ACTION_BUTTON_BASE,
-    background: `color-mix(in srgb, var(--${tokenPrefix}-text) 15%, transparent)`,
-    color: `var(--${tokenPrefix}-text)`,
-    border: `1px solid color-mix(in srgb, var(--${tokenPrefix}-text) 25%, transparent)`,
-  };
-}
-
-const TOAST_ACTION_STYLES = {
-  success: actionButtonStyle('feedback-success'),
-  info: actionButtonStyle('feedback-info'),
-  warning: actionButtonStyle('feedback-warning'),
-  error: actionButtonStyle('feedback-error'),
-} as const;
+import { TOAST_ACTION_STYLES } from '@/lib/toast-styles';
 
 interface CardSignupButtonProps {
   rideId: string;

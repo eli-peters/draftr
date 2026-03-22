@@ -139,6 +139,7 @@ export interface Tag {
   club_id: string;
   name: string;
   color: string | null;
+  is_archived: boolean;
   sort_order: number;
 }
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { SignOut, UserCircle } from '@phosphor-icons/react';
+import { SignOut, UserCircle } from '@phosphor-icons/react/dist/ssr';
 import { signOut } from '@/lib/auth/actions';
 import { routes } from '@/config/routes';
 import {

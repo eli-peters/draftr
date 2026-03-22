@@ -123,14 +123,22 @@
   --color-accent-neutral-muted: var(--accent-neutral-muted);
 
   /* Badge tokens → Tailwind */
-  --color-badge-pace-social-bg: var(--badge-pace-social-bg);
-  --color-badge-pace-social-text: var(--badge-pace-social-text);
-  --color-badge-pace-intermediate-bg: var(--badge-pace-intermediate-bg);
-  --color-badge-pace-intermediate-text: var(--badge-pace-intermediate-text);
-  --color-badge-pace-advanced-bg: var(--badge-pace-advanced-bg);
-  --color-badge-pace-advanced-text: var(--badge-pace-advanced-text);
-  --color-badge-pace-elite-bg: var(--badge-pace-elite-bg);
-  --color-badge-pace-elite-text: var(--badge-pace-elite-text);
+  --color-badge-pace-1-bg: var(--badge-pace-1-bg);
+  --color-badge-pace-1-text: var(--badge-pace-1-text);
+  --color-badge-pace-2-bg: var(--badge-pace-2-bg);
+  --color-badge-pace-2-text: var(--badge-pace-2-text);
+  --color-badge-pace-3-bg: var(--badge-pace-3-bg);
+  --color-badge-pace-3-text: var(--badge-pace-3-text);
+  --color-badge-pace-4-bg: var(--badge-pace-4-bg);
+  --color-badge-pace-4-text: var(--badge-pace-4-text);
+  --color-badge-pace-5-bg: var(--badge-pace-5-bg);
+  --color-badge-pace-5-text: var(--badge-pace-5-text);
+  --color-badge-pace-6-bg: var(--badge-pace-6-bg);
+  --color-badge-pace-6-text: var(--badge-pace-6-text);
+  --color-badge-pace-7-bg: var(--badge-pace-7-bg);
+  --color-badge-pace-7-text: var(--badge-pace-7-text);
+  --color-badge-pace-8-bg: var(--badge-pace-8-bg);
+  --color-badge-pace-8-text: var(--badge-pace-8-text);
   --color-badge-status-cancelled-bg: var(--badge-status-cancelled-bg);
   --color-badge-status-cancelled-text: var(--badge-status-cancelled-text);
   --color-badge-status-full-bg: var(--badge-status-full-bg);
@@ -149,6 +157,15 @@
   --color-badge-vibe-text: var(--badge-vibe-text);
   --color-badge-count-bg: var(--badge-count-bg);
   --color-badge-count-text: var(--badge-count-text);
+
+  /* Weather condition tokens → Tailwind */
+  --color-weather-clear: var(--weather-clear);
+  --color-weather-night: var(--weather-night);
+  --color-weather-overcast: var(--weather-overcast);
+  --color-weather-fog: var(--weather-fog);
+  --color-weather-rain: var(--weather-rain);
+  --color-weather-snow: var(--weather-snow);
+  --color-weather-thunder: var(--weather-thunder);
 
   /* Radius */
   --radius-sm: calc(var(--radius) * 0.6);

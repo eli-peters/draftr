@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { format, parseISO } from 'date-fns';
-import { CheckCircle, Hourglass } from '@phosphor-icons/react';
+import { CheckCircle, Hourglass } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CardBanner, DateTimeRow } from '@/components/rides/ride-card-parts';

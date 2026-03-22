@@ -1,7 +1,7 @@
 'use client';
 
 import { useTransition } from 'react';
-import { HandWaving } from '@phosphor-icons/react';
+import { HandWaving } from '@phosphor-icons/react/dist/ssr';
 import { signUpForRide, cancelSignUp } from '@/lib/rides/actions';
 import { Button } from '@/components/ui/button';
 import { appContent } from '@/content/app';

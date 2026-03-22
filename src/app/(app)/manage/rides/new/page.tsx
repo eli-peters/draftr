@@ -32,16 +32,9 @@ export default async function CreateRidePage({
 
   const supabase = await createClient();
 
-  // Fetch club season dates for date picker bounds
-  const { data: club } = await supabase
-    .from('clubs')
-    .select('settings')
-    .eq('id', membership.club_id)
-    .single();
-  const clubSettings = (club?.settings ?? {}) as Record<string, string>;
-
-  const [meetingLocations, paceGroups, tags, sourceRide, sourceTagIds, templateData] =
+  const [clubResult, meetingLocations, paceGroups, tags, sourceRide, sourceTagIds, templateData] =
     await Promise.all([
+      supabase.from('clubs').select('settings').eq('id', membership.club_id).single(),
       getMeetingLocations(membership.club_id),
       getPaceGroups(membership.club_id),
       getClubTags(membership.club_id),
@@ -56,6 +49,8 @@ export default async function CreateRidePage({
             .then((r) => r.data)
         : null,
     ]);
+
+  const clubSettings = (clubResult.data?.settings ?? {}) as Record<string, string>;
 
   // Pre-fill from duplicated ride (blank out date so leader must pick a new one)
   let initialData;

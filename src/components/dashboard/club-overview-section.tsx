@@ -1,6 +1,6 @@
 'use client';
 
-import { Bicycle, UsersThree, ChartLineUp, TrendUp } from '@phosphor-icons/react';
+import { Bicycle, UsersThree, ChartLineUp, TrendUp } from '@phosphor-icons/react/dist/ssr';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { StatsGrid } from './stats-grid';

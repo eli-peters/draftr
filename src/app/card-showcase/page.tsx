@@ -12,7 +12,7 @@ import { MemberList } from '@/components/manage/member-list';
 import { ManageRidesPanel } from '@/components/manage/manage-rides-panel';
 import { AnnouncementsPanel } from '@/components/manage/announcements-panel';
 import { RecurringRidesPanel } from '@/components/manage/recurring-rides-panel';
-import { Bicycle, Users, CalendarDots, ChartLineUp } from '@phosphor-icons/react';
+import { Bicycle, Users, CalendarDots, ChartLineUp } from '@phosphor-icons/react/dist/ssr';
 import type { RideWithDetails } from '@/types/database';
 import type { Notification } from '@/components/notifications/notification-item';
 
@@ -80,8 +80,8 @@ const mockRide: RideWithDetails = {
     created_at: '2026-01-01T00:00:00Z',
   },
   tags: [
-    { id: 'tag-1', club_id: 'club-1', name: 'Social', color: '#22c55e', sort_order: 1 },
-    { id: 'tag-2', club_id: 'club-1', name: 'No-Drop', color: '#3b82f6', sort_order: 2 },
+    { id: 'tag-1', club_id: 'club-1', name: 'No-drop', color: null, is_archived: false, sort_order: 1 },
+    { id: 'tag-2', club_id: 'club-1', name: 'Coffee stop', color: null, is_archived: false, sort_order: 2 },
   ],
   signup_count: 14,
   creator: { id: 'user-1', full_name: 'Alex Johnson', display_name: null, avatar_url: null },
@@ -107,7 +107,7 @@ const mockWeatherRide: RideWithDetails = {
     name: 'A Group (32+ km/h)',
     is_drop_ride: true,
   },
-  tags: [{ id: 'tag-3', club_id: 'club-1', name: 'Competitive', color: '#ef4444', sort_order: 3 }],
+  tags: [{ id: 'tag-3', club_id: 'club-1', name: 'Training ride', color: null, is_archived: false, sort_order: 3 }],
 };
 
 const mockUserRides = {
@@ -278,7 +278,7 @@ const mockManageRides = [
     meeting_location_name: 'Britannia Park',
     pace_group_id: 'pg-1',
     pace_group_name: 'B Group',
-    tags: [{ id: 'tag-1', name: 'Social', color: '#22c55e' }],
+    tags: [{ id: 'tag-1', name: 'No-drop' }],
     signup_count: 14,
     created_by_name: 'Alex Johnson',
   },
@@ -294,7 +294,7 @@ const mockManageRides = [
     meeting_location_name: 'Britannia Park',
     pace_group_id: 'pg-2',
     pace_group_name: 'A Group',
-    tags: [{ id: 'tag-3', name: 'Competitive', color: '#ef4444' }],
+    tags: [{ id: 'tag-3', name: 'Training ride' }],
     signup_count: 12,
     created_by_name: 'Sam Rivera',
   },
@@ -377,9 +377,9 @@ const mockRecurringRides = [
 ];
 
 const mockPaceGroups = [
-  { id: 'pg-1', name: 'B Group (28–32 km/h)' },
-  { id: 'pg-2', name: 'A Group (32+ km/h)' },
-  { id: 'pg-3', name: 'C Group (24–28 km/h)' },
+  { id: 'pg-1', name: 'B Group (28–32 km/h)', sort_order: 1 },
+  { id: 'pg-2', name: 'A Group (32+ km/h)', sort_order: 2 },
+  { id: 'pg-3', name: 'C Group (24–28 km/h)', sort_order: 3 },
 ];
 
 const mockLocations = [
@@ -387,6 +387,7 @@ const mockLocations = [
   { id: 'loc-2', name: "Mooney's Bay" },
 ];
 
+// Dev-only mock data — hex values are intentional for showcase previews
 const mockTags = [
   { id: 'tag-1', name: 'Social', color: '#22c55e' },
   { id: 'tag-2', name: 'No-Drop', color: '#3b82f6' },

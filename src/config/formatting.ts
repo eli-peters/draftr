@@ -46,23 +46,8 @@ export const units = {
   mm: ' mm',
 } as const;
 
-/** Pace-level badge variants */
-type PaceBadgeVariant = Extract<
-  BadgeVariant,
-  'pace-social' | 'pace-intermediate' | 'pace-advanced' | 'pace-elite'
->;
-
-/** Map pace group names (from DB) to badge variant keys */
-const paceVariantMap: Record<string, PaceBadgeVariant> = {
-  social: 'pace-social',
-  intermediate: 'pace-intermediate',
-  'intermediate a': 'pace-intermediate',
-  'intermediate b': 'pace-intermediate',
-  advanced: 'pace-advanced',
-  elite: 'pace-elite',
-};
-
-/** Get badge variant for a pace group name, falling back to social */
-export function getPaceBadgeVariant(paceGroupName: string): PaceBadgeVariant {
-  return paceVariantMap[paceGroupName.toLowerCase()] ?? 'pace-social';
+/** Get badge variant for a pace group by sort order (1–8). */
+export function getPaceBadgeVariant(sortOrder: number): BadgeVariant {
+  const slot = Math.min(Math.max(sortOrder, 1), 8);
+  return `pace-${slot}` as BadgeVariant;
 }

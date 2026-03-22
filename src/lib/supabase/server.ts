@@ -1,11 +1,12 @@
+import { cache } from 'react';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 /**
- * Supabase client for use in Server Components, Server Actions, and Route Handlers.
- * Reads/writes auth cookies for session management.
+ * Request-scoped Supabase client for Server Components, Server Actions, and Route Handlers.
+ * Wrapped in React.cache() so all callers within a single request share one instance.
  */
-export async function createClient() {
+export const createClient = cache(async () => {
   const cookieStore = await cookies();
 
   return createServerClient(
@@ -29,4 +30,16 @@ export async function createClient() {
       },
     },
   );
-}
+});
+
+/**
+ * Request-scoped auth user. Calls auth.getUser() once per request via React.cache().
+ * Middleware already refreshes the session — this avoids redundant network round-trips.
+ */
+export const getUser = cache(async () => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
+});

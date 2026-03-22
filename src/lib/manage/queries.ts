@@ -57,6 +57,95 @@ export async function getClubMembers(clubId: string): Promise<ClubMember[]> {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Pace Tiers with usage
+// ---------------------------------------------------------------------------
+
+export interface PaceTierWithUsage {
+  id: string;
+  name: string;
+  sort_order: number;
+  moving_pace_min: number | null;
+  moving_pace_max: number | null;
+  strava_pace_min: number | null;
+  strava_pace_max: number | null;
+  typical_distance_min: number | null;
+  typical_distance_max: number | null;
+  upcoming_ride_count: number;
+}
+
+export async function getPaceTiersWithUsage(clubId: string): Promise<PaceTierWithUsage[]> {
+  const supabase = await createClient();
+  const today = new Date().toISOString().split('T')[0];
+
+  const { data: tiers } = await supabase
+    .from('pace_groups')
+    .select('id, name, sort_order, moving_pace_min, moving_pace_max, strava_pace_min, strava_pace_max, typical_distance_min, typical_distance_max')
+    .eq('club_id', clubId)
+    .order('sort_order');
+
+  if (!tiers || tiers.length === 0) return [];
+
+  // Count upcoming rides per pace group
+  const tierIds = tiers.map((t) => t.id);
+  const { data: rides } = await supabase
+    .from('rides')
+    .select('pace_group_id')
+    .eq('club_id', clubId)
+    .in('pace_group_id', tierIds)
+    .gte('ride_date', today)
+    .neq('status', 'cancelled');
+
+  const countMap = new Map<string, number>();
+  for (const r of rides ?? []) {
+    if (r.pace_group_id) {
+      countMap.set(r.pace_group_id, (countMap.get(r.pace_group_id) ?? 0) + 1);
+    }
+  }
+
+  return tiers.map((t) => ({
+    ...t,
+    upcoming_ride_count: countMap.get(t.id) ?? 0,
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// Vibe Tags with usage
+// ---------------------------------------------------------------------------
+
+export interface VibeTagWithUsage {
+  id: string;
+  name: string;
+  sort_order: number;
+  ride_count: number;
+}
+
+export async function getVibeTagsWithUsage(clubId: string): Promise<VibeTagWithUsage[]> {
+  const supabase = await createClient();
+
+  const { data: tags } = await supabase
+    .from('tags')
+    .select('id, name, sort_order')
+    .eq('club_id', clubId)
+    .order('sort_order');
+
+  if (!tags || tags.length === 0) return [];
+
+  // Count rides per tag via ride_tags
+  const tagIds = tags.map((t) => t.id);
+  const { data: rideTags } = await supabase.from('ride_tags').select('tag_id').in('tag_id', tagIds);
+
+  const countMap = new Map<string, number>();
+  for (const rt of rideTags ?? []) {
+    countMap.set(rt.tag_id, (countMap.get(rt.tag_id) ?? 0) + 1);
+  }
+
+  return tags.map((t) => ({
+    ...t,
+    ride_count: countMap.get(t.id) ?? 0,
+  }));
+}
+
 /**
  * Count pending member approvals for a club.
  */

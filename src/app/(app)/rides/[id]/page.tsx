@@ -161,19 +161,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       {ride.tags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
           {ride.tags.map((tag) => (
-            <Badge
-              key={tag.id}
-              variant="secondary"
-              className="text-sm"
-              style={
-                tag.color
-                  ? {
-                      backgroundColor: `color-mix(in srgb, ${tag.color} 15%, transparent)`,
-                      color: tag.color,
-                    }
-                  : undefined
-              }
-            >
+            <Badge key={tag.id} variant="secondary" className="text-sm">
               {tag.name}
             </Badge>
           ))}

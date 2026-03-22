@@ -1,6 +1,6 @@
 'use client';
 
-import { Bicycle, CalendarDots, Path, Mountains } from '@phosphor-icons/react';
+import { Bicycle, CalendarDots, Path, Mountains } from '@phosphor-icons/react/dist/ssr';
 import { StatsGrid } from './stats-grid';
 
 interface DashboardStatsProps {

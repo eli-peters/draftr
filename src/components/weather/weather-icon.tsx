@@ -18,24 +18,33 @@ interface WeatherIconProps {
 }
 
 /**
- * Maps WMO weather condition codes to Phosphor icons.
+ * Maps WMO weather condition codes to Phosphor duotone icons.
  * Uses day/night variants for clear and partly cloudy conditions.
  */
 export function WeatherIcon({ weatherCode, isDay = true, className }: WeatherIconProps) {
   const iconClass = cn('shrink-0', className);
 
-  if (weatherCode == null) return <Cloud className={iconClass} />;
+  if (weatherCode == null) return <Cloud weight="duotone" className={iconClass} />;
   if (weatherCode === 0)
-    return isDay ? <Sun className={iconClass} /> : <Moon className={iconClass} />;
+    return isDay ? (
+      <Sun weight="duotone" className={iconClass} />
+    ) : (
+      <Moon weight="duotone" className={iconClass} />
+    );
   if (weatherCode <= 2)
-    return isDay ? <CloudSun className={iconClass} /> : <CloudMoon className={iconClass} />;
-  if (weatherCode === 3) return <Cloud className={iconClass} />;
-  if (weatherCode === 45 || weatherCode === 48) return <CloudFog className={iconClass} />;
+    return isDay ? (
+      <CloudSun weight="duotone" className={iconClass} />
+    ) : (
+      <CloudMoon weight="duotone" className={iconClass} />
+    );
+  if (weatherCode === 3) return <Cloud weight="duotone" className={iconClass} />;
+  if (weatherCode === 45 || weatherCode === 48)
+    return <CloudFog weight="duotone" className={iconClass} />;
   if ((weatherCode >= 51 && weatherCode <= 67) || (weatherCode >= 80 && weatherCode <= 82))
-    return <CloudRain className={iconClass} />;
+    return <CloudRain weight="duotone" className={iconClass} />;
   if ((weatherCode >= 71 && weatherCode <= 77) || (weatherCode >= 85 && weatherCode <= 86))
-    return <CloudSnow className={iconClass} />;
-  if (weatherCode >= 95) return <CloudLightning className={iconClass} />;
+    return <CloudSnow weight="duotone" className={iconClass} />;
+  if (weatherCode >= 95) return <CloudLightning weight="duotone" className={iconClass} />;
 
-  return <Cloud className={iconClass} />;
+  return <Cloud weight="duotone" className={iconClass} />;
 }

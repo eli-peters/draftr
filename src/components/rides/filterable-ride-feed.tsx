@@ -2,11 +2,12 @@
 
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTransition, useCallback } from 'react';
-import { Bicycle, ArrowClockwise } from '@phosphor-icons/react';
+import { Bicycle, ArrowClockwise, X } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { ContentToolbar } from '@/components/layout/content-toolbar';
+import { Badge } from '@/components/ui/badge';
 import { RideCard } from '@/components/rides/ride-card';
 import {
   RideFilterDrawer,
@@ -21,8 +22,8 @@ const { rides: ridesContent } = appContent;
 
 interface FilterableRideFeedProps {
   rides: RideWithDetails[];
-  paceGroups: { id: string; name: string }[];
-  tags: { id: string; name: string; color: string | null }[];
+  paceGroups: { id: string; name: string; sort_order: number }[];
+  tags: { id: string; name: string }[];
   heading?: string;
   emptyTitle: string;
   emptyDescription: string;
@@ -83,6 +84,22 @@ export function FilterableRideFeed({
     router.replace(pathname, { scroll: false });
   }
 
+  function dismissFilter(type: 'pace' | 'tag' | 'date', id?: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (type === 'pace' && id) {
+      const remaining = paceIds.filter((p) => p !== id);
+      remaining.length > 0 ? params.set('pace', remaining.join(',')) : params.delete('pace');
+    } else if (type === 'tag' && id) {
+      const remaining = tagIds.filter((t) => t !== id);
+      remaining.length > 0 ? params.set('tags', remaining.join(',')) : params.delete('tags');
+    } else if (type === 'date') {
+      params.delete('from');
+      params.delete('to');
+    }
+    const qs = params.toString();
+    router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false });
+  }
+
   const handleRefresh = useCallback(() => {
     startTransition(() => {
       router.refresh();
@@ -127,6 +144,51 @@ export function FilterableRideFeed({
         }
         className="mb-4"
       />
+
+      {hasFilters && (
+        <div className="mb-3 flex flex-wrap gap-2">
+          {paceIds.map((id) => {
+            const pg = paceGroups.find((p) => p.id === id);
+            if (!pg) return null;
+            return (
+              <Badge
+                key={id}
+                variant={`pace-${Math.min(Math.max(pg.sort_order, 1), 8)}` as import('@/components/ui/badge').BadgeVariant}
+                className="cursor-pointer gap-1"
+                onClick={() => dismissFilter('pace', id)}
+              >
+                {pg.name}
+                <X className="h-3 w-3" />
+              </Badge>
+            );
+          })}
+          {tagIds.map((id) => {
+            const tag = tags.find((t) => t.id === id);
+            if (!tag) return null;
+            return (
+              <Badge
+                key={id}
+                variant="secondary"
+                className="cursor-pointer gap-1"
+                onClick={() => dismissFilter('tag', id)}
+              >
+                {tag.name}
+                <X className="h-3 w-3" />
+              </Badge>
+            );
+          })}
+          {(dateFrom || dateTo) && (
+            <Badge
+              variant="secondary"
+              className="cursor-pointer gap-1"
+              onClick={() => dismissFilter('date')}
+            >
+              {dateFrom || '...'} — {dateTo || '...'}
+              <X className="h-3 w-3" />
+            </Badge>
+          )}
+        </div>
+      )}
 
       {sorted.length > 0 ? (
         <div className="flex flex-col gap-4">

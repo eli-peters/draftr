@@ -280,3 +280,31 @@ Club overrides provide `primary` and `secondary` seed colours. ThemeProvider inj
 | Business config | Database (Supabase)   | Pace groups, locations, tags, rules              |
 | Environment     | `.env.local`          | API keys, URLs                                   |
 | Components      | `src/components/`     | Pure, data-driven, props/context only            |
+
+## 12. Action Positioning
+
+Three-tier convention for where functional actions (filter, sort, search, create, etc.) live relative to page hierarchy. Components: `PageHeader` (`src/components/layout/page-header.tsx`), `ContentToolbar` (`src/components/layout/content-toolbar.tsx`).
+
+### Page-Level Actions
+
+Actions that affect the entire page: create, export, primary CTA.
+
+- Use `PageHeader` with the `actions` prop — renders inline with the H1 on the same row.
+- Examples: "Create Ride" button on Manage, "Edit" on Ride Detail.
+
+### Section-Level Actions
+
+Actions that control a content area: filter, sort, search, refresh.
+
+- Use `ContentToolbar` with `left` / `right` slots — positioned below tabs or segmented controls, above the content list.
+- `left`: heading, result count, or filter summary.
+- `right`: filter drawer, sort controls, refresh button.
+- Examples: ride feed filter/sort, manage rides filter below tabs, member search/filter.
+
+### Contextual Actions
+
+Actions that appear based on state or selection: approve, edit role, delete.
+
+- Render inline on individual items (cards, rows), only visible when relevant.
+- Never permanently visible in the page chrome — they belong to the item they act on.
+- Examples: approve button on pending members, role dropdown on active members.

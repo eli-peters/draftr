@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, getUser } from '@/lib/supabase/server';
 import { appContent } from '@/content/app';
 import type { AnnouncementType, MemberRole, MemberStatus } from '@/types/database';
 
@@ -12,9 +12,7 @@ const { common, errors } = appContent;
  */
 export async function updateMemberRole(clubId: string, userId: string, newRole: MemberRole) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
   // Prevent self-demotion
@@ -60,9 +58,7 @@ export async function updateMemberRole(clubId: string, userId: string, newRole: 
  */
 export async function deactivateMember(clubId: string, userId: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
   // Prevent self-deactivation
@@ -85,9 +81,7 @@ export async function deactivateMember(clubId: string, userId: string) {
  */
 export async function reactivateMember(clubId: string, userId: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
   const { error } = await supabase
@@ -123,9 +117,7 @@ export async function createAnnouncement(
   },
 ) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
   const { data: announcement, error } = await supabase
@@ -187,9 +179,7 @@ export async function updateAnnouncement(
   },
 ) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
   const { error } = await supabase
@@ -214,9 +204,7 @@ export async function updateAnnouncement(
  */
 export async function deleteAnnouncement(announcementId: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
   const { error } = await supabase.from('announcements').delete().eq('id', announcementId);
@@ -233,9 +221,7 @@ export async function deleteAnnouncement(announcementId: string) {
  */
 export async function dismissAnnouncement(announcementId: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
   const { error } = await supabase.from('announcement_dismissals').upsert(
@@ -262,9 +248,7 @@ export async function toggleAnnouncementPin(
   clubId: string,
 ) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
   // Enforce one-pinned-max: unpin all others in this club first
@@ -288,15 +272,220 @@ export async function toggleAnnouncementPin(
   return { success: true };
 }
 
+// ---------------------------------------------------------------------------
+// Pace Tier Management
+// ---------------------------------------------------------------------------
+
+export async function addPaceTier(clubId: string, name: string) {
+  const supabase = await createClient();
+  const user = await getUser();
+  if (!user) return { error: common.notAuthenticated };
+
+  // Get max sort_order
+  const { data: existing } = await supabase
+    .from('pace_groups')
+    .select('sort_order')
+    .eq('club_id', clubId)
+    .order('sort_order', { ascending: false })
+    .limit(1);
+
+  const nextOrder = (existing?.[0]?.sort_order ?? 0) + 1;
+
+  const { error } = await supabase.from('pace_groups').insert({
+    club_id: clubId,
+    name: name.trim(),
+    sort_order: nextOrder,
+  });
+
+  if (error) {
+    if (error.code === '23505') return { error: appContent.manage.paceTiers.duplicateName };
+    return { error: error.message };
+  }
+
+  revalidatePath('/manage');
+  return { success: true };
+}
+
+export async function updatePaceTier(
+  tierId: string,
+  data: {
+    name?: string;
+    sort_order?: number;
+    moving_pace_min?: number | null;
+    moving_pace_max?: number | null;
+    strava_pace_min?: number | null;
+    strava_pace_max?: number | null;
+    typical_distance_min?: number | null;
+    typical_distance_max?: number | null;
+  },
+) {
+  const supabase = await createClient();
+  const user = await getUser();
+  if (!user) return { error: common.notAuthenticated };
+
+  const updates: Record<string, unknown> = {};
+  if (data.name !== undefined) updates.name = data.name.trim();
+  if (data.sort_order !== undefined) updates.sort_order = data.sort_order;
+  if (data.moving_pace_min !== undefined) updates.moving_pace_min = data.moving_pace_min;
+  if (data.moving_pace_max !== undefined) updates.moving_pace_max = data.moving_pace_max;
+  if (data.strava_pace_min !== undefined) updates.strava_pace_min = data.strava_pace_min;
+  if (data.strava_pace_max !== undefined) updates.strava_pace_max = data.strava_pace_max;
+  if (data.typical_distance_min !== undefined) updates.typical_distance_min = data.typical_distance_min;
+  if (data.typical_distance_max !== undefined) updates.typical_distance_max = data.typical_distance_max;
+
+  const { error } = await supabase.from('pace_groups').update(updates).eq('id', tierId);
+
+  if (error) {
+    if (error.code === '23505') return { error: appContent.manage.paceTiers.duplicateName };
+    return { error: error.message };
+  }
+
+  revalidatePath('/manage');
+  revalidatePath('/rides');
+  return { success: true };
+}
+
+export async function deletePaceTier(tierId: string) {
+  const supabase = await createClient();
+  const user = await getUser();
+  if (!user) return { error: common.notAuthenticated };
+
+  // Block deletion if any rides or templates reference this tier
+  const { count: rideCount } = await supabase
+    .from('rides')
+    .select('*', { count: 'exact', head: true })
+    .eq('pace_group_id', tierId);
+
+  const { count: templateCount } = await supabase
+    .from('ride_templates')
+    .select('*', { count: 'exact', head: true })
+    .eq('pace_group_id', tierId);
+
+  if ((rideCount ?? 0) > 0 || (templateCount ?? 0) > 0) {
+    return { error: appContent.manage.paceTiers.cannotDelete };
+  }
+
+  const { error } = await supabase.from('pace_groups').delete().eq('id', tierId);
+  if (error) return { error: error.message };
+
+  revalidatePath('/manage');
+  return { success: true };
+}
+
+export async function reorderPaceTiers(clubId: string, orderedIds: string[]) {
+  const supabase = await createClient();
+  const user = await getUser();
+  if (!user) return { error: common.notAuthenticated };
+
+  await Promise.all(
+    orderedIds.map((id, i) =>
+      supabase
+        .from('pace_groups')
+        .update({ sort_order: i + 1 })
+        .eq('id', id)
+        .eq('club_id', clubId),
+    ),
+  );
+
+  revalidatePath('/manage');
+  return { success: true };
+}
+
+// ---------------------------------------------------------------------------
+// Vibe Tag Management
+// ---------------------------------------------------------------------------
+
+export async function addVibeTag(clubId: string, name: string) {
+  const supabase = await createClient();
+  const user = await getUser();
+  if (!user) return { error: common.notAuthenticated };
+
+  const { data: existing } = await supabase
+    .from('tags')
+    .select('sort_order')
+    .eq('club_id', clubId)
+    .order('sort_order', { ascending: false })
+    .limit(1);
+
+  const nextOrder = (existing?.[0]?.sort_order ?? 0) + 1;
+
+  const { error } = await supabase.from('tags').insert({
+    club_id: clubId,
+    name: name.trim(),
+    color: null,
+    is_archived: false,
+    sort_order: nextOrder,
+  });
+
+  if (error) {
+    if (error.code === '23505') return { error: appContent.manage.vibeTags.duplicateName };
+    return { error: error.message };
+  }
+
+  revalidatePath('/manage');
+  return { success: true };
+}
+
+export async function updateVibeTag(tagId: string, data: { name?: string; sort_order?: number }) {
+  const supabase = await createClient();
+  const user = await getUser();
+  if (!user) return { error: common.notAuthenticated };
+
+  const updates: Record<string, unknown> = {};
+  if (data.name !== undefined) updates.name = data.name.trim();
+  if (data.sort_order !== undefined) updates.sort_order = data.sort_order;
+
+  const { error } = await supabase.from('tags').update(updates).eq('id', tagId);
+
+  if (error) {
+    if (error.code === '23505') return { error: appContent.manage.vibeTags.duplicateName };
+    return { error: error.message };
+  }
+
+  revalidatePath('/manage');
+  revalidatePath('/rides');
+  return { success: true };
+}
+
+export async function deleteVibeTag(tagId: string) {
+  const supabase = await createClient();
+  const user = await getUser();
+  if (!user) return { error: common.notAuthenticated };
+
+  const { error } = await supabase.from('tags').delete().eq('id', tagId);
+  if (error) return { error: error.message };
+
+  revalidatePath('/manage');
+  revalidatePath('/rides');
+  return { success: true };
+}
+
+export async function reorderVibeTags(clubId: string, orderedIds: string[]) {
+  const supabase = await createClient();
+  const user = await getUser();
+  if (!user) return { error: common.notAuthenticated };
+
+  await Promise.all(
+    orderedIds.map((id, i) =>
+      supabase
+        .from('tags')
+        .update({ sort_order: i + 1 })
+        .eq('id', id)
+        .eq('club_id', clubId),
+    ),
+  );
+
+  revalidatePath('/manage');
+  return { success: true };
+}
+
 /**
  * Update season dates for a club (admin only).
  * Stored in clubs.settings JSONB.
  */
 export async function updateSeasonDates(clubId: string, seasonStart: string, seasonEnd: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
   // Fetch existing settings and merge
@@ -343,9 +532,7 @@ export async function createRecurringRide(
   },
 ) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
   const { data: template, error } = await supabase
@@ -407,9 +594,7 @@ function formatLocalDate(date: Date): string {
  */
 export async function generateRidesFromRecurring(templateId: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
   const { data: template } = await supabase
@@ -539,9 +724,7 @@ export async function generateRidesFromRecurring(templateId: string) {
  */
 export async function toggleRecurringRide(templateId: string, isActive: boolean) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
   const { error } = await supabase
@@ -560,9 +743,7 @@ export async function toggleRecurringRide(templateId: string, isActive: boolean)
  */
 export async function deleteRecurringRide(templateId: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
   // Delete future unmodified rides from this template (no signups)

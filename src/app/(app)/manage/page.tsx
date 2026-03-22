@@ -13,20 +13,36 @@ import {
   getPaceGroups,
   getClubTags,
 } from '@/lib/rides/queries';
-import { getClubMembers, getClubStats, getClubAnnouncements } from '@/lib/manage/queries';
+import {
+  getClubMembers,
+  getClubStats,
+  getClubAnnouncements,
+  getPaceTiersWithUsage,
+  getVibeTagsWithUsage,
+} from '@/lib/manage/queries';
 import { createClient } from '@/lib/supabase/server';
 import { InviteMemberDrawer } from '@/components/manage/invite-member-drawer';
 import { MemberList } from '@/components/manage/member-list';
 import { ManageRidesPanel } from '@/components/manage/manage-rides-panel';
 import { AnnouncementsPanel } from '@/components/manage/announcements-panel';
 import { SeasonDatesCard } from '@/components/manage/season-dates-card';
+import { PaceTiersCard } from '@/components/manage/pace-tiers-card';
+import { VibeTagsCard } from '@/components/manage/vibe-tags-card';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import type { UserRole } from '@/config/navigation';
 
 const { manage: content } = appContent;
 
-export default async function ManagePage() {
+export default async function ManagePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string; pace?: string }>;
+}) {
+  const params = await searchParams;
+  const activeTab = params.tab ?? 'rides';
+  const initialPaceFilter = params.pace ? [params.pace] : [];
+
   const membership = await getUserClubMembership();
   if (!membership) redirect(routes.signIn);
 
@@ -42,16 +58,26 @@ export default async function ManagePage() {
     .single();
   const clubSettings = (club?.settings ?? {}) as Record<string, string>;
 
-  const [rides, paceGroups, tags, members, stats, announcements] = await Promise.all([
-    getLeaderRides(membership.user_id, membership.club_id, isAdmin),
-    getPaceGroups(membership.club_id),
-    getClubTags(membership.club_id),
-    isAdmin ? getClubMembers(membership.club_id) : Promise.resolve([]),
-    isAdmin ? getClubStats(membership.club_id) : Promise.resolve(null),
-    isAdmin ? getClubAnnouncements(membership.club_id) : Promise.resolve([]),
-  ]);
+  const [rides, paceGroups, tags, members, stats, announcements, paceTiersWithUsage, vibeTagsWithUsage] =
+    await Promise.all([
+      getLeaderRides(membership.user_id, membership.club_id, isAdmin),
+      getPaceGroups(membership.club_id),
+      getClubTags(membership.club_id),
+      isAdmin ? getClubMembers(membership.club_id) : Promise.resolve([]),
+      isAdmin ? getClubStats(membership.club_id) : Promise.resolve(null),
+      isAdmin ? getClubAnnouncements(membership.club_id) : Promise.resolve([]),
+      isAdmin ? getPaceTiersWithUsage(membership.club_id) : Promise.resolve([]),
+      isAdmin ? getVibeTagsWithUsage(membership.club_id) : Promise.resolve([]),
+    ]);
 
-  const ridesPanel = <ManageRidesPanel rides={rides} paceGroups={paceGroups} tags={tags} />;
+  const ridesPanel = (
+    <ManageRidesPanel
+      rides={rides}
+      paceGroups={paceGroups}
+      tags={tags}
+      initialPaceFilter={initialPaceFilter}
+    />
+  );
 
   return (
     <DashboardShell>
@@ -83,7 +109,7 @@ export default async function ManagePage() {
       )}
 
       {isAdmin ? (
-        <Tabs defaultValue="rides" className="mt-6">
+        <Tabs defaultValue={activeTab} key={activeTab} className="mt-6">
           <TabsList variant="line" className="w-full">
             <TabsTrigger value="rides">{content.sections.rides}</TabsTrigger>
             <TabsTrigger value="members">{content.sections.members}</TabsTrigger>
@@ -121,6 +147,8 @@ export default async function ManagePage() {
                 seasonStart={clubSettings.season_start ?? ''}
                 seasonEnd={clubSettings.season_end ?? ''}
               />
+              <PaceTiersCard clubId={membership.club_id} initialTiers={paceTiersWithUsage} />
+              <VibeTagsCard clubId={membership.club_id} initialTags={vibeTagsWithUsage} />
             </div>
           </TabsContent>
         </Tabs>

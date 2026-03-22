@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { MapPin, Users, CaretRight, CloudRain, ArrowsClockwise } from '@phosphor-icons/react';
+import { MapPin, Users, CaretRight, CloudRain, ArrowsClockwise, ArrowClockwise } from '@phosphor-icons/react/dist/ssr';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { CapacityBar } from '@/components/ui/capacity-bar';
@@ -36,7 +38,7 @@ export interface ManageRideData {
   meeting_location_name: string | null;
   pace_group_id: string | null;
   pace_group_name: string | null;
-  tags: { id: string; name: string; color: string | null }[];
+  tags: { id: string; name: string }[];
   signup_count: number;
   created_by_name: string | null;
 }
@@ -81,6 +83,20 @@ function ManageRideItem({ ride }: { ride: ManageRideData }) {
                   : ride.signup_count}
               </MetadataItem>
             </div>
+            {ride.tags.length > 0 && (
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                {ride.tags.slice(0, 2).map((tag) => (
+                  <Badge key={tag.id} variant="secondary" size="sm">
+                    {tag.name}
+                  </Badge>
+                ))}
+                {ride.tags.length > 2 && (
+                  <span className="text-xs text-muted-foreground">
+                    {ridesContent.card.moreTags(ride.tags.length - 2)}
+                  </span>
+                )}
+              </div>
+            )}
             {ride.created_by_name && (
               <p className="mt-1.5 text-sm text-muted-foreground/60">
                 {content.rides.createdBy(ride.created_by_name)}
@@ -99,8 +115,9 @@ function ManageRideItem({ ride }: { ride: ManageRideData }) {
 
 interface ManageRidesPanelProps {
   rides: ManageRideData[];
-  paceGroups: { id: string; name: string }[];
-  tags: { id: string; name: string; color: string | null }[];
+  paceGroups: { id: string; name: string; sort_order: number }[];
+  tags: { id: string; name: string }[];
+  initialPaceFilter?: string[];
 }
 
 function RideList({ rides, emptyMessage }: { rides: ManageRideData[]; emptyMessage: string }) {
@@ -116,11 +133,19 @@ function RideList({ rides, emptyMessage }: { rides: ManageRideData[]; emptyMessa
   );
 }
 
-export function ManageRidesPanel({ rides, paceGroups, tags }: ManageRidesPanelProps) {
-  const [paceIds, setPaceIds] = useState<string[]>([]);
+export function ManageRidesPanel({ rides, paceGroups, tags, initialPaceFilter = [] }: ManageRidesPanelProps) {
+  const router = useRouter();
+  const [isRefreshing, startTransition] = useTransition();
+  const [paceIds, setPaceIds] = useState<string[]>(initialPaceFilter);
   const [tagIds, setTagIds] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<DateRange>({ from: '', to: '' });
   const [sortBy, setSortBy] = useState<SortOption>('date_asc');
+
+  const handleRefresh = useCallback(() => {
+    startTransition(() => {
+      router.refresh();
+    });
+  }, [router]);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -192,16 +217,27 @@ export function ManageRidesPanel({ rides, paceGroups, tags }: ManageRidesPanelPr
             </span>
           }
           right={
-            <RideFilterDrawer
-              paceGroups={paceGroups}
-              tags={tags}
-              activePaceGroupIds={paceIds}
-              activeTagIds={tagIds}
-              activeDateRange={dateRange}
-              activeSort={sortBy}
-              onApply={handleApply}
-              onClear={handleClear}
-            />
+            <>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                aria-label={ridesContent.feed.refreshLabel}
+              >
+                <ArrowClockwise className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              </Button>
+              <RideFilterDrawer
+                paceGroups={paceGroups}
+                tags={tags}
+                activePaceGroupIds={paceIds}
+                activeTagIds={tagIds}
+                activeDateRange={dateRange}
+                activeSort={sortBy}
+                onApply={handleApply}
+                onClear={handleClear}
+              />
+            </>
           }
           className="mt-3"
         />

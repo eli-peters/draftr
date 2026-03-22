@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, getUser } from '@/lib/supabase/server';
 import { appContent } from '@/content/app';
 
 /**
@@ -9,9 +9,7 @@ import { appContent } from '@/content/app';
  */
 export async function markNotificationRead(notificationId: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) return { error: appContent.common.notAuthenticated };
 
@@ -32,9 +30,7 @@ export async function markNotificationRead(notificationId: string) {
  */
 export async function markAllNotificationsRead() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) return { error: appContent.common.notAuthenticated };
 

@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server';
+import { cache } from 'react';
+import { createClient, getUser } from '@/lib/supabase/server';
 import { SignupStatus } from '@/config/statuses';
 import { todayDateString } from '@/config/formatting';
 import type {
@@ -94,12 +95,10 @@ export async function getRideById(rideId: string): Promise<RideWithDetails | nul
  * Check if the current user is signed up for a ride.
  */
 export async function getUserSignupStatus(rideId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getUser();
   if (!user) return null;
+
+  const supabase = await createClient();
 
   const { data } = await supabase
     .from('ride_signups')
@@ -306,15 +305,13 @@ export async function getLeaderWeatherWatchRide(userId: string, clubId: string) 
 
 /**
  * Get the user's club membership (first active club).
+ * Wrapped in React.cache() — called by layout + every child page, deduplicates per request.
  */
-export async function getUserClubMembership() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+export const getUserClubMembership = cache(async () => {
+  const user = await getUser();
   if (!user) return null;
 
+  const supabase = await createClient();
   const { data } = await supabase
     .from('club_memberships')
     .select('*, club:clubs(*)')
@@ -325,7 +322,7 @@ export async function getUserClubMembership() {
   if (!data) return null;
 
   return { ...data, user_id: user.id };
-}
+});
 
 /**
  * Fetch meeting locations for a club (for ride creation form).
@@ -348,7 +345,7 @@ export async function getPaceGroups(clubId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from('pace_groups')
-    .select('id, name')
+    .select('id, name, sort_order')
     .eq('club_id', clubId)
     .order('sort_order');
   return data ?? [];
@@ -361,9 +358,9 @@ export async function getClubTags(clubId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from('tags')
-    .select('id, name, color')
+    .select('id, name')
     .eq('club_id', clubId)
-    .order('name');
+    .order('sort_order');
   return data ?? [];
 }
 

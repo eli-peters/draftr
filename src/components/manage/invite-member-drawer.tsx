@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { CheckCircle, EnvelopeSimple, Copy, Check } from '@phosphor-icons/react';
+import { CheckCircle, EnvelopeSimple, Copy, Check } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

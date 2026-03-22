@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { format } from 'date-fns';
-import { MagnifyingGlass } from '@phosphor-icons/react';
+import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ContentToolbar } from '@/components/layout/content-toolbar';
 import { appContent } from '@/content/app';
 import { cn, getInitials } from '@/lib/utils';
 import {
@@ -138,7 +139,7 @@ export function MemberList({ members, clubId, currentUserId }: MemberListProps) 
 
   return (
     <div className={isPending ? 'opacity-pending pointer-events-none' : ''}>
-      {/* Search */}
+      {/* Search + Filter + Sort controls */}
       <div className="relative mb-3">
         <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
@@ -149,35 +150,39 @@ export function MemberList({ members, clubId, currentUserId }: MemberListProps) 
         />
       </div>
 
-      {/* Filter + Sort controls */}
-      <div className="flex items-center justify-between mb-4 gap-3">
-        <div className="flex flex-wrap gap-1.5">
-          {roleFilterOptions.map((opt) => (
-            <Badge
-              key={opt.value}
-              variant={roleFilter === opt.value ? 'default' : 'outline'}
-              size="lg"
-              className="cursor-pointer"
-              onClick={() => setRoleFilter(opt.value)}
-            >
-              {opt.label}
-            </Badge>
-          ))}
-        </div>
-        <div className="flex gap-1.5 shrink-0">
-          {sortOptions.map((opt) => (
-            <Badge
-              key={opt.value}
-              variant={sortBy === opt.value ? 'default' : 'outline'}
-              size="lg"
-              className="cursor-pointer"
-              onClick={() => setSortBy(opt.value)}
-            >
-              {opt.label}
-            </Badge>
-          ))}
-        </div>
-      </div>
+      <ContentToolbar
+        left={
+          <div className="flex flex-wrap gap-1.5">
+            {roleFilterOptions.map((opt) => (
+              <Badge
+                key={opt.value}
+                variant={roleFilter === opt.value ? 'default' : 'outline'}
+                size="lg"
+                className="cursor-pointer"
+                onClick={() => setRoleFilter(opt.value)}
+              >
+                {opt.label}
+              </Badge>
+            ))}
+          </div>
+        }
+        right={
+          <div className="flex gap-1.5 shrink-0">
+            {sortOptions.map((opt) => (
+              <Badge
+                key={opt.value}
+                variant={sortBy === opt.value ? 'default' : 'outline'}
+                size="lg"
+                className="cursor-pointer"
+                onClick={() => setSortBy(opt.value)}
+              >
+                {opt.label}
+              </Badge>
+            ))}
+          </div>
+        }
+        className="mb-4"
+      />
 
       {/* Pending approvals */}
       {pending.length > 0 && (

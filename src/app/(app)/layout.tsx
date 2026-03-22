@@ -1,11 +1,10 @@
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/layout/app-shell';
 import { getNavForRole, type UserRole } from '@/config/navigation';
-import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { getInitials } from '@/lib/utils';
 import { getUserClubMembership } from '@/lib/rides/queries';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, getUser } from '@/lib/supabase/server';
 import { getUserNotifications } from '@/lib/notifications/queries';
 import { getPinnedAnnouncement } from '@/lib/manage/queries';
 import { AnnouncementBanner } from '@/components/dashboard/announcement-banner';
@@ -16,20 +15,18 @@ import { AnnouncementBanner } from '@/components/dashboard/announcement-banner';
  * and user profile for the header avatar menu.
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const [membership, supabase] = await Promise.all([getUserClubMembership(), createClient()]);
-
-  const userRole: UserRole = (membership?.role as UserRole) ?? 'rider';
-  const navItems = getNavForRole(userRole);
+  const [membership, authUser] = await Promise.all([getUserClubMembership(), getUser()]);
 
   // Auth guard — redirect unauthenticated users
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
   if (!authUser) {
     redirect(routes.signIn);
   }
 
+  const userRole: UserRole = (membership?.role as UserRole) ?? 'rider';
+  const navItems = getNavForRole(userRole);
+
   // Fetch profile (includes onboarding check)
+  const supabase = await createClient();
   const { data: profile } = await supabase
     .from('users')
     .select('full_name, display_name, email, avatar_url, onboarding_completed')

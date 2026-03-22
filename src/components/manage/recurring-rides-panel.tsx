@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
-import { Plus, Trash, Pause, Play, ArrowClockwise } from '@phosphor-icons/react';
+import { Plus, Trash, Pause, Play, ArrowClockwise } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

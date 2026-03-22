@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FunnelSimple } from '@phosphor-icons/react';
+import { FunnelSimple } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -21,8 +21,8 @@ export type { SortOption, DateRange };
 const { rides: ridesContent } = appContent;
 
 interface RideFilterDrawerProps {
-  paceGroups: { id: string; name: string }[];
-  tags: { id: string; name: string; color: string | null }[];
+  paceGroups: { id: string; name: string; sort_order: number }[];
+  tags: { id: string; name: string }[];
   activePaceGroupIds: string[];
   activeTagIds: string[];
   activeDateRange: DateRange;

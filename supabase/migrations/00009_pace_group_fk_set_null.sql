@@ -1,0 +1,7 @@
+-- ============================================================================
+-- Pace group FK constraints — kept as default RESTRICT
+-- Admin must reassign rides before deleting a pace tier.
+-- (Applied and reverted SET NULL in production — FK is now back to RESTRICT)
+-- ============================================================================
+-- No schema changes needed — RESTRICT is the PostgreSQL default.
+-- This migration exists as documentation of the decision.

@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Bicycle, Path, CaretRight, FirstAidKit } from '@phosphor-icons/react/dist/ssr';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, getUser } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -19,12 +19,10 @@ import { getUserProfile, getUserProfileStats, getUserRecentRides } from '@/lib/p
 const { profile: content } = appContent;
 
 export default async function ProfilePage() {
-  const supabase = await createClient();
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
+  const authUser = await getUser();
   if (!authUser) redirect(routes.signIn);
 
+  const supabase = await createClient();
   const [profile, stats, recentRides, emergencyContact] = await Promise.all([
     getUserProfile(authUser.id),
     getUserProfileStats(authUser.id),
