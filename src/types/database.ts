@@ -104,6 +104,7 @@ export interface Ride {
   organiser_notes: string | null;
   status: RideStatus;
   cancellation_reason: string | null;
+  weather_watch_auto: boolean;
   template_id: string | null;
   created_at: string;
   updated_at: string;
@@ -240,6 +241,24 @@ export interface WeatherRule {
   created_at: string;
 }
 
+export interface RideWeatherSnapshot {
+  id: string;
+  ride_id: string;
+  fetched_at: string;
+  temperature_c: number | null;
+  feels_like_c: number | null;
+  humidity: number | null;
+  wind_speed_kmh: number | null;
+  wind_gust_kmh: number | null;
+  pop: number | null;
+  precipitation_mm: number | null;
+  weather_code: number | null;
+  weather_main: string | null;
+  weather_icon: string | null;
+  is_day: boolean | null;
+  source: string;
+}
+
 /**
  * Ride with joined relations — common query shape for the feed and detail pages.
  */
@@ -250,4 +269,5 @@ export interface RideWithDetails extends Ride {
   signup_count: number;
   creator: Pick<User, 'id' | 'full_name' | 'display_name' | 'avatar_url'> | null;
   current_user_signup_status: 'confirmed' | 'waitlisted' | null;
+  weather: RideWeatherSnapshot | null;
 }

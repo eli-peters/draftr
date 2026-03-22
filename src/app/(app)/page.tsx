@@ -20,6 +20,7 @@ import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { GreetingSection } from '@/components/dashboard/greeting-section';
 import { ActionBar } from '@/components/dashboard/action-bar';
 import { FilterableRideFeed } from '@/components/rides/filterable-ride-feed';
+import { CurrentWeather } from '@/components/weather/current-weather';
 
 import { EmptyState } from '@/components/ui/empty-state';
 import type { UserRole } from '@/config/navigation';
@@ -75,6 +76,11 @@ export default async function HomePage() {
   return (
     <DashboardShell>
       <GreetingSection firstName={firstName} subtitle={subtitle} />
+
+      {/* Current weather widget — client component, uses browser geolocation */}
+      <div className="mt-4">
+        <CurrentWeather />
+      </div>
 
       {/* Role-contextual action bar — only renders if there are items needing attention */}
       <div className="mt-8">

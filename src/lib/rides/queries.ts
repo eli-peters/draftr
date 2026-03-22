@@ -1,6 +1,11 @@
 import { createClient } from '@/lib/supabase/server';
 import { SignupStatus } from '@/config/statuses';
-import type { RideWithDetails, CommentWithUser, RidePickupWithLocation } from '@/types/database';
+import type {
+  RideWithDetails,
+  RideWeatherSnapshot,
+  CommentWithUser,
+  RidePickupWithLocation,
+} from '@/types/database';
 
 /** Select string shared by queries that return RideWithDetails. */
 const RIDE_WITH_DETAILS_SELECT = `
@@ -9,7 +14,8 @@ const RIDE_WITH_DETAILS_SELECT = `
   pace_group:pace_groups(*),
   ride_tags(tag:tags(*)),
   creator:users!rides_created_by_fkey(id, full_name, display_name, avatar_url),
-  ride_signups(status, user_id)
+  ride_signups(status, user_id),
+  ride_weather_snapshots(*)
 `;
 
 /** Map a raw Supabase ride row (with joins) into a RideWithDetails shape. */
@@ -32,6 +38,8 @@ function toRideWithDetails(ride: any, currentUserId?: string): RideWithDetails {
     ).length,
     creator: ride.creator ?? null,
     current_user_signup_status: (userSignup?.status as 'confirmed' | 'waitlisted') ?? null,
+    // PostgREST returns object (not array) for 1-to-1 joins via UNIQUE constraint
+    weather: ride.ride_weather_snapshots ?? null,
   } as RideWithDetails;
 }
 
@@ -486,6 +494,7 @@ export type UserRideSignup = {
   signed_up_at: string | null;
   waitlist_position: number | null;
   signup_status: 'confirmed' | 'waitlisted' | 'checked_in';
+  weather: RideWeatherSnapshot | null;
 };
 
 /**
@@ -508,7 +517,8 @@ export async function getUserRideSignups(
         id, title, ride_date, start_time, distance_km, capacity,
         meeting_location:meeting_locations(name),
         pace_group:pace_groups(name),
-        ride_signups(count)
+        ride_signups(count),
+        ride_weather_snapshots(*)
       )
     `,
     )
@@ -553,6 +563,7 @@ export async function getUserRideSignups(
       meeting_location: { name: string } | null;
       pace_group: { name: string } | null;
       ride_signups: { count: number }[];
+      ride_weather_snapshots: RideWeatherSnapshot | null;
     };
 
     return {
@@ -568,6 +579,7 @@ export async function getUserRideSignups(
       signed_up_at: signup.signed_up_at,
       waitlist_position: signup.waitlist_position,
       signup_status: signup.status as UserRideSignup['signup_status'],
+      weather: ride.ride_weather_snapshots ?? null,
     };
   });
 }

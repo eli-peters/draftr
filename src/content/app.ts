@@ -509,6 +509,28 @@ export const appContent = {
     },
   },
 
+  weather: {
+    currentWeather: 'Current Weather',
+    feelsLike: (temp: number) => `Feels like ${temp}°C`,
+    humidity: (pct: number) => `${pct}% humidity`,
+    wind: (speed: number) => `${speed} km/h wind`,
+    pop: (pct: number) => `${pct}% chance of rain`,
+    stale: 'Weather data may be outdated',
+    unavailable: 'Weather unavailable',
+    detail: {
+      heading: 'Weather Forecast',
+      temperature: 'Temperature',
+      feelsLike: 'Feels Like',
+      wind: 'Wind',
+      gusts: 'Gusts',
+      precipitation: 'Precipitation',
+      humidity: 'Humidity',
+      chanceOfRain: 'Chance of Rain',
+    },
+    severeWarning: 'Severe weather expected — check with your ride leader before heading out.',
+    weatherWatchAuto: 'Automatically set due to rain forecast.',
+  },
+
   common: {
     loading: 'Loading...',
     error: 'Something went wrong',

@@ -50,6 +50,7 @@ const mockRide: RideWithDetails = {
   organiser_notes: null,
   status: 'scheduled',
   cancellation_reason: null,
+  weather_watch_auto: false,
   template_id: 'tmpl-1',
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
@@ -85,6 +86,7 @@ const mockRide: RideWithDetails = {
   signup_count: 14,
   creator: { id: 'user-1', full_name: 'Alex Johnson', display_name: null, avatar_url: null },
   current_user_signup_status: null,
+  weather: null,
 };
 
 const mockWeatherRide: RideWithDetails = {
@@ -123,6 +125,7 @@ const mockUserRides = {
       signed_up_at: '2026-03-15T10:00:00Z',
       waitlist_position: null,
       signup_status: 'confirmed' as const,
+      weather: null,
     },
     {
       id: 'ride-2',
@@ -137,6 +140,7 @@ const mockUserRides = {
       signed_up_at: '2026-03-16T10:00:00Z',
       waitlist_position: null,
       signup_status: 'confirmed' as const,
+      weather: null,
     },
   ],
   past: [
@@ -153,6 +157,7 @@ const mockUserRides = {
       signed_up_at: '2026-03-10T08:00:00Z',
       waitlist_position: null,
       signup_status: 'checked_in' as const,
+      weather: null,
     },
   ],
   waitlisted: [
@@ -169,6 +174,7 @@ const mockUserRides = {
       signed_up_at: '2026-03-18T12:00:00Z',
       waitlist_position: 2,
       signup_status: 'waitlisted' as const,
+      weather: null,
     },
   ],
 };
