@@ -113,7 +113,7 @@ export const appContent = {
   rides: {
     feed: {
       heading: 'Upcoming Rides',
-      ridesComingUp: (count: number) => `${count} ride${count === 1 ? '' : 's'} coming up`,
+      refreshLabel: 'Refresh rides',
       emptyState: {
         title: 'No upcoming rides',
         description: 'Check back soon — ride leaders will post new rides here.',
@@ -132,6 +132,7 @@ export const appContent = {
       apply: 'Show Rides',
       activeCount: (count: number) => `${count}`,
       showingCount: (filtered: number) => `Showing ${filtered} result${filtered === 1 ? '' : 's'}`,
+      totalCount: (count: number) => `${count} ride${count === 1 ? '' : 's'}`,
       noResults: {
         title: 'No matching rides',
         description: 'Try adjusting your filters to see more rides.',

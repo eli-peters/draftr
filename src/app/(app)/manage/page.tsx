@@ -3,7 +3,10 @@ import Link from 'next/link';
 import { Plus, Bicycle, UsersThree, ChartLineUp } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { StatsGrid } from '@/components/dashboard/stats-grid';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContentToolbar } from '@/components/layout/content-toolbar';
 import {
   getUserClubMembership,
   getLeaderRides,
@@ -56,16 +59,18 @@ export default async function ManagePage() {
   const ridesPanel = <ManageRidesPanel rides={rides} paceGroups={paceGroups} tags={tags} />;
 
   return (
-    <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">{content.heading}</h1>
-        <Link href={routes.manageNewRide}>
-          <Button size="sm">
-            <Plus className="mr-1.5 h-4 w-4" />
-            {content.rides.createRide}
-          </Button>
-        </Link>
-      </div>
+    <DashboardShell>
+      <PageHeader
+        title={content.heading}
+        actions={
+          <Link href={routes.manageNewRide}>
+            <Button size="sm">
+              <Plus className="mr-1.5 h-4 w-4" />
+              {content.rides.createRide}
+            </Button>
+          </Link>
+        }
+      />
 
       {isAdmin && stats && (
         <StatsGrid
@@ -95,12 +100,15 @@ export default async function ManagePage() {
 
           <TabsContent value="members">
             <div className="mt-4">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-muted-foreground font-medium">
-                  {content.members.totalMembers(members.length)}
-                </p>
-                <InviteMemberDrawer clubId={membership.club_id} />
-              </div>
+              <ContentToolbar
+                left={
+                  <p className="text-sm text-muted-foreground">
+                    {content.members.totalMembers(members.length)}
+                  </p>
+                }
+                right={<InviteMemberDrawer clubId={membership.club_id} />}
+                className="mb-4"
+              />
               <MemberList members={members} clubId={membership.club_id} currentUserId={user.id} />
             </div>
           </TabsContent>
@@ -124,6 +132,6 @@ export default async function ManagePage() {
       ) : (
         <div className="mt-6">{ridesPanel}</div>
       )}
-    </div>
+    </DashboardShell>
   );
 }

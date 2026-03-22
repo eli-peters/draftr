@@ -9,6 +9,7 @@ import {
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
+import { PageHeader } from '@/components/layout/page-header';
 import { FilterableRideFeed } from '@/components/rides/filterable-ride-feed';
 
 const { rides: ridesContent } = appContent;
@@ -25,16 +26,7 @@ export default async function RidesPage() {
 
   return (
     <DashboardShell>
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          {ridesContent.feed.heading}
-        </h1>
-        <p className="mt-2 text-base text-muted-foreground">
-          {rides.length > 0
-            ? ridesContent.feed.ridesComingUp(rides.length)
-            : ridesContent.feed.emptyState.description}
-        </p>
-      </div>
+      <PageHeader title={ridesContent.feed.heading} />
 
       <div className="mt-8">
         <Suspense>

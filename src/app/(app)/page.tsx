@@ -25,7 +25,7 @@ import { CurrentWeather } from '@/components/weather/current-weather';
 import { EmptyState } from '@/components/ui/empty-state';
 import type { UserRole } from '@/config/navigation';
 
-const { dashboard, rides: ridesContent } = appContent;
+const { dashboard } = appContent;
 
 export default async function HomePage() {
   const membership = await getUserClubMembership();
@@ -70,12 +70,9 @@ export default async function HomePage() {
     getClubTags(membership.club_id),
   ]);
 
-  const subtitle =
-    rides.length > 0 ? ridesContent.feed.ridesComingUp(rides.length) : dashboard.noRidesDescription;
-
   return (
     <DashboardShell>
-      <GreetingSection firstName={firstName} subtitle={subtitle} />
+      <GreetingSection firstName={firstName} />
 
       {/* Current weather widget — client component, uses browser geolocation */}
       <div className="mt-4">

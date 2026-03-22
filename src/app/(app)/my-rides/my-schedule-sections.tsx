@@ -30,7 +30,7 @@ export function MyScheduleSections({ upcoming, past }: MyScheduleSectionsProps) 
   }
 
   return (
-    <div className="mt-6 flex flex-col gap-10">
+    <div className="mt-8 flex flex-col gap-10">
       {/* Upcoming section */}
       <section>
         <SectionHeading className="mb-4">{schedule.sections.upcoming}</SectionHeading>

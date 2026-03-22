@@ -6,6 +6,7 @@ import { Bicycle, ArrowClockwise } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SectionHeading } from '@/components/ui/section-heading';
+import { ContentToolbar } from '@/components/layout/content-toolbar';
 import { RideCard } from '@/components/rides/ride-card';
 import {
   RideFilterDrawer,
@@ -90,37 +91,42 @@ export function FilterableRideFeed({
 
   return (
     <section>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-baseline gap-2">
-          {heading && <SectionHeading>{heading}</SectionHeading>}
-          {hasFilters && sorted.length > 0 && (
-            <span className="text-xs text-muted-foreground/70">
-              {ridesContent.filter.showingCount(sorted.length)}
+      <ContentToolbar
+        left={
+          <>
+            {heading && <SectionHeading>{heading}</SectionHeading>}
+            <span className="text-sm text-muted-foreground">
+              {hasFilters
+                ? ridesContent.filter.showingCount(sorted.length)
+                : ridesContent.filter.totalCount(rides.length)}
             </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            aria-label="Refresh rides"
-          >
-            <ArrowClockwise className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          </Button>
-          <RideFilterDrawer
-            paceGroups={paceGroups}
-            tags={tags}
-            activePaceGroupIds={paceIds}
-            activeTagIds={tagIds}
-            activeDateRange={dateRange}
-            activeSort={sortBy}
-            onApply={handleApply}
-            onClear={handleClear}
-          />
-        </div>
-      </div>
+          </>
+        }
+        right={
+          <>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              aria-label={ridesContent.feed.refreshLabel}
+            >
+              <ArrowClockwise className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </Button>
+            <RideFilterDrawer
+              paceGroups={paceGroups}
+              tags={tags}
+              activePaceGroupIds={paceIds}
+              activeTagIds={tagIds}
+              activeDateRange={dateRange}
+              activeSort={sortBy}
+              onApply={handleApply}
+              onClear={handleClear}
+            />
+          </>
+        }
+        className="mb-4"
+      />
 
       {sorted.length > 0 ? (
         <div className="flex flex-col gap-4">

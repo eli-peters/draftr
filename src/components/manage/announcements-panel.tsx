@@ -12,6 +12,7 @@ import { Card } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { SectionHeading } from '@/components/ui/section-heading';
+import { ContentToolbar } from '@/components/layout/content-toolbar';
 import {
   Drawer,
   DrawerContent,
@@ -131,13 +132,16 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
 
   return (
     <div className={isPending ? 'opacity-pending pointer-events-none' : ''}>
-      <div className="flex items-center justify-between mb-4">
-        <SectionHeading>{content.announcements.heading}</SectionHeading>
-        <Button size="sm" variant="outline" onClick={handleNew}>
-          <Plus className="h-4 w-4 mr-1.5" />
-          {content.announcements.create}
-        </Button>
-      </div>
+      <ContentToolbar
+        left={<SectionHeading>{content.announcements.heading}</SectionHeading>}
+        right={
+          <Button size="sm" variant="outline" onClick={handleNew}>
+            <Plus className="h-4 w-4 mr-1.5" />
+            {content.announcements.create}
+          </Button>
+        }
+        className="mb-4"
+      />
 
       {announcements.length === 0 ? (
         <p className="text-base text-muted-foreground">{content.announcements.noAnnouncements}</p>

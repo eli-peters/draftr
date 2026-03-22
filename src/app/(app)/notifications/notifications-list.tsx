@@ -5,6 +5,7 @@ import { BellSimple } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
+import { PageHeader } from '@/components/layout/page-header';
 import { cn } from '@/lib/utils';
 import { NotificationItem } from '@/components/notifications/notification-item';
 import { markNotificationRead, markAllNotificationsRead } from '@/lib/notifications/actions';
@@ -44,26 +45,28 @@ export function NotificationsList({
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">{heading}</h1>
-          {unreadCount > 0 && (
+      <PageHeader
+        title={heading}
+        badge={
+          unreadCount > 0 ? (
             <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-2 text-sm font-bold text-primary-foreground tabular-nums">
               {unreadCount}
             </span>
-          )}
-        </div>
-        {unreadCount > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-sm text-muted-foreground"
-            onClick={handleMarkAllRead}
-          >
-            {markAllReadLabel}
-          </Button>
-        )}
-      </div>
+          ) : undefined
+        }
+        actions={
+          unreadCount > 0 ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-sm text-muted-foreground"
+              onClick={handleMarkAllRead}
+            >
+              {markAllReadLabel}
+            </Button>
+          ) : undefined
+        }
+      />
 
       {notifications.length === 0 ? (
         <EmptyState
@@ -73,7 +76,7 @@ export function NotificationsList({
           className="mt-12 flex-1"
         />
       ) : (
-        <div className="mt-6 space-y-3">
+        <div className="mt-8 space-y-3">
           {notifications.map((notification) => {
             const content = (
               <Card

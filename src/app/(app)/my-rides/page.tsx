@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import { getUserClubMembership, getUserRideSignups } from '@/lib/rides/queries';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
+import { DashboardShell } from '@/components/dashboard/dashboard-shell';
+import { PageHeader } from '@/components/layout/page-header';
 import { MyScheduleSections } from './my-schedule-sections';
 
 const { schedule } = appContent;
@@ -24,9 +26,9 @@ export default async function MySchedulePage() {
   );
 
   return (
-    <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
-      <h1 className="text-3xl font-bold tracking-tight text-foreground">{schedule.heading}</h1>
+    <DashboardShell>
+      <PageHeader title={schedule.heading} />
       <MyScheduleSections upcoming={upcomingAll} past={past} />
-    </div>
+    </DashboardShell>
   );
 }

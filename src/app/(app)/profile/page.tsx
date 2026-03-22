@@ -12,6 +12,7 @@ import { appContent } from '@/content/app';
 import { formatPhoneDisplay } from '@/lib/phone';
 import { routes } from '@/config/routes';
 import { getInitials } from '@/lib/utils';
+import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { dateFormats, units } from '@/config/formatting';
 import { getUserProfile, getUserProfileStats, getUserRecentRides } from '@/lib/profile/queries';
 
@@ -44,7 +45,7 @@ export default async function ProfilePage() {
   const role = profile.role as keyof typeof content.roles;
 
   return (
-    <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
+    <DashboardShell>
       {/* Hero: Centered avatar */}
       <div className="flex flex-col items-center text-center">
         <Avatar className="h-24 w-24 ring-2 ring-primary/20">
@@ -178,6 +179,6 @@ export default async function ProfilePage() {
           </div>
         )}
       </div>
-    </div>
+    </DashboardShell>
   );
 }

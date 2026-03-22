@@ -14,6 +14,7 @@ import {
   type SortOption,
   type DateRange,
 } from '@/components/rides/ride-filter-drawer';
+import { ContentToolbar } from '@/components/layout/content-toolbar';
 import { sortRides } from '@/lib/rides/sort';
 import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
@@ -178,25 +179,28 @@ export function ManageRidesPanel({ rides, paceGroups, tags }: ManageRidesPanelPr
           <TabsTrigger value="cancelled">{content.rides.cancelled}</TabsTrigger>
         </TabsList>
 
-        <div className="flex items-center justify-between mt-3">
-          {hasFilters && visibleRides.length > 0 ? (
-            <span className="text-xs text-muted-foreground/70">
-              {ridesContent.filter.showingCount(visibleRides.length)}
+        <ContentToolbar
+          left={
+            <span className="text-sm text-muted-foreground">
+              {hasFilters
+                ? ridesContent.filter.showingCount(visibleRides.length)
+                : ridesContent.filter.totalCount(visibleRides.length)}
             </span>
-          ) : (
-            <span />
-          )}
-          <RideFilterDrawer
-            paceGroups={paceGroups}
-            tags={tags}
-            activePaceGroupIds={paceIds}
-            activeTagIds={tagIds}
-            activeDateRange={dateRange}
-            activeSort={sortBy}
-            onApply={handleApply}
-            onClear={handleClear}
-          />
-        </div>
+          }
+          right={
+            <RideFilterDrawer
+              paceGroups={paceGroups}
+              tags={tags}
+              activePaceGroupIds={paceIds}
+              activeTagIds={tagIds}
+              activeDateRange={dateRange}
+              activeSort={sortBy}
+              onApply={handleApply}
+              onClear={handleClear}
+            />
+          }
+          className="mt-3"
+        />
 
         <TabsContent value="upcoming">
           <RideList rides={upcomingRides} emptyMessage={content.rides.noUpcomingRides} />

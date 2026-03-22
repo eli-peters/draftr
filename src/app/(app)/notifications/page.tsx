@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getUserNotifications } from '@/lib/notifications/queries';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
+import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { NotificationsList } from './notifications-list';
 
 const { notifications: content } = appContent;
@@ -17,7 +18,7 @@ export default async function NotificationsPage() {
   const notifications = await getUserNotifications(user.id);
 
   return (
-    <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
+    <DashboardShell>
       <NotificationsList
         notifications={notifications}
         heading={content.heading}
@@ -25,6 +26,6 @@ export default async function NotificationsPage() {
         emptyTitle={content.emptyState.title}
         emptyDescription={content.emptyState.description}
       />
-    </div>
+    </DashboardShell>
   );
 }
