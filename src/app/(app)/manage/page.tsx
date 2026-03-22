@@ -30,16 +30,11 @@ export default async function ManagePage() {
   const membership = await getUserClubMembership();
   if (!membership) redirect(routes.signIn);
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(routes.signIn);
-
   const userRole = membership.role as UserRole;
   const isAdmin = userRole === 'admin';
 
   // Fetch club settings for season dates
+  const supabase = await createClient();
   const { data: club } = await supabase
     .from('clubs')
     .select('settings')
@@ -48,7 +43,7 @@ export default async function ManagePage() {
   const clubSettings = (club?.settings ?? {}) as Record<string, string>;
 
   const [rides, paceGroups, tags, members, stats, announcements] = await Promise.all([
-    getLeaderRides(user.id, membership.club_id, isAdmin),
+    getLeaderRides(membership.user_id, membership.club_id, isAdmin),
     getPaceGroups(membership.club_id),
     getClubTags(membership.club_id),
     isAdmin ? getClubMembers(membership.club_id) : Promise.resolve([]),
@@ -109,7 +104,7 @@ export default async function ManagePage() {
                 right={<InviteMemberDrawer clubId={membership.club_id} />}
                 className="mb-4"
               />
-              <MemberList members={members} clubId={membership.club_id} currentUserId={user.id} />
+              <MemberList members={members} clubId={membership.club_id} currentUserId={membership.user_id} />
             </div>
           </TabsContent>
 

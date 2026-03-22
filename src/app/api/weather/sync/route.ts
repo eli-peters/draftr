@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { fetchCurrentWeather, fetchForecastForRide } from '@/lib/weather/api';
 import type { RideForecastData } from '@/lib/weather/api';
-import { DEFAULT_POP_THRESHOLD, FORECAST_MAX_DAYS } from '@/config/weather';
+import { DEFAULT_POP_THRESHOLD, DEFAULT_TIMEZONE, FORECAST_MAX_DAYS } from '@/config/weather';
 
 /**
- * Weather sync API route — called by Vercel Cron every 30 minutes.
+ * Weather sync API route — called by Vercel Cron daily at 6 AM UTC.
  * Fetches weather data from Open-Meteo for upcoming rides and stores
  * it in Supabase. Also evaluates weather watch rules.
  *
@@ -31,10 +31,13 @@ export async function POST(request: Request) {
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
     // Current time as HH:MM:SS for comparing with ride start/end times
-    const currentTimeStr = now.toLocaleTimeString('en-CA', {
-      hour12: false,
-      timeZone: 'America/Toronto',
-    });
+    // Use deterministic formatting to avoid locale-dependent output
+    const torontoNow = new Date(now.toLocaleString('en-US', { timeZone: DEFAULT_TIMEZONE }));
+    const currentTimeStr = [
+      torontoNow.getHours().toString().padStart(2, '0'),
+      torontoNow.getMinutes().toString().padStart(2, '0'),
+      torontoNow.getSeconds().toString().padStart(2, '0'),
+    ].join(':');
     const maxDate = new Date(now);
     maxDate.setDate(maxDate.getDate() + FORECAST_MAX_DAYS);
 
@@ -80,7 +83,7 @@ export async function POST(request: Request) {
       const lat = location.latitude;
       const lon = location.longitude;
       const club = ride.club as unknown as { timezone: string } | null;
-      const timezone = club?.timezone ?? 'America/Toronto';
+      const timezone = club?.timezone ?? DEFAULT_TIMEZONE;
       const endTime = ride.end_time as string | null;
 
       // Determine ride state

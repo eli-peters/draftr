@@ -148,8 +148,12 @@ export function ManageRidesPanel({ rides, paceGroups, tags }: ManageRidesPanelPr
   const activeCount = paceIds.length + tagIds.length + (dateRange.from || dateRange.to ? 1 : 0);
   const hasFilters = activeCount > 0 || sortBy !== 'date_asc';
 
-  const visibleRides =
-    activeTab === 'upcoming' ? upcomingRides : activeTab === 'past' ? pastRides : cancelledRides;
+  const ridesByTab: Record<string, typeof upcomingRides> = {
+    upcoming: upcomingRides,
+    past: pastRides,
+    cancelled: cancelledRides,
+  };
+  const visibleRides = ridesByTab[activeTab] ?? upcomingRides;
 
   function handleApply(
     newPaceIds: string[],

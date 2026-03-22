@@ -37,7 +37,7 @@ export default async function HomePage() {
 
   const userId = membership.user_id;
 
-  // Fetch profile for greeting
+  // Fetch profile for greeting — use membership's user_id directly
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from('users')

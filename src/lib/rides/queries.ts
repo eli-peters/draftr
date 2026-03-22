@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { SignupStatus } from '@/config/statuses';
+import { todayDateString } from '@/config/formatting';
 import type {
   RideWithDetails,
   RideWeatherSnapshot,
@@ -51,7 +52,7 @@ export async function getUpcomingRides(
   userId?: string,
 ): Promise<RideWithDetails[]> {
   const supabase = await createClient();
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayDateString();
 
   const { data, error } = await supabase
     .from('rides')
@@ -116,7 +117,7 @@ export async function getUserSignupStatus(rideId: string) {
  */
 export async function getUserNextSignup(userId: string, clubId: string) {
   const supabase = await createClient();
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayDateString();
 
   const { data } = await supabase
     .from('ride_signups')
@@ -171,7 +172,7 @@ export async function getUserNextSignup(userId: string, clubId: string) {
  */
 export async function getLeaderNextLedRide(userId: string, clubId: string) {
   const supabase = await createClient();
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayDateString();
 
   const { data } = await supabase
     .from('rides')
@@ -212,7 +213,7 @@ export async function getLeaderNextLedRide(userId: string, clubId: string) {
  */
 export async function getUserNextWaitlistedRide(userId: string, clubId: string) {
   const supabase = await createClient();
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayDateString();
 
   const { data } = await supabase
     .from('ride_signups')
@@ -283,7 +284,7 @@ export async function getRidesNeedingLeaderCount(clubId: string) {
  */
 export async function getLeaderWeatherWatchRide(userId: string, clubId: string) {
   const supabase = await createClient();
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayDateString();
 
   const { data } = await supabase
     .from('rides')
@@ -506,7 +507,7 @@ export async function getUserRideSignups(
   filter: 'upcoming' | 'past' | 'waitlisted',
 ): Promise<UserRideSignup[]> {
   const supabase = await createClient();
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayDateString();
 
   let query = supabase
     .from('ride_signups')

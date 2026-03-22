@@ -124,6 +124,7 @@ export async function fetchCurrentWeather(
     if (!c) return null;
 
     const isDay = c.is_day === 1;
+    const condition = getWeatherCondition(c.weather_code);
 
     return {
       temperature_c: Math.round(c.temperature_2m),
@@ -132,8 +133,8 @@ export async function fetchCurrentWeather(
       wind_speed_kmh: round1(c.wind_speed_10m),
       pop: c.precipitation > 0 ? 1.0 : null,
       weather_code: c.weather_code,
-      weather_main: getWeatherCondition(c.weather_code).label,
-      weather_icon: getWeatherCondition(c.weather_code).icon,
+      weather_main: condition.label,
+      weather_icon: condition.icon,
       is_day: isDay,
     };
   } catch (error) {

@@ -31,7 +31,7 @@ import { SectionHeading } from '@/components/ui/section-heading';
 import { RideWeatherDetail } from '@/components/weather/ride-weather-detail';
 import { appContent } from '@/content/app';
 import { RideStatus, SignupStatus } from '@/config/statuses';
-import { dateFormats, separators, units } from '@/config/formatting';
+import { dateFormats, formatTime, separators, units } from '@/config/formatting';
 import { routes } from '@/config/routes';
 import type { UserRole } from '@/config/navigation';
 
@@ -96,7 +96,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       {isCancelled && (
         <div className="mb-6 rounded-xl border border-destructive/20 bg-destructive/10 px-5 py-4 text-base text-destructive">
           {detail.cancelled}
-          {ride.cancellation_reason && ` — ${ride.cancellation_reason}`}
+          {ride.cancellation_reason && `${separators.emDash}${ride.cancellation_reason}`}
         </div>
       )}
 
@@ -128,11 +128,11 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       <p className="mt-3 text-lg text-foreground/90">
         {format(rideDate, dateFormats.full)}
         <span className="mx-2 text-muted-foreground/50">·</span>
-        <span className="tabular-nums">{ride.start_time.slice(0, 5)}</span>
+        <span className="tabular-nums">{formatTime(ride.start_time)}</span>
         {ride.end_time && (
           <span className="tabular-nums">
             {separators.dash}
-            {ride.end_time.slice(0, 5)}
+            {formatTime(ride.end_time)}
           </span>
         )}
       </p>
@@ -157,7 +157,6 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           </Link>
         </p>
       )}
-
 
       {ride.tags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">

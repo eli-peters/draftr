@@ -122,3 +122,15 @@ Admin-gated — no self-registration. Admins add members by email after OCA regi
 ## Multi-Club Architecture
 
 Everything is scoped to a club from day one. The `clubs` table exists for multi-tenancy. All queries filter by `club_id`. Theme configs are per-club (selective overrides on the app default). Content layer is club-agnostic.
+
+## Memory Layer
+
+Three-tier memory system in the project memory directory (`~/.claude/projects/-Users-administrator-Projects-draftr/memory/`):
+
+- **Recent Memory** (`recent-memory.md`) — Rolling 48hr window of decisions, context, and open questions from recent sessions. **Read this at session start for immediate situational awareness.**
+- **Long-Term Memory** (`long-term-memory.md`) — Distilled preferences, patterns, and architectural decisions promoted from recent memory. Consult when making architectural or stylistic decisions.
+- **Project Memory** (`project-memory.md`) — Active work, recent completions, blockers, and next priorities. Read at session start alongside recent memory.
+
+These complement the existing per-topic memory files (feedback, references, project notes).
+
+Run `/consolidate-memory` periodically to keep memory files current from conversation logs.

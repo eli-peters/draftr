@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Wind } from '@phosphor-icons/react';
 import { WeatherIcon } from '@/components/weather/weather-icon';
 import { appContent } from '@/content/app';
-import { getWeatherCondition } from '@/config/weather';
+import { getWeatherCondition, GEOLOCATION_TIMEOUT_MS, GEOLOCATION_MAX_AGE_MS } from '@/config/weather';
 import { units } from '@/config/formatting';
 import type { CurrentWeatherData } from '@/lib/weather/api';
 
@@ -45,7 +45,7 @@ export function CurrentWeather() {
         // Geolocation denied or unavailable — show nothing
         setLoading(false);
       },
-      { timeout: 10000, maximumAge: 1800000 },
+      { timeout: GEOLOCATION_TIMEOUT_MS, maximumAge: GEOLOCATION_MAX_AGE_MS },
     );
   }, []);
 

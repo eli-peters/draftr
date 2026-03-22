@@ -60,13 +60,19 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
   const isCompleted = ride.signup_status === SignupStatus.CHECKED_IN;
   const isWaitlisted = ride.signup_status === SignupStatus.WAITLISTED;
 
-  const statusKey = isCompleted ? 'completed' : isWaitlisted ? 'waitlisted' : 'confirmed';
+  let statusKey: 'completed' | 'waitlisted' | 'confirmed';
+  let statusLabel: string;
+  if (isCompleted) {
+    statusKey = 'completed';
+    statusLabel = schedule.status.completed;
+  } else if (isWaitlisted) {
+    statusKey = 'waitlisted';
+    statusLabel = schedule.status.waitlisted(ride.waitlist_position ?? 0);
+  } else {
+    statusKey = 'confirmed';
+    statusLabel = schedule.status.confirmed;
+  }
   const bannerConfig = statusBannerConfig[statusKey];
-  const statusLabel = isCompleted
-    ? schedule.status.completed
-    : isWaitlisted
-      ? schedule.status.waitlisted(ride.waitlist_position ?? 0)
-      : schedule.status.confirmed;
 
   function handleAction(action: ScheduleAction) {
     if (action === 'view-details' || action === 'get-directions') {

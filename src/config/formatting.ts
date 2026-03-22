@@ -1,3 +1,5 @@
+import type { BadgeVariant } from '@/components/ui/badge';
+
 /** Date format patterns used with date-fns format() */
 export const dateFormats = {
   /** "Mon" */
@@ -20,11 +22,18 @@ export const separators = {
   dash: ' – ',
   /** " at " — date-time connector */
   at: ' at ',
+  /** " — " — em-dash with spaces */
+  emDash: ' — ',
 } as const;
 
 /** Format a time string (HH:MM:SS) to display format (HH:MM) */
 export function formatTime(time: string): string {
   return time.slice(0, 5);
+}
+
+/** Get today's date as an ISO string (YYYY-MM-DD) */
+export function todayDateString(): string {
+  return new Date().toISOString().split('T')[0];
 }
 
 /** Measurement unit suffixes */
@@ -36,8 +45,6 @@ export const units = {
   percent: '%',
   mm: ' mm',
 } as const;
-
-import type { BadgeVariant } from '@/components/ui/badge';
 
 /** Pace-level badge variants */
 type PaceBadgeVariant = Extract<

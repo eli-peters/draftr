@@ -14,10 +14,9 @@ function getGreeting(): string {
 
 interface GreetingSectionProps {
   firstName: string;
-  subtitle?: string;
 }
 
-export function GreetingSection({ firstName, subtitle }: GreetingSectionProps) {
+export function GreetingSection({ firstName }: GreetingSectionProps) {
   const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
@@ -27,7 +26,6 @@ export function GreetingSection({ firstName, subtitle }: GreetingSectionProps) {
   return (
     <div>
       <h1 className="text-3xl font-bold tracking-tight text-foreground">{greeting || '\u00A0'}</h1>
-      {subtitle && <p className="mt-1.5 text-base text-muted-foreground">{subtitle}</p>}
     </div>
   );
 }

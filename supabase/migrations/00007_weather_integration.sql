@@ -16,9 +16,9 @@ CREATE TABLE ride_weather_snapshots (
   wind_gust_kmh DECIMAL(5,1),
   pop DECIMAL(3,2),                -- probability of precipitation (0.00–1.00)
   precipitation_mm DECIMAL(5,1),
-  weather_code INTEGER,            -- OpenWeatherMap condition code
+  weather_code INTEGER,            -- WMO weather interpretation code (Open-Meteo)
   weather_main TEXT,               -- "Clear", "Clouds", "Rain", etc.
-  weather_icon TEXT,               -- OWM icon code ("01d", "10n", etc.)
+  weather_icon TEXT,               -- Phosphor icon component name ("Sun", "CloudRain", etc.)
   is_day BOOLEAN,
   source TEXT NOT NULL DEFAULT 'open-meteo',
   UNIQUE(ride_id)
@@ -33,7 +33,8 @@ CREATE INDEX idx_ride_weather_ride ON ride_weather_snapshots(ride_id);
 ALTER TABLE rides ADD COLUMN weather_watch_auto BOOLEAN NOT NULL DEFAULT false;
 
 -- ---------------------------------------------------------------------------
--- RLS: readable by authenticated club members, writable by service role only
+-- RLS: readable by authenticated club members, writable by service role only.
+-- No INSERT/UPDATE/DELETE policies needed — only the sync cron (using admin/service role client) writes.
 -- ---------------------------------------------------------------------------
 ALTER TABLE ride_weather_snapshots ENABLE ROW LEVEL SECURITY;
 

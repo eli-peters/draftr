@@ -28,6 +28,15 @@ export function isWeatherDataStale(fetchedAt: string): boolean {
 /** Maximum days ahead for forecast (Open-Meteo supports up to 16, we use 7) */
 export const FORECAST_MAX_DAYS = 7;
 
+/** Default timezone fallback when club timezone is unavailable */
+export const DEFAULT_TIMEZONE = 'America/Toronto';
+
+/** Geolocation request timeout (ms) */
+export const GEOLOCATION_TIMEOUT_MS = 10_000;
+
+/** Geolocation maximum cached position age (ms) — 30 minutes */
+export const GEOLOCATION_MAX_AGE_MS = 1_800_000;
+
 // ---------------------------------------------------------------------------
 // Weather severity helper
 // ---------------------------------------------------------------------------
