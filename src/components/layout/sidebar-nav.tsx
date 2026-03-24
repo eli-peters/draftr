@@ -23,7 +23,7 @@ export function SidebarNav({ items }: SidebarNavProps) {
     <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:w-60 md:flex-col md:border-r md:border-border md:bg-surface-default">
       {/* Brand header */}
       <Link href={routes.home} className="flex h-14 items-center gap-3 px-5 border-b border-border">
-        <AppLogo className="h-7 w-7 text-primary" />
+        <AppLogo className="h-5 w-auto text-primary" />
       </Link>
 
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">

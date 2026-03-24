@@ -50,32 +50,8 @@ export const metadata: Metadata = {
     type: 'website',
   },
   icons: {
-    icon: [
-      {
-        url: '/icons/favicon-light.png',
-        type: 'image/png',
-        sizes: '32x32',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icons/favicon-dark.png',
-        type: 'image/png',
-        sizes: '32x32',
-        media: '(prefers-color-scheme: dark)',
-      },
-    ],
-    apple: [
-      {
-        url: '/icons/apple-touch-icon-light.png',
-        sizes: '180x180',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icons/apple-touch-icon-dark.png',
-        sizes: '180x180',
-        media: '(prefers-color-scheme: dark)',
-      },
-    ],
+    icon: [{ url: '/icons/favicon.png', type: 'image/png', sizes: '32x32' }],
+    apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180' }],
   },
 };
 

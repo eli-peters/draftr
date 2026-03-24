@@ -41,7 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 # docs (sensitive)
-docs/test-users.md
+docs
 
 # claude
 .claude/
