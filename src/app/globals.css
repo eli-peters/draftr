@@ -157,6 +157,8 @@
   --color-badge-vibe-text: var(--badge-vibe-text);
   --color-badge-count-bg: var(--badge-count-bg);
   --color-badge-count-text: var(--badge-count-text);
+  --color-badge-tag-selected-bg: var(--badge-tag-selected-bg);
+  --color-badge-tag-selected-text: var(--badge-tag-selected-text);
 
   /* Weather condition tokens → Tailwind */
   --color-weather-clear: var(--weather-clear);

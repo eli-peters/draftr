@@ -33,6 +33,7 @@ const badgeVariants = cva(
         'role-new': 'bg-badge-role-new-bg text-badge-role-new-text',
         vibe: 'bg-badge-vibe-bg text-badge-vibe-text',
         count: 'bg-badge-count-bg text-badge-count-text',
+        'tag-selected': 'bg-badge-tag-selected-bg text-badge-tag-selected-text',
       },
       shape: {
         pill: 'rounded-full',

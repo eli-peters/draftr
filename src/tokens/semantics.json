@@ -1065,6 +1065,32 @@
           }
         }
       }
+    },
+    "tag-selected": {
+      "bg": {
+        "$type": "color",
+        "$value": "{color.primary.50}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.primary.50}",
+              "Dark": "{color.primary.500-alpha-12}"
+            }
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{color.primary.700}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.primary.700}",
+              "Dark": "{color.primary.300}"
+            }
+          }
+        }
+      }
     }
   },
   "weather": {
