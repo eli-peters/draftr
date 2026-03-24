@@ -1,6 +1,11 @@
 import { CloudSlash, Drop } from '@phosphor-icons/react/dist/ssr';
 import { WeatherIcon } from '@/components/weather/weather-icon';
-import { getWeatherSeverity, getSeverityColorClass, getWeatherIconColorClass, POP_DISPLAY_THRESHOLD } from '@/config/weather';
+import {
+  getWeatherSeverity,
+  getSeverityColorClass,
+  getWeatherIconColorClass,
+  POP_DISPLAY_THRESHOLD,
+} from '@/config/weather';
 import { appContent } from '@/content/app';
 import { units } from '@/config/formatting';
 import { cn } from '@/lib/utils';
@@ -33,10 +38,14 @@ export function RideWeatherBadge({ weather, className }: RideWeatherBadgeProps) 
         <WeatherIcon
           weatherCode={weather.weather_code}
           isDay={weather.is_day}
-          className={cn('size-4', getWeatherIconColorClass(weather.weather_code, weather.is_day, severity))}
+          className={cn(
+            'size-4',
+            getWeatherIconColorClass(weather.weather_code, weather.is_day, severity),
+          )}
         />
         <span className="font-mono text-compact font-semibold leading-4 text-muted-foreground">
-          {Math.round(weather.temperature_c)}{units.celsius}
+          {Math.round(weather.temperature_c)}
+          {units.celsius}
         </span>
       </div>
 
@@ -48,7 +57,8 @@ export function RideWeatherBadge({ weather, className }: RideWeatherBadgeProps) 
           )}
         >
           <Drop weight="duotone" className="size-3" />
-          {popPercent}{units.percent}
+          {popPercent}
+          {units.percent}
         </span>
       )}
     </div>

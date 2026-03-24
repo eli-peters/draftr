@@ -58,17 +58,25 @@ export default async function ManagePage({
     .single();
   const clubSettings = (club?.settings ?? {}) as Record<string, string>;
 
-  const [rides, paceGroups, tags, members, stats, announcements, paceTiersWithUsage, vibeTagsWithUsage] =
-    await Promise.all([
-      getLeaderRides(membership.user_id, membership.club_id, isAdmin),
-      getPaceGroups(membership.club_id),
-      getClubTags(membership.club_id),
-      isAdmin ? getClubMembers(membership.club_id) : Promise.resolve([]),
-      isAdmin ? getClubStats(membership.club_id) : Promise.resolve(null),
-      isAdmin ? getClubAnnouncements(membership.club_id) : Promise.resolve([]),
-      isAdmin ? getPaceTiersWithUsage(membership.club_id) : Promise.resolve([]),
-      isAdmin ? getVibeTagsWithUsage(membership.club_id) : Promise.resolve([]),
-    ]);
+  const [
+    rides,
+    paceGroups,
+    tags,
+    members,
+    stats,
+    announcements,
+    paceTiersWithUsage,
+    vibeTagsWithUsage,
+  ] = await Promise.all([
+    getLeaderRides(membership.user_id, membership.club_id, isAdmin),
+    getPaceGroups(membership.club_id),
+    getClubTags(membership.club_id),
+    isAdmin ? getClubMembers(membership.club_id) : Promise.resolve([]),
+    isAdmin ? getClubStats(membership.club_id) : Promise.resolve(null),
+    isAdmin ? getClubAnnouncements(membership.club_id) : Promise.resolve([]),
+    isAdmin ? getPaceTiersWithUsage(membership.club_id) : Promise.resolve([]),
+    isAdmin ? getVibeTagsWithUsage(membership.club_id) : Promise.resolve([]),
+  ]);
 
   const ridesPanel = (
     <ManageRidesPanel
@@ -130,7 +138,11 @@ export default async function ManagePage({
                 right={<InviteMemberDrawer clubId={membership.club_id} />}
                 className="mb-4"
               />
-              <MemberList members={members} clubId={membership.club_id} currentUserId={membership.user_id} />
+              <MemberList
+                members={members}
+                clubId={membership.club_id}
+                currentUserId={membership.user_id}
+              />
             </div>
           </TabsContent>
 

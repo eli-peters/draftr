@@ -80,7 +80,9 @@ export async function getPaceTiersWithUsage(clubId: string): Promise<PaceTierWit
 
   const { data: tiers } = await supabase
     .from('pace_groups')
-    .select('id, name, sort_order, moving_pace_min, moving_pace_max, strava_pace_min, strava_pace_max, typical_distance_min, typical_distance_max')
+    .select(
+      'id, name, sort_order, moving_pace_min, moving_pace_max, strava_pace_min, strava_pace_max, typical_distance_min, typical_distance_max',
+    )
     .eq('club_id', clubId)
     .order('sort_order');
 

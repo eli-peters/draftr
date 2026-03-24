@@ -146,7 +146,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
       {announcements.length === 0 ? (
         <p className="text-base text-muted-foreground">{content.announcements.noAnnouncements}</p>
       ) : (
-        <div className="space-y-3">
+        <div className="flex flex-col gap-4">
           {announcements.map((a) => (
             <Card key={a.id} className="p-5">
               <div className="flex items-start justify-between gap-3">

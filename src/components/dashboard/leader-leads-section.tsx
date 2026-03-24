@@ -26,7 +26,7 @@ interface LeadRide {
 function LeadRideItem({ ride }: { ride: LeadRide }) {
   return (
     <Link href={routes.ride(ride.id)} className="group block">
-      <Card className="p-5 mb-3">
+      <Card className="p-5">
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
             <h3 className="text-base font-semibold text-foreground truncate">{ride.title}</h3>
@@ -59,7 +59,7 @@ export function LeaderLeadsSection({ leads }: { leads: LeadRide[] }) {
           icon={FlagBanner}
         />
       ) : (
-        <div>
+        <div className="flex flex-col gap-4">
           {leads.map((ride) => (
             <LeadRideItem key={ride.id} ride={ride} />
           ))}

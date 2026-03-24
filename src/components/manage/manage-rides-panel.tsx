@@ -4,7 +4,14 @@ import { useState, useTransition, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { MapPin, Users, CaretRight, CloudRain, ArrowsClockwise, ArrowClockwise } from '@phosphor-icons/react/dist/ssr';
+import {
+  MapPin,
+  Users,
+  CaretRight,
+  CloudRain,
+  ArrowsClockwise,
+  ArrowClockwise,
+} from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -44,7 +51,7 @@ function ManageRideItem({ ride }: { ride: ManageRideData }) {
 
   return (
     <Link href={routes.manageEditRide(ride.id)} className="block group">
-      <Card className={cn('p-5 mb-3', isCancelled && 'opacity-disabled')}>
+      <Card className={cn('p-5', isCancelled && 'opacity-disabled')}>
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -121,7 +128,7 @@ function RideList({ rides, emptyMessage }: { rides: ManageRideData[]; emptyMessa
     return <p className="mt-6 text-center text-base text-muted-foreground">{emptyMessage}</p>;
   }
   return (
-    <div className="mt-4">
+    <div className="mt-4 flex flex-col gap-4">
       {rides.map((ride) => (
         <ManageRideItem key={ride.id} ride={ride} />
       ))}
@@ -129,7 +136,12 @@ function RideList({ rides, emptyMessage }: { rides: ManageRideData[]; emptyMessa
   );
 }
 
-export function ManageRidesPanel({ rides, paceGroups, tags, initialPaceFilter = [] }: ManageRidesPanelProps) {
+export function ManageRidesPanel({
+  rides,
+  paceGroups,
+  tags,
+  initialPaceFilter = [],
+}: ManageRidesPanelProps) {
   const router = useRouter();
   const [isRefreshing, startTransition] = useTransition();
   const [paceIds, setPaceIds] = useState<string[]>(initialPaceFilter);
@@ -211,7 +223,6 @@ export function ManageRidesPanel({ rides, paceGroups, tags, initialPaceFilter = 
                 tags={tags}
                 activePaceGroupIds={paceIds}
                 activeTagIds={tagIds}
-
                 activeSort={sortBy}
                 onApply={handleApply}
                 onClear={handleClear}

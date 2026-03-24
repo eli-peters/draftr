@@ -186,8 +186,8 @@ export function MemberList({ members, clubId, currentUserId }: MemberListProps) 
 
       {/* Pending approvals */}
       {pending.length > 0 && (
-        <div className="mb-6">
-          <SectionHeading as="h3" className="text-warning mb-3">
+        <div className="mb-6 flex flex-col gap-4">
+          <SectionHeading as="h3" className="text-warning">
             {content.members.status.pending} ({pending.length})
           </SectionHeading>
           {pending.map((member) => (
@@ -204,7 +204,7 @@ export function MemberList({ members, clubId, currentUserId }: MemberListProps) 
 
       {/* Active members */}
       {active.length > 0 && (
-        <div className="mb-6">
+        <div className="mb-6 flex flex-col gap-4">
           {active.map((member) => (
             <MemberRow
               key={member.user_id}
@@ -219,8 +219,8 @@ export function MemberList({ members, clubId, currentUserId }: MemberListProps) 
 
       {/* Inactive members */}
       {inactive.length > 0 && (
-        <div>
-          <SectionHeading as="h3" className="mb-3">
+        <div className="flex flex-col gap-4">
+          <SectionHeading as="h3">
             {content.members.status.inactive} ({inactive.length})
           </SectionHeading>
           {inactive.map((member) => (
@@ -266,7 +266,7 @@ function MemberRow({
   const metaLine = metaParts.join(separators.dot);
 
   return (
-    <Card className={cn('p-4 mb-2', isInactive && 'opacity-muted')}>
+    <Card className={cn('p-4', isInactive && 'opacity-muted')}>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <Avatar className="h-9 w-9 shrink-0">

@@ -2,7 +2,13 @@
 
 import { useTheme } from 'next-themes';
 import { Toaster as Sonner, type ToasterProps } from 'sonner';
-import { CheckCircle, Info, WarningCircle, XCircle, SpinnerGap } from '@phosphor-icons/react/dist/ssr';
+import {
+  CheckCircle,
+  Info,
+  WarningCircle,
+  XCircle,
+  SpinnerGap,
+} from '@phosphor-icons/react/dist/ssr';
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = 'system' } = useTheme();

@@ -151,7 +151,16 @@ function generateSemantics(): string {
   const lines: string[] = [];
 
   // Collect all categories
-  const categories = ['surface', 'text', 'border', 'action', 'feedback', 'accent', 'badge', 'weather'];
+  const categories = [
+    'surface',
+    'text',
+    'border',
+    'action',
+    'feedback',
+    'accent',
+    'badge',
+    'weather',
+  ];
   const allLight: string[] = [];
   const allDark: string[] = [];
 

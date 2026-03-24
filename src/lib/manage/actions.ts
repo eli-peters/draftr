@@ -330,8 +330,10 @@ export async function updatePaceTier(
   if (data.moving_pace_max !== undefined) updates.moving_pace_max = data.moving_pace_max;
   if (data.strava_pace_min !== undefined) updates.strava_pace_min = data.strava_pace_min;
   if (data.strava_pace_max !== undefined) updates.strava_pace_max = data.strava_pace_max;
-  if (data.typical_distance_min !== undefined) updates.typical_distance_min = data.typical_distance_min;
-  if (data.typical_distance_max !== undefined) updates.typical_distance_max = data.typical_distance_max;
+  if (data.typical_distance_min !== undefined)
+    updates.typical_distance_min = data.typical_distance_min;
+  if (data.typical_distance_max !== undefined)
+    updates.typical_distance_max = data.typical_distance_max;
 
   const { error } = await supabase.from('pace_groups').update(updates).eq('id', tierId);
 

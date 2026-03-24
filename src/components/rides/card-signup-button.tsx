@@ -2,7 +2,12 @@
 
 import { useEffect, useState, useRef, useTransition } from 'react';
 import { toast } from 'sonner';
-import { ArrowCounterClockwise, CheckCircle, Hourglass, SpinnerGap } from '@phosphor-icons/react/dist/ssr';
+import {
+  ArrowCounterClockwise,
+  CheckCircle,
+  Hourglass,
+  SpinnerGap,
+} from '@phosphor-icons/react/dist/ssr';
 import { signUpForRide, cancelSignUp } from '@/lib/rides/actions';
 import { Button } from '@/components/ui/button';
 import { appContent } from '@/content/app';

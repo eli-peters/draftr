@@ -2,7 +2,12 @@ import { Wind, Drop, CloudRain } from '@phosphor-icons/react/dist/ssr';
 import { WeatherIcon } from '@/components/weather/weather-icon';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
-import { getWeatherCondition, getWeatherSeverity, getSeverityColorClass, getConditionColorClass } from '@/config/weather';
+import {
+  getWeatherCondition,
+  getWeatherSeverity,
+  getSeverityColorClass,
+  getConditionColorClass,
+} from '@/config/weather';
 import { units } from '@/config/formatting';
 import { cn } from '@/lib/utils';
 import type { RideWeatherSnapshot } from '@/types/database';
@@ -50,7 +55,8 @@ export function RideWeatherDetail({ weather }: RideWeatherDetailProps) {
             </p>
           </div>
           <span className="ml-auto font-mono text-2xl font-bold text-foreground">
-            {Math.round(weather.temperature_c)}{units.celsius}
+            {Math.round(weather.temperature_c)}
+            {units.celsius}
           </span>
         </div>
 
@@ -59,10 +65,13 @@ export function RideWeatherDetail({ weather }: RideWeatherDetailProps) {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Wind className="size-4 shrink-0" />
               <span>
-                {weatherContent.detail.wind}: {Math.round(weather.wind_speed_kmh)}{units.kmh}
+                {weatherContent.detail.wind}: {Math.round(weather.wind_speed_kmh)}
+                {units.kmh}
                 {weather.wind_gust_kmh != null && (
                   <span className="text-muted-foreground/70">
-                    {' '}({weatherContent.detail.gusts}: {Math.round(weather.wind_gust_kmh)}{units.kmh})
+                    {' '}
+                    ({weatherContent.detail.gusts}: {Math.round(weather.wind_gust_kmh)}
+                    {units.kmh})
                   </span>
                 )}
               </span>
@@ -73,7 +82,8 @@ export function RideWeatherDetail({ weather }: RideWeatherDetailProps) {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Drop className="size-4 shrink-0" />
               <span>
-                {weatherContent.detail.humidity}: {weather.humidity}{units.percent}
+                {weatherContent.detail.humidity}: {weather.humidity}
+                {units.percent}
               </span>
             </div>
           )}
@@ -82,7 +92,8 @@ export function RideWeatherDetail({ weather }: RideWeatherDetailProps) {
             <div className="flex items-center gap-2 text-sm">
               <CloudRain className={cn('size-4 shrink-0', severityClass)} />
               <span className={cn(severity !== 'normal' && 'font-medium', severityClass)}>
-                {weatherContent.detail.chanceOfRain}: {popPercent}{units.percent}
+                {weatherContent.detail.chanceOfRain}: {popPercent}
+                {units.percent}
               </span>
             </div>
           )}
@@ -91,7 +102,8 @@ export function RideWeatherDetail({ weather }: RideWeatherDetailProps) {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Drop className="size-4 shrink-0" />
               <span>
-                {weatherContent.detail.precipitation}: {weather.precipitation_mm}{units.mm}
+                {weatherContent.detail.precipitation}: {weather.precipitation_mm}
+                {units.mm}
               </span>
             </div>
           )}

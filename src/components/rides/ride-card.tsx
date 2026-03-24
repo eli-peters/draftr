@@ -35,7 +35,9 @@ function TagRow({ tags }: { tags: { id: string; name: string }[] }) {
         </Badge>
       ))}
       {overflow > 0 && (
-        <span className="text-xs text-muted-foreground">{ridesContent.card.moreTags(overflow)}</span>
+        <span className="text-xs text-muted-foreground">
+          {ridesContent.card.moreTags(overflow)}
+        </span>
       )}
     </div>
   );
@@ -67,7 +69,10 @@ function PaceAndCount({
   return (
     <div className="flex items-center justify-between">
       {paceGroupName ? (
-        <Badge variant={paceGroupSortOrder ? getPaceVariant(paceGroupSortOrder) : 'secondary'} size="sm">
+        <Badge
+          variant={paceGroupSortOrder ? getPaceVariant(paceGroupSortOrder) : 'secondary'}
+          size="sm"
+        >
           {paceGroupName}
         </Badge>
       ) : (
@@ -98,7 +103,7 @@ export function RideCard({ ride, variant = 'rides' }: RideCardProps) {
 
   return (
     <Link href={routes.ride(ride.id)} className="group block">
-      <Card className="mb-4 overflow-clip p-0">
+      <Card className="overflow-clip p-0">
         {hasBanner && (
           <RideBanner
             type={ride.status as typeof RideStatus.WEATHER_WATCH | typeof RideStatus.CANCELLED}

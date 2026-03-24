@@ -173,6 +173,7 @@ Two-tier badge system with semantic variants:
 Sizes: `default` (h-[1.375rem] px-2.5 py-0.5 text-xs), `sm` (px-3 py-1.5 text-xs), `lg` (px-3 py-1 text-sm)
 
 Variants use dedicated badge tokens (`bg-badge-{category}-{name}-bg`, `text-badge-{category}-{name}-text`):
+
 - **Pace (1–8):** Color-coded warm spectrum for skill-level identification
 - **Status:** cancelled, full, confirmed, paused
 - **Role:** leader, admin, new

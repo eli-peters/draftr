@@ -4,7 +4,12 @@ import { useState, useEffect } from 'react';
 import { Wind } from '@phosphor-icons/react/dist/ssr';
 import { WeatherIcon } from '@/components/weather/weather-icon';
 import { appContent } from '@/content/app';
-import { getWeatherCondition, getConditionColorClass, GEOLOCATION_TIMEOUT_MS, GEOLOCATION_MAX_AGE_MS } from '@/config/weather';
+import {
+  getWeatherCondition,
+  getConditionColorClass,
+  GEOLOCATION_TIMEOUT_MS,
+  GEOLOCATION_MAX_AGE_MS,
+} from '@/config/weather';
 import { units } from '@/config/formatting';
 import { cn } from '@/lib/utils';
 import type { CurrentWeatherData } from '@/lib/weather/api';
@@ -29,9 +34,7 @@ export function CurrentWeather() {
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-          const res = await fetch(
-            `/api/weather/current?lat=${latitude}&lon=${longitude}`,
-          );
+          const res = await fetch(`/api/weather/current?lat=${latitude}&lon=${longitude}`);
           if (res.ok) {
             const data = await res.json();
             setWeather(data);
@@ -77,7 +80,8 @@ export function CurrentWeather() {
       <div className="flex flex-col">
         <div className="flex items-baseline gap-1.5">
           <span className="font-mono text-lg font-bold leading-tight text-foreground">
-            {Math.round(weather.temperature_c)}{units.celsius}
+            {Math.round(weather.temperature_c)}
+            {units.celsius}
           </span>
           <span className="text-sm text-muted-foreground">{condition.label}</span>
         </div>
@@ -89,7 +93,8 @@ export function CurrentWeather() {
           {weather.wind_speed_kmh != null && (
             <span className="flex items-center gap-0.5">
               <Wind className="size-3" />
-              {Math.round(weather.wind_speed_kmh)}{units.kmh}
+              {Math.round(weather.wind_speed_kmh)}
+              {units.kmh}
             </span>
           )}
         </div>

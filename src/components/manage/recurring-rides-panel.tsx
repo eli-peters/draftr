@@ -139,7 +139,7 @@ export function RecurringRidesPanel({
       {recurringRides.length === 0 ? (
         <p className="text-base text-muted-foreground">{rc.noRecurring}</p>
       ) : (
-        <div className="space-y-3">
+        <div className="flex flex-col gap-4">
           {recurringRides.map((r) => (
             <Card key={r.id} className={cn('p-5', !r.is_active && 'opacity-muted')}>
               <div className="flex items-start justify-between gap-3">

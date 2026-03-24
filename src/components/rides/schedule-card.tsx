@@ -83,7 +83,7 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
   }
 
   return (
-    <Card className={cn('mb-4 overflow-clip p-0', isCompleted && 'opacity-completed')}>
+    <Card className={cn('overflow-clip p-0', isCompleted && 'opacity-completed')}>
       <CardBanner
         icon={bannerConfig.icon}
         label={statusLabel}

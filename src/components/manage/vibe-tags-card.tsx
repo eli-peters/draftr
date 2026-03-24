@@ -2,18 +2,22 @@
 
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash, ArrowUp, ArrowDown, Check, X, ArrowCounterClockwise } from '@phosphor-icons/react/dist/ssr';
+import {
+  Plus,
+  Pencil,
+  Trash,
+  ArrowUp,
+  ArrowDown,
+  Check,
+  X,
+  ArrowCounterClockwise,
+} from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
-import {
-  addVibeTag,
-  updateVibeTag,
-  deleteVibeTag,
-  reorderVibeTags,
-} from '@/lib/manage/actions';
+import { addVibeTag, updateVibeTag, deleteVibeTag, reorderVibeTags } from '@/lib/manage/actions';
 import { TOAST_ACTION_STYLES } from '@/lib/toast-styles';
 import type { VibeTagWithUsage } from '@/lib/manage/queries';
 
@@ -86,7 +90,9 @@ export function VibeTagsCard({ clubId, initialTags }: VibeTagsCardProps) {
       if (result.error) {
         toast.error(result.error, { duration: 6000 });
       } else {
-        setTags((prev) => prev.map((t) => (t.id === editingId ? { ...t, name: editName.trim() } : t)));
+        setTags((prev) =>
+          prev.map((t) => (t.id === editingId ? { ...t, name: editName.trim() } : t)),
+        );
         setEditingId(null);
         toast.success(content.saved, { duration: 3000 });
       }
@@ -167,7 +173,12 @@ export function VibeTagsCard({ clubId, initialTags }: VibeTagsCardProps) {
                   autoFocus
                   onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit()}
                 />
-                <Button variant="ghost" size="icon-sm" onClick={handleSaveEdit} disabled={isPending}>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={handleSaveEdit}
+                  disabled={isPending}
+                >
                   <Check className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="icon-sm" onClick={() => setEditingId(null)}>
@@ -240,7 +251,6 @@ export function VibeTagsCard({ clubId, initialTags }: VibeTagsCardProps) {
           {content.add}
         </Button>
       )}
-
     </Card>
   );
 }

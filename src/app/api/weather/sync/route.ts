@@ -93,10 +93,7 @@ export async function POST(request: Request) {
 
       // Past rides (ended today) → clean up snapshot, skip weather fetch
       if (hasEnded) {
-        await supabase
-          .from('ride_weather_snapshots')
-          .delete()
-          .eq('ride_id', ride.id);
+        await supabase.from('ride_weather_snapshots').delete().eq('ride_id', ride.id);
         results.cleaned++;
         continue;
       }
@@ -129,7 +126,11 @@ export async function POST(request: Request) {
           forecast = cached;
         } else {
           forecast = await fetchForecastForRide(
-            lat, lon, ride.ride_date, ride.start_time, timezone,
+            lat,
+            lon,
+            ride.ride_date,
+            ride.start_time,
+            timezone,
           );
           forecastCache.set(cacheKey, forecast);
         }
@@ -188,17 +189,11 @@ export async function POST(request: Request) {
     }
 
     // Clean up snapshots for past rides (ride_date < today)
-    const { data: pastRides } = await supabase
-      .from('rides')
-      .select('id')
-      .lt('ride_date', todayStr);
+    const { data: pastRides } = await supabase.from('rides').select('id').lt('ride_date', todayStr);
 
     if (pastRides && pastRides.length > 0) {
       const pastIds = pastRides.map((r) => r.id);
-      await supabase
-        .from('ride_weather_snapshots')
-        .delete()
-        .in('ride_id', pastIds);
+      await supabase.from('ride_weather_snapshots').delete().in('ride_id', pastIds);
       results.cleaned += pastIds.length;
     }
 

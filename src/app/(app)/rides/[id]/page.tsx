@@ -103,7 +103,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       <PageHeader
         title={ride.title}
         actions={
-          (canEdit || (hasEditRole && (isCancelled || isPast))) ? (
+          canEdit || (hasEditRole && (isCancelled || isPast)) ? (
             <>
               {canEdit && (
                 <Link href={routes.manageEditRide(ride.id)}>

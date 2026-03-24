@@ -80,8 +80,22 @@ const mockRide: RideWithDetails = {
     created_at: '2026-01-01T00:00:00Z',
   },
   tags: [
-    { id: 'tag-1', club_id: 'club-1', name: 'No-drop', color: null, is_archived: false, sort_order: 1 },
-    { id: 'tag-2', club_id: 'club-1', name: 'Coffee stop', color: null, is_archived: false, sort_order: 2 },
+    {
+      id: 'tag-1',
+      club_id: 'club-1',
+      name: 'No-drop',
+      color: null,
+      is_archived: false,
+      sort_order: 1,
+    },
+    {
+      id: 'tag-2',
+      club_id: 'club-1',
+      name: 'Coffee stop',
+      color: null,
+      is_archived: false,
+      sort_order: 2,
+    },
   ],
   signup_count: 14,
   creator: { id: 'user-1', full_name: 'Alex Johnson', display_name: null, avatar_url: null },
@@ -107,7 +121,16 @@ const mockWeatherRide: RideWithDetails = {
     name: 'A Group (32+ km/h)',
     is_drop_ride: true,
   },
-  tags: [{ id: 'tag-3', club_id: 'club-1', name: 'Training ride', color: null, is_archived: false, sort_order: 3 }],
+  tags: [
+    {
+      id: 'tag-3',
+      club_id: 'club-1',
+      name: 'Training ride',
+      color: null,
+      is_archived: false,
+      sort_order: 3,
+    },
+  ],
 };
 
 const mockUserRides = {

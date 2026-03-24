@@ -131,7 +131,9 @@ export function FilterableRideFeed({
             return (
               <Badge
                 key={id}
-                variant={`pace-${Math.min(Math.max(pg.sort_order, MIN_PACE_TIER), MAX_PACE_TIER)}` as BadgeVariant}
+                variant={
+                  `pace-${Math.min(Math.max(pg.sort_order, MIN_PACE_TIER), MAX_PACE_TIER)}` as BadgeVariant
+                }
                 className="cursor-pointer gap-1"
                 onClick={() => dismissFilter('pace', id)}
               >

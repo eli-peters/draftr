@@ -46,7 +46,7 @@ export function MyScheduleSections({ upcoming, past }: MyScheduleSectionsProps) 
             </Link>
           </EmptyState>
         ) : (
-          <div>
+          <div className="flex flex-col gap-4">
             {upcoming.map((ride) => (
               <ScheduleCard key={ride.id} ride={ride} onAction={handleAction} />
             ))}
@@ -65,7 +65,7 @@ export function MyScheduleSections({ upcoming, past }: MyScheduleSectionsProps) 
             className="mt-8"
           />
         ) : (
-          <div>
+          <div className="flex flex-col gap-4">
             {past.map((ride) => (
               <ScheduleCard key={ride.id} ride={ride} onAction={handleAction} />
             ))}
