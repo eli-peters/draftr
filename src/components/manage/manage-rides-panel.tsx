@@ -13,7 +13,7 @@ import { MetadataItem } from '@/components/ui/metadata-item';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { RideFilterDrawer, type SortOption } from '@/components/rides/ride-filter-drawer';
 import { ContentToolbar } from '@/components/layout/content-toolbar';
-import { sortRides } from '@/lib/rides/sort';
+import { filterRides, sortRides } from '@/lib/rides/sort';
 import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
@@ -135,6 +135,7 @@ export function ManageRidesPanel({ rides, paceGroups, tags, initialPaceFilter = 
   const [paceIds, setPaceIds] = useState<string[]>(initialPaceFilter);
   const [tagIds, setTagIds] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('date_asc');
+  const [activeTab, setActiveTab] = useState('upcoming');
 
   const handleRefresh = useCallback(() => {
     startTransition(() => {
@@ -144,13 +145,7 @@ export function ManageRidesPanel({ rides, paceGroups, tags, initialPaceFilter = 
 
   const today = new Date().toISOString().split('T')[0];
 
-  // Apply filters
-  const filtered = rides.filter((r) => {
-    if (paceIds.length > 0 && (!r.pace_group_id || !paceIds.includes(r.pace_group_id)))
-      return false;
-    if (tagIds.length > 0 && !r.tags.some((t) => tagIds.includes(t.id))) return false;
-    return true;
-  });
+  const filtered = filterRides(rides, paceIds, tagIds);
 
   const sorted = sortRides(filtered, sortBy);
 
@@ -160,8 +155,6 @@ export function ManageRidesPanel({ rides, paceGroups, tags, initialPaceFilter = 
   );
   const pastRides = sorted.filter((r) => r.ride_date < today && r.status !== RideStatus.CANCELLED);
   const cancelledRides = sorted.filter((r) => r.status === RideStatus.CANCELLED);
-
-  const [activeTab, setActiveTab] = useState('upcoming');
 
   const activeCount = paceIds.length + tagIds.length;
   const hasFilters = activeCount > 0 || sortBy !== 'date_asc';

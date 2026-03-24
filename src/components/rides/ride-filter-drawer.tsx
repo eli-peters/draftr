@@ -117,7 +117,6 @@ export function RideFilterDrawer({
             {/* Scrollable filter content */}
             <div className="min-w-0 flex-1 overflow-y-auto">
               <RideFilterContent
-                isMobile={isMobile}
                 paceGroups={paceGroups}
                 tags={tags}
                 pendingPaceGroups={pendingPaceGroups}

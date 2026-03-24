@@ -7,14 +7,17 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { ContentToolbar } from '@/components/layout/content-toolbar';
-import { Badge } from '@/components/ui/badge';
+import { Badge, type BadgeVariant } from '@/components/ui/badge';
 import { RideCard } from '@/components/rides/ride-card';
 import { RideFilterDrawer, type SortOption } from '@/components/rides/ride-filter-drawer';
-import { sortRides } from '@/lib/rides/sort';
+import { filterRides, sortRides } from '@/lib/rides/sort';
 import { appContent } from '@/content/app';
 import type { RideWithDetails } from '@/types/database';
 
 const { rides: ridesContent } = appContent;
+
+const MIN_PACE_TIER = 1;
+const MAX_PACE_TIER = 8;
 
 interface FilterableRideFeedProps {
   rides: RideWithDetails[];
@@ -46,12 +49,7 @@ export function FilterableRideFeed({
   const activeCount = paceIds.length + tagIds.length;
   const hasFilters = activeCount > 0;
 
-  const filtered = rides.filter((ride) => {
-    if (paceIds.length > 0 && (!ride.pace_group || !paceIds.includes(ride.pace_group.id)))
-      return false;
-    if (tagIds.length > 0 && !ride.tags.some((t) => tagIds.includes(t.id))) return false;
-    return true;
-  });
+  const filtered = filterRides(rides, paceIds, tagIds);
 
   const sorted = sortRides(filtered, sortBy);
 
@@ -133,7 +131,7 @@ export function FilterableRideFeed({
             return (
               <Badge
                 key={id}
-                variant={`pace-${Math.min(Math.max(pg.sort_order, 1), 8)}` as import('@/components/ui/badge').BadgeVariant}
+                variant={`pace-${Math.min(Math.max(pg.sort_order, MIN_PACE_TIER), MAX_PACE_TIER)}` as BadgeVariant}
                 className="cursor-pointer gap-1"
                 onClick={() => dismissFilter('pace', id)}
               >

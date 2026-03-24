@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { NavItem } from '@/config/navigation';
+import { routes } from '@/config/routes';
 import { NavIcon } from './nav-icon';
 import { cn } from '@/lib/utils';
 
@@ -22,8 +23,8 @@ export function SidebarNav({ items }: SidebarNavProps) {
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
         {items.map((item) => {
           const isActive =
-            item.href === '/'
-              ? pathname === '/'
+            item.href === routes.home
+              ? pathname === routes.home
               : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
           return (

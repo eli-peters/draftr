@@ -17,7 +17,6 @@ const sortOptions: { value: SortOption; label: string }[] = [
 ];
 
 interface RideFilterContentProps {
-  isMobile: boolean;
   paceGroups: { id: string; name: string; sort_order: number }[];
   tags: { id: string; name: string }[];
   pendingPaceGroups: string[];
@@ -37,7 +36,6 @@ function SectionDivider() {
 }
 
 export function RideFilterContent({
-  isMobile,
   paceGroups,
   tags,
   pendingPaceGroups,
@@ -130,11 +128,10 @@ export function RideFilterContent({
                 key={opt.value}
                 variant={isSelected ? 'tag-selected' : 'vibe'}
                 size="lg"
-                className={
-                  isSelected
-                    ? 'cursor-pointer justify-center text-center'
-                    : 'cursor-pointer justify-center text-center text-foreground'
-                }
+                className={cn(
+                  'justify-center text-center',
+                  isSelected ? selectedClass : unselectedClass,
+                )}
                 onClick={() => onSortChange(opt.value)}
               >
                 {opt.label}

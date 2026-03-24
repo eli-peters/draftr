@@ -62,7 +62,7 @@ export const appContent = {
       morning: 'Good morning',
       afternoon: 'Good afternoon',
       evening: 'Good evening',
-      night: 'Good night',
+      night: 'Welcome back',
     },
     greetingWithName: (greeting: string, name: string) =>
       name ? `${greeting}, ${name}` : greeting,
