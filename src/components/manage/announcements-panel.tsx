@@ -68,6 +68,7 @@ interface AnnouncementsPanelProps {
 export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanelProps) {
   const isMobile = useIsMobile();
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
   useEffect(() => setMounted(true), []);
 
   const [open, setOpen] = useState(false);

@@ -1,7 +1,7 @@
 import { ArrowsClockwise, Users, WarningCircle, XCircle } from '@phosphor-icons/react/dist/ssr';
 import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
-import { separators, units, formatTime } from '@/config/formatting';
+import { separators, units } from '@/config/formatting';
 import { RideStatus } from '@/config/statuses';
 
 const { rides: ridesContent } = appContent;

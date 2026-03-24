@@ -16,6 +16,7 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   const [animClass, setAnimClass] = useState('');
 
+  /* eslint-disable react-hooks/set-state-in-effect -- animation state driven by route change */
   useEffect(() => {
     if (!isMobile || direction === 'none') {
       setAnimClass('');
@@ -28,6 +29,7 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
     const timer = setTimeout(() => setAnimClass(''), 250);
     return () => clearTimeout(timer);
   }, [pathname, direction, isMobile]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   return <div className={animClass}>{children}</div>;
 }

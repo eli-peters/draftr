@@ -23,6 +23,7 @@ export function useNavigationDirection(): Direction {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  /* eslint-disable react-hooks/set-state-in-effect -- derive direction from pathname changes */
   useEffect(() => {
     if (pathname === prevPathname.current) return;
 
@@ -34,6 +35,7 @@ export function useNavigationDirection(): Direction {
     }
     prevPathname.current = pathname;
   }, [pathname]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   return direction;
 }

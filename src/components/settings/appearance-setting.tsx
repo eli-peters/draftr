@@ -23,6 +23,7 @@ export function AppearanceSetting() {
   const { colorMode, setColorMode } = useTheme();
   const [mounted, setMounted] = useState(false);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
   useEffect(() => setMounted(true), []);
 
   // Before hydration, treat all buttons as unselected to avoid mismatch

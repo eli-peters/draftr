@@ -43,6 +43,7 @@ export function RideFilterDrawer({
 
   // Defer to client-only to prevent hydration mismatch
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
   useEffect(() => setMounted(true), []);
 
   const [open, setOpen] = useState(false);

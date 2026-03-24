@@ -21,13 +21,14 @@ interface InviteMemberDrawerProps {
 export function InviteMemberDrawer({ clubId }: InviteMemberDrawerProps) {
   const isMobile = useIsMobile();
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
   useEffect(() => setMounted(true), []);
 
   const [open, setOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [sentEmail, setSentEmail] = useState('');
+  const [, setSentEmail] = useState('');
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);

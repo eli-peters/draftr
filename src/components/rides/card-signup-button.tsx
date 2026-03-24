@@ -35,6 +35,7 @@ export function CardSignupButton({ rideId, rideName, isFull, userStatus }: CardS
   const lastActionRef = useRef<{ type: 'signup' | 'undo'; time: number } | null>(null);
 
   // Reset optimistic state when server data catches up
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- sync optimistic with server
   useEffect(() => setOptimisticStatus(undefined), [userStatus]);
 
   // Optimistic state takes precedence over server state when set

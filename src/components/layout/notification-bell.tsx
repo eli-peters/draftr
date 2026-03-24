@@ -33,6 +33,7 @@ interface NotificationBellProps {
 export function NotificationBell({ notifications, unreadCount }: NotificationBellProps) {
   // Defer Base UI popover to client-only to prevent hydration ID mismatch
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
   useEffect(() => setMounted(true), []);
 
   async function handleMarkAllRead() {

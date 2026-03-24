@@ -70,10 +70,18 @@ export function FilterableRideFeed({
     const params = new URLSearchParams(searchParams.toString());
     if (type === 'pace') {
       const remaining = paceIds.filter((p) => p !== id);
-      remaining.length > 0 ? params.set('pace', remaining.join(',')) : params.delete('pace');
+      if (remaining.length > 0) {
+        params.set('pace', remaining.join(','));
+      } else {
+        params.delete('pace');
+      }
     } else if (type === 'tag') {
       const remaining = tagIds.filter((t) => t !== id);
-      remaining.length > 0 ? params.set('tags', remaining.join(',')) : params.delete('tags');
+      if (remaining.length > 0) {
+        params.set('tags', remaining.join(','));
+      } else {
+        params.delete('tags');
+      }
     }
     const qs = params.toString();
     router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false });

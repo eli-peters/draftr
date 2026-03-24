@@ -37,6 +37,7 @@ export function AvatarMenu({ userName, userEmail, userInitials, avatarUrl }: Ava
   const router = useRouter();
   // Defer Base UI menu to client-only to prevent hydration ID mismatch
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
   useEffect(() => setMounted(true), []);
 
   const avatarElement = (
