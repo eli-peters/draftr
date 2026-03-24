@@ -5,8 +5,6 @@ import { usePathname } from 'next/navigation';
 import type { NavItem } from '@/config/navigation';
 import { NavIcon } from './nav-icon';
 import { cn } from '@/lib/utils';
-import { AppLogo } from './app-logo';
-import { routes } from '@/config/routes';
 
 interface SidebarNavProps {
   items: NavItem[];
@@ -20,12 +18,7 @@ export function SidebarNav({ items }: SidebarNavProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:w-60 md:flex-col md:border-r md:border-border md:bg-surface-default">
-      {/* Brand header */}
-      <Link href={routes.home} className="flex h-14 items-center gap-3 px-5 border-b border-border">
-        <AppLogo className="h-5 w-auto text-primary" />
-      </Link>
-
+    <aside className="hidden md:sticky md:top-[calc(3.5rem+0.75rem)] md:flex md:h-[calc(100vh-3.5rem-1.5rem)] md:w-60 md:flex-col md:rounded-3xl md:border md:border-border md:bg-surface-default">
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
         {items.map((item) => {
           const isActive =

@@ -29,17 +29,14 @@ export function HeaderBar({
   unreadNotificationCount,
 }: HeaderBarProps) {
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-surface-default px-5 md:px-8 pt-[env(safe-area-inset-top)]">
-      {/* Left: team logo (mobile only — sidebar has brand on desktop) */}
-      <Link href={routes.home} className="flex items-center gap-2 md:hidden">
-        <AppLogo className="h-5 w-auto text-primary" />
+    <header className="sticky top-0 z-40 flex h-14 items-center justify-between bg-primary px-5 md:px-8 pt-[env(safe-area-inset-top)]">
+      {/* Left: team logo */}
+      <Link href={routes.home} className="flex items-center gap-2">
+        <AppLogo className="h-5 w-auto text-primary-foreground" />
       </Link>
 
-      {/* Spacer on desktop to push right items to the end */}
-      <div className="hidden md:block" />
-
       {/* Right: notification bell + avatar */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-3">
         <NotificationBell notifications={notifications} unreadCount={unreadNotificationCount} />
         <AvatarMenu
           userName={userName}

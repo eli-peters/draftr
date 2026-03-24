@@ -37,26 +37,34 @@ export function AppShell({
   const isHome = pathname === routes.home;
 
   return (
-    <div className="min-h-screen md:flex">
-      <SidebarNav items={navItems} />
+    <div className="flex min-h-screen flex-col md:bg-surface-page">
+      <HeaderBar
+        userName={user.name}
+        userEmail={user.email}
+        userInitials={user.initials}
+        avatarUrl={user.avatarUrl}
+        notifications={notifications ?? []}
+        unreadNotificationCount={unreadNotificationCount ?? 0}
+      />
 
-      <div className="flex min-h-screen flex-1 flex-col">
-        <HeaderBar
-          userName={user.name}
-          userEmail={user.email}
-          userInitials={user.initials}
-          avatarUrl={user.avatarUrl}
-          notifications={notifications ?? []}
-          unreadNotificationCount={unreadNotificationCount ?? 0}
-        />
+      <div className="flex flex-1 md:flex-row md:gap-3 md:px-3 md:pb-3">
+        <SidebarNav items={navItems} />
 
-        {isHome && banner}
+        <div className="flex min-h-0 flex-1 flex-col">
+          {isHome && banner && (
+            <div className="px-4 pt-3 md:px-6">
+              <div className="overflow-hidden rounded-lg border border-border">
+                {banner}
+              </div>
+            </div>
+          )}
 
-        <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col pb-20 md:pb-0">
-          <PageTransitionWrapper>{children}</PageTransitionWrapper>
-        </main>
+          <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col pb-20 md:pb-0">
+            <PageTransitionWrapper>{children}</PageTransitionWrapper>
+          </main>
 
-        <BottomNav items={navItems} />
+          <BottomNav items={navItems} />
+        </div>
       </div>
     </div>
   );

@@ -42,14 +42,14 @@ export function AvatarMenu({ userName, userEmail, userInitials, avatarUrl }: Ava
   const avatarElement = (
     <Avatar className="h-9 w-9">
       {avatarUrl && <AvatarImage src={avatarUrl} alt={userName} />}
-      <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+      <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground text-xs font-bold">
         {userInitials}
       </AvatarFallback>
     </Avatar>
   );
 
   const ringClassName =
-    'rounded-full ring-offset-background transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+    'rounded-full ring-offset-primary transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
   return (
     <>
