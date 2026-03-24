@@ -30,7 +30,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   viewportFit: 'cover',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#F8F6F7' },
+    { media: '(prefers-color-scheme: light)', color: '#DE0387' },
     { media: '(prefers-color-scheme: dark)', color: '#1A1517' },
   ],
 };
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
     title: appContent.meta.shortName,
   },
   openGraph: {
