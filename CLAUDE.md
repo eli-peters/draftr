@@ -51,15 +51,41 @@ src/
 ├── app/                    → Routes and pages
 │   ├── globals.css         → shadcn bridge + component tokens (imports generated CSS)
 │   ├── layout.tsx          → Root layout (ThemeProvider, fonts: Outfit, DM Sans, JetBrains Mono)
-│   └── (app)/              → Authenticated app routes
+│   ├── (app)/              → Authenticated app routes
+│   ├── (auth)/             → Auth routes (login, signup, callback)
+│   ├── api/                → API routes (weather sync, etc.)
+│   ├── card-showcase/      → Dev: card variant showcase page
+│   ├── style-guide/        → Dev: design system reference page
+│   └── error.tsx           → Root error boundary
 ├── components/
 │   ├── ui/                 → shadcn/ui components
-│   └── layout/             → App shell, nav components
+│   ├── layout/             → App shell, nav components
+│   ├── auth/               → Auth-related components
+│   ├── dashboard/          → Dashboard widgets
+│   ├── dev/                → Dev-only debug tools and utilities
+│   ├── manage/             → Admin/leader management components
+│   ├── motion/             → Animation wrappers
+│   ├── notifications/      → Notification components
+│   ├── rides/              → Ride cards, forms, detail views
+│   ├── settings/           → Settings UI components
+│   ├── weather/            → Weather display components
+│   └── theme-provider.tsx  → Club theme injection
 ├── config/                 → Routes, navigation, formatting, status constants
 ├── content/                → All user-facing strings
+├── hooks/                  → Custom React hooks (useIsMobile, useNavigationDirection)
 ├── lib/
 │   ├── utils.ts            → cn() helper
-│   └── supabase/           → Client, server, middleware helpers
+│   ├── color-mode-script.ts → FOUC prevention script for dark mode
+│   ├── phone.ts            → Phone number formatting
+│   ├── toast-styles.ts     → Toast notification styling
+│   ├── supabase/           → Client, server, middleware helpers
+│   ├── auth/               → Auth actions and helpers
+│   ├── dev/                → Dev-only utilities
+│   ├── manage/             → Admin/leader queries and actions
+│   ├── notifications/      → Notification logic
+│   ├── profile/            → Profile queries
+│   ├── rides/              → Ride queries and actions
+│   └── weather/            → Weather sync logic
 ├── themes/                 → Default theme + club overrides
 ├── tokens/                 → Design token system
 │   ├── primitives.json     → Canonical colour ramps (from Figma)
@@ -89,6 +115,7 @@ npm run dev          # Start dev server (auto-runs tokens:build)
 npm run build        # Production build (auto-runs tokens:build)
 npm run tokens:build # Regenerate CSS from token JSON files
 npm run lint         # ESLint
+npm run start        # Production server
 npm run format       # Prettier — format all files
 npm run format:check # Prettier — check without writing
 npm test             # Vitest — single run

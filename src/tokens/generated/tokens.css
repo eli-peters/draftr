@@ -210,6 +210,8 @@
   --badge-vibe-text: var(--color-neutral-400);
   --badge-count-bg: var(--color-neutral-300);
   --badge-count-text: var(--color-neutral-900);
+  --badge-tag-selected-bg: var(--color-primary-50);
+  --badge-tag-selected-text: var(--color-primary-700);
 
   /* weather */
   --weather-clear: var(--color-warning-500);
@@ -320,6 +322,8 @@
   --badge-vibe-text: var(--color-neutral-500);
   --badge-count-bg: var(--color-neutral-600);
   --badge-count-text: var(--color-neutral-50);
+  --badge-tag-selected-bg: var(--color-primary-500-alpha-12);
+  --badge-tag-selected-text: var(--color-primary-300);
 
   /* weather */
   --weather-clear: var(--color-warning-400);

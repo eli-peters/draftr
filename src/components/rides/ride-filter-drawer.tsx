@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { FunnelSimple } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 import {
   Drawer,
   DrawerContent,
@@ -14,9 +14,9 @@ import {
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { appContent } from '@/content/app';
 import { RideFilterContent } from './ride-filter-content';
-import type { SortOption, DateRange } from './ride-filter-content';
+import type { SortOption } from './ride-filter-content';
 
-export type { SortOption, DateRange };
+export type { SortOption };
 
 const { rides: ridesContent } = appContent;
 
@@ -25,14 +25,8 @@ interface RideFilterDrawerProps {
   tags: { id: string; name: string }[];
   activePaceGroupIds: string[];
   activeTagIds: string[];
-  activeDateRange: DateRange;
   activeSort: SortOption;
-  onApply: (
-    paceGroupIds: string[],
-    tagIds: string[],
-    dateRange: DateRange,
-    sort: SortOption,
-  ) => void;
+  onApply: (paceGroupIds: string[], tagIds: string[], sort: SortOption) => void;
   onClear: () => void;
 }
 
@@ -41,7 +35,6 @@ export function RideFilterDrawer({
   tags,
   activePaceGroupIds,
   activeTagIds,
-  activeDateRange,
   activeSort,
   onApply,
   onClear,
@@ -55,26 +48,17 @@ export function RideFilterDrawer({
   const [open, setOpen] = useState(false);
   const [pendingPaceGroups, setPendingPaceGroups] = useState<string[]>([]);
   const [pendingTags, setPendingTags] = useState<string[]>([]);
-  const [pendingDateRange, setPendingDateRange] = useState<DateRange>({ from: '', to: '' });
   const [pendingSort, setPendingSort] = useState<SortOption>('date_asc');
 
-  const activeCount =
-    activePaceGroupIds.length +
-    activeTagIds.length +
-    (activeDateRange.from || activeDateRange.to ? 1 : 0);
+  const activeCount = activePaceGroupIds.length + activeTagIds.length;
 
   const hasActiveFilters =
-    pendingPaceGroups.length > 0 ||
-    pendingTags.length > 0 ||
-    pendingDateRange.from !== '' ||
-    pendingDateRange.to !== '' ||
-    pendingSort !== 'date_asc';
+    pendingPaceGroups.length > 0 || pendingTags.length > 0 || pendingSort !== 'date_asc';
 
   function handleOpenChange(nextOpen: boolean) {
     if (nextOpen) {
       setPendingPaceGroups(activePaceGroupIds);
       setPendingTags(activeTagIds);
-      setPendingDateRange(activeDateRange);
       setPendingSort(activeSort);
     }
     setOpen(nextOpen);
@@ -91,7 +75,7 @@ export function RideFilterDrawer({
   }
 
   function handleApply() {
-    onApply(pendingPaceGroups, pendingTags, pendingDateRange, pendingSort);
+    onApply(pendingPaceGroups, pendingTags, pendingSort);
     setOpen(false);
   }
 
@@ -110,9 +94,9 @@ export function RideFilterDrawer({
         <FunnelSimple className="h-4 w-4" />
         {ridesContent.filter.button}
         {activeCount > 0 && (
-          <Badge variant="outline" size="sm" className="ml-1">
+          <span className="ml-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary-foreground/20 text-xs font-medium text-primary-foreground">
             {ridesContent.filter.activeCount(activeCount)}
-          </Badge>
+          </span>
         )}
       </Button>
 
@@ -125,35 +109,37 @@ export function RideFilterDrawer({
           <DrawerContent
             className={isMobile ? 'max-h-(--drawer-height-lg)' : 'w-(--drawer-width-sidebar)'}
           >
-            {/* Header with title and clear action */}
-            <DrawerHeader className="flex-row items-center justify-between">
+            {/* Header */}
+            <DrawerHeader className="text-left">
               <DrawerTitle>{ridesContent.filter.heading}</DrawerTitle>
-              {hasActiveFilters && (
-                <Button variant="link" size="sm" onClick={handleClear}>
-                  {ridesContent.filter.clearAll}
-                </Button>
-              )}
             </DrawerHeader>
 
             {/* Scrollable filter content */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="min-w-0 flex-1 overflow-y-auto">
               <RideFilterContent
+                isMobile={isMobile}
                 paceGroups={paceGroups}
                 tags={tags}
                 pendingPaceGroups={pendingPaceGroups}
                 pendingTags={pendingTags}
-                pendingDateRange={pendingDateRange}
                 pendingSort={pendingSort}
                 onTogglePaceGroup={togglePaceGroup}
                 onToggleTag={toggleTag}
-                onDateRangeChange={setPendingDateRange}
                 onSortChange={setPendingSort}
               />
             </div>
 
-            {/* Footer with apply button */}
-            <DrawerFooter className="border-t border-border pt-3">
-              <Button className="w-full" onClick={handleApply}>
+            {/* Footer with clear + apply actions */}
+            <DrawerFooter className="flex-row gap-3 border-t border-border pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={!hasActiveFilters}
+                onClick={handleClear}
+              >
+                {ridesContent.filter.clearAll}
+              </Button>
+              <Button className="flex-1" onClick={handleApply}>
                 {ridesContent.filter.apply}
               </Button>
             </DrawerFooter>

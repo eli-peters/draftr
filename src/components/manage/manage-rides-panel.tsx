@@ -11,11 +11,7 @@ import { Card } from '@/components/ui/card';
 import { CapacityBar } from '@/components/ui/capacity-bar';
 import { MetadataItem } from '@/components/ui/metadata-item';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import {
-  RideFilterDrawer,
-  type SortOption,
-  type DateRange,
-} from '@/components/rides/ride-filter-drawer';
+import { RideFilterDrawer, type SortOption } from '@/components/rides/ride-filter-drawer';
 import { ContentToolbar } from '@/components/layout/content-toolbar';
 import { sortRides } from '@/lib/rides/sort';
 import { cn } from '@/lib/utils';
@@ -138,7 +134,6 @@ export function ManageRidesPanel({ rides, paceGroups, tags, initialPaceFilter = 
   const [isRefreshing, startTransition] = useTransition();
   const [paceIds, setPaceIds] = useState<string[]>(initialPaceFilter);
   const [tagIds, setTagIds] = useState<string[]>([]);
-  const [dateRange, setDateRange] = useState<DateRange>({ from: '', to: '' });
   const [sortBy, setSortBy] = useState<SortOption>('date_asc');
 
   const handleRefresh = useCallback(() => {
@@ -154,8 +149,6 @@ export function ManageRidesPanel({ rides, paceGroups, tags, initialPaceFilter = 
     if (paceIds.length > 0 && (!r.pace_group_id || !paceIds.includes(r.pace_group_id)))
       return false;
     if (tagIds.length > 0 && !r.tags.some((t) => tagIds.includes(t.id))) return false;
-    if (dateRange.from && r.ride_date < dateRange.from) return false;
-    if (dateRange.to && r.ride_date > dateRange.to) return false;
     return true;
   });
 
@@ -170,7 +163,7 @@ export function ManageRidesPanel({ rides, paceGroups, tags, initialPaceFilter = 
 
   const [activeTab, setActiveTab] = useState('upcoming');
 
-  const activeCount = paceIds.length + tagIds.length + (dateRange.from || dateRange.to ? 1 : 0);
+  const activeCount = paceIds.length + tagIds.length;
   const hasFilters = activeCount > 0 || sortBy !== 'date_asc';
 
   const ridesByTab: Record<string, typeof upcomingRides> = {
@@ -180,22 +173,15 @@ export function ManageRidesPanel({ rides, paceGroups, tags, initialPaceFilter = 
   };
   const visibleRides = ridesByTab[activeTab] ?? upcomingRides;
 
-  function handleApply(
-    newPaceIds: string[],
-    newTagIds: string[],
-    newDateRange: DateRange,
-    newSort: SortOption,
-  ) {
+  function handleApply(newPaceIds: string[], newTagIds: string[], newSort: SortOption) {
     setPaceIds(newPaceIds);
     setTagIds(newTagIds);
-    setDateRange(newDateRange);
     setSortBy(newSort);
   }
 
   function handleClear() {
     setPaceIds([]);
     setTagIds([]);
-    setDateRange({ from: '', to: '' });
     setSortBy('date_asc');
   }
 
@@ -232,7 +218,7 @@ export function ManageRidesPanel({ rides, paceGroups, tags, initialPaceFilter = 
                 tags={tags}
                 activePaceGroupIds={paceIds}
                 activeTagIds={tagIds}
-                activeDateRange={dateRange}
+
                 activeSort={sortBy}
                 onApply={handleApply}
                 onClear={handleClear}

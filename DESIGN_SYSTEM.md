@@ -142,15 +142,16 @@ Warm undertone matching the neutral palette (rgba based on neutral-950):
 
 ### Button
 
-| Variant     | Background       | Text                        | Border          |
-| ----------- | ---------------- | --------------------------- | --------------- |
-| Primary     | `bg-primary`     | `text-primary-foreground`   | none            |
-| Secondary   | `bg-secondary`   | `text-secondary-foreground` | none            |
-| Destructive | `bg-destructive` | `text-white`                | none            |
-| Ghost       | transparent      | `text-foreground`           | none            |
-| Outline     | transparent      | `text-foreground`           | `border-border` |
+| Variant     | Background          | Text                        | Border          |
+| ----------- | ------------------- | --------------------------- | --------------- |
+| Primary     | `bg-primary`        | `text-primary-foreground`   | none            |
+| Secondary   | `bg-secondary`      | `text-secondary-foreground` | none            |
+| Destructive | `bg-destructive/10` | `text-destructive`          | none            |
+| Ghost       | transparent         | `text-foreground`           | none            |
+| Outline     | transparent         | `text-foreground`           | `border-border` |
+| Link        | transparent         | `text-primary`              | none            |
 
-Sizes: `sm` (h-8), `default` (h-10), `lg` (h-12)
+Sizes: `xs` (h-7), `sm` (h-8), `default` (h-10), `lg` (h-11), `icon` (size-10), `icon-sm` (size-8)
 
 ### Card (Ride Card)
 
@@ -161,9 +162,21 @@ Sizes: `sm` (h-8), `default` (h-10), `lg` (h-12)
 
 ### Badge/Tag
 
-- Padding: `px-2 py-0.5`
-- Radius: `rounded-sm`
-- Font: `text-xs font-medium`
+Two-tier badge system with semantic variants:
+
+| Shape   | Class          | Usage                        |
+| ------- | -------------- | ---------------------------- |
+| pill    | `rounded-full` | Default — pace, status, role |
+| rounded | `rounded-md`   | Contextual variants          |
+| subtle  | `rounded`      | Inline labels                |
+
+Sizes: `default` (h-[1.375rem] px-2.5 py-0.5 text-xs), `sm` (px-3 py-1.5 text-xs), `lg` (px-3 py-1 text-sm)
+
+Variants use dedicated badge tokens (`bg-badge-{category}-{name}-bg`, `text-badge-{category}-{name}-text`):
+- **Pace (1–8):** Color-coded warm spectrum for skill-level identification
+- **Status:** cancelled, full, confirmed, paused
+- **Role:** leader, admin, new
+- **General:** vibe (gray), count, tag-selected, default, secondary, destructive, warning, outline
 
 ### Avatar
 

@@ -9,11 +9,7 @@ import { SectionHeading } from '@/components/ui/section-heading';
 import { ContentToolbar } from '@/components/layout/content-toolbar';
 import { Badge } from '@/components/ui/badge';
 import { RideCard } from '@/components/rides/ride-card';
-import {
-  RideFilterDrawer,
-  type SortOption,
-  type DateRange,
-} from '@/components/rides/ride-filter-drawer';
+import { RideFilterDrawer, type SortOption } from '@/components/rides/ride-filter-drawer';
 import { sortRides } from '@/lib/rides/sort';
 import { appContent } from '@/content/app';
 import type { RideWithDetails } from '@/types/database';
@@ -46,35 +42,23 @@ export function FilterableRideFeed({
 
   const paceIds = searchParams.get('pace')?.split(',').filter(Boolean) ?? [];
   const tagIds = searchParams.get('tags')?.split(',').filter(Boolean) ?? [];
-  const dateFrom = searchParams.get('from') ?? '';
-  const dateTo = searchParams.get('to') ?? '';
-  const dateRange: DateRange = { from: dateFrom, to: dateTo };
   const sortBy = (searchParams.get('sort') as SortOption) ?? 'date_asc';
-  const activeCount = paceIds.length + tagIds.length + (dateFrom || dateTo ? 1 : 0);
+  const activeCount = paceIds.length + tagIds.length;
   const hasFilters = activeCount > 0;
 
   const filtered = rides.filter((ride) => {
     if (paceIds.length > 0 && (!ride.pace_group || !paceIds.includes(ride.pace_group.id)))
       return false;
     if (tagIds.length > 0 && !ride.tags.some((t) => tagIds.includes(t.id))) return false;
-    if (dateFrom && ride.ride_date < dateFrom) return false;
-    if (dateTo && ride.ride_date > dateTo) return false;
     return true;
   });
 
   const sorted = sortRides(filtered, sortBy);
 
-  function handleApply(
-    newPaceIds: string[],
-    newTagIds: string[],
-    newDateRange: DateRange,
-    newSort: SortOption,
-  ) {
+  function handleApply(newPaceIds: string[], newTagIds: string[], newSort: SortOption) {
     const params = new URLSearchParams();
     if (newPaceIds.length > 0) params.set('pace', newPaceIds.join(','));
     if (newTagIds.length > 0) params.set('tags', newTagIds.join(','));
-    if (newDateRange.from) params.set('from', newDateRange.from);
-    if (newDateRange.to) params.set('to', newDateRange.to);
     if (newSort !== 'date_asc') params.set('sort', newSort);
     const qs = params.toString();
     router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false });
@@ -84,17 +68,14 @@ export function FilterableRideFeed({
     router.replace(pathname, { scroll: false });
   }
 
-  function dismissFilter(type: 'pace' | 'tag' | 'date', id?: string) {
+  function dismissFilter(type: 'pace' | 'tag', id: string) {
     const params = new URLSearchParams(searchParams.toString());
-    if (type === 'pace' && id) {
+    if (type === 'pace') {
       const remaining = paceIds.filter((p) => p !== id);
       remaining.length > 0 ? params.set('pace', remaining.join(',')) : params.delete('pace');
-    } else if (type === 'tag' && id) {
+    } else if (type === 'tag') {
       const remaining = tagIds.filter((t) => t !== id);
       remaining.length > 0 ? params.set('tags', remaining.join(',')) : params.delete('tags');
-    } else if (type === 'date') {
-      params.delete('from');
-      params.delete('to');
     }
     const qs = params.toString();
     router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false });
@@ -135,7 +116,6 @@ export function FilterableRideFeed({
               tags={tags}
               activePaceGroupIds={paceIds}
               activeTagIds={tagIds}
-              activeDateRange={dateRange}
               activeSort={sortBy}
               onApply={handleApply}
               onClear={handleClear}
@@ -177,16 +157,6 @@ export function FilterableRideFeed({
               </Badge>
             );
           })}
-          {(dateFrom || dateTo) && (
-            <Badge
-              variant="secondary"
-              className="cursor-pointer gap-1"
-              onClick={() => dismissFilter('date')}
-            >
-              {dateFrom || '...'} — {dateTo || '...'}
-              <X className="h-3 w-3" />
-            </Badge>
-          )}
         </div>
       )}
 
