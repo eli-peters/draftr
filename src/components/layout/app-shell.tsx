@@ -52,8 +52,8 @@ export function AppShell({
 
         <div className="flex min-h-0 flex-1 flex-col">
           {isHome && banner && (
-            <div className="px-4 pt-3 md:px-6">
-              <div className="overflow-hidden rounded-lg border border-border">
+            <div className="md:px-6 md:pt-3">
+              <div className="overflow-hidden md:rounded-lg md:border md:border-border">
                 {banner}
               </div>
             </div>

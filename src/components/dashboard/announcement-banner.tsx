@@ -85,7 +85,7 @@ export function AnnouncementBanner({ announcement }: AnnouncementBannerProps) {
   }
 
   return (
-    <div className={`px-4 md:px-6 py-3 ${styles.container}`} role="status">
+    <div className={`px-5 md:px-6 py-3 ${styles.container}`} role="status">
       <div className="flex items-start gap-3">
         <Icon className={`h-5 w-5 shrink-0 mt-0.5 ${styles.icon}`} weight="fill" />
         <div className="min-w-0 flex-1">
