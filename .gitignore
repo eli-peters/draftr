@@ -45,5 +45,5 @@ docs/
 
 # claude
 .claude/
-.gitignore
-draftr.code-workspace
+CLAUDE.md
+*.code-workspace
