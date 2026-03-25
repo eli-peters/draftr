@@ -50,68 +50,72 @@ function ManageRideItem({ ride }: { ride: ManageRideData }) {
   const isCancelled = ride.status === RideStatus.CANCELLED;
 
   return (
-    <Link href={routes.manageEditRide(ride.id)} className="block group">
-      <Card className={cn('p-5', isCancelled && 'opacity-disabled')}>
-        <div className="flex items-center justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-foreground truncate">{ride.title}</h3>
-              {ride.template_id && (
-                <ArrowsClockwise className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
-              )}
-              {ride.status === RideStatus.WEATHER_WATCH && (
-                <Badge variant="warning" className="shrink-0 text-sm gap-1">
-                  <CloudRain className="h-3.5 w-3.5" />
-                  {ridesContent.status.weatherWatch}
-                </Badge>
-              )}
-              {isCancelled && (
-                <Badge variant="destructive" className="shrink-0 text-sm">
-                  {ridesContent.status.cancelled}
-                </Badge>
-              )}
-            </div>
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
-              <span>
-                {format(new Date(ride.ride_date), dateFormats.dayMonthDay)}
-                {separators.at}
-                {ride.start_time.slice(0, 5)}
-              </span>
-              {ride.meeting_location_name && (
-                <MetadataItem icon={MapPin}>{ride.meeting_location_name}</MetadataItem>
-              )}
-              <MetadataItem icon={Users}>
-                {ride.capacity != null
-                  ? `${ride.signup_count}/${ride.capacity}`
-                  : ride.signup_count}
-              </MetadataItem>
-            </div>
-            {ride.tags.length > 0 && (
-              <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                {ride.tags.slice(0, 2).map((tag) => (
-                  <Badge key={tag.id} variant="secondary" size="sm">
-                    {tag.name}
-                  </Badge>
-                ))}
-                {ride.tags.length > 2 && (
-                  <span className="text-xs text-muted-foreground">
-                    {ridesContent.card.moreTags(ride.tags.length - 2)}
-                  </span>
-                )}
-              </div>
+    <Link
+      href={routes.manageEditRide(ride.id)}
+      className={cn(
+        'block group border-b border-border last:border-b-0 px-5 py-4',
+        isCancelled && 'opacity-disabled',
+      )}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-bold text-foreground truncate">{ride.title}</h3>
+            {ride.template_id && (
+              <ArrowsClockwise className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
             )}
-            {ride.created_by_name && (
-              <p className="mt-1.5 text-sm text-muted-foreground/60">
-                {content.rides.createdBy(ride.created_by_name)}
-              </p>
+            {ride.status === RideStatus.WEATHER_WATCH && (
+              <Badge variant="warning" className="shrink-0 text-sm gap-1">
+                <CloudRain className="h-3.5 w-3.5" />
+                {ridesContent.status.weatherWatch}
+              </Badge>
+            )}
+            {isCancelled && (
+              <Badge variant="destructive" className="shrink-0 text-sm">
+                {ridesContent.status.cancelled}
+              </Badge>
             )}
           </div>
-          <CaretRight className="ml-2 h-4 w-4 shrink-0 text-muted-foreground/40" />
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
+            <span>
+              {format(new Date(ride.ride_date), dateFormats.dayMonthDay)}
+              {separators.at}
+              {ride.start_time.slice(0, 5)}
+            </span>
+            {ride.meeting_location_name && (
+              <MetadataItem icon={MapPin}>{ride.meeting_location_name}</MetadataItem>
+            )}
+            <MetadataItem icon={Users}>
+              {ride.capacity != null
+                ? `${ride.signup_count}/${ride.capacity}`
+                : ride.signup_count}
+            </MetadataItem>
+          </div>
+          {ride.tags.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+              {ride.tags.slice(0, 2).map((tag) => (
+                <Badge key={tag.id} variant="secondary" size="sm">
+                  {tag.name}
+                </Badge>
+              ))}
+              {ride.tags.length > 2 && (
+                <span className="text-xs text-muted-foreground">
+                  {ridesContent.card.moreTags(ride.tags.length - 2)}
+                </span>
+              )}
+            </div>
+          )}
+          {ride.created_by_name && (
+            <p className="mt-1 text-sm text-muted-foreground/60">
+              {content.rides.createdBy(ride.created_by_name)}
+            </p>
+          )}
         </div>
-        {!isCancelled && (
-          <CapacityBar signupCount={ride.signup_count} capacity={ride.capacity} className="mt-4" />
-        )}
-      </Card>
+        <CaretRight className="ml-2 h-4 w-4 shrink-0 text-muted-foreground/40" />
+      </div>
+      {!isCancelled && (
+        <CapacityBar signupCount={ride.signup_count} capacity={ride.capacity} className="mt-3" />
+      )}
     </Link>
   );
 }
@@ -128,11 +132,11 @@ function RideList({ rides, emptyMessage }: { rides: ManageRideData[]; emptyMessa
     return <p className="mt-6 text-center text-base text-muted-foreground">{emptyMessage}</p>;
   }
   return (
-    <div className="mt-4 flex flex-col gap-4">
+    <Card className="mt-4 overflow-clip">
       {rides.map((ride) => (
         <ManageRideItem key={ride.id} ride={ride} />
       ))}
-    </div>
+    </Card>
   );
 }
 

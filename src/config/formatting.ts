@@ -44,7 +44,29 @@ export const units = {
   celsius: '°C',
   percent: '%',
   mm: ' mm',
+  hours: 'h',
+  minutes: 'm',
 } as const;
+
+/**
+ * Compute ride duration from start/end time strings (HH:MM or HH:MM:SS).
+ * Returns a formatted string like "4h 42m", or null if end_time is missing.
+ */
+export function formatDuration(startTime: string, endTime: string | null): string | null {
+  if (!endTime) return null;
+
+  const [sh, sm] = startTime.split(':').map(Number);
+  const [eh, em] = endTime.split(':').map(Number);
+  const totalMinutes = (eh * 60 + em) - (sh * 60 + sm);
+  if (totalMinutes <= 0) return null;
+
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+
+  if (h === 0) return `${m}${units.minutes}`;
+  if (m === 0) return `${h}${units.hours}`;
+  return `${h}${units.hours} ${m}${units.minutes}`;
+}
 
 /** Get badge variant for a pace group by sort order (1–8). */
 export function getPaceBadgeVariant(sortOrder: number): BadgeVariant {

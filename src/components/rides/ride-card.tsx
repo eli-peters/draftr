@@ -1,15 +1,22 @@
 import Link from 'next/link';
 import { format, parseISO } from 'date-fns';
-import { Users } from '@phosphor-icons/react/dist/ssr';
-import { Badge, type BadgeVariant } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { RideBanner, DateTimeRow, MetadataStats } from '@/components/rides/ride-card-parts';
+import {
+  BODY_SM,
+  LABEL_SM,
+  RideBanner,
+  DateTimeRow,
+  InlineMetadata,
+  RiderCount,
+  CardFooterSection,
+} from '@/components/rides/ride-card-parts';
 import { RideWeatherBadge } from '@/components/weather/ride-weather-badge';
 import { CardSignupButton } from '@/components/rides/card-signup-button';
 import { appContent } from '@/content/app';
 import { cn, getRelativeDay } from '@/lib/utils';
 import { RideStatus } from '@/config/statuses';
-import { dateFormats, formatTime } from '@/config/formatting';
+import { dateFormats, formatTime, units, getPaceBadgeVariant } from '@/config/formatting';
 import { routes } from '@/config/routes';
 import type { RideWithDetails } from '@/types/database';
 
@@ -18,19 +25,43 @@ const { rides: ridesContent } = appContent;
 const MAX_VISIBLE_TAGS = 3;
 
 // ---------------------------------------------------------------------------
-// Shared: TagRow — up to 3 vibe tag chips + "+N more" overflow
+// PaceAndTagRow — Rides variant: pace badge + distance + vibe tags inline
 // ---------------------------------------------------------------------------
 
-function TagRow({ tags }: { tags: { id: string; name: string }[] }) {
-  if (tags.length === 0) return null;
+function PaceAndTagRow({
+  paceGroupName,
+  paceGroupSortOrder,
+  distanceKm,
+  tags,
+}: {
+  paceGroupName: string | null;
+  paceGroupSortOrder: number | null;
+  distanceKm: number | null;
+  tags: { id: string; name: string }[];
+}) {
+  const hasAny = paceGroupName || distanceKm != null || tags.length > 0;
+  if (!hasAny) return null;
 
   const visible = tags.slice(0, MAX_VISIBLE_TAGS);
   const overflow = tags.length - MAX_VISIBLE_TAGS;
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
+    <div className="flex flex-wrap items-center gap-2">
+      {paceGroupName && (
+        <Badge
+          variant={paceGroupSortOrder ? getPaceBadgeVariant(paceGroupSortOrder) : 'secondary'}
+          size="sm"
+        >
+          {paceGroupName}
+        </Badge>
+      )}
+      {distanceKm != null && (
+        <span className={cn(BODY_SM, 'text-muted-foreground')}>
+          {distanceKm}{units.km}
+        </span>
+      )}
       {visible.map((tag) => (
-        <Badge key={tag.id} variant="secondary" size="sm">
+        <Badge key={tag.id} variant="vibe" size="sm">
           {tag.name}
         </Badge>
       ))}
@@ -39,51 +70,6 @@ function TagRow({ tags }: { tags: { id: string; name: string }[] }) {
           {ridesContent.card.moreTags(overflow)}
         </span>
       )}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Shared: PaceAndCount — bottom row with pace badge + rider count
-// ---------------------------------------------------------------------------
-
-function getPaceVariant(sortOrder: number): BadgeVariant {
-  return `pace-${Math.min(Math.max(sortOrder, 1), 8)}` as BadgeVariant;
-}
-
-function PaceAndCount({
-  paceGroupName,
-  paceGroupSortOrder,
-  signupCount,
-  capacity,
-}: {
-  paceGroupName: string | null;
-  paceGroupSortOrder: number | null;
-  signupCount: number;
-  capacity: number | null;
-}) {
-  if (!paceGroupName && capacity == null) return null;
-
-  const spotsText = capacity != null ? `${signupCount}/${capacity}` : `${signupCount}`;
-
-  return (
-    <div className="flex items-center justify-between">
-      {paceGroupName ? (
-        <Badge
-          variant={paceGroupSortOrder ? getPaceVariant(paceGroupSortOrder) : 'secondary'}
-          size="sm"
-        >
-          {paceGroupName}
-        </Badge>
-      ) : (
-        <div />
-      )}
-      <div className="flex items-center gap-1 rounded-md bg-secondary px-3 py-1">
-        <Users className="size-4 text-muted-foreground" />
-        <span className="font-sans text-[0.6875rem] font-semibold text-muted-foreground">
-          {spotsText}
-        </span>
-      </div>
     </div>
   );
 }
@@ -101,15 +87,17 @@ export function RideCard({ ride, variant = 'rides' }: RideCardProps) {
   const hasBanner =
     ride.status === RideStatus.WEATHER_WATCH || ride.status === RideStatus.CANCELLED;
 
+  const isHome = variant === 'home';
+
   return (
     <Link href={routes.ride(ride.id)} className="group block">
-      <Card className="overflow-clip p-0">
+      <Card className={cn('overflow-clip p-0', isHome && 'border-border-subtle')}>
         {hasBanner && (
           <RideBanner
             type={ride.status as typeof RideStatus.WEATHER_WATCH | typeof RideStatus.CANCELLED}
           />
         )}
-        {variant === 'home' ? (
+        {isHome ? (
           <HomeLayout ride={ride} hasBanner={hasBanner} />
         ) : (
           <RidesLayout ride={ride} hasBanner={hasBanner} />
@@ -120,7 +108,7 @@ export function RideCard({ ride, variant = 'rides' }: RideCardProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Home Layout — compact / time-focused
+// Home Layout — compact / glanceable
 // ---------------------------------------------------------------------------
 
 function HomeLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boolean }) {
@@ -128,7 +116,7 @@ function HomeLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boo
   const relativeDay = getRelativeDay(rideDate, dateFormats.dayShort);
 
   return (
-    <div className={cn('flex flex-col gap-3 px-6', hasBanner ? 'pb-5 pt-4' : 'py-5')}>
+    <div className={cn('flex flex-col gap-3 p-4', hasBanner && 'pt-3')}>
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
           <DateTimeRow
@@ -138,92 +126,81 @@ function HomeLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boo
           />
           <RideWeatherBadge weather={ride.weather} />
         </div>
-        {/* heading/sm token */}
-        <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
+        {/* heading/md token — 20px */}
+        <h3 className="font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
           {ride.title}
         </h3>
       </div>
 
-      <TagRow tags={ride.tags} />
-
-      <MetadataStats distanceKm={ride.distance_km} elevationM={ride.elevation_m} />
-
-      <PaceAndCount
+      <InlineMetadata
         paceGroupName={ride.pace_group?.name ?? null}
         paceGroupSortOrder={ride.pace_group?.sort_order ?? null}
-        signupCount={ride.signup_count}
-        capacity={ride.capacity}
+        distanceKm={ride.distance_km}
+        locationName={ride.meeting_location?.name ?? null}
       />
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Rides Layout — rich / decision-making
+// Rides Layout — rich / decision-making (two-section: content + footer)
 // ---------------------------------------------------------------------------
 
 function RidesLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boolean }) {
   const rideDate = parseISO(ride.ride_date);
   const relativeDay = getRelativeDay(rideDate, dateFormats.dayShort);
-  const spotsRemaining = ride.capacity != null ? ride.capacity - ride.signup_count : null;
   const leaderName = ride.creator?.display_name ?? ride.creator?.full_name ?? null;
 
   return (
-    <div className={cn('flex flex-col gap-3 px-6', hasBanner ? 'pb-6 pt-4' : 'p-6')}>
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between">
-          <DateTimeRow
-            date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
-            time={formatTime(ride.start_time)}
-            isRecurring={!!ride.template_id}
-          />
-          <RideWeatherBadge weather={ride.weather} />
+    <>
+      {/* Content section */}
+      <div className={cn('flex flex-col gap-3 p-6', hasBanner && 'pt-4')}>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <DateTimeRow
+              date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
+              time={formatTime(ride.start_time)}
+              isRecurring={!!ride.template_id}
+            />
+            <RideWeatherBadge weather={ride.weather} />
+          </div>
+          {/* heading/md token — 20px */}
+          <h3 className="font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
+            {ride.title}
+          </h3>
         </div>
-        {/* heading/md token */}
-        <h3 className="font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
-          {ride.title}
-        </h3>
-      </div>
 
-      {ride.description && (
-        <p className="line-clamp-2 text-sm text-muted-foreground">{ride.description}</p>
-      )}
+        {ride.description && (
+          <p className="line-clamp-2 text-sm text-muted-foreground">{ride.description}</p>
+        )}
 
-      <TagRow tags={ride.tags} />
-
-      <MetadataStats distanceKm={ride.distance_km} elevationM={ride.elevation_m} />
-
-      <PaceAndCount
-        paceGroupName={ride.pace_group?.name ?? null}
-        paceGroupSortOrder={ride.pace_group?.sort_order ?? null}
-        signupCount={ride.signup_count}
-        capacity={ride.capacity}
-      />
-
-      <div className="h-px w-full bg-border" />
-
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          {spotsRemaining != null && (
-            <span
-              className={cn(
-                'flex items-center gap-1.5',
-                spotsRemaining <= 3 && spotsRemaining > 0 && 'text-warning',
-              )}
-            >
-              <Users className="h-3.5 w-3.5" />
-              {ridesContent.card.spotsRemaining(spotsRemaining)}
-            </span>
-          )}
-          {leaderName && <span className="truncate">{ridesContent.card.ledBy(leaderName)}</span>}
-        </div>
-        <CardSignupButton
-          rideId={ride.id}
-          rideName={ride.title}
-          isFull={ride.capacity != null && ride.signup_count >= ride.capacity}
-          userStatus={ride.current_user_signup_status}
+        <PaceAndTagRow
+          paceGroupName={ride.pace_group?.name ?? null}
+          paceGroupSortOrder={ride.pace_group?.sort_order ?? null}
+          distanceKm={ride.distance_km}
+          tags={ride.tags}
         />
       </div>
-    </div>
+
+      {/* Footer section */}
+      <CardFooterSection>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <RiderCount signupCount={ride.signup_count} capacity={ride.capacity} />
+            {leaderName && (
+              <span className={cn(LABEL_SM, 'text-muted-foreground')}>
+                {ridesContent.card.ledBy(leaderName)}
+              </span>
+            )}
+          </div>
+          <CardSignupButton
+            rideId={ride.id}
+            rideName={ride.title}
+            isFull={ride.capacity != null && ride.signup_count >= ride.capacity}
+            userStatus={ride.current_user_signup_status}
+          />
+        </div>
+      </CardFooterSection>
+    </>
   );
 }

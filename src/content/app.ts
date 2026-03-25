@@ -295,9 +295,9 @@ export const appContent = {
       },
     },
     status: {
-      confirmed: 'CONFIRMED',
-      waitlisted: (position: number) => `WAITLISTED \u00b7 #${position}`,
-      completed: 'COMPLETED',
+      confirmed: 'Confirmed',
+      waitlisted: (position: number) => `Waitlisted \u00b7 #${position}`,
+      completed: 'Completed',
     },
     actions: {
       cancelSignup: 'Cancel signup',

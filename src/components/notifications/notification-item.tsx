@@ -8,7 +8,7 @@ import {
   ArrowCircleUp,
   Megaphone,
   Info,
-  Queue,
+  Hourglass,
 } from '@phosphor-icons/react/dist/ssr';
 import { appContent } from '@/content/app';
 
@@ -30,7 +30,7 @@ export const notificationIcons: Record<NotificationType, React.ElementType> = {
   weather_watch: CloudRain,
   signup_confirmed: CalendarCheck,
   waitlist_promoted: ArrowCircleUp,
-  waitlist_joined: Queue,
+  waitlist_joined: Hourglass,
   announcement: Megaphone,
 };
 

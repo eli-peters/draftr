@@ -487,11 +487,14 @@ export type UserRideSignup = {
   pace_group_name: string | null;
   meeting_location_name: string | null;
   distance_km: number | null;
+  elevation_m: number | null;
+  end_time: string | null;
   signup_count: number;
   capacity: number | null;
   signed_up_at: string | null;
   waitlist_position: number | null;
   signup_status: 'confirmed' | 'waitlisted' | 'checked_in';
+  pace_group_sort_order: number | null;
   weather: RideWeatherSnapshot | null;
 };
 
@@ -512,9 +515,9 @@ export async function getUserRideSignups(
       `
       id, status, signed_up_at, waitlist_position,
       ride:rides!inner(
-        id, title, ride_date, start_time, distance_km, capacity,
+        id, title, ride_date, start_time, end_time, distance_km, elevation_m, capacity,
         meeting_location:meeting_locations(name),
-        pace_group:pace_groups(name),
+        pace_group:pace_groups(name, sort_order),
         ride_signups(count),
         ride_weather_snapshots(*)
       )
@@ -556,10 +559,12 @@ export async function getUserRideSignups(
       title: string;
       ride_date: string;
       start_time: string;
+      end_time: string | null;
       distance_km: number | null;
+      elevation_m: number | null;
       capacity: number | null;
       meeting_location: { name: string } | null;
-      pace_group: { name: string } | null;
+      pace_group: { name: string; sort_order: number } | null;
       ride_signups: { count: number }[];
       ride_weather_snapshots: RideWeatherSnapshot | null;
     };
@@ -569,9 +574,12 @@ export async function getUserRideSignups(
       title: ride.title,
       ride_date: ride.ride_date,
       start_time: ride.start_time,
+      end_time: ride.end_time ?? null,
       pace_group_name: ride.pace_group?.name ?? null,
+      pace_group_sort_order: ride.pace_group?.sort_order ?? null,
       meeting_location_name: ride.meeting_location?.name ?? null,
       distance_km: ride.distance_km,
+      elevation_m: ride.elevation_m ?? null,
       signup_count: ride.ride_signups?.[0]?.count ?? 0,
       capacity: ride.capacity,
       signed_up_at: signup.signed_up_at,

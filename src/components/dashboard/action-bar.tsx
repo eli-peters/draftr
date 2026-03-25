@@ -5,8 +5,7 @@ import {
   MapPin,
   Users,
   FlagBanner,
-  CaretRight,
-  Queue,
+  Hourglass,
   UserPlus,
   FlagPennant,
   CloudRain,
@@ -14,9 +13,9 @@ import {
 import { Card } from '@/components/ui/card';
 import { CapacityBar } from '@/components/ui/capacity-bar';
 import { MetadataItem } from '@/components/ui/metadata-item';
-import { OVERLINE } from '@/components/rides/ride-card-parts';
+import { CardBanner, DateTimeRow } from '@/components/rides/ride-card-parts';
 import { appContent } from '@/content/app';
-import { separators, formatTime } from '@/config/formatting';
+import { formatTime } from '@/config/formatting';
 import { routes } from '@/config/routes';
 import { getRelativeDay } from '@/lib/utils';
 import type { UserRole } from '@/config/navigation';
@@ -72,24 +71,24 @@ interface ActionBarProps {
 
 function ActionCard({
   label,
-  icon: Icon,
+  icon,
   href,
+  bgClass,
+  textClass,
   children,
 }: {
   label: string;
-  icon: React.ComponentType<{ weight?: 'duotone' | 'fill'; className?: string }>;
+  icon: React.ComponentType<{ className?: string }>;
   href: string;
+  bgClass: string;
+  textClass: string;
   children: React.ReactNode;
 }) {
   return (
     <Link href={href} className="group block">
-      <Card className="p-5">
-        <div className="mb-3 flex items-center gap-2">
-          <Icon className="h-4 w-4 text-primary" />
-          <span className={`${OVERLINE} text-muted-foreground`}>{label}</span>
-          <CaretRight className="ml-auto h-3.5 w-3.5 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5" />
-        </div>
-        {children}
+      <Card className="overflow-clip p-0">
+        <CardBanner icon={icon} label={label} bgClass={bgClass} textClass={textClass} />
+        <div className="px-5 pt-3 pb-5">{children}</div>
       </Card>
     </Link>
   );
@@ -117,23 +116,24 @@ export function ActionBar({
   if (!hasItems) return null;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Rider: your next confirmed ride */}
       {nextSignup && (
         <ActionCard
           label={content.actionBar.yourNextRide}
           icon={CalendarDots}
           href={routes.ride(nextSignup.id)}
+          bgClass="bg-feedback-success-bg"
+          textClass="text-feedback-success-text"
         >
           <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
             {nextSignup.title}
           </h3>
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            <span className={`${OVERLINE} text-primary`}>
-              {getRelativeDay(parseISO(nextSignup.ride_date))}
-              {separators.dot}
-              {formatTime(nextSignup.start_time)}
-            </span>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+            <DateTimeRow
+              date={getRelativeDay(parseISO(nextSignup.ride_date))}
+              time={formatTime(nextSignup.start_time)}
+            />
             {nextSignup.meeting_location_name && (
               <MetadataItem icon={MapPin}>{nextSignup.meeting_location_name}</MetadataItem>
             )}
@@ -145,18 +145,22 @@ export function ActionBar({
       {nextWaitlistedRide && (
         <ActionCard
           label={content.actionBar.waitlistPosition}
-          icon={Queue}
+          icon={Hourglass}
           href={routes.ride(nextWaitlistedRide.id)}
+          bgClass="bg-feedback-warning-bg"
+          textClass="text-feedback-warning-text"
         >
           <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
             {nextWaitlistedRide.title}
           </h3>
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            <span className={`${OVERLINE} text-primary`}>
-              {getRelativeDay(parseISO(nextWaitlistedRide.ride_date))}
-              {separators.dot}
-              {formatTime(nextWaitlistedRide.start_time)}
-            </span>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+            <DateTimeRow
+              date={getRelativeDay(parseISO(nextWaitlistedRide.ride_date))}
+              time={formatTime(nextWaitlistedRide.start_time)}
+            />
+            {nextWaitlistedRide.meeting_location_name && (
+              <MetadataItem icon={MapPin}>{nextWaitlistedRide.meeting_location_name}</MetadataItem>
+            )}
             <MetadataItem className="text-warning">
               {appContent.schedule.waitlistPosition(nextWaitlistedRide.waitlist_position)}
             </MetadataItem>
@@ -170,16 +174,20 @@ export function ActionBar({
           label={content.actionBar.nextLedRide}
           icon={FlagBanner}
           href={routes.ride(nextLedRide.id)}
+          bgClass="bg-accent-secondary-subtle"
+          textClass="text-accent-secondary-default"
         >
           <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
             {nextLedRide.title}
           </h3>
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            <span className={`${OVERLINE} text-primary`}>
-              {getRelativeDay(parseISO(nextLedRide.ride_date))}
-              {separators.dot}
-              {formatTime(nextLedRide.start_time)}
-            </span>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+            <DateTimeRow
+              date={getRelativeDay(parseISO(nextLedRide.ride_date))}
+              time={formatTime(nextLedRide.start_time)}
+            />
+            {nextLedRide.meeting_location_name && (
+              <MetadataItem icon={MapPin}>{nextLedRide.meeting_location_name}</MetadataItem>
+            )}
             <MetadataItem icon={Users}>
               {content.actionBar.signedUp(nextLedRide.signup_count, nextLedRide.capacity)}
             </MetadataItem>
@@ -192,12 +200,14 @@ export function ActionBar({
         </ActionCard>
       )}
 
-      {/* Leader: weather watch stub */}
+      {/* Leader: weather watch */}
       {weatherWatchRide && (
         <ActionCard
           label={content.actionBar.weatherWatch}
           icon={CloudRain}
           href={routes.ride(weatherWatchRide.id)}
+          bgClass="bg-feedback-warning-bg"
+          textClass="text-feedback-warning-text"
         >
           <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
             {weatherWatchRide.title}
@@ -214,6 +224,8 @@ export function ActionBar({
           label={content.actionBar.pendingApprovals}
           icon={UserPlus}
           href={routes.manageTab('members')}
+          bgClass="bg-accent-primary-subtle"
+          textClass="text-accent-primary-default"
         >
           <p className="text-sm text-muted-foreground">
             {content.actionBar.pendingApprovalsCount(pendingMemberCount)}
@@ -227,6 +239,8 @@ export function ActionBar({
           label={content.actionBar.ridesNeedingLeader}
           icon={FlagPennant}
           href={routes.manageTab('rides')}
+          bgClass="bg-accent-primary-subtle"
+          textClass="text-accent-primary-default"
         >
           <p className="text-sm text-muted-foreground">
             {content.actionBar.ridesNeedingLeaderCount(ridesNeedingLeaderCount)}

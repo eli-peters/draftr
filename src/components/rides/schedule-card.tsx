@@ -5,12 +5,17 @@ import { format, parseISO } from 'date-fns';
 import { CheckCircle, Hourglass } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { CardBanner, DateTimeRow } from '@/components/rides/ride-card-parts';
+import {
+  CardBanner,
+  DateTimeRow,
+  ScheduleStats,
+  CardFooterSection,
+} from '@/components/rides/ride-card-parts';
 import { RideWeatherBadge } from '@/components/weather/ride-weather-badge';
 import { appContent } from '@/content/app';
 import { cn, getRelativeDay } from '@/lib/utils';
 import { SignupStatus } from '@/config/statuses';
-import { dateFormats, formatTime } from '@/config/formatting';
+import { dateFormats, formatTime, formatDuration } from '@/config/formatting';
 import { routes } from '@/config/routes';
 import type { UserRideSignup } from '@/lib/rides/queries';
 
@@ -74,6 +79,8 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
   }
   const bannerConfig = statusBannerConfig[statusKey];
 
+  const durationDisplay = formatDuration(ride.start_time, ride.end_time);
+
   function handleAction(action: ScheduleAction) {
     if (action === 'view-details' || action === 'get-directions') {
       router.push(routes.ride(ride.id));
@@ -84,6 +91,7 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
 
   return (
     <Card className={cn('overflow-clip p-0', isCompleted && 'opacity-completed')}>
+      {/* Banner — always present */}
       <CardBanner
         icon={bannerConfig.icon}
         label={statusLabel}
@@ -91,7 +99,8 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
         textClass={bannerConfig.textClass}
       />
 
-      <div className="flex flex-col gap-3 px-6 pb-6 pt-4">
+      {/* Content */}
+      <div className="flex flex-col gap-4 px-6 pt-3 pb-6">
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between">
             <DateTimeRow
@@ -100,24 +109,39 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
             />
             <RideWeatherBadge weather={ride.weather} />
           </div>
-          {/* heading/sm token */}
-          <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
+          {/* heading/md token — 20px */}
+          <h3 className="font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
             {ride.title}
           </h3>
         </div>
 
-        <div className="flex items-center gap-2 pt-1">
+        <ScheduleStats
+          paceGroupName={ride.pace_group_name}
+          paceGroupSortOrder={ride.pace_group_sort_order}
+          distanceKm={ride.distance_km}
+          elevationM={ride.elevation_m}
+          durationDisplay={durationDisplay}
+        />
+      </div>
+
+      {/* Footer */}
+      <CardFooterSection>
+        <div className="flex items-center justify-between">
           {statusKey === 'confirmed' && (
             <>
               <Button
-                variant="outline"
-                size="xs"
-                className="border-destructive/30 text-destructive hover:bg-destructive/10"
+                variant="ghost"
+                size="sm"
+                className="text-primary hover:text-primary"
                 onClick={() => handleAction('cancel-signup')}
               >
                 {schedule.actions.cancelSignup}
               </Button>
-              <Button variant="outline" size="xs" onClick={() => handleAction('get-directions')}>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => handleAction('get-directions')}
+              >
                 {schedule.actions.getDirections}
               </Button>
             </>
@@ -125,25 +149,33 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
           {statusKey === 'waitlisted' && (
             <>
               <Button
-                variant="outline"
-                size="xs"
-                className="border-warning/30 text-warning hover:bg-warning/10"
+                variant="ghost"
+                size="sm"
+                className="text-primary hover:text-primary"
                 onClick={() => handleAction('leave-waitlist')}
               >
                 {schedule.actions.leaveWaitlist}
               </Button>
-              <Button variant="outline" size="xs" onClick={() => handleAction('get-directions')}>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => handleAction('get-directions')}
+              >
                 {schedule.actions.getDirections}
               </Button>
             </>
           )}
           {statusKey === 'completed' && (
-            <Button variant="outline" size="xs" onClick={() => handleAction('view-details')}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleAction('view-details')}
+            >
               {schedule.actions.viewDetails}
             </Button>
           )}
         </div>
-      </div>
+      </CardFooterSection>
     </Card>
   );
 }
