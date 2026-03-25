@@ -29,7 +29,7 @@ export function HeaderBar({
   unreadNotificationCount,
 }: HeaderBarProps) {
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center justify-between bg-primary px-5 md:px-8 pt-[env(safe-area-inset-top)]">
+    <header className="sticky top-0 z-40 flex items-center justify-between bg-primary px-5 md:px-8 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3">
       {/* Left: team logo */}
       <Link href={routes.home} className="flex items-center gap-2">
         <AppLogo className="h-5 w-auto text-primary-foreground" />
