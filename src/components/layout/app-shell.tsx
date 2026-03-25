@@ -13,7 +13,7 @@ import { SidebarNav } from './sidebar-nav';
 import { PageTransitionWrapper } from './page-transition-wrapper';
 import { PullToRefreshIndicator } from './pull-to-refresh-indicator';
 
-const MIN_SPINNER_MS = 300;
+const MIN_SPINNER_MS = 800;
 
 interface AppShellUser {
   name: string;
@@ -65,44 +65,48 @@ export function AppShell({
   const isActive = pullDistance > 0 || state === 'refreshing';
 
   return (
-    <div className="relative flex min-h-screen flex-col md:bg-surface-page">
-      {isMobile && <PullToRefreshIndicator pullDistance={pullDistance} state={state} />}
+    <div className="flex min-h-screen flex-col md:bg-surface-page">
+      <HeaderBar
+        userName={user.name}
+        userEmail={user.email}
+        userInitials={user.initials}
+        avatarUrl={user.avatarUrl}
+        notifications={notifications ?? []}
+        unreadNotificationCount={unreadNotificationCount ?? 0}
+      />
 
-      <div
-        style={{
-          transform: isActive ? `translateY(${pullDistance}px)` : undefined,
-          transition: state === 'idle' ? 'transform 200ms ease-out' : undefined,
-        }}
-      >
-        <HeaderBar
-          userName={user.name}
-          userEmail={user.email}
-          userInitials={user.initials}
-          avatarUrl={user.avatarUrl}
-          notifications={notifications ?? []}
-          unreadNotificationCount={unreadNotificationCount ?? 0}
-        />
+      <div className="relative flex flex-1 flex-col">
+        {isMobile && <PullToRefreshIndicator pullDistance={pullDistance} state={state} />}
 
-        <div className="flex flex-1 md:flex-row md:gap-3 md:px-3 md:pb-3">
-          <SidebarNav items={navItems} />
+        <div
+          className="flex flex-1 flex-col"
+          style={{
+            transform: isActive ? `translateY(${pullDistance}px)` : undefined,
+            transition: state === 'idle' ? 'transform 200ms ease-out' : undefined,
+          }}
+        >
+          <div className="flex flex-1 md:flex-row md:gap-3 md:px-3 md:pb-3">
+            <SidebarNav items={navItems} />
 
-          <div className="flex min-h-0 flex-1 flex-col">
-            {isHome && banner && (
-              <div className="md:px-6 md:pt-3">
-                <div className="overflow-hidden md:rounded-lg md:border md:border-border">
-                  {banner}
+            <div className="flex min-h-0 flex-1 flex-col">
+              {isHome && banner && (
+                <div className="md:px-6 md:pt-3">
+                  <div className="overflow-hidden md:rounded-lg md:border md:border-border">
+                    {banner}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col pb-20 md:pb-0">
-              <PageTransitionWrapper>{children}</PageTransitionWrapper>
-            </main>
+              <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col pb-20 md:pb-0">
+                <PageTransitionWrapper>{children}</PageTransitionWrapper>
+              </main>
 
-            <BottomNav items={navItems} />
+            </div>
           </div>
         </div>
       </div>
+
+      <BottomNav items={navItems} />
     </div>
   );
 }
