@@ -137,11 +137,7 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
               >
                 {schedule.actions.cancelSignup}
               </Button>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => handleAction('get-directions')}
-              >
+              <Button variant="default" size="sm" onClick={() => handleAction('get-directions')}>
                 {schedule.actions.getDirections}
               </Button>
             </>
@@ -156,21 +152,13 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
               >
                 {schedule.actions.leaveWaitlist}
               </Button>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => handleAction('get-directions')}
-              >
+              <Button variant="default" size="sm" onClick={() => handleAction('get-directions')}>
                 {schedule.actions.getDirections}
               </Button>
             </>
           )}
           {statusKey === 'completed' && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleAction('view-details')}
-            >
+            <Button variant="outline" size="sm" onClick={() => handleAction('view-details')}>
               {schedule.actions.viewDetails}
             </Button>
           )}

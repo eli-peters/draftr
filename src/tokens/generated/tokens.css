@@ -7,113 +7,111 @@
 /* === Primitive Colour Ramps === */
 /* Source: src/tokens/primitives.json */
 :root {
-
   /* primary — Magenta — brand hero colour. HSL → 322°, 98%, 44% */
-  --color-primary-50: #FEF0F7;
-  --color-primary-100: #FDD8EC;
-  --color-primary-200: #FBB1D9;
-  --color-primary-300: #F77DBF;
-  --color-primary-400: #F04AA5;
-  --color-primary-500: #DE0387;
-  --color-primary-600: #C2036F;
-  --color-primary-700: #9C025A;
+  --color-primary-50: #fef0f7;
+  --color-primary-100: #fdd8ec;
+  --color-primary-200: #fbb1d9;
+  --color-primary-300: #f77dbf;
+  --color-primary-400: #f04aa5;
+  --color-primary-500: #de0387;
+  --color-primary-600: #c2036f;
+  --color-primary-700: #9c025a;
   --color-primary-800: #780247;
   --color-primary-900: #570134;
-  --color-primary-950: #3A0123;
-  --color-primary-500-alpha-12: #DE03871F;
+  --color-primary-950: #3a0123;
+  --color-primary-500-alpha-12: #de03871f;
 
   /* secondary — Muted deep teal — supporting colour. HSL → 194°, 48%, 32% */
-  --color-secondary-50: #EEF7F9;
-  --color-secondary-100: #D5ECF1;
-  --color-secondary-200: #ADD9E4;
-  --color-secondary-300: #7CC0D1;
-  --color-secondary-400: #4DA3B8;
-  --color-secondary-500: #2D7F94;
-  --color-secondary-600: #266A7C;
+  --color-secondary-50: #eef7f9;
+  --color-secondary-100: #d5ecf1;
+  --color-secondary-200: #add9e4;
+  --color-secondary-300: #7cc0d1;
+  --color-secondary-400: #4da3b8;
+  --color-secondary-500: #2d7f94;
+  --color-secondary-600: #266a7c;
   --color-secondary-700: #225565;
-  --color-secondary-800: #1E4451;
-  --color-secondary-900: #1A3742;
-  --color-secondary-950: #0F232C;
-  --color-secondary-500-alpha-12: #2D7F941F;
+  --color-secondary-800: #1e4451;
+  --color-secondary-900: #1a3742;
+  --color-secondary-950: #0f232c;
+  --color-secondary-500-alpha-12: #2d7f941f;
 
   /* neutral — Warm slate — faint pink undertone to harmonize with magenta primary */
-  --color-neutral-0: #FFFFFF;
-  --color-neutral-50: #F8F6F7;
-  --color-neutral-100: #F0ECED;
-  --color-neutral-200: #E2DCDE;
-  --color-neutral-300: #CEC6C9;
-  --color-neutral-400: #B0A5A9;
-  --color-neutral-500: #7C7074;
-  --color-neutral-600: #6E6367;
-  --color-neutral-700: #564C50;
-  --color-neutral-800: #3D3538;
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f8f6f7;
+  --color-neutral-100: #f0eced;
+  --color-neutral-200: #e2dcde;
+  --color-neutral-300: #cec6c9;
+  --color-neutral-400: #b0a5a9;
+  --color-neutral-500: #7c7074;
+  --color-neutral-600: #6e6367;
+  --color-neutral-700: #564c50;
+  --color-neutral-800: #3d3538;
   --color-neutral-900: #272123;
-  --color-neutral-950: #1A1517;
-  --color-neutral-975: #110E0F;
-  --color-neutral-0-alpha-92: #FFFFFFEB;
-  --color-neutral-950-alpha-92: #1A1517EB;
+  --color-neutral-950: #1a1517;
+  --color-neutral-975: #110e0f;
+  --color-neutral-0-alpha-92: #ffffffeb;
+  --color-neutral-950-alpha-92: #1a1517eb;
 
   /* success — Warm green — shifted slightly warm to harmonize with the palette */
-  --color-success-50: #EDFCF2;
-  --color-success-100: #D3F9DF;
-  --color-success-200: #AAF0C4;
-  --color-success-300: #73E2A3;
-  --color-success-400: #3BCC7E;
-  --color-success-500: #18A85C;
-  --color-success-600: #0A7B42;
-  --color-success-700: #0B6E3D;
-  --color-success-800: #0D5733;
-  --color-success-900: #0B482B;
+  --color-success-50: #edfcf2;
+  --color-success-100: #d3f9df;
+  --color-success-200: #aaf0c4;
+  --color-success-300: #73e2a3;
+  --color-success-400: #3bcc7e;
+  --color-success-500: #18a85c;
+  --color-success-600: #0a7b42;
+  --color-success-700: #0b6e3d;
+  --color-success-800: #0d5733;
+  --color-success-900: #0b482b;
   --color-success-950: #052818;
-  --color-success-500-alpha-12: #18A85C1F;
+  --color-success-500-alpha-12: #18a85c1f;
 
   /* warning — Warm amber */
-  --color-warning-50: #FFFBEB;
-  --color-warning-100: #FFF3C6;
-  --color-warning-200: #FFE488;
-  --color-warning-300: #FFD04A;
-  --color-warning-400: #FFBB1F;
-  --color-warning-500: #F59A06;
-  --color-warning-600: #D97502;
-  --color-warning-700: #B45206;
-  --color-warning-800: #923F0C;
-  --color-warning-900: #78340D;
-  --color-warning-950: #451A02;
-  --color-warning-500-alpha-12: #F59A061F;
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fff3c6;
+  --color-warning-200: #ffe488;
+  --color-warning-300: #ffd04a;
+  --color-warning-400: #ffbb1f;
+  --color-warning-500: #f59a06;
+  --color-warning-600: #d97502;
+  --color-warning-700: #b45206;
+  --color-warning-800: #923f0c;
+  --color-warning-900: #78340d;
+  --color-warning-950: #451a02;
+  --color-warning-500-alpha-12: #f59a061f;
 
   /* error — True red — deliberately separated from primary magenta on the hue wheel */
-  --color-error-50: #FEF2F2;
-  --color-error-100: #FEE2E2;
-  --color-error-200: #FECACA;
-  --color-error-300: #FCA5A5;
-  --color-error-400: #F87171;
-  --color-error-500: #EF4444;
-  --color-error-600: #DC2626;
-  --color-error-700: #B91C1C;
-  --color-error-800: #991B1B;
-  --color-error-900: #7F1D1D;
-  --color-error-950: #450A0A;
-  --color-error-500-alpha-12: #EF44441F;
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-200: #fecaca;
+  --color-error-300: #fca5a5;
+  --color-error-400: #f87171;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-error-700: #b91c1c;
+  --color-error-800: #991b1b;
+  --color-error-900: #7f1d1d;
+  --color-error-950: #450a0a;
+  --color-error-500-alpha-12: #ef44441f;
 
   /* info — Cool slate blue — neutral, separated from primary and secondary hues */
-  --color-info-50: #EFF4FC;
-  --color-info-100: #DEEAF9;
-  --color-info-200: #BDD4F2;
-  --color-info-300: #91B7E8;
-  --color-info-400: #6594DA;
-  --color-info-500: #4574CB;
-  --color-info-600: #3459AC;
-  --color-info-700: #2C478B;
-  --color-info-800: #293E73;
+  --color-info-50: #eff4fc;
+  --color-info-100: #deeaf9;
+  --color-info-200: #bdd4f2;
+  --color-info-300: #91b7e8;
+  --color-info-400: #6594da;
+  --color-info-500: #4574cb;
+  --color-info-600: #3459ac;
+  --color-info-700: #2c478b;
+  --color-info-800: #293e73;
   --color-info-900: #263660;
-  --color-info-950: #1A233D;
-  --color-info-500-alpha-12: #4574CB1F;
+  --color-info-950: #1a233d;
+  --color-info-500-alpha-12: #4574cb1f;
 }
 
 /* === Semantic Tokens (Light) === */
 /* Source: src/tokens/semantics.json */
 :root {
-
   /* surface */
   --surface-default: var(--color-neutral-0);
   --surface-page: var(--color-neutral-50);
@@ -225,7 +223,6 @@
 
 /* === Semantic Tokens (Dark) === */
 .dark {
-
   /* surface */
   --surface-default: var(--color-neutral-900);
   --surface-page: var(--color-neutral-950);

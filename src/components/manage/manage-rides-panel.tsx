@@ -86,9 +86,7 @@ function ManageRideItem({ ride }: { ride: ManageRideData }) {
               <MetadataItem icon={MapPin}>{ride.meeting_location_name}</MetadataItem>
             )}
             <MetadataItem icon={Users}>
-              {ride.capacity != null
-                ? `${ride.signup_count}/${ride.capacity}`
-                : ride.signup_count}
+              {ride.capacity != null ? `${ride.signup_count}/${ride.capacity}` : ride.signup_count}
             </MetadataItem>
           </div>
           {ride.tags.length > 0 && (

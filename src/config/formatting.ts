@@ -57,7 +57,7 @@ export function formatDuration(startTime: string, endTime: string | null): strin
 
   const [sh, sm] = startTime.split(':').map(Number);
   const [eh, em] = endTime.split(':').map(Number);
-  const totalMinutes = (eh * 60 + em) - (sh * 60 + sm);
+  const totalMinutes = eh * 60 + em - (sh * 60 + sm);
   if (totalMinutes <= 0) return null;
 
   const h = Math.floor(totalMinutes / 60);

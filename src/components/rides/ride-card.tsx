@@ -57,7 +57,8 @@ function PaceAndTagRow({
       )}
       {distanceKm != null && (
         <span className={cn(BODY_SM, 'text-muted-foreground')}>
-          {distanceKm}{units.km}
+          {distanceKm}
+          {units.km}
         </span>
       )}
       {visible.map((tag) => (

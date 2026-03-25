@@ -39,7 +39,10 @@ export function CardBanner({ icon: Icon, label, bgClass, textClass }: CardBanner
     <div className={cn('flex w-full items-center gap-2 overflow-clip px-6 py-2', bgClass)}>
       <Icon className={cn('size-3.5 shrink-0', textClass)} />
       <span
-        className={cn('font-sans text-xs font-semibold uppercase tracking-[0.06em] leading-4.25 whitespace-nowrap', textClass)}
+        className={cn(
+          'font-sans text-xs font-semibold uppercase tracking-[0.06em] leading-4.25 whitespace-nowrap',
+          textClass,
+        )}
       >
         {label}
       </span>
@@ -210,14 +213,11 @@ export function InlineMetadata({
       )}
       {distanceKm != null && (
         <span className={cn(BODY_SM, 'text-muted-foreground')}>
-          {distanceKm}{units.km}
+          {distanceKm}
+          {units.km}
         </span>
       )}
-      {locationName && (
-        <span className={cn(BODY_SM, 'text-muted-foreground')}>
-          {locationName}
-        </span>
-      )}
+      {locationName && <span className={cn(BODY_SM, 'text-muted-foreground')}>{locationName}</span>}
     </div>
   );
 }
@@ -256,12 +256,14 @@ export function ScheduleStats({
       )}
       {distanceKm != null && (
         <span className="font-mono text-xs font-bold leading-4.25 text-foreground">
-          {distanceKm}{units.km}
+          {distanceKm}
+          {units.km}
         </span>
       )}
       {elevationM != null && (
         <span className="font-mono text-xs font-bold leading-4.25 text-foreground">
-          {elevationM}{units.m}
+          {elevationM}
+          {units.m}
         </span>
       )}
       {durationDisplay && (
@@ -283,9 +285,5 @@ interface CardFooterSectionProps {
 }
 
 export function CardFooterSection({ children, className }: CardFooterSectionProps) {
-  return (
-    <div className={cn('bg-surface-page px-6 py-3', className)}>
-      {children}
-    </div>
-  );
+  return <div className={cn('bg-surface-page px-6 py-3', className)}>{children}</div>;
 }

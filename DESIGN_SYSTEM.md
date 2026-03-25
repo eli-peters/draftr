@@ -157,13 +157,13 @@ Sizes: `xs` (h-7), `sm` (h-8), `default` (h-10), `lg` (h-11), `icon` (size-10), 
 
 All ride cards: `rounded-2xl`, stroke only (no shadow), `overflow-clip`.
 
-| Property | Home              | Rides             | Schedule          | Manage                  |
-| -------- | ----------------- | ----------------- | ----------------- | ----------------------- |
+| Property | Home              | Rides             | Schedule          | Manage                   |
+| -------- | ----------------- | ----------------- | ----------------- | ------------------------ |
 | Layout   | Card              | Card              | Card              | Grouped list in one Card |
-| Border   | `border-subtle`   | `border-default`  | `border-default`  | `border-default`        |
-| Content  | `p-4`             | `p-6`             | `px-6 pt-3 pb-6`  | `px-5 py-4` per row     |
-| Footer   | —                 | `bg-surface-page` | `bg-surface-page` | CapacityBar per row     |
-| Banner   | optional (status) | optional (status)  | always (signup)   | inline badges           |
+| Border   | `border-subtle`   | `border-default`  | `border-default`  | `border-default`         |
+| Content  | `p-4`             | `p-6`             | `px-6 pt-3 pb-6`  | `px-5 py-4` per row      |
+| Footer   | —                 | `bg-surface-page` | `bg-surface-page` | CapacityBar per row      |
+| Banner   | optional (status) | optional (status) | always (signup)   | inline badges            |
 
 ### Action Card (Dashboard)
 
@@ -174,14 +174,14 @@ Contextual action prompts on the Home dashboard. Answer "What needs your attenti
 - Content: `p-5`, ride title (heading/sm) + `DateTimeRow` + optional metadata
 - Entire card is tappable → navigates to relevant page (no caret)
 
-| Variant | Banner bg | Banner text | Rationale |
-| --- | --- | --- | --- |
-| Your Next Ride | `feedback-success-bg` | `feedback-success-text` | Mirrors Schedule CONFIRMED |
-| Waitlisted | `feedback-warning-bg` | `feedback-warning-text` | Mirrors Schedule WAITLISTED |
-| Next Led Ride | `accent-secondary-subtle` | `accent-secondary-default` | Leadership = secondary |
-| Weather Watch | `feedback-warning-bg` | `feedback-warning-text` | Alert state = warning |
-| Pending Approvals | `accent-primary-subtle` | `accent-primary-default` | Admin action = primary |
-| Rides Need Leader | `accent-primary-subtle` | `accent-primary-default` | Admin action = primary |
+| Variant           | Banner bg                 | Banner text                | Rationale                   |
+| ----------------- | ------------------------- | -------------------------- | --------------------------- |
+| Your Next Ride    | `feedback-success-bg`     | `feedback-success-text`    | Mirrors Schedule CONFIRMED  |
+| Waitlisted        | `feedback-warning-bg`     | `feedback-warning-text`    | Mirrors Schedule WAITLISTED |
+| Next Led Ride     | `accent-secondary-subtle` | `accent-secondary-default` | Leadership = secondary      |
+| Weather Watch     | `feedback-warning-bg`     | `feedback-warning-text`    | Alert state = warning       |
+| Pending Approvals | `accent-primary-subtle`   | `accent-primary-default`   | Admin action = primary      |
+| Rides Need Leader | `accent-primary-subtle`   | `accent-primary-default`   | Admin action = primary      |
 
 ### Badge/Tag
 
