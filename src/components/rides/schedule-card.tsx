@@ -16,6 +16,7 @@ import { appContent } from '@/content/app';
 import { cn, getRelativeDay } from '@/lib/utils';
 import { SignupStatus } from '@/config/statuses';
 import { dateFormats, formatTime, formatDuration } from '@/config/formatting';
+import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
 import type { UserRideSignup } from '@/lib/rides/queries';
 
@@ -64,6 +65,18 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
   const relativeDay = getRelativeDay(rideDate, dateFormats.dayShort);
   const isCompleted = ride.signup_status === SignupStatus.CHECKED_IN;
   const isWaitlisted = ride.signup_status === SignupStatus.WAITLISTED;
+
+  // Availability check — hides cancel/leave buttons past cutoff
+  const availability = getRideAvailability(
+    {
+      ride_date: ride.ride_date,
+      start_time: ride.start_time,
+      end_time: ride.end_time,
+      status: 'scheduled', // upcoming tab already filters out cancelled rides
+      capacity: ride.capacity,
+    },
+    ride.signup_count,
+  );
 
   let statusKey: 'completed' | 'waitlisted' | 'confirmed';
   let statusLabel: string;
@@ -129,14 +142,16 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
         <div className="flex items-center justify-between">
           {statusKey === 'confirmed' && (
             <>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-primary hover:text-primary"
-                onClick={() => handleAction('cancel-signup')}
-              >
-                {schedule.actions.cancelSignup}
-              </Button>
+              {availability.canCancel && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-primary hover:text-primary"
+                  onClick={() => handleAction('cancel-signup')}
+                >
+                  {schedule.actions.cancelSignup}
+                </Button>
+              )}
               <Button variant="default" size="sm" onClick={() => handleAction('get-directions')}>
                 {schedule.actions.getDirections}
               </Button>
@@ -144,14 +159,16 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
           )}
           {statusKey === 'waitlisted' && (
             <>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-primary hover:text-primary"
-                onClick={() => handleAction('leave-waitlist')}
-              >
-                {schedule.actions.leaveWaitlist}
-              </Button>
+              {availability.canCancel && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-primary hover:text-primary"
+                  onClick={() => handleAction('leave-waitlist')}
+                >
+                  {schedule.actions.leaveWaitlist}
+                </Button>
+              )}
               <Button variant="default" size="sm" onClick={() => handleAction('get-directions')}>
                 {schedule.actions.getDirections}
               </Button>

@@ -1,14 +1,5 @@
 import { notFound } from 'next/navigation';
-import { format, parseISO } from 'date-fns';
-import {
-  MapPin,
-  Path,
-  Users,
-  Mountains,
-  ArrowSquareOut,
-  CloudRain,
-  Copy,
-} from '@phosphor-icons/react/dist/ssr';
+import { Copy } from '@phosphor-icons/react/dist/ssr';
 import Link from 'next/link';
 import {
   getRideById,
@@ -18,24 +9,24 @@ import {
   getRideComments,
   getRidePickups,
 } from '@/lib/rides/queries';
+import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { SignupButton } from '@/components/rides/signup-button';
 import { SignupRoster } from '@/components/rides/signup-roster';
 import { RideComments } from '@/components/rides/ride-comments';
 import { RidePickups } from '@/components/rides/ride-pickups';
+import { RideDetailCard } from '@/components/rides/ride-detail-card';
+import { RideWeatherSummary } from '@/components/weather/ride-weather-summary';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CapacityBar } from '@/components/ui/capacity-bar';
 import { SectionHeading } from '@/components/ui/section-heading';
-import { RideWeatherDetail } from '@/components/weather/ride-weather-detail';
 import { appContent } from '@/content/app';
-import { RideStatus, SignupStatus } from '@/config/statuses';
-import { dateFormats, formatTime, separators, units } from '@/config/formatting';
+import { SignupStatus } from '@/config/statuses';
 import { routes } from '@/config/routes';
 import type { UserRole } from '@/config/navigation';
 
-const { detail, status: ridesStatus } = appContent.rides;
+const { detail } = appContent.rides;
 
 interface RideDetailPageProps {
   params: Promise<{ id: string }>;
@@ -53,57 +44,30 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   ]);
   if (!ride) notFound();
 
-  const rideDate = parseISO(ride.ride_date);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const isPast = rideDate < today;
   const isSignedUp =
     signup?.status === SignupStatus.CONFIRMED || signup?.status === SignupStatus.WAITLISTED;
-  const isCancelled = ride.status === RideStatus.CANCELLED;
 
-  const userRole = (membership?.role as UserRole) ?? 'rider';
-  const isCreator = membership?.user_id === ride.created_by;
-  const hasEditRole = userRole === 'admin' || (userRole === 'ride_leader' && isCreator);
-  const canEdit = !isPast && !isCancelled && hasEditRole;
-  const currentUserId = membership?.user_id ?? null;
-
-  // Separate confirmed from waitlisted for accurate display
   const confirmedCount = signups.filter(
     (s) => s.status === SignupStatus.CONFIRMED || s.status === SignupStatus.CHECKED_IN,
   ).length;
   const waitlistedCount = signups.filter((s) => s.status === SignupStatus.WAITLISTED).length;
 
-  let spotsText: string;
-  if (ride.capacity == null) {
-    spotsText = detail.signedUpCount(confirmedCount);
-  } else if (confirmedCount < ride.capacity) {
-    spotsText = detail.spotsRemaining(ride.capacity - confirmedCount, ride.capacity);
-  } else {
-    const parts = [detail.confirmedCount(confirmedCount)];
-    if (waitlistedCount > 0) parts.push(detail.waitlistedCount(waitlistedCount));
-    spotsText = parts.join(separators.dot);
-  }
+  // Centralized availability — replaces manual isPast/isCancelled checks
+  const availability = getRideAvailability(ride, confirmedCount);
+
+  const userRole = (membership?.role as UserRole) ?? 'rider';
+  const isCreator = membership?.user_id === ride.created_by;
+  const hasEditRole = userRole === 'admin' || (userRole === 'ride_leader' && isCreator);
+  const canEdit = !availability.isPast && !availability.isCancelled && hasEditRole;
+  const currentUserId = membership?.user_id ?? null;
 
   return (
     <DashboardShell>
-      {/* Status Banners */}
-      {ride.status === RideStatus.WEATHER_WATCH && (
-        <div className="mb-6 flex items-center gap-2.5 rounded-xl border border-warning/20 bg-warning/10 px-5 py-4 text-base text-warning">
-          <CloudRain className="h-5 w-5 shrink-0" />
-          {ridesStatus.weatherWatchDescription}
-        </div>
-      )}
-      {isCancelled && (
-        <div className="mb-6 rounded-xl border border-destructive/20 bg-destructive/10 px-5 py-4 text-base text-destructive">
-          {detail.cancelled}
-          {ride.cancellation_reason && `${separators.emDash}${ride.cancellation_reason}`}
-        </div>
-      )}
-
+      {/* Header — title + edit/duplicate actions */}
       <PageHeader
         title={ride.title}
         actions={
-          canEdit || (hasEditRole && (isCancelled || isPast)) ? (
+          canEdit || (hasEditRole && (availability.isCancelled || availability.isPast)) ? (
             <>
               {canEdit && (
                 <Link href={routes.manageEditRide(ride.id)}>
@@ -112,10 +76,10 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
                   </Button>
                 </Link>
               )}
-              {hasEditRole && (isCancelled || isPast) && (
+              {hasEditRole && (availability.isCancelled || availability.isPast) && (
                 <Link href={`${routes.manageNewRide}?duplicate=${ride.id}`}>
                   <Button variant="outline" size="sm">
-                    <Copy className="h-4 w-4 mr-1.5" />
+                    <Copy className="mr-1.5 h-4 w-4" />
                     {detail.duplicateAsNew}
                   </Button>
                 </Link>
@@ -125,119 +89,47 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         }
       />
 
-      <p className="mt-3 text-lg text-foreground/90">
-        {format(rideDate, dateFormats.full)}
-        <span className="mx-2 text-muted-foreground/50">·</span>
-        <span className="tabular-nums">{formatTime(ride.start_time)}</span>
-        {ride.end_time && (
-          <span className="tabular-nums">
-            {separators.dash}
-            {formatTime(ride.end_time)}
-          </span>
-        )}
-      </p>
+      {/* Weather summary */}
+      <RideWeatherSummary weather={ride.weather} />
 
-      {ride.pace_group && (
-        <p className="mt-1.5 text-base text-muted-foreground">
-          {ride.pace_group.name}
-          {ride.pace_group.moving_pace_min && ride.pace_group.moving_pace_max
-            ? ` (${ride.pace_group.moving_pace_min}–${ride.pace_group.moving_pace_max}${units.kmh})`
-            : ''}
-          {`${separators.dot}${ride.is_drop_ride ? detail.dropRide : detail.noDrop}`}
-        </p>
+      {/* Main ride detail card */}
+      <RideDetailCard
+        ride={ride}
+        isSignedUp={isSignedUp}
+        signupStatus={signup?.status ?? null}
+        confirmedCount={confirmedCount}
+        lifecycle={availability.lifecycle}
+      />
+
+      {/* Signup CTA — context-aware */}
+      {availability.canSignUp && !isSignedUp && (
+        <div className="mt-6">
+          <CapacityBar signupCount={confirmedCount} capacity={ride.capacity} className="mb-4" />
+          <SignupButton
+            rideId={ride.id}
+            isSignedUp={false}
+            isCancelled={false}
+            isFull={availability.isFull}
+          />
+        </div>
       )}
-
-      {ride.creator && (
-        <p className="mt-1.5 text-sm text-muted-foreground">
-          <Link
-            href={routes.publicProfile(ride.creator.id)}
-            className="hover:text-foreground transition-colors"
-          >
-            {detail.createdBy(ride.creator.display_name ?? ride.creator.full_name)}
-          </Link>
-        </p>
-      )}
-
-      {ride.tags.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {ride.tags.map((tag) => (
-            <Badge key={tag.id} variant="secondary" className="text-sm">
-              {tag.name}
-            </Badge>
-          ))}
+      {availability.canCancel && isSignedUp && (
+        <div className="mt-6">
+          <SignupButton rideId={ride.id} isSignedUp isCancelled={false} />
         </div>
       )}
 
-      {/* Details */}
-      <div className="mt-8 space-y-3">
-        {ride.meeting_location && (
-          <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-5">
-            <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-            <div>
-              <p className="font-medium text-foreground text-base">{ride.meeting_location.name}</p>
-              {ride.meeting_location.address && (
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  {ride.meeting_location.address}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Pickup points (rolling start locations) */}
-        {pickups.length > 0 && <RidePickups pickups={pickups} />}
-
-        <div className="flex items-center gap-5 rounded-xl border border-border bg-card p-5">
-          {ride.distance_km != null && (
-            <span className="flex items-center gap-2 text-base font-medium text-info">
-              <Path className="h-5 w-5" />
-              {ride.distance_km}
-              {units.km}
-            </span>
-          )}
-          {ride.elevation_m != null && (
-            <span className="flex items-center gap-2 text-base font-medium text-info">
-              <Mountains className="h-5 w-5" />
-              {ride.elevation_m}
-              {units.m}
-            </span>
-          )}
-          <span className="flex items-center gap-2 text-base font-medium">
-            <Users className="h-5 w-5 text-muted-foreground" />
-            {spotsText}
-          </span>
-        </div>
-
-        {isSignedUp && <p className="text-base font-semibold text-primary">{detail.signedUp}</p>}
-      </div>
-
-      {/* Weather forecast */}
-      <RideWeatherDetail weather={ride.weather} />
-
-      {ride.route_url && (
-        <div className="mt-8">
-          <a
-            href={ride.route_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-base font-semibold text-info hover:underline underline-offset-2"
-          >
-            <ArrowSquareOut className="h-5 w-5" />
-            {ride.route_name ?? detail.viewRoute}
-          </a>
-        </div>
-      )}
-
-      {ride.organiser_notes && (
-        <div className="mt-8">
-          <SectionHeading>{detail.organiserNotesHeading}</SectionHeading>
-          <p className="mt-3 text-base text-foreground/80 whitespace-pre-line leading-relaxed">
-            {ride.organiser_notes}
+      {/* Sign-ups closed message — shown when CTA is hidden and rider isn't signed up */}
+      {!availability.canSignUp && !availability.isCancelled && !isSignedUp && (
+        <div className="mt-6 text-center">
+          <p className="text-sm font-medium text-muted-foreground">
+            {appContent.rides.status.signupClosed}
           </p>
+          <p className="mt-1 text-xs text-muted-foreground/70">{detail.signupClosedContact}</p>
         </div>
       )}
 
-      {/* Signed-up riders */}
+      {/* Riders roster */}
       {signups.length > 0 && (
         <div className="mt-8">
           <SectionHeading>
@@ -249,15 +141,12 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         </div>
       )}
 
-      <div className="mt-10">
-        <CapacityBar signupCount={confirmedCount} capacity={ride.capacity} className="mb-5" />
-        <SignupButton
-          rideId={ride.id}
-          isSignedUp={isSignedUp}
-          isCancelled={isCancelled}
-          isFull={ride.capacity != null && confirmedCount >= ride.capacity}
-        />
-      </div>
+      {/* Pickup points */}
+      {pickups.length > 0 && (
+        <div className="mt-8">
+          <RidePickups pickups={pickups} />
+        </div>
+      )}
 
       {/* Comments */}
       <div className="mt-8">
@@ -266,7 +155,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           comments={comments}
           currentUserId={currentUserId}
           userRole={userRole}
-          isCancelled={isCancelled}
+          isCancelled={availability.isCancelled}
         />
       </div>
     </DashboardShell>

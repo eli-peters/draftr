@@ -17,6 +17,7 @@ import { appContent } from '@/content/app';
 import { cn, getRelativeDay } from '@/lib/utils';
 import { RideStatus } from '@/config/statuses';
 import { dateFormats, formatTime, units, getPaceBadgeVariant } from '@/config/formatting';
+import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
 import type { RideWithDetails } from '@/types/database';
 
@@ -151,6 +152,7 @@ function RidesLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: bo
   const rideDate = parseISO(ride.ride_date);
   const relativeDay = getRelativeDay(rideDate, dateFormats.dayShort);
   const leaderName = ride.creator?.display_name ?? ride.creator?.full_name ?? null;
+  const availability = getRideAvailability(ride, ride.signup_count);
 
   return (
     <>
@@ -194,12 +196,14 @@ function RidesLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: bo
               </span>
             )}
           </div>
-          <CardSignupButton
-            rideId={ride.id}
-            rideName={ride.title}
-            isFull={ride.capacity != null && ride.signup_count >= ride.capacity}
-            userStatus={ride.current_user_signup_status}
-          />
+          {availability.canSignUp && (
+            <CardSignupButton
+              rideId={ride.id}
+              rideName={ride.title}
+              isFull={availability.isFull}
+              userStatus={ride.current_user_signup_status}
+            />
+          )}
         </div>
       </CardFooterSection>
     </>

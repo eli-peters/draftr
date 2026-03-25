@@ -1,0 +1,211 @@
+import { format, parseISO } from 'date-fns';
+import Link from 'next/link';
+import {
+  MapPin,
+  CalendarBlank,
+  Clock,
+  Path,
+  CheckCircle,
+  Timer,
+  Play,
+} from '@phosphor-icons/react/dist/ssr';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { CardBanner, RideBanner } from '@/components/rides/ride-card-parts';
+import { RouteMapPlaceholder } from '@/components/rides/route-map-placeholder';
+import { appContent } from '@/content/app';
+import { dateFormats, formatTime, separators, units } from '@/config/formatting';
+import { RideStatus, SignupStatus } from '@/config/statuses';
+import { routes } from '@/config/routes';
+import type { RideLifecycle } from '@/lib/rides/lifecycle';
+import type { RideWithDetails } from '@/types/database';
+
+const { detail, status: rideStatus } = appContent.rides;
+
+interface RideDetailCardProps {
+  ride: RideWithDetails;
+  isSignedUp: boolean;
+  signupStatus: string | null;
+  confirmedCount: number;
+  lifecycle: RideLifecycle;
+}
+
+/**
+ * Consolidated ride detail card — groups location, metadata, route map,
+ * stats, notes, tags, and creator into a single card.
+ */
+export function RideDetailCard({
+  ride,
+  isSignedUp,
+  signupStatus,
+  confirmedCount,
+  lifecycle,
+}: RideDetailCardProps) {
+  const rideDate = parseISO(ride.ride_date);
+  const isCancelled = ride.status === RideStatus.CANCELLED;
+  const isWeatherWatch = ride.status === RideStatus.WEATHER_WATCH;
+  const isWaitlisted = signupStatus === SignupStatus.WAITLISTED;
+
+  // Stats items — only render columns with data
+  const statsItems: { label: string; value: string }[] = [];
+  if (ride.distance_km != null) {
+    statsItems.push({ label: detail.distanceLabel, value: `${ride.distance_km}${units.km}` });
+  }
+  if (ride.elevation_m != null) {
+    statsItems.push({ label: detail.elevationLabel, value: `${ride.elevation_m}${units.m}` });
+  }
+  // Spots remaining / signed up
+  if (ride.capacity != null) {
+    statsItems.push({
+      label: detail.spotsRemainingLabel,
+      value: `${confirmedCount}/${ride.capacity}`,
+    });
+  } else {
+    statsItems.push({
+      label: detail.spotsRemainingLabel,
+      value: detail.signedUpCount(confirmedCount),
+    });
+  }
+
+  return (
+    <Card className="mt-6 overflow-clip p-0">
+      {/* Status banners — priority: cancelled > weather watch > signed up */}
+      {isCancelled && <RideBanner type={RideStatus.CANCELLED} />}
+      {isWeatherWatch && !isCancelled && <RideBanner type={RideStatus.WEATHER_WATCH} />}
+      {isSignedUp && !isCancelled && isWaitlisted && lifecycle !== 'upcoming' && (
+        <CardBanner
+          icon={Timer}
+          label={detail.waitlistClosed}
+          bgClass="bg-muted"
+          textClass="text-muted-foreground"
+        />
+      )}
+      {isSignedUp && !isCancelled && !(isWaitlisted && lifecycle !== 'upcoming') && (
+        <CardBanner
+          icon={CheckCircle}
+          label={isWaitlisted ? appContent.rides.roster.waitlisted : detail.signedUp}
+          bgClass="bg-feedback-success-bg"
+          textClass="text-feedback-success-text"
+        />
+      )}
+      {lifecycle === 'about_to_start' && !isCancelled && (
+        <CardBanner
+          icon={Timer}
+          label={rideStatus.aboutToStart}
+          bgClass="bg-feedback-info-bg"
+          textClass="text-feedback-info-text"
+        />
+      )}
+      {lifecycle === 'in_progress' && !isCancelled && (
+        <CardBanner
+          icon={Play}
+          label={rideStatus.inProgress}
+          bgClass="bg-feedback-info-bg"
+          textClass="text-feedback-info-text"
+        />
+      )}
+
+      {/* Card body */}
+      <div className="flex flex-col gap-4 px-6 pb-6 pt-5">
+        {/* Meeting location */}
+        {ride.meeting_location && (
+          <div className="flex items-start gap-2">
+            <MapPin weight="duotone" className="mt-0.5 size-6 shrink-0 text-primary" />
+            <div>
+              <p className="font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
+                {ride.meeting_location.name}
+              </p>
+              {ride.meeting_location.address && (
+                <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">
+                  {ride.meeting_location.address}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Metadata rows */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-base text-foreground">
+            <CalendarBlank className="size-4 shrink-0 text-muted-foreground" />
+            <span>{format(rideDate, dateFormats.full)}</span>
+          </div>
+          <div className="flex items-center gap-2 text-base text-foreground">
+            <Clock className="size-4 shrink-0 text-muted-foreground" />
+            <span className="tabular-nums">
+              {formatTime(ride.start_time)}
+              {ride.end_time && (
+                <>
+                  {separators.dash}
+                  {formatTime(ride.end_time)}
+                </>
+              )}
+            </span>
+          </div>
+          {ride.pace_group && (
+            <div className="flex items-center gap-2 text-base text-foreground">
+              <Path className="size-4 shrink-0 text-muted-foreground" />
+              <span>
+                {ride.pace_group.name}
+                {ride.pace_group.moving_pace_min && ride.pace_group.moving_pace_max
+                  ? ` (${ride.pace_group.moving_pace_min}–${ride.pace_group.moving_pace_max}${units.kmh})`
+                  : ''}
+                {` · ${ride.is_drop_ride ? detail.dropRide : detail.noDrop}`}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Route map placeholder */}
+        <RouteMapPlaceholder routeUrl={ride.route_url} routeName={ride.route_name} />
+
+        {/* Stats box */}
+        {statsItems.length > 0 && (
+          <div className="rounded-xl bg-accent-secondary-subtle p-4">
+            <div
+              className="grid gap-4"
+              style={{ gridTemplateColumns: `repeat(${statsItems.length}, 1fr)` }}
+            >
+              {statsItems.map((item) => (
+                <div key={item.label} className="flex flex-col items-start">
+                  <span className="text-sm text-foreground">{item.label}</span>
+                  <span className="font-mono text-base font-medium text-foreground">
+                    {item.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Organiser notes — inside the stats box per design */}
+            {ride.organiser_notes && (
+              <p className="mt-3 whitespace-pre-line text-[0.8125rem] leading-relaxed text-foreground">
+                {ride.organiser_notes}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Tags */}
+        {ride.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {ride.tags.map((tag) => (
+              <Badge key={tag.id} variant="vibe">
+                {tag.name}
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        {/* Creator attribution */}
+        {ride.creator && (
+          <Link
+            href={routes.publicProfile(ride.creator.id)}
+            className="text-[0.6875rem] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {detail.createdBy(ride.creator.display_name ?? ride.creator.full_name)}
+          </Link>
+        )}
+      </div>
+    </Card>
+  );
+}

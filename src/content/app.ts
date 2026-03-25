@@ -72,6 +72,7 @@ export const appContent = {
       spotsLeft: (remaining: number) => `${remaining} spots left`,
       signedUp: (count: number, capacity: number | null) =>
         capacity != null ? `${count}/${capacity} signed up` : `${count} signed up`,
+      waitlistClosed: 'No Spots Opened',
       waitlistPosition: 'Waitlisted',
       waitlistDetail: (position: number, rideTitle: string) =>
         `#${position} on waitlist for ${rideTitle}`,
@@ -169,6 +170,10 @@ export const appContent = {
       weatherWatch: 'Weather Watch',
       weatherWatchDescription: 'Weather Watch — this ride may be affected by weather conditions.',
       cancelled: 'Cancelled',
+      aboutToStart: 'Ride starts soon',
+      inProgress: 'Ride in progress',
+      completed: 'Completed',
+      signupClosed: 'Sign-ups are closed',
     },
     detail: {
       createdBy: (name: string) => `Created by ${name}`,
@@ -188,6 +193,12 @@ export const appContent = {
       cancelled: 'This ride has been cancelled',
       cancelledLocked: 'Cancelled rides cannot be edited.',
       duplicateAsNew: 'Duplicate as New Ride',
+      signupClosedContact: 'Contact the ride leader to join',
+      waitlistClosed: 'Waitlist closed — no spots opened',
+      distanceLabel: 'Distance',
+      elevationLabel: 'Elevation',
+      spotsRemainingLabel: 'Spots remaining',
+      routeMapPlaceholder: 'Route map coming soon',
       ridersHeading: (confirmed: number, waitlisted: number, capacity: number | null) => {
         const parts: string[] = [];
         if (capacity != null) {
@@ -604,6 +615,8 @@ export const appContent = {
     signInFailed: 'Sign-in failed',
     rideNotFound: 'Ride not found',
     rideCancelled: 'This ride has been cancelled',
+    signupClosed: 'Sign-ups are closed for this ride',
+    cancellationClosed: 'Cancellation is closed for this ride',
     createRideFailed: 'Failed to create ride',
     notAuthorized: 'You do not have permission to perform this action',
     cannotDeactivateSelf: 'Cannot deactivate yourself',

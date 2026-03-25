@@ -5,6 +5,7 @@ import { createClient, getUser } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { appContent } from '@/content/app';
 import { RideStatus } from '@/config/statuses';
+import { getRideAvailability } from '@/lib/rides/lifecycle';
 
 const { errors, common, notificationMessages: notif } = appContent;
 
@@ -56,16 +57,12 @@ export async function signUpForRide(rideId: string) {
 
   const { data: ride } = await supabase
     .from('rides')
-    .select('id, title, capacity, status, created_by')
+    .select('id, title, capacity, status, created_by, ride_date, start_time, end_time')
     .eq('id', rideId)
     .single();
 
   if (!ride) {
     return { error: errors.rideNotFound };
-  }
-
-  if (ride.status === RideStatus.CANCELLED) {
-    return { error: errors.rideCancelled };
   }
 
   // Count current confirmed signups
@@ -76,7 +73,15 @@ export async function signUpForRide(rideId: string) {
     .eq('status', 'confirmed');
 
   const currentCount = count ?? 0;
-  const isFull = ride.capacity != null && currentCount >= ride.capacity;
+
+  // Check availability — enforces cancelled check + timing cutoff
+  const availability = getRideAvailability(ride, currentCount);
+  if (!availability.canSignUp) {
+    if (availability.isCancelled) return { error: errors.rideCancelled };
+    return { error: errors.signupClosed };
+  }
+
+  const isFull = availability.isFull;
 
   const { error } = await supabase.from('ride_signups').upsert(
     {
@@ -137,6 +142,20 @@ export async function cancelSignUp(rideId: string) {
 
   if (!user) {
     return { error: common.notAuthenticated };
+  }
+
+  // Fetch ride for timing gate
+  const { data: ride } = await supabase
+    .from('rides')
+    .select('ride_date, start_time, end_time, status, capacity')
+    .eq('id', rideId)
+    .single();
+
+  if (ride) {
+    const availability = getRideAvailability(ride, 0);
+    if (!availability.canCancel) {
+      return { error: errors.cancellationClosed };
+    }
   }
 
   // Check if the user being cancelled was confirmed (a spot opens up)

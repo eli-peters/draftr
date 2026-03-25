@@ -464,6 +464,7 @@ export default function CardShowcasePage() {
             title: 'Saturday Morning Social',
             ride_date: tomorrowISO,
             start_time: '07:30:00',
+            end_time: '09:30:00',
             meeting_location_name: 'Britannia Park',
             pace_group_name: 'B Group',
             signup_count: 14,
@@ -483,6 +484,7 @@ export default function CardShowcasePage() {
             title: 'Wednesday Hammer Fest',
             ride_date: nextWeekISO,
             start_time: '18:00:00',
+            end_time: '20:00:00',
             meeting_location_name: 'Britannia Park',
             waitlist_position: 2,
           }}

@@ -138,7 +138,7 @@ export async function getUserNextSignup(userId: string, clubId: string) {
       `
       id, status,
       ride:rides!inner(
-        id, title, ride_date, start_time, status, capacity,
+        id, title, ride_date, start_time, end_time, status, capacity,
         meeting_location:meeting_locations(name),
         pace_group:pace_groups(name),
         ride_signups(count)
@@ -162,6 +162,7 @@ export async function getUserNextSignup(userId: string, clubId: string) {
     title: string;
     ride_date: string;
     start_time: string;
+    end_time: string | null;
     capacity: number | null;
     meeting_location: { name: string } | null;
     pace_group: { name: string } | null;
@@ -173,6 +174,7 @@ export async function getUserNextSignup(userId: string, clubId: string) {
     title: ride.title,
     ride_date: ride.ride_date,
     start_time: ride.start_time,
+    end_time: ride.end_time,
     meeting_location_name: ride.meeting_location?.name ?? null,
     pace_group_name: ride.pace_group?.name ?? null,
     signup_count: ride.ride_signups?.[0]?.count ?? 0,
@@ -234,7 +236,7 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string) 
       `
       id, status, waitlist_position,
       ride:rides!inner(
-        id, title, ride_date, start_time, status,
+        id, title, ride_date, start_time, end_time, status,
         meeting_location:meeting_locations(name)
       )
     `,
@@ -255,6 +257,7 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string) 
     title: string;
     ride_date: string;
     start_time: string;
+    end_time: string | null;
     meeting_location: { name: string } | null;
   };
 
@@ -263,6 +266,7 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string) 
     title: ride.title,
     ride_date: ride.ride_date,
     start_time: ride.start_time,
+    end_time: ride.end_time,
     meeting_location_name: ride.meeting_location?.name ?? null,
     waitlist_position: data.waitlist_position as number,
   };
