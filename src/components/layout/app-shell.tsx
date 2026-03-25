@@ -100,7 +100,6 @@ export function AppShell({
               <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col pb-20 md:pb-0">
                 <PageTransitionWrapper>{children}</PageTransitionWrapper>
               </main>
-
             </div>
           </div>
         </div>
