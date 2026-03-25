@@ -13,6 +13,7 @@ import {
   getRideSignups,
 } from '@/lib/rides/queries';
 import { getClubMembers } from '@/lib/manage/queries';
+import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { RideForm } from '@/components/rides/ride-form';
 import { CancelRideButton } from '@/components/rides/cancel-ride-button';
 import { SignupRoster } from '@/components/rides/signup-roster';
@@ -76,7 +77,7 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
     }));
 
   return (
-    <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
+    <DashboardShell>
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           {ridesContent.edit.heading}
@@ -130,6 +131,6 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
       <div className="mt-12">
         <CancelRideButton rideId={id} rideTitle={ride.title} />
       </div>
-    </div>
+    </DashboardShell>
   );
 }

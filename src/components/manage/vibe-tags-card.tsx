@@ -187,7 +187,9 @@ export function VibeTagsCard({ clubId, initialTags }: VibeTagsCardProps) {
               </>
             ) : (
               <>
-                <span className="flex-1 text-sm font-medium text-foreground">{tag.name}</span>
+                <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+                  {tag.name}
+                </span>
                 {tag.ride_count > 0 && (
                   <span className="text-xs text-muted-foreground">
                     {content.usageCount(tag.ride_count)}

@@ -202,7 +202,7 @@ export function InlineMetadata({
   if (!hasAny) return null;
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex min-w-0 items-center gap-4">
       {paceGroupName && (
         <Badge
           variant={paceGroupSortOrder ? getPaceBadgeVariant(paceGroupSortOrder) : 'secondary'}
@@ -212,12 +212,16 @@ export function InlineMetadata({
         </Badge>
       )}
       {distanceKm != null && (
-        <span className={cn(BODY_SM, 'text-muted-foreground')}>
+        <span className={cn(BODY_SM, 'shrink-0 text-muted-foreground')}>
           {distanceKm}
           {units.km}
         </span>
       )}
-      {locationName && <span className={cn(BODY_SM, 'text-muted-foreground')}>{locationName}</span>}
+      {locationName && (
+        <span className={cn(BODY_SM, 'min-w-0 truncate text-muted-foreground')}>
+          {locationName}
+        </span>
+      )}
     </div>
   );
 }
@@ -245,7 +249,7 @@ export function ScheduleStats({
   if (!hasStats) return null;
 
   return (
-    <div className="flex items-center gap-4.5">
+    <div className="flex min-w-0 items-center gap-4.5">
       {paceGroupName && (
         <Badge
           variant={paceGroupSortOrder ? getPaceBadgeVariant(paceGroupSortOrder) : 'secondary'}

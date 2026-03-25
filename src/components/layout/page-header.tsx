@@ -11,10 +11,17 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, badge, actions, className }: PageHeaderProps) {
   return (
-    <div className={cn('flex items-center justify-between gap-4', className)}>
+    <div
+      className={cn(
+        'flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4',
+        className,
+      )}
+    >
       <div className="min-w-0">
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground truncate">{title}</h1>
+        <div className="flex min-w-0 items-center gap-3">
+          <h1 className="line-clamp-2 text-3xl font-bold tracking-tight text-foreground">
+            {title}
+          </h1>
           {badge}
         </div>
         {subtitle && <p className="mt-1.5 text-base text-muted-foreground">{subtitle}</p>}

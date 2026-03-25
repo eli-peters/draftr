@@ -161,8 +161,10 @@ export function RecurringRidesPanel({
                         {rc.recurrence[r.recurrence as keyof typeof rc.recurrence]}
                       </Badge>
                     )}
-                    {r.pace_group_name && <span>{r.pace_group_name}</span>}
-                    {r.meeting_location_name && <span>{r.meeting_location_name}</span>}
+                    {r.pace_group_name && <span className="truncate">{r.pace_group_name}</span>}
+                    {r.meeting_location_name && (
+                      <span className="truncate">{r.meeting_location_name}</span>
+                    )}
                   </div>
                   {(r.season_start_date || r.season_end_date) && (
                     <p className="mt-1 text-xs text-muted-foreground/70">

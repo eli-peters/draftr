@@ -129,7 +129,7 @@ function HomeLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boo
           <RideWeatherBadge weather={ride.weather} />
         </div>
         {/* heading/md token — 20px */}
-        <h3 className="font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
+        <h3 className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
           {ride.title}
         </h3>
       </div>
@@ -168,7 +168,7 @@ function RidesLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: bo
             <RideWeatherBadge weather={ride.weather} />
           </div>
           {/* heading/md token — 20px */}
-          <h3 className="font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
+          <h3 className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
             {ride.title}
           </h3>
         </div>

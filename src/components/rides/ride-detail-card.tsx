@@ -111,8 +111,8 @@ export function RideDetailCard({
         {ride.meeting_location && (
           <div className="flex items-start gap-2">
             <MapPin weight="duotone" className="mt-0.5 size-6 shrink-0 text-primary" />
-            <div>
-              <p className="font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
+            <div className="min-w-0">
+              <p className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
                 {ride.meeting_location.name}
               </p>
               {ride.meeting_location.address && (
@@ -145,7 +145,7 @@ export function RideDetailCard({
           {ride.pace_group && (
             <div className="flex items-center gap-2 text-base text-foreground">
               <Path className="size-4 shrink-0 text-muted-foreground" />
-              <span>
+              <span className="min-w-0 wrap-break-word">
                 {ride.pace_group.name}
                 {ride.pace_group.moving_pace_min && ride.pace_group.moving_pace_max
                   ? ` (${ride.pace_group.moving_pace_min}–${ride.pace_group.moving_pace_max}${units.kmh})`

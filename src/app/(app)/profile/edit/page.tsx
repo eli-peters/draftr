@@ -3,6 +3,7 @@ import { createClient, getUser } from '@/lib/supabase/server';
 import { getUserProfile } from '@/lib/profile/queries';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
+import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { ProfileEditForm } from './profile-edit-form';
 
 const { profile: content, auth } = appContent;
@@ -26,7 +27,7 @@ export default async function ProfileEditPage() {
   if (!profile) redirect(routes.signIn);
 
   return (
-    <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
+    <DashboardShell>
       <h1 className="text-3xl font-bold tracking-tight text-foreground">{content.editButton}</h1>
       <p className="mt-1.5 text-sm text-muted-foreground">{auth.setupProfile.subheading}</p>
 
@@ -42,6 +43,6 @@ export default async function ProfileEditPage() {
         }}
         paceGroups={paceGroups ?? []}
       />
-    </div>
+    </DashboardShell>
   );
 }

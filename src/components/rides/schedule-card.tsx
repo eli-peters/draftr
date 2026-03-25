@@ -123,7 +123,7 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
             <RideWeatherBadge weather={ride.weather} />
           </div>
           {/* heading/md token — 20px */}
-          <h3 className="font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
+          <h3 className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
             {ride.title}
           </h3>
         </div>
@@ -139,7 +139,7 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
 
       {/* Footer */}
       <CardFooterSection>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           {statusKey === 'confirmed' && (
             <>
               {availability.canCancel && (

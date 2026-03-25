@@ -9,7 +9,7 @@ interface ContentToolbarProps {
 
 export function ContentToolbar({ left, right, className }: ContentToolbarProps) {
   return (
-    <div className={cn('flex items-center justify-between', className)}>
+    <div className={cn('flex items-center justify-between gap-4', className)}>
       {left && <div className="flex items-baseline gap-2">{left}</div>}
       {right && <div className="flex items-center gap-2">{right}</div>}
     </div>

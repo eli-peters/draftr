@@ -10,6 +10,7 @@ import {
 } from '@/lib/rides/queries';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
+import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { RideForm } from '@/components/rides/ride-form';
 import type { UserRole } from '@/config/navigation';
 
@@ -92,7 +93,7 @@ export default async function CreateRidePage({
   }
 
   return (
-    <div className="flex flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
+    <DashboardShell>
       <h1 className="text-3xl font-bold tracking-tight text-foreground">
         {ridesContent.create.heading}
       </h1>
@@ -105,6 +106,6 @@ export default async function CreateRidePage({
         seasonStart={clubSettings.season_start}
         seasonEnd={clubSettings.season_end}
       />
-    </div>
+    </DashboardShell>
   );
 }
