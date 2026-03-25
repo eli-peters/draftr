@@ -587,12 +587,6 @@ export const appContent = {
     },
   },
 
-  pullToRefresh: {
-    pulling: 'Pull down to refresh',
-    ready: 'Release to refresh',
-    refreshing: 'Refreshing...',
-  },
-
   common: {
     loading: 'Loading...',
     error: 'Something went wrong',
