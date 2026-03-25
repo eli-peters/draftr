@@ -379,6 +379,22 @@ export const appContent = {
       },
       systemDescription: 'Matches your device setting',
     },
+    integrations: {
+      heading: 'Connected Services',
+      description: 'Link your accounts to import routes when creating rides.',
+      connectButton: (name: string) => `Connect ${name}`,
+      disconnectButton: 'Disconnect',
+      connected: 'Connected',
+      connectedAs: (name: string) => `Connected as ${name}`,
+      disconnectConfirm: (name: string) =>
+        `Disconnect your ${name} account? Your imported routes will remain.`,
+      connecting: 'Connecting...',
+      disconnecting: 'Disconnecting...',
+      connectError: (name: string) => `Failed to connect ${name}. Please try again.`,
+      disconnectError: (name: string) => `Failed to disconnect ${name}. Please try again.`,
+      connectSuccess: (name: string) => `${name} connected successfully!`,
+      disconnectSuccess: (name: string) => `${name} disconnected.`,
+    },
   },
 
   notifications: {

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { AppearanceSetting } from '@/components/settings/appearance-setting';
+import { IntegrationsSetting } from '@/components/settings/integrations-setting';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { formatPhoneDisplay } from '@/lib/phone';
@@ -15,6 +16,7 @@ import { getInitials } from '@/lib/utils';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { dateFormats, units } from '@/config/formatting';
 import { getUserProfile, getUserProfileStats, getUserRecentRides } from '@/lib/profile/queries';
+import { getUserConnections } from '@/lib/integrations/queries';
 
 const { profile: content } = appContent;
 
@@ -23,7 +25,7 @@ export default async function ProfilePage() {
   if (!authUser) redirect(routes.signIn);
 
   const supabase = await createClient();
-  const [profile, stats, recentRides, emergencyContact] = await Promise.all([
+  const [profile, stats, recentRides, emergencyContact, connections] = await Promise.all([
     getUserProfile(authUser.id),
     getUserProfileStats(authUser.id),
     getUserRecentRides(authUser.id),
@@ -32,6 +34,7 @@ export default async function ProfilePage() {
       .select('emergency_contact_name, emergency_contact_phone')
       .eq('id', authUser.id)
       .single(),
+    getUserConnections(authUser.id),
   ]);
 
   if (!profile) redirect(routes.signIn);
@@ -145,6 +148,11 @@ export default async function ProfilePage() {
       {/* Appearance */}
       <div className="mt-8">
         <AppearanceSetting />
+      </div>
+
+      {/* Connected Services */}
+      <div className="mt-8">
+        <IntegrationsSetting connections={connections} />
       </div>
 
       {/* Recent Rides */}

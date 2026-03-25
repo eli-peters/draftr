@@ -260,6 +260,22 @@ export interface RideWeatherSnapshot {
   source: string;
 }
 
+export type IntegrationService = 'strava' | 'ridewithgps';
+
+export interface UserConnection {
+  id: string;
+  user_id: string;
+  service: IntegrationService;
+  external_user_id: string;
+  access_token: string;
+  refresh_token: string;
+  token_expires_at: string;
+  scope: string;
+  profile_data: Record<string, unknown> | null;
+  connected_at: string;
+  updated_at: string;
+}
+
 /**
  * Ride with joined relations — common query shape for the feed and detail pages.
  */

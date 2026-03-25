@@ -14,4 +14,6 @@ export const routes = {
   publicProfile: (userId: string) => `/profile/${userId}`,
   notifications: '/notifications',
   styleGuide: '/style-guide',
+  stravaCallback: '/api/integrations/strava/callback',
+  rwgpsCallback: '/api/integrations/ridewithgps/callback',
 } as const;

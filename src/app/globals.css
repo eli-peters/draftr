@@ -273,6 +273,10 @@
   --duration-fast: 150ms;
   --duration-normal: 250ms;
   --duration-slow: 350ms;
+
+  /* ── External service brand colours ── */
+  --strava-brand: #fc5200;
+  --rwgps-brand: #fa6400;
 }
 
 /*
