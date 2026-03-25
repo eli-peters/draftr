@@ -3,11 +3,26 @@ import { createClient, getUser } from '@/lib/supabase/server';
 import { SignupStatus } from '@/config/statuses';
 import { todayDateString } from '@/config/formatting';
 import type {
+  Ride,
+  MeetingLocation,
+  PaceGroup,
+  Tag,
+  User,
   RideWithDetails,
   RideWeatherSnapshot,
   CommentWithUser,
   RidePickupWithLocation,
 } from '@/types/database';
+
+/** Shape returned by Supabase for the RIDE_WITH_DETAILS_SELECT join query. */
+interface RawRideRow extends Ride {
+  meeting_location: MeetingLocation | null;
+  pace_group: PaceGroup | null;
+  ride_tags: { tag: Tag }[] | null;
+  creator: Pick<User, 'id' | 'full_name' | 'display_name' | 'avatar_url'> | null;
+  ride_signups: { status: string; user_id: string }[] | null;
+  ride_weather_snapshots: RideWeatherSnapshot | null;
+}
 
 /** Select string shared by queries that return RideWithDetails. */
 const RIDE_WITH_DETAILS_SELECT = `
@@ -21,9 +36,8 @@ const RIDE_WITH_DETAILS_SELECT = `
 `;
 
 /** Map a raw Supabase ride row (with joins) into a RideWithDetails shape. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function toRideWithDetails(ride: any, currentUserId?: string): RideWithDetails {
-  const signups = (ride.ride_signups ?? []) as { status: string; user_id: string }[];
+function toRideWithDetails(ride: RawRideRow, currentUserId?: string): RideWithDetails {
+  const signups = ride.ride_signups ?? [];
   const userSignup = currentUserId
     ? signups.find(
         (s) =>
@@ -34,7 +48,7 @@ function toRideWithDetails(ride: any, currentUserId?: string): RideWithDetails {
 
   return {
     ...ride,
-    tags: ride.ride_tags?.map((rt: { tag: unknown }) => rt.tag).filter(Boolean) ?? [],
+    tags: ride.ride_tags?.map((rt) => rt.tag).filter(Boolean) ?? [],
     signup_count: signups.filter(
       (s) => s.status === SignupStatus.CONFIRMED || s.status === SignupStatus.CHECKED_IN,
     ).length,
@@ -42,7 +56,7 @@ function toRideWithDetails(ride: any, currentUserId?: string): RideWithDetails {
     current_user_signup_status: (userSignup?.status as 'confirmed' | 'waitlisted') ?? null,
     // PostgREST returns object (not array) for 1-to-1 joins via UNIQUE constraint
     weather: ride.ride_weather_snapshots ?? null,
-  } as RideWithDetails;
+  };
 }
 
 /**

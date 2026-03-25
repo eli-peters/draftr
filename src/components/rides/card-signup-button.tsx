@@ -33,6 +33,7 @@ export function CardSignupButton({ rideId, rideName, isFull, userStatus }: CardS
     'confirmed' | 'waitlisted' | null | undefined
   >(undefined);
   const lastActionRef = useRef<{ type: 'signup' | 'undo'; time: number } | null>(null);
+  const signupToastRef = useRef<string | number | null>(null);
 
   // Reset optimistic state when server data catches up
   // eslint-disable-next-line react-hooks/set-state-in-effect -- sync optimistic with server
@@ -46,7 +47,7 @@ export function CardSignupButton({ rideId, rideName, isFull, userStatus }: CardS
   function isRateLimited(actionType: 'signup' | 'undo'): boolean {
     const last = lastActionRef.current;
     if (last && last.type === actionType && Date.now() - last.time < ACTION_COOLDOWN_MS) {
-      toast.warning(card.rateLimited);
+      toast.warning(card.rateLimited, { duration: 4000 });
       return true;
     }
     return false;
@@ -63,7 +64,7 @@ export function CardSignupButton({ rideId, rideName, isFull, userStatus }: CardS
       lastActionRef.current = { type: 'signup', time: Date.now() };
 
       if (result.error) {
-        toast.error(card.signupError);
+        toast.error(card.signupError, { duration: 6000 });
         return;
       }
 
@@ -71,13 +72,15 @@ export function CardSignupButton({ rideId, rideName, isFull, userStatus }: CardS
       setOptimisticStatus(status);
 
       if (status === SignupStatus.WAITLISTED) {
-        toast.info(card.waitlistSuccess(rideName), {
+        signupToastRef.current = toast.info(card.waitlistSuccess(rideName), {
+          duration: 6000,
           description: card.waitlistDescription,
           action: { label: card.undo, onClick: handleUndo },
           actionButtonStyle: TOAST_ACTION_STYLES.info,
         });
       } else {
-        toast.success(card.signupSuccess(rideName), {
+        signupToastRef.current = toast.success(card.signupSuccess(rideName), {
+          duration: 6000,
           description: card.signupDescription,
           action: { label: card.undo, onClick: handleUndo },
           actionButtonStyle: TOAST_ACTION_STYLES.success,
@@ -94,12 +97,16 @@ export function CardSignupButton({ rideId, rideName, isFull, userStatus }: CardS
       lastActionRef.current = { type: 'undo', time: Date.now() };
 
       if (result.error) {
-        toast.error(card.signupError);
+        toast.error(card.signupError, { duration: 6000 });
         return;
       }
 
+      // Dismiss the signup/waitlist toast before showing confirmation
+      if (signupToastRef.current) toast.dismiss(signupToastRef.current);
+
       setOptimisticStatus(null);
       toast.info(card.undone(rideName), {
+        duration: 4000,
         description: card.undoneDescription,
         icon: <ArrowCounterClockwise weight="fill" className="size-4" />,
       });

@@ -45,7 +45,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
           '--border-radius': 'var(--radius-lg)',
         } as React.CSSProperties
       }
-      mobileOffset={80}
       toastOptions={{
         classNames: {
           toast: 'font-sans !shadow-md',

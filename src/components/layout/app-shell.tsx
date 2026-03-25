@@ -47,16 +47,12 @@ export function AppShell({
         unreadNotificationCount={unreadNotificationCount ?? 0}
       />
 
-      <div className="flex flex-1 md:flex-row md:gap-3 md:px-3 md:pb-3">
+      <div className="flex flex-1 md:flex-row md:gap-3 md:p-3">
         <SidebarNav items={navItems} />
 
         <div className="flex min-h-0 flex-1 flex-col">
           {isHome && banner && (
-            <div className="md:px-6 md:pt-3">
-              <div className="overflow-hidden md:rounded-lg md:border md:border-border">
-                {banner}
-              </div>
-            </div>
+            <div className="overflow-hidden md:rounded-lg md:border md:border-border">{banner}</div>
           )}
 
           <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col pb-20 md:pb-0">
