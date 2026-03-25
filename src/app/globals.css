@@ -248,6 +248,12 @@
   --chart-4: var(--color-neutral-400);
   --chart-5: var(--color-info-500);
 
+  /* ── Toast — opaque feedback backgrounds ── */
+  --toast-success-bg: var(--feedback-success-bg);
+  --toast-warning-bg: var(--feedback-warning-bg);
+  --toast-error-bg: var(--feedback-error-bg);
+  --toast-info-bg: var(--feedback-info-bg);
+
   /* ── Layout ── */
   --drawer-height-md: 70vh;
   --drawer-height-lg: 85vh;
@@ -302,6 +308,12 @@
   --shadow-sm: 0 1px 2px color-mix(in srgb, var(--color-neutral-950) 30%, transparent);
   --shadow-md: 0 4px 8px color-mix(in srgb, var(--color-neutral-950) 40%, transparent);
   --shadow-lg: 0 12px 24px color-mix(in srgb, var(--color-neutral-950) 50%, transparent);
+
+  /* ── Toast — opaque feedback backgrounds (alpha tokens look transparent on toasts) ── */
+  --toast-success-bg: color-mix(in srgb, var(--color-success-500) 12%, var(--surface-default));
+  --toast-warning-bg: color-mix(in srgb, var(--color-warning-500) 12%, var(--surface-default));
+  --toast-error-bg: color-mix(in srgb, var(--color-error-500) 12%, var(--surface-default));
+  --toast-info-bg: color-mix(in srgb, var(--color-info-500) 12%, var(--surface-default));
 
   /* ── shadcn bridge overrides ── */
   --warning-foreground: var(--color-neutral-900);

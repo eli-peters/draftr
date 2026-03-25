@@ -10,6 +10,7 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { execSync } from 'child_process';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -87,7 +88,7 @@ function generatePrimitives(): string {
       const entry = token as TokenEntry;
       if (entry.$value) {
         const varName = cssVarName(familyName, step);
-        lines.push(`  ${varName}: ${entry.$value};`);
+        lines.push(`  ${varName}: ${entry.$value.toLowerCase()};`);
       }
     }
   }
@@ -215,6 +216,9 @@ function main() {
   // Ensure output directory exists
   mkdirSync(dirname(OUTPUT_PATH), { recursive: true });
   writeFileSync(OUTPUT_PATH, output, 'utf-8');
+
+  // Format to match Prettier expectations so CI format:check passes
+  execSync(`npx prettier --write "${OUTPUT_PATH}"`, { stdio: 'ignore' });
 
   // Count what was generated
   const primCount = (output.match(/--color-\w+-/g) || []).length;

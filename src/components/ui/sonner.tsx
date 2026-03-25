@@ -30,21 +30,22 @@ const Toaster = ({ ...props }: ToasterProps) => {
           '--normal-bg': 'var(--surface-default)',
           '--normal-text': 'var(--text-primary)',
           '--normal-border': 'var(--border-subtle)',
-          '--success-bg': 'var(--feedback-success-bg)',
+          '--success-bg': 'var(--toast-success-bg)',
           '--success-text': 'var(--feedback-success-text)',
           '--success-border': 'color-mix(in srgb, var(--feedback-success-text) 20%, transparent)',
-          '--error-bg': 'var(--feedback-error-bg)',
+          '--error-bg': 'var(--toast-error-bg)',
           '--error-text': 'var(--feedback-error-text)',
           '--error-border': 'color-mix(in srgb, var(--feedback-error-text) 20%, transparent)',
-          '--warning-bg': 'var(--feedback-warning-bg)',
+          '--warning-bg': 'var(--toast-warning-bg)',
           '--warning-text': 'var(--feedback-warning-text)',
           '--warning-border': 'color-mix(in srgb, var(--feedback-warning-text) 20%, transparent)',
-          '--info-bg': 'var(--feedback-info-bg)',
+          '--info-bg': 'var(--toast-info-bg)',
           '--info-text': 'var(--feedback-info-text)',
           '--info-border': 'color-mix(in srgb, var(--feedback-info-text) 20%, transparent)',
           '--border-radius': 'var(--radius-lg)',
         } as React.CSSProperties
       }
+      mobileOffset={80}
       toastOptions={{
         classNames: {
           toast: 'font-sans !shadow-md',
