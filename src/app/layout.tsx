@@ -3,6 +3,7 @@ import { Outfit, DM_Sans, JetBrains_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { COLOR_MODE_SCRIPT } from '@/lib/color-mode-script';
+import { metaColors } from '@/config/colors';
 import { appContent } from '@/content/app';
 import './globals.css';
 
@@ -30,15 +31,15 @@ export const viewport: Viewport = {
   maximumScale: 1,
   viewportFit: 'cover',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#DE0387' },
-    { media: '(prefers-color-scheme: dark)', color: '#1A1517' },
+    { media: '(prefers-color-scheme: light)', color: metaColors.themeLight },
+    { media: '(prefers-color-scheme: dark)', color: metaColors.themeDark },
   ],
 };
 
 export const metadata: Metadata = {
   title: appContent.meta.title,
   description: appContent.meta.description,
-  manifest: '/manifest.json',
+
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',

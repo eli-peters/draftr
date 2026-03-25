@@ -1,10 +1,11 @@
 import type { ClubTheme } from '@/types/theme';
+import primitives from '@/tokens/primitives.json';
 
 export const defaultTheme: ClubTheme = {
   slug: 'draftr',
   name: 'Draftr',
   colors: {
-    primary: '#DE0387',
-    secondary: '#2D7F94',
+    primary: primitives.color.primary[500].$value,
+    secondary: primitives.color.secondary[500].$value,
   },
 };

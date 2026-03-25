@@ -318,6 +318,12 @@
   html {
     @apply font-sans scroll-smooth;
   }
+  /* Prevent overscroll color flash in iOS standalone PWA mode */
+  @media (display-mode: standalone) {
+    html {
+      overscroll-behavior-y: none;
+    }
+  }
   h1,
   h2,
   h3,
