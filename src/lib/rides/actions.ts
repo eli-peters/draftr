@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { appContent } from '@/content/app';
 import { RideStatus } from '@/config/statuses';
 import { getRideAvailability } from '@/lib/rides/lifecycle';
+import { syncWeatherForRide } from '@/lib/weather/sync';
 
 const { errors, common, notificationMessages: notif } = appContent;
 
@@ -401,6 +402,11 @@ export async function createRide(data: CreateRideData) {
     }
   }
 
+  // Fetch weather for the new ride (fire-and-forget, don't block response)
+  syncWeatherForRide(ride.id).catch((err) => {
+    console.error('[weather] Failed to sync weather for new ride:', err);
+  });
+
   revalidatePath('/rides');
   revalidatePath('/manage');
   revalidatePath('/notifications');
@@ -505,6 +511,11 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
       await supabase.from('notifications').insert(notifications);
     }
   }
+
+  // Re-sync weather in case date/time/location changed (fire-and-forget)
+  syncWeatherForRide(rideId).catch((err) => {
+    console.error('[weather] Failed to sync weather for updated ride:', err);
+  });
 
   revalidatePath(`/rides/${rideId}`);
   revalidatePath('/rides');

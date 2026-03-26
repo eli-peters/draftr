@@ -8,6 +8,7 @@ import { BottomNav } from './bottom-nav';
 import { HeaderBar } from './header-bar';
 import { SidebarNav } from './sidebar-nav';
 import { PageTransitionWrapper } from './page-transition-wrapper';
+import { DevToolbar } from '@/components/dev/dev-toolbar';
 
 interface AppShellUser {
   name: string;
@@ -62,6 +63,7 @@ export function AppShell({
           <BottomNav items={navItems} />
         </div>
       </div>
+      {process.env.NODE_ENV === 'development' && <DevToolbar />}
     </div>
   );
 }

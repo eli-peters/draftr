@@ -5,7 +5,7 @@ import type { RideForecastData } from '@/lib/weather/api';
 import { DEFAULT_POP_THRESHOLD, DEFAULT_TIMEZONE, FORECAST_MAX_DAYS } from '@/config/weather';
 
 /**
- * Weather sync API route — called by Vercel Cron daily at 6 AM UTC.
+ * Weather sync API route — called by Vercel Cron every 4 hours.
  * Fetches weather data from Open-Meteo for upcoming rides and stores
  * it in Supabase. Also evaluates weather watch rules.
  *
