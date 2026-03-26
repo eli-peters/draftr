@@ -13,7 +13,7 @@ export default function AppLoading() {
       </div>
 
       {/* Feed skeleton */}
-      <div className="mt-10 space-y-1">
+      <div className="mt-10 space-y-4">
         <div className="h-3 w-28 rounded bg-muted mb-4" />
         <div className="h-40 rounded-xl border border-border bg-card" />
         <div className="h-40 rounded-xl border border-border bg-card" />
