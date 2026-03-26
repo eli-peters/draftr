@@ -100,6 +100,7 @@ export interface Ride {
   capacity: number | null;
   route_url: string | null;
   route_name: string | null;
+  route_polyline: string | null;
   is_drop_ride: boolean;
   organiser_notes: string | null;
   status: RideStatus;
@@ -218,6 +219,7 @@ export interface RideTemplate {
   default_capacity: number | null;
   default_route_url: string | null;
   default_route_name: string | null;
+  default_route_polyline: string | null;
   is_drop_ride: boolean;
   is_active: boolean;
   recurrence: 'weekly' | 'biweekly' | 'monthly' | null;
@@ -274,6 +276,22 @@ export interface UserConnection {
   profile_data: Record<string, unknown> | null;
   connected_at: string;
   updated_at: string;
+}
+
+/**
+ * Normalized route from Strava or RideWithGPS, ready for import into a ride.
+ */
+export interface ImportableRoute {
+  id: string; // "{service}:{originalId}"
+  service: IntegrationService;
+  name: string;
+  description: string | null;
+  distance_m: number;
+  elevation_m: number;
+  source_url: string;
+  source_type: 'route' | 'activity';
+  polyline: string | null;
+  created_at: string;
 }
 
 /**

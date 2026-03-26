@@ -16,4 +16,5 @@ export const routes = {
   styleGuide: '/style-guide',
   stravaCallback: '/api/integrations/strava/callback',
   rwgpsCallback: '/api/integrations/ridewithgps/callback',
+  importRoutes: '/api/integrations/routes',
 } as const;

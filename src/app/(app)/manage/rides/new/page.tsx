@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { getUser } from '@/lib/supabase/server';
 import {
   getUserClubMembership,
   getMeetingLocations,
@@ -8,6 +9,7 @@ import {
   getRideById,
   getRideTagIds,
 } from '@/lib/rides/queries';
+import { getUserConnections } from '@/lib/integrations/queries';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
@@ -33,23 +35,34 @@ export default async function CreateRidePage({
 
   const supabase = await createClient();
 
-  const [clubResult, meetingLocations, paceGroups, tags, sourceRide, sourceTagIds, templateData] =
-    await Promise.all([
-      supabase.from('clubs').select('settings').eq('id', membership.club_id).single(),
-      getMeetingLocations(membership.club_id),
-      getPaceGroups(membership.club_id),
-      getClubTags(membership.club_id),
-      duplicateId ? getRideById(duplicateId) : null,
-      duplicateId ? getRideTagIds(duplicateId) : [],
-      templateId
-        ? supabase
-            .from('ride_templates')
-            .select('*')
-            .eq('id', templateId)
-            .single()
-            .then((r) => r.data)
-        : null,
-    ]);
+  const authUser = await getUser();
+
+  const [
+    clubResult,
+    meetingLocations,
+    paceGroups,
+    tags,
+    sourceRide,
+    sourceTagIds,
+    templateData,
+    connections,
+  ] = await Promise.all([
+    supabase.from('clubs').select('settings').eq('id', membership.club_id).single(),
+    getMeetingLocations(membership.club_id),
+    getPaceGroups(membership.club_id),
+    getClubTags(membership.club_id),
+    duplicateId ? getRideById(duplicateId) : null,
+    duplicateId ? getRideTagIds(duplicateId) : [],
+    templateId
+      ? supabase
+          .from('ride_templates')
+          .select('*')
+          .eq('id', templateId)
+          .single()
+          .then((r) => r.data)
+      : null,
+    authUser ? getUserConnections(authUser.id) : [],
+  ]);
 
   const clubSettings = (clubResult.data?.settings ?? {}) as Record<string, string>;
 
@@ -68,6 +81,7 @@ export default async function CreateRidePage({
       capacity: sourceRide.capacity != null ? String(sourceRide.capacity) : '',
       route_name: sourceRide.route_name ?? '',
       route_url: sourceRide.route_url ?? '',
+      route_polyline: sourceRide.route_polyline ?? '',
       is_drop_ride: sourceRide.is_drop_ride ?? false,
       organiser_notes: sourceRide.organiser_notes ?? '',
       tag_ids: sourceTagIds,
@@ -86,6 +100,7 @@ export default async function CreateRidePage({
       capacity: templateData.default_capacity != null ? String(templateData.default_capacity) : '',
       route_name: templateData.default_route_name ?? '',
       route_url: templateData.default_route_url ?? '',
+      route_polyline: templateData.default_route_polyline ?? '',
       is_drop_ride: templateData.is_drop_ride ?? false,
       organiser_notes: '',
       tag_ids: [] as string[],
@@ -105,6 +120,7 @@ export default async function CreateRidePage({
         initialData={initialData}
         seasonStart={clubSettings.season_start}
         seasonEnd={clubSettings.season_end}
+        connectedServices={connections.map((c) => c.service).filter((s) => s !== 'ridewithgps')}
       />
     </DashboardShell>
   );

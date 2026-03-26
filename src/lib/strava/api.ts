@@ -116,6 +116,95 @@ export async function deauthorize(accessToken: string): Promise<void> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Route & Activity types
+// ---------------------------------------------------------------------------
+
+export interface StravaRoute {
+  id: number;
+  name: string;
+  description: string;
+  distance: number; // meters
+  elevation_gain: number; // meters
+  map: { summary_polyline: string } | null;
+  created_at: string;
+  updated_at: string;
+  type: number; // 1 = ride, 2 = run
+}
+
+export interface StravaActivity {
+  id: number;
+  name: string;
+  distance: number; // meters
+  total_elevation_gain: number; // meters
+  type: string; // "Ride", "VirtualRide", etc.
+  start_date_local: string;
+  map: { summary_polyline: string } | null;
+}
+
+const CYCLING_TYPES = ['Ride', 'VirtualRide', 'GravelRide', 'EBikeRide'];
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch the authenticated athlete's saved routes.
+ * Returns null on failure.
+ */
+export async function getRoutes(
+  accessToken: string,
+  page = 1,
+  perPage = 30,
+): Promise<StravaRoute[] | null> {
+  try {
+    const url = `${config.apiBase}/athlete/routes?page=${page}&per_page=${perPage}`;
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!res.ok) {
+      console.error('[strava] Get routes error:', res.status, await res.text());
+      return null;
+    }
+
+    const routes = (await res.json()) as StravaRoute[];
+    // Only return cycling routes (type 1)
+    return routes.filter((r) => r.type === 1);
+  } catch (error) {
+    console.error('[strava] Failed to get routes:', error);
+    return null;
+  }
+}
+
+/**
+ * Fetch the authenticated athlete's recent activities.
+ * Filters to cycling types only. Returns null on failure.
+ */
+export async function getActivities(
+  accessToken: string,
+  page = 1,
+  perPage = 30,
+): Promise<StravaActivity[] | null> {
+  try {
+    const url = `${config.apiBase}/athlete/activities?page=${page}&per_page=${perPage}`;
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!res.ok) {
+      console.error('[strava] Get activities error:', res.status, await res.text());
+      return null;
+    }
+
+    const activities = (await res.json()) as StravaActivity[];
+    return activities.filter((a) => CYCLING_TYPES.includes(a.type));
+  } catch (error) {
+    console.error('[strava] Failed to get activities:', error);
+    return null;
+  }
+}
+
 /**
  * Fetch the authenticated athlete's profile.
  * Returns null on failure.

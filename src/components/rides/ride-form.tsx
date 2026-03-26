@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowsClockwise } from '@phosphor-icons/react/dist/ssr';
+import { ArrowsClockwise, MapTrifold } from '@phosphor-icons/react/dist/ssr';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { RouteImportDrawer } from '@/components/rides/route-import-drawer';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import {
@@ -18,6 +20,7 @@ import {
   type CreateRideData,
   type UpdateRideData,
 } from '@/lib/rides/actions';
+import type { IntegrationService, ImportableRoute } from '@/types/database';
 
 const { rides: ridesContent, common, manage: manageContent } = appContent;
 const form = ridesContent.form;
@@ -35,6 +38,7 @@ interface RideFormInitialData {
   capacity: string;
   route_name: string;
   route_url: string;
+  route_polyline: string;
   is_drop_ride: boolean;
   organiser_notes: string;
   tag_ids: string[];
@@ -50,6 +54,7 @@ interface RideFormProps {
   initialData?: RideFormInitialData;
   seasonStart?: string;
   seasonEnd?: string;
+  connectedServices?: IntegrationService[];
 }
 
 export function RideForm({
@@ -62,6 +67,7 @@ export function RideForm({
   initialData,
   seasonStart,
   seasonEnd,
+  connectedServices = [],
 }: RideFormProps) {
   const router = useRouter();
   const isEdit = !!rideId;
@@ -71,6 +77,44 @@ export function RideForm({
   const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tag_ids ?? []);
   const [isRecurring, setIsRecurring] = useState(false);
   const [editScope, setEditScope] = useState<'this' | 'all'>('this');
+  const [importOpen, setImportOpen] = useState(false);
+  const [routePolyline, setRoutePolyline] = useState<string>(initialData?.route_polyline ?? '');
+
+  // Refs for setting uncontrolled input values on import
+  const titleRef = useRef<HTMLInputElement>(null);
+  const routeNameRef = useRef<HTMLInputElement>(null);
+  const routeUrlRef = useRef<HTMLInputElement>(null);
+  const distanceRef = useRef<HTMLInputElement>(null);
+  const elevationRef = useRef<HTMLInputElement>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+
+  function handleRouteImport(route: ImportableRoute) {
+    // Only set title if currently empty
+    if (titleRef.current && !titleRef.current.value) {
+      titleRef.current.value = route.name;
+    }
+    if (routeNameRef.current) {
+      routeNameRef.current.value = route.name;
+    }
+    if (routeUrlRef.current) {
+      routeUrlRef.current.value = route.source_url;
+    }
+    if (distanceRef.current) {
+      distanceRef.current.value = (route.distance_m / 1000).toFixed(1);
+    }
+    if (elevationRef.current) {
+      elevationRef.current.value = String(Math.round(route.elevation_m));
+    }
+    // Only set description if currently empty
+    if (descriptionRef.current && !descriptionRef.current.value && route.description) {
+      descriptionRef.current.value = route.description;
+    }
+    if (route.polyline) {
+      setRoutePolyline(route.polyline);
+    }
+    setImportOpen(false);
+    toast.success(appContent.rides.importRoute.imported);
+  }
 
   function toggleTag(tagId: string) {
     setSelectedTags((prev) =>
@@ -106,6 +150,7 @@ export function RideForm({
       capacity: fd.get('capacity') ? Number(fd.get('capacity')) : undefined,
       route_url: (fd.get('route_url') as string) || undefined,
       route_name: (fd.get('route_name') as string) || undefined,
+      route_polyline: (fd.get('route_polyline') as string) || undefined,
       is_drop_ride: fd.get('is_drop_ride') === 'on',
       organiser_notes: (fd.get('organiser_notes') as string) || undefined,
       tag_ids: selectedTags,
@@ -180,7 +225,7 @@ export function RideForm({
 
       <div className="space-y-2">
         <Label htmlFor="title">{form.title} *</Label>
-        <Input id="title" name="title" required defaultValue={initialData?.title} />
+        <Input ref={titleRef} id="title" name="title" required defaultValue={initialData?.title} />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -241,6 +286,7 @@ export function RideForm({
         <div className="space-y-2">
           <Label htmlFor="distance_km">{form.distance}</Label>
           <Input
+            ref={distanceRef}
             id="distance_km"
             name="distance_km"
             type="number"
@@ -252,6 +298,7 @@ export function RideForm({
         <div className="space-y-2">
           <Label htmlFor="elevation_m">{form.elevation}</Label>
           <Input
+            ref={elevationRef}
             id="elevation_m"
             name="elevation_m"
             type="number"
@@ -271,15 +318,36 @@ export function RideForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="route_name">{form.routeName}</Label>
-          <Input id="route_name" name="route_name" defaultValue={initialData?.route_name} />
+      {/* Route section — import button + fields */}
+      <div className="space-y-3">
+        {connectedServices.length > 0 && (
+          <Button type="button" variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+            <MapTrifold className="mr-1.5 size-4" />
+            {appContent.rides.importRoute.button}
+          </Button>
+        )}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="route_name">{form.routeName}</Label>
+            <Input
+              ref={routeNameRef}
+              id="route_name"
+              name="route_name"
+              defaultValue={initialData?.route_name}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="route_url">{form.routeLink}</Label>
+            <Input
+              ref={routeUrlRef}
+              id="route_url"
+              name="route_url"
+              type="url"
+              defaultValue={initialData?.route_url}
+            />
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="route_url">{form.routeLink}</Label>
-          <Input id="route_url" name="route_url" type="url" defaultValue={initialData?.route_url} />
-        </div>
+        <input type="hidden" name="route_polyline" value={routePolyline} />
       </div>
 
       <div className="flex items-center gap-3">
@@ -318,6 +386,7 @@ export function RideForm({
       <div className="space-y-2">
         <Label htmlFor="description">{form.description}</Label>
         <Textarea
+          ref={descriptionRef}
           id="description"
           name="description"
           rows={2}
@@ -427,6 +496,15 @@ export function RideForm({
           {common.cancel}
         </Button>
       </div>
+
+      {connectedServices.length > 0 && (
+        <RouteImportDrawer
+          open={importOpen}
+          onOpenChange={setImportOpen}
+          connectedServices={connectedServices}
+          onSelect={handleRouteImport}
+        />
+      )}
     </form>
   );
 }

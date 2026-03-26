@@ -286,6 +286,32 @@ export const appContent = {
     pickups: {
       heading: 'Pickup Points',
     },
+    importRoute: {
+      button: 'Import Route',
+      heading: 'Import a Route',
+      description: 'Choose a route from your connected services to pre-fill ride details.',
+      routesTab: 'Routes',
+      activitiesTab: 'Activities',
+      noConnections: {
+        title: 'No services connected',
+        description: 'Connect Strava or Ride with GPS from your profile to import routes.',
+        connectButton: 'Go to Profile',
+      },
+      noRoutes: {
+        title: 'No routes found',
+        description: 'Create routes in Strava or Ride with GPS and they\u2019ll appear here.',
+      },
+      noActivities: {
+        title: 'No ride activities found',
+        description: 'Your recent cycling activities will appear here.',
+      },
+      loadMore: 'Load More',
+      loading: 'Loading routes\u2026',
+      errorFetch: 'Failed to load routes. Please try again.',
+      errorDisconnected: (name: string) =>
+        `Your ${name} connection has expired. Please reconnect from your profile.`,
+      imported: 'Route imported \u2014 adjust the details and save.',
+    },
   },
 
   schedule: {

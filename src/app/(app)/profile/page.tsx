@@ -150,10 +150,12 @@ export default async function ProfilePage() {
         <AppearanceSetting />
       </div>
 
-      {/* Connected Services */}
-      <div className="mt-8">
-        <IntegrationsSetting connections={connections} />
-      </div>
+      {/* Connected Services — only for leaders and admins (used for ride import) */}
+      {(role === 'ride_leader' || role === 'admin') && (
+        <div className="mt-8">
+          <IntegrationsSetting connections={connections} />
+        </div>
+      )}
 
       {/* Recent Rides */}
       <div className="mt-8">

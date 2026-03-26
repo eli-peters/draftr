@@ -46,6 +46,7 @@ const mockRide: RideWithDetails = {
   capacity: 20,
   route_url: null,
   route_name: null,
+  route_polyline: null,
   is_drop_ride: false,
   organiser_notes: null,
   status: 'scheduled',

@@ -13,6 +13,7 @@ import {
   getRideSignups,
 } from '@/lib/rides/queries';
 import { getClubMembers } from '@/lib/manage/queries';
+import { getUserConnections } from '@/lib/integrations/queries';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { RideForm } from '@/components/rides/ride-form';
 import { CancelRideButton } from '@/components/rides/cancel-ride-button';
@@ -38,15 +39,17 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
 
   const userId = membership.user_id;
 
-  const [ride, meetingLocations, paceGroups, tags, tagIds, signups, members] = await Promise.all([
-    getRideById(id),
-    getMeetingLocations(membership.club_id),
-    getPaceGroups(membership.club_id),
-    getClubTags(membership.club_id),
-    getRideTagIds(id),
-    getRideSignups(id),
-    getClubMembers(membership.club_id),
-  ]);
+  const [ride, meetingLocations, paceGroups, tags, tagIds, signups, members, connections] =
+    await Promise.all([
+      getRideById(id),
+      getMeetingLocations(membership.club_id),
+      getPaceGroups(membership.club_id),
+      getClubTags(membership.club_id),
+      getRideTagIds(id),
+      getRideSignups(id),
+      getClubMembers(membership.club_id),
+      getUserConnections(userId),
+    ]);
 
   if (!ride) notFound();
 
@@ -109,10 +112,12 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
           capacity: ride.capacity != null ? String(ride.capacity) : '',
           route_name: ride.route_name ?? '',
           route_url: ride.route_url ?? '',
+          route_polyline: ride.route_polyline ?? '',
           is_drop_ride: ride.is_drop_ride ?? false,
           organiser_notes: ride.organiser_notes ?? '',
           tag_ids: tagIds,
         }}
+        connectedServices={connections.map((c) => c.service).filter((s) => s !== 'ridewithgps')}
       />
 
       {/* Signups section */}

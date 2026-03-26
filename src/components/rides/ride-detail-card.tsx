@@ -13,6 +13,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CardBanner, RideBanner } from '@/components/rides/ride-card-parts';
 import { RouteMapPlaceholder } from '@/components/rides/route-map-placeholder';
+import { RouteMapLoader } from '@/components/rides/route-map-loader';
 import { appContent } from '@/content/app';
 import { dateFormats, formatTime, separators, units } from '@/config/formatting';
 import { RideStatus, SignupStatus } from '@/config/statuses';
@@ -156,8 +157,16 @@ export function RideDetailCard({
           )}
         </div>
 
-        {/* Route map placeholder */}
-        <RouteMapPlaceholder routeUrl={ride.route_url} routeName={ride.route_name} />
+        {/* Route map */}
+        {ride.route_polyline ? (
+          <RouteMapLoader
+            polylineStr={ride.route_polyline}
+            routeUrl={ride.route_url}
+            routeName={ride.route_name}
+          />
+        ) : (
+          <RouteMapPlaceholder routeUrl={ride.route_url} routeName={ride.route_name} />
+        )}
 
         {/* Stats box */}
         {statsItems.length > 0 && (

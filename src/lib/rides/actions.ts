@@ -258,6 +258,7 @@ export interface CreateRideData {
   capacity?: number;
   route_url?: string;
   route_name?: string;
+  route_polyline?: string;
   is_drop_ride: boolean;
   organiser_notes?: string;
   tag_ids: string[];
@@ -306,6 +307,7 @@ export async function createRide(data: CreateRideData) {
         pace_group_id: data.pace_group_id || null,
         default_distance_km: data.distance_km ?? null,
         default_capacity: data.capacity ?? null,
+        default_route_polyline: data.route_polyline || null,
         is_drop_ride: data.is_drop_ride,
         recurrence: data.recurring.recurrence,
         season_start_date: data.recurring.season_start_date || settings.season_start || null,
@@ -338,6 +340,7 @@ export async function createRide(data: CreateRideData) {
       capacity: data.capacity ?? null,
       route_url: data.route_url || null,
       route_name: data.route_name || null,
+      route_polyline: data.route_polyline || null,
       is_drop_ride: data.is_drop_ride,
       organiser_notes: data.organiser_notes || null,
       status: 'scheduled',
@@ -417,6 +420,7 @@ export interface UpdateRideData {
   capacity?: number;
   route_url?: string;
   route_name?: string;
+  route_polyline?: string;
   is_drop_ride: boolean;
   organiser_notes?: string;
   tag_ids: string[];
@@ -460,6 +464,7 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
       capacity: data.capacity ?? null,
       route_url: data.route_url || null,
       route_name: data.route_name || null,
+      route_polyline: data.route_polyline || null,
       is_drop_ride: data.is_drop_ride,
       organiser_notes: data.organiser_notes || null,
       updated_at: new Date().toISOString(),
@@ -549,6 +554,7 @@ export async function updateRecurringSeries(rideId: string, data: UpdateRideData
       pace_group_id: data.pace_group_id || null,
       default_distance_km: data.distance_km ?? null,
       default_capacity: data.capacity ?? null,
+      default_route_polyline: data.route_polyline || null,
       is_drop_ride: data.is_drop_ride,
     })
     .eq('id', templateId);
@@ -564,6 +570,7 @@ export async function updateRecurringSeries(rideId: string, data: UpdateRideData
       pace_group_id: data.pace_group_id || null,
       distance_km: data.distance_km ?? null,
       capacity: data.capacity ?? null,
+      route_polyline: data.route_polyline || null,
       is_drop_ride: data.is_drop_ride,
       organiser_notes: data.organiser_notes || null,
       updated_at: new Date().toISOString(),
