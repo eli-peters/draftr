@@ -8,7 +8,7 @@ import { RideStatus } from '@/config/statuses';
 import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { syncWeatherForRide } from '@/lib/weather/sync';
 
-const { errors, common, notificationMessages: notif } = appContent;
+const { errors, common, notificationMessages: notif, rides: ridesContent } = appContent;
 
 /**
  * Verify the caller has permission to modify a ride.
@@ -453,7 +453,7 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
     .single();
 
   if (existingRide?.status === RideStatus.CANCELLED) {
-    return { error: appContent.rides.detail.cancelledLocked };
+    return { error: ridesContent.detail.cancelledLocked };
   }
 
   const { error: rideError } = await supabase

@@ -74,8 +74,9 @@ export async function exchangeCodeForTokens(
  * Best-effort — does not throw on failure.
  */
 export async function deauthorize(accessToken: string): Promise<void> {
+  if (!config.deauthorizeUrl) return;
   try {
-    await fetch(config.deauthorizeUrl!, {
+    await fetch(config.deauthorizeUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -124,7 +125,8 @@ export interface RwgpsTrip {
  */
 function authenticatedUrl(path: string, accessToken: string, extraParams = '') {
   const sep = path.includes('?') ? '&' : '?';
-  const apiKey = process.env.RWGPS_CLIENT_ID!;
+  const apiKey = process.env.RWGPS_CLIENT_ID;
+  if (!apiKey) throw new Error('RWGPS_CLIENT_ID environment variable is not set');
   return `${config.apiBase}${path}${sep}auth_token=${accessToken}&apikey=${apiKey}${extraParams ? '&' + extraParams : ''}`;
 }
 

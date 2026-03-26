@@ -106,8 +106,9 @@ export async function refreshAccessToken(
  * Best-effort — does not throw on failure.
  */
 export async function deauthorize(accessToken: string): Promise<void> {
+  if (!config.deauthorizeUrl) return;
   try {
-    await fetch(config.deauthorizeUrl!, {
+    await fetch(config.deauthorizeUrl, {
       method: 'POST',
       headers: { Authorization: `Bearer ${accessToken}` },
     });

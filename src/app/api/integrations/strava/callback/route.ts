@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { exchangeCodeForTokens } from '@/lib/strava/api';
-import { OAUTH_STATE_COOKIE } from '@/config/integrations';
+import { integrations, OAUTH_STATE_COOKIE } from '@/config/integrations';
 import { routes } from '@/config/routes';
 
 /**
@@ -53,7 +53,7 @@ export async function GET(request: Request) {
   // Verify the user is authenticated
   const user = await getUser();
   if (!user) {
-    return NextResponse.redirect(`${origin}/sign-in`);
+    return NextResponse.redirect(`${origin}${routes.signIn}`);
   }
 
   // Exchange code for tokens
@@ -72,7 +72,7 @@ export async function GET(request: Request) {
       access_token: tokenData.access_token,
       refresh_token: tokenData.refresh_token,
       token_expires_at: new Date(tokenData.expires_at * 1000).toISOString(),
-      scope: 'read,activity:read_all',
+      scope: integrations.strava.scopes,
       profile_data: tokenData.athlete,
       connected_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

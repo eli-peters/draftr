@@ -13,25 +13,13 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
-import { StravaIcon, RwgpsIcon } from '@/components/icons/service-icons';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
+import { serviceIcons, serviceLabels } from '@/config/integrations';
+import { units } from '@/config/formatting';
 import type { IntegrationService, ImportableRoute } from '@/types/database';
 
 const content = appContent.rides.importRoute;
-
-const serviceLabels: Record<IntegrationService, string> = {
-  strava: 'Strava',
-  ridewithgps: 'Ride with GPS',
-};
-
-const serviceIcons: Record<
-  IntegrationService,
-  React.ComponentType<React.SVGProps<SVGSVGElement>>
-> = {
-  strava: StravaIcon,
-  ridewithgps: RwgpsIcon,
-};
 
 interface RouteImportDrawerProps {
   open: boolean;
@@ -267,12 +255,14 @@ function RouteListFetcher({
               <div className="mt-0.5 flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Path className="size-3" />
-                  {(route.distance_m / 1000).toFixed(1)} km
+                  {(route.distance_m / 1000).toFixed(1)}
+                  {units.km}
                 </span>
                 {route.elevation_m > 0 && (
                   <span className="flex items-center gap-1">
                     <Mountains className="size-3" />
-                    {Math.round(route.elevation_m)} m
+                    {Math.round(route.elevation_m)}
+                    {units.m}
                   </span>
                 )}
               </div>

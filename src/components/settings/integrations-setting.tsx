@@ -1,29 +1,19 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { LinkSimple, SignOut } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { appContent } from '@/content/app';
-import { integrations } from '@/config/integrations';
+import { integrations, serviceIcons } from '@/config/integrations';
 import { initiateConnect, disconnectService } from '@/lib/integrations/actions';
 import type { ConnectionInfo } from '@/lib/integrations/queries';
-import { StravaIcon, RwgpsIcon } from '@/components/icons/service-icons';
 import type { IntegrationService } from '@/types/database';
 
 const content = appContent.settings.integrations;
-
-const serviceIcons: Record<
-  IntegrationService,
-  React.ComponentType<React.SVGProps<SVGSVGElement>>
-> = {
-  strava: StravaIcon,
-  ridewithgps: RwgpsIcon,
-};
 
 interface IntegrationsSettingProps {
   connections: ConnectionInfo[];

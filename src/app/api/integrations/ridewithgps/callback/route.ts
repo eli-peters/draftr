@@ -57,7 +57,7 @@ export async function GET(request: Request) {
   // Verify the user is authenticated
   const user = await getUser();
   if (!user) {
-    return NextResponse.redirect(`${origin}/sign-in`);
+    return NextResponse.redirect(`${origin}${routes.signIn}`);
   }
 
   // Exchange code for token — RWGPS requires redirect_uri in token exchange
@@ -73,7 +73,8 @@ export async function GET(request: Request) {
 
   // RWGPS tokens don't have an explicit expiry or refresh tokens.
   // Set a far-future expiry (10 years) so the generic refresh logic never triggers.
-  const farFutureExpiry = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000).toISOString();
+  const TEN_YEARS_MS = 10 * 365 * 24 * 60 * 60 * 1000;
+  const farFutureExpiry = new Date(Date.now() + TEN_YEARS_MS).toISOString();
 
   // Store the connection via admin client (bypasses RLS)
   const admin = createAdminClient();

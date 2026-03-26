@@ -64,7 +64,7 @@ export async function getValidAccessToken(
   }
 
   // Update the stored tokens
-  await admin
+  const { error: updateError } = await admin
     .from('user_connections')
     .update({
       access_token: refreshed.access_token,
@@ -73,6 +73,10 @@ export async function getValidAccessToken(
       updated_at: new Date().toISOString(),
     })
     .eq('id', connection.id);
+
+  if (updateError) {
+    console.error(`[integrations] Failed to persist refreshed ${service} token:`, updateError);
+  }
 
   return refreshed.access_token;
 }

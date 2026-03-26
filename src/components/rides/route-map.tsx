@@ -1,9 +1,10 @@
 'use client';
 
-import { useRef, useCallback, useEffect, useState } from 'react';
+import { useRef, useCallback, useEffect, useState, forwardRef } from 'react';
 import Map, { Source, Layer, type MapRef } from 'react-map-gl/mapbox';
 import polyline from '@mapbox/polyline';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { integrations } from '@/config/integrations';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
@@ -14,7 +15,7 @@ const ROUTE_LAYER_STYLE = {
   id: 'route-line',
   type: 'line' as const,
   paint: {
-    'line-color': '#FC5200', // Strava orange — high contrast on both map styles
+    'line-color': integrations.strava.brandColor, // high contrast on both map styles
     'line-width': 3.5,
     'line-opacity': 0.85,
   },
@@ -103,8 +104,6 @@ export function RouteMap({ polylineStr, routeUrl, routeName, className }: RouteM
 // ---------------------------------------------------------------------------
 // Inner map — separated to share between link and div wrappers
 // ---------------------------------------------------------------------------
-
-import { forwardRef } from 'react';
 
 interface MapInnerProps {
   isDark: boolean;

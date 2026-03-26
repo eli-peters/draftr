@@ -1,3 +1,4 @@
+import { StravaIcon, RwgpsIcon } from '@/components/icons/service-icons';
 import type { IntegrationService } from '@/types/database';
 
 export interface IntegrationConfig {
@@ -45,6 +46,20 @@ export const integrations: Record<string, IntegrationConfig> = {
     brandColor: '#FA6400',
   },
 } as const;
+
+/** Icon components for each integration service */
+export const serviceIcons: Record<
+  IntegrationService,
+  React.ComponentType<React.SVGProps<SVGSVGElement>>
+> = {
+  strava: StravaIcon,
+  ridewithgps: RwgpsIcon,
+};
+
+/** Display labels for each integration service (derived from config) */
+export const serviceLabels: Record<IntegrationService, string> = Object.fromEntries(
+  Object.values(integrations).map((c) => [c.service, c.displayName]),
+) as Record<IntegrationService, string>;
 
 /** Refresh tokens this many seconds before actual expiry */
 export const TOKEN_REFRESH_BUFFER_SECONDS = 300;
