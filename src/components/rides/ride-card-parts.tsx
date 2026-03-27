@@ -1,9 +1,20 @@
-import { ArrowsClockwise, Users, WarningCircle, XCircle } from '@phosphor-icons/react/dist/ssr';
+import {
+  ArrowsClockwise,
+  Clock,
+  MapPin,
+  Mountains,
+  Path,
+  Users,
+  WarningCircle,
+  XCircle,
+} from '@phosphor-icons/react/dist/ssr';
 import { Badge } from '@/components/ui/badge';
+import { RideWeatherBadge } from '@/components/weather/ride-weather-badge';
 import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
 import { separators, units, getPaceBadgeVariant } from '@/config/formatting';
 import { RideStatus } from '@/config/statuses';
+import type { RideWeatherSnapshot } from '@/types/database';
 
 const { rides: ridesContent } = appContent;
 
@@ -36,7 +47,7 @@ interface CardBannerProps {
 
 export function CardBanner({ icon: Icon, label, bgClass, textClass }: CardBannerProps) {
   return (
-    <div className={cn('flex w-full items-center gap-2 overflow-clip px-6 py-2', bgClass)}>
+    <div className={cn('flex w-full items-center gap-2 overflow-clip px-5 py-2', bgClass)}>
       <Icon className={cn('size-3.5 shrink-0', textClass)} />
       <span
         className={cn(
@@ -65,8 +76,8 @@ export function RideBanner({ type }: RideBannerProps) {
     <CardBanner
       icon={isWarning ? WarningCircle : XCircle}
       label={isWarning ? ridesContent.status.weatherWatch : ridesContent.status.cancelled}
-      bgClass={isWarning ? 'bg-feedback-warning-bg' : 'bg-feedback-error-bg'}
-      textClass={isWarning ? 'text-feedback-warning-text' : 'text-feedback-error-text'}
+      bgClass={isWarning ? 'bg-banner-warning-bg' : 'bg-banner-error-bg'}
+      textClass={isWarning ? 'text-banner-warning-text' : 'text-banner-error-text'}
     />
   );
 }
@@ -154,127 +165,168 @@ export function RiderCount({ signupCount, capacity }: RiderCountProps) {
 }
 
 // ---------------------------------------------------------------------------
-// CapacityBarLarge — 4px track + fill + rider count
+// CardMetadataRow — inline data values with icons
+//
+// Uses data/sm token (12px JB Mono 400) for all data values.
 // ---------------------------------------------------------------------------
 
-interface CapacityBarLargeProps {
-  signupCount: number;
-  capacity: number | null;
+/** data/sm token: 12px mono, regular weight */
+export const DATA_SM = 'font-mono text-xs';
+
+interface CardMetadataRowProps {
+  distanceKm?: number | null;
+  elevationM?: number | null;
+  durationDisplay?: string | null;
+  locationName?: string | null;
+  className?: string;
 }
 
-export function CapacityBarLarge({ signupCount, capacity }: CapacityBarLargeProps) {
-  if (capacity == null) return null;
-
-  const percent = Math.min((signupCount / capacity) * 100, 100);
-
-  return (
-    <div className="flex w-full items-center gap-2">
-      <div className="relative flex flex-1 overflow-clip rounded-full">
-        <div className="h-1 w-full bg-muted" />
-        <div
-          className="absolute left-0 top-0 h-1 rounded-full bg-primary"
-          style={{ width: `${percent}%` }}
-        />
-      </div>
-      <RiderCount signupCount={signupCount} capacity={capacity} />
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// InlineMetadata — Home card: pace badge + distance + location in one row
-// ---------------------------------------------------------------------------
-
-interface InlineMetadataProps {
-  paceGroupName: string | null;
-  paceGroupSortOrder: number | null;
-  distanceKm: number | null;
-  locationName: string | null;
-}
-
-export function InlineMetadata({
-  paceGroupName,
-  paceGroupSortOrder,
+export function CardMetadataRow({
   distanceKm,
+  elevationM,
+  durationDisplay,
   locationName,
-}: InlineMetadataProps) {
-  const hasAny = paceGroupName || distanceKm != null || locationName;
+  className,
+}: CardMetadataRowProps) {
+  const hasAny = distanceKm != null || elevationM != null || durationDisplay || locationName;
   if (!hasAny) return null;
 
+  // Consistent order: distance, elevation, duration, location
+  const dataItems: React.ReactNode[] = [];
+
+  if (distanceKm != null) {
+    dataItems.push(
+      <span key="dist" className="flex shrink-0 items-center gap-1">
+        <Path className="size-3.5 shrink-0" />
+        {distanceKm}
+        {units.km}
+      </span>,
+    );
+  }
+  if (elevationM != null) {
+    dataItems.push(
+      <span key="elev" className="flex shrink-0 items-center gap-1">
+        <Mountains className="size-3.5 shrink-0" />
+        {elevationM}
+        {units.m}
+      </span>,
+    );
+  }
+  if (durationDisplay) {
+    dataItems.push(
+      <span key="dur" className="flex shrink-0 items-center gap-1">
+        <Clock className="size-3.5 shrink-0" />
+        {durationDisplay}
+      </span>,
+    );
+  }
+  if (locationName) {
+    dataItems.push(
+      <span key="loc" className="flex shrink-0 items-center gap-1">
+        <MapPin className="size-3.5 shrink-0" />
+        <span className="max-w-48 truncate">{locationName}</span>
+      </span>,
+    );
+  }
+
+  if (dataItems.length === 0) return null;
+
   return (
-    <div className="flex min-w-0 items-center gap-4">
-      {paceGroupName && (
-        <Badge
-          variant={paceGroupSortOrder ? getPaceBadgeVariant(paceGroupSortOrder) : 'secondary'}
-          size="sm"
-        >
-          {paceGroupName}
-        </Badge>
+    <div
+      className={cn(
+        DATA_SM,
+        'grid min-w-0 grid-cols-2 gap-x-4 gap-y-2 text-muted-foreground',
+        'sm:flex sm:items-center sm:gap-3',
+        className,
       )}
-      {distanceKm != null && (
-        <span className={cn(BODY_SM, 'shrink-0 text-muted-foreground')}>
-          {distanceKm}
-          {units.km}
+    >
+      {dataItems.map((item, i) => (
+        <span key={i} className="flex items-center">
+          {i > 0 && (
+            <span className="mr-3 hidden text-border-default sm:inline">
+              {separators.dot.trim()}
+            </span>
+          )}
+          {item}
         </span>
-      )}
-      {locationName && (
-        <span className={cn(BODY_SM, 'min-w-0 truncate text-muted-foreground')}>
-          {locationName}
-        </span>
-      )}
+      ))}
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// ScheduleStats — Schedule card: pace badge + distance/elevation/duration
+// CardContentSection — shared four-corner content layout for all card types
+//
+// Top row:    DateTimeRow (left) + Pace Badge (right)
+// Middle:     Title + optional description + optional children
+// Bottom row: CardMetadataRow (left) + RideWeatherBadge (right)
 // ---------------------------------------------------------------------------
 
-interface ScheduleStatsProps {
-  paceGroupName: string | null;
-  paceGroupSortOrder: number | null;
-  distanceKm: number | null;
-  elevationM: number | null;
-  durationDisplay: string | null;
+interface CardContentSectionProps {
+  date: string;
+  time: string;
+  isRecurring?: boolean;
+  title: string;
+  description?: string | null;
+  paceGroupName?: string | null;
+  paceGroupSortOrder?: number | null;
+  distanceKm?: number | null;
+  elevationM?: number | null;
+  durationDisplay?: string | null;
+  locationName?: string | null;
+  weather?: RideWeatherSnapshot | null;
+  /** Extra content between description and metadata (e.g. waitlist position) */
+  children?: React.ReactNode;
+  className?: string;
 }
 
-export function ScheduleStats({
+export function CardContentSection({
+  date,
+  time,
+  isRecurring,
+  title,
+  description,
   paceGroupName,
   paceGroupSortOrder,
   distanceKm,
   elevationM,
   durationDisplay,
-}: ScheduleStatsProps) {
-  const hasStats = paceGroupName || distanceKm != null || elevationM != null || durationDisplay;
-  if (!hasStats) return null;
-
+  locationName,
+  weather,
+  children,
+  className,
+}: CardContentSectionProps) {
   return (
-    <div className="flex min-w-0 items-center gap-4.5">
-      {paceGroupName && (
-        <Badge
-          variant={paceGroupSortOrder ? getPaceBadgeVariant(paceGroupSortOrder) : 'secondary'}
-          size="sm"
-        >
-          {paceGroupName}
-        </Badge>
-      )}
-      {distanceKm != null && (
-        <span className="font-mono text-xs font-bold leading-4.25 text-foreground">
-          {distanceKm}
-          {units.km}
-        </span>
-      )}
-      {elevationM != null && (
-        <span className="font-mono text-xs font-bold leading-4.25 text-foreground">
-          {elevationM}
-          {units.m}
-        </span>
-      )}
-      {durationDisplay && (
-        <span className="font-mono text-xs font-bold leading-4.25 text-foreground">
-          {durationDisplay}
-        </span>
-      )}
+    <div className={cn('flex flex-col gap-2', className)}>
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center justify-between">
+          <DateTimeRow date={date} time={time} isRecurring={isRecurring} />
+          {paceGroupName && (
+            <Badge
+              variant={paceGroupSortOrder ? getPaceBadgeVariant(paceGroupSortOrder) : 'secondary'}
+            >
+              {paceGroupName}
+            </Badge>
+          )}
+        </div>
+        <h3 className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
+          {title}
+        </h3>
+      </div>
+
+      {description && <p className="line-clamp-2 text-sm text-muted-foreground">{description}</p>}
+
+      {children}
+
+      <div className="flex flex-wrap items-end justify-between gap-y-2">
+        <CardMetadataRow
+          distanceKm={distanceKm}
+          elevationM={elevationM}
+          durationDisplay={durationDisplay}
+          locationName={locationName}
+        />
+        <RideWeatherBadge weather={weather ?? null} />
+      </div>
     </div>
   );
 }
@@ -289,5 +341,5 @@ interface CardFooterSectionProps {
 }
 
 export function CardFooterSection({ children, className }: CardFooterSectionProps) {
-  return <div className={cn('bg-surface-page px-6 py-3', className)}>{children}</div>;
+  return <div className={cn('bg-surface-page px-5 py-3', className)}>{children}</div>;
 }

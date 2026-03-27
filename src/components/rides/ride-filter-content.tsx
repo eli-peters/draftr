@@ -16,14 +16,11 @@ const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'distance_desc', label: ridesContent.filter.sort.distanceDesc },
 ];
 
-interface RideFilterContentProps {
+export interface RideFilterContentProps {
   paceGroups: { id: string; name: string; sort_order: number }[];
-  tags: { id: string; name: string }[];
   pendingPaceGroups: string[];
-  pendingTags: string[];
   pendingSort: SortOption;
   onTogglePaceGroup: (id: string) => void;
-  onToggleTag: (id: string) => void;
   onSortChange: (sort: SortOption) => void;
 }
 
@@ -37,12 +34,9 @@ function SectionDivider() {
 
 export function RideFilterContent({
   paceGroups,
-  tags,
   pendingPaceGroups,
-  pendingTags,
   pendingSort,
   onTogglePaceGroup,
-  onToggleTag,
   onSortChange,
 }: RideFilterContentProps) {
   return (
@@ -67,47 +61,12 @@ export function RideFilterContent({
                 return (
                   <Badge
                     key={pg.id}
-                    variant={isSelected ? 'tag-selected' : 'vibe'}
+                    variant={isSelected ? 'tag-selected' : 'secondary'}
                     size="lg"
                     className={isSelected ? selectedClass : unselectedClass}
                     onClick={() => onTogglePaceGroup(pg.id)}
                   >
                     {pg.name}
-                  </Badge>
-                );
-              })}
-            </div>
-          </div>
-          <SectionDivider />
-        </>
-      )}
-
-      {/* Tags */}
-      {tags.length > 0 && (
-        <>
-          <div className="space-y-3 px-4 py-5">
-            <Label className={sectionLabelClass}>
-              {ridesContent.filter.tagsLabel}
-              <Badge
-                variant="secondary"
-                size="sm"
-                className={cn('ml-2', pendingTags.length === 0 && 'invisible')}
-              >
-                {pendingTags.length}
-              </Badge>
-            </Label>
-            <div className="flex flex-wrap gap-2.5">
-              {tags.map((tag) => {
-                const isSelected = pendingTags.includes(tag.id);
-                return (
-                  <Badge
-                    key={tag.id}
-                    variant={isSelected ? 'tag-selected' : 'vibe'}
-                    size="lg"
-                    className={isSelected ? selectedClass : unselectedClass}
-                    onClick={() => onToggleTag(tag.id)}
-                  >
-                    {tag.name}
                   </Badge>
                 );
               })}
@@ -126,7 +85,7 @@ export function RideFilterContent({
             return (
               <Badge
                 key={opt.value}
-                variant={isSelected ? 'tag-selected' : 'vibe'}
+                variant={isSelected ? 'tag-selected' : 'secondary'}
                 size="lg"
                 className={cn(
                   'justify-center text-center',

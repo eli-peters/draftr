@@ -1,23 +1,22 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { format, parseISO } from 'date-fns';
+import Link from 'next/link';
+import { format } from 'date-fns';
 import { CheckCircle, Hourglass } from '@phosphor-icons/react/dist/ssr';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
   CardBanner,
-  DateTimeRow,
-  ScheduleStats,
+  CardContentSection,
   CardFooterSection,
 } from '@/components/rides/ride-card-parts';
-import { RideWeatherBadge } from '@/components/weather/ride-weather-badge';
 import { appContent } from '@/content/app';
 import { cn, getRelativeDay } from '@/lib/utils';
 import { SignupStatus } from '@/config/statuses';
-import { dateFormats, formatTime, formatDuration } from '@/config/formatting';
+import { dateFormats, formatTime, formatDuration, parseLocalDate } from '@/config/formatting';
 import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
+import { buildDirectionsUrl } from '@/lib/maps/directions';
 import type { UserRideSignup } from '@/lib/rides/queries';
 
 const { schedule } = appContent;
@@ -26,7 +25,7 @@ const { schedule } = appContent;
 // Types
 // ---------------------------------------------------------------------------
 
-type ScheduleAction = 'cancel-signup' | 'leave-waitlist' | 'get-directions' | 'view-details';
+type ScheduleAction = 'cancel-signup' | 'leave-waitlist';
 
 interface ScheduleCardProps {
   ride: UserRideSignup;
@@ -40,18 +39,18 @@ interface ScheduleCardProps {
 const statusBannerConfig = {
   confirmed: {
     icon: CheckCircle,
-    bgClass: 'bg-feedback-success-bg',
-    textClass: 'text-feedback-success-text',
+    bgClass: 'bg-banner-success-bg',
+    textClass: 'text-banner-success-text',
   },
   waitlisted: {
     icon: Hourglass,
-    bgClass: 'bg-feedback-warning-bg',
-    textClass: 'text-feedback-warning-text',
+    bgClass: 'bg-banner-warning-bg',
+    textClass: 'text-banner-warning-text',
   },
   completed: {
     icon: CheckCircle,
-    bgClass: 'bg-surface-sunken',
-    textClass: 'text-muted-foreground',
+    bgClass: 'bg-banner-muted-bg',
+    textClass: 'text-banner-muted-text',
   },
 } as const;
 
@@ -60,10 +59,9 @@ const statusBannerConfig = {
 // ---------------------------------------------------------------------------
 
 export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
-  const router = useRouter();
-  const rideDate = parseISO(ride.ride_date);
+  const rideDate = parseLocalDate(ride.ride_date);
   const relativeDay = getRelativeDay(rideDate, dateFormats.dayShort);
-  const isCompleted = ride.signup_status === SignupStatus.CHECKED_IN;
+  const isCompleted = ride.signup_status === SignupStatus.COMPLETED;
   const isWaitlisted = ride.signup_status === SignupStatus.WAITLISTED;
 
   // Availability check — hides cancel/leave buttons past cutoff
@@ -94,13 +92,14 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
 
   const durationDisplay = formatDuration(ride.start_time, ride.end_time);
 
-  function handleAction(action: ScheduleAction) {
-    if (action === 'view-details' || action === 'get-directions') {
-      router.push(routes.ride(ride.id));
-      return;
-    }
-    onAction?.(action, ride.id);
-  }
+  const directionsUrl = buildDirectionsUrl({
+    latitude: ride.meeting_location_latitude,
+    longitude: ride.meeting_location_longitude,
+    address: ride.meeting_location_address,
+    name: ride.meeting_location_name,
+  });
+
+  const hasFooter = statusKey !== 'completed';
 
   return (
     <Card className={cn('overflow-clip p-0', isCompleted && 'opacity-completed')}>
@@ -112,75 +111,68 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
         textClass={bannerConfig.textClass}
       />
 
-      {/* Content */}
-      <div className="flex flex-col gap-4 px-6 pt-3 pb-6">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center justify-between">
-            <DateTimeRow
-              date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
-              time={formatTime(ride.start_time)}
-            />
-            <RideWeatherBadge weather={ride.weather} />
-          </div>
-          {/* heading/md token — 20px */}
-          <h3 className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
-            {ride.title}
-          </h3>
-        </div>
-
-        <ScheduleStats
+      {/* Content — tappable, links to ride detail */}
+      <Link href={routes.ride(ride.id)} className="block">
+        <CardContentSection
+          className="px-5 pt-3 pb-5"
+          date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
+          time={formatTime(ride.start_time)}
+          title={ride.title}
           paceGroupName={ride.pace_group_name}
           paceGroupSortOrder={ride.pace_group_sort_order}
           distanceKm={ride.distance_km}
           elevationM={ride.elevation_m}
           durationDisplay={durationDisplay}
+          locationName={ride.meeting_location_name}
+          weather={ride.weather}
         />
-      </div>
+      </Link>
 
-      {/* Footer */}
-      <CardFooterSection>
-        <div className="flex items-center justify-between gap-3">
-          {statusKey === 'confirmed' && (
-            <>
-              {availability.canCancel && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-primary hover:text-primary"
-                  onClick={() => handleAction('cancel-signup')}
-                >
-                  {schedule.actions.cancelSignup}
-                </Button>
-              )}
-              <Button variant="default" size="sm" onClick={() => handleAction('get-directions')}>
-                {schedule.actions.getDirections}
-              </Button>
-            </>
-          )}
-          {statusKey === 'waitlisted' && (
-            <>
-              {availability.canCancel && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-primary hover:text-primary"
-                  onClick={() => handleAction('leave-waitlist')}
-                >
-                  {schedule.actions.leaveWaitlist}
-                </Button>
-              )}
-              <Button variant="default" size="sm" onClick={() => handleAction('get-directions')}>
-                {schedule.actions.getDirections}
-              </Button>
-            </>
-          )}
-          {statusKey === 'completed' && (
-            <Button variant="outline" size="sm" onClick={() => handleAction('view-details')}>
-              {schedule.actions.viewDetails}
-            </Button>
-          )}
-        </div>
-      </CardFooterSection>
+      {/* Footer — context-dependent actions */}
+      {hasFooter && (
+        <CardFooterSection>
+          <div className="flex items-center justify-between gap-3">
+            {statusKey === 'confirmed' && (
+              <>
+                {availability.canCancel && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => onAction?.('cancel-signup', ride.id)}
+                  >
+                    {schedule.actions.cancelSignup}
+                  </Button>
+                )}
+                {directionsUrl && (
+                  <a
+                    href={directionsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={buttonVariants({ variant: 'default', size: 'sm' })}
+                  >
+                    {schedule.actions.getDirections}
+                  </a>
+                )}
+              </>
+            )}
+            {statusKey === 'waitlisted' && (
+              <>
+                {availability.canCancel && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-warning hover:text-warning"
+                    onClick={() => onAction?.('leave-waitlist', ride.id)}
+                  >
+                    {schedule.actions.leaveWaitlist}
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
+        </CardFooterSection>
+      )}
     </Card>
   );
 }

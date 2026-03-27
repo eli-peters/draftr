@@ -1,80 +1,24 @@
 import Link from 'next/link';
-import { format, parseISO } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+import { CheckCircle, Hourglass } from '@phosphor-icons/react/dist/ssr';
 import { Card } from '@/components/ui/card';
 import {
-  BODY_SM,
   LABEL_SM,
+  CardBanner,
   RideBanner,
-  DateTimeRow,
-  InlineMetadata,
-  RiderCount,
+  CardContentSection,
   CardFooterSection,
 } from '@/components/rides/ride-card-parts';
-import { RideWeatherBadge } from '@/components/weather/ride-weather-badge';
 import { CardSignupButton } from '@/components/rides/card-signup-button';
 import { appContent } from '@/content/app';
 import { cn, getRelativeDay } from '@/lib/utils';
-import { RideStatus } from '@/config/statuses';
-import { dateFormats, formatTime, units, getPaceBadgeVariant } from '@/config/formatting';
+import { RideStatus, SignupStatus } from '@/config/statuses';
+import { dateFormats, formatTime, formatDuration, parseLocalDate } from '@/config/formatting';
 import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
 import type { RideWithDetails } from '@/types/database';
 
 const { rides: ridesContent } = appContent;
-
-const MAX_VISIBLE_TAGS = 3;
-
-// ---------------------------------------------------------------------------
-// PaceAndTagRow — Rides variant: pace badge + distance + vibe tags inline
-// ---------------------------------------------------------------------------
-
-function PaceAndTagRow({
-  paceGroupName,
-  paceGroupSortOrder,
-  distanceKm,
-  tags,
-}: {
-  paceGroupName: string | null;
-  paceGroupSortOrder: number | null;
-  distanceKm: number | null;
-  tags: { id: string; name: string }[];
-}) {
-  const hasAny = paceGroupName || distanceKm != null || tags.length > 0;
-  if (!hasAny) return null;
-
-  const visible = tags.slice(0, MAX_VISIBLE_TAGS);
-  const overflow = tags.length - MAX_VISIBLE_TAGS;
-
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      {paceGroupName && (
-        <Badge
-          variant={paceGroupSortOrder ? getPaceBadgeVariant(paceGroupSortOrder) : 'secondary'}
-          size="sm"
-        >
-          {paceGroupName}
-        </Badge>
-      )}
-      {distanceKm != null && (
-        <span className={cn(BODY_SM, 'text-muted-foreground')}>
-          {distanceKm}
-          {units.km}
-        </span>
-      )}
-      {visible.map((tag) => (
-        <Badge key={tag.id} variant="vibe" size="sm">
-          {tag.name}
-        </Badge>
-      ))}
-      {overflow > 0 && (
-        <span className="text-xs text-muted-foreground">
-          {ridesContent.card.moreTags(overflow)}
-        </span>
-      )}
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // RideCard
@@ -114,33 +58,24 @@ export function RideCard({ ride, variant = 'rides' }: RideCardProps) {
 // ---------------------------------------------------------------------------
 
 function HomeLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boolean }) {
-  const rideDate = parseISO(ride.ride_date);
+  const rideDate = parseLocalDate(ride.ride_date);
   const relativeDay = getRelativeDay(rideDate, dateFormats.dayShort);
 
   return (
-    <div className={cn('flex flex-col gap-3 p-4', hasBanner && 'pt-3')}>
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between">
-          <DateTimeRow
-            date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
-            time={formatTime(ride.start_time)}
-            isRecurring={!!ride.template_id}
-          />
-          <RideWeatherBadge weather={ride.weather} />
-        </div>
-        {/* heading/md token — 20px */}
-        <h3 className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
-          {ride.title}
-        </h3>
-      </div>
-
-      <InlineMetadata
-        paceGroupName={ride.pace_group?.name ?? null}
-        paceGroupSortOrder={ride.pace_group?.sort_order ?? null}
-        distanceKm={ride.distance_km}
-        locationName={ride.meeting_location?.name ?? null}
-      />
-    </div>
+    <CardContentSection
+      className={cn('px-5 pt-4 pb-5', hasBanner && 'pt-3')}
+      date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
+      time={formatTime(ride.start_time)}
+      isRecurring={!!ride.template_id}
+      title={ride.title}
+      paceGroupName={ride.pace_group?.name ?? null}
+      paceGroupSortOrder={ride.pace_group?.sort_order ?? null}
+      distanceKm={ride.distance_km}
+      elevationM={ride.elevation_m}
+      durationDisplay={formatDuration(ride.start_time, ride.end_time)}
+      locationName={ride.meeting_location?.name ?? null}
+      weather={ride.weather}
+    />
   );
 }
 
@@ -149,53 +84,62 @@ function HomeLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boo
 // ---------------------------------------------------------------------------
 
 function RidesLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boolean }) {
-  const rideDate = parseISO(ride.ride_date);
+  const rideDate = parseLocalDate(ride.ride_date);
   const relativeDay = getRelativeDay(rideDate, dateFormats.dayShort);
   const leaderName = ride.creator?.display_name ?? ride.creator?.full_name ?? null;
   const availability = getRideAvailability(ride, ride.signup_count);
+  const userStatus = ride.current_user_signup_status;
+  const hasSignupBanner =
+    userStatus === SignupStatus.CONFIRMED || userStatus === SignupStatus.WAITLISTED;
+  const hasAnyBanner = hasBanner || hasSignupBanner;
 
   return (
     <>
-      {/* Content section */}
-      <div className={cn('flex flex-col gap-3 p-6', hasBanner && 'pt-4')}>
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center justify-between">
-            <DateTimeRow
-              date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
-              time={formatTime(ride.start_time)}
-              isRecurring={!!ride.template_id}
-            />
-            <RideWeatherBadge weather={ride.weather} />
-          </div>
-          {/* heading/md token — 20px */}
-          <h3 className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
-            {ride.title}
-          </h3>
-        </div>
-
-        {ride.description && (
-          <p className="line-clamp-2 text-sm text-muted-foreground">{ride.description}</p>
-        )}
-
-        <PaceAndTagRow
-          paceGroupName={ride.pace_group?.name ?? null}
-          paceGroupSortOrder={ride.pace_group?.sort_order ?? null}
-          distanceKm={ride.distance_km}
-          tags={ride.tags}
+      {/* Signup status banner — shown when user is signed up or waitlisted */}
+      {hasSignupBanner && (
+        <CardBanner
+          icon={userStatus === SignupStatus.CONFIRMED ? CheckCircle : Hourglass}
+          label={
+            userStatus === SignupStatus.CONFIRMED
+              ? ridesContent.card.signedUp
+              : ridesContent.card.waitlisted
+          }
+          bgClass={
+            userStatus === SignupStatus.CONFIRMED ? 'bg-banner-success-bg' : 'bg-banner-warning-bg'
+          }
+          textClass={
+            userStatus === SignupStatus.CONFIRMED
+              ? 'text-banner-success-text'
+              : 'text-banner-warning-text'
+          }
         />
-      </div>
+      )}
+
+      {/* Content section */}
+      <CardContentSection
+        className={cn('px-5 pt-4 pb-5', hasAnyBanner && 'pt-3')}
+        date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
+        time={formatTime(ride.start_time)}
+        isRecurring={!!ride.template_id}
+        title={ride.title}
+        description={ride.description}
+        paceGroupName={ride.pace_group?.name ?? null}
+        paceGroupSortOrder={ride.pace_group?.sort_order ?? null}
+        distanceKm={ride.distance_km}
+        elevationM={ride.elevation_m}
+        durationDisplay={formatDuration(ride.start_time, ride.end_time)}
+        locationName={ride.meeting_location?.name ?? null}
+        weather={ride.weather}
+      />
 
       {/* Footer section */}
       <CardFooterSection>
         <div className="flex items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <RiderCount signupCount={ride.signup_count} capacity={ride.capacity} />
-            {leaderName && (
-              <span className={cn(LABEL_SM, 'text-muted-foreground')}>
-                {ridesContent.card.ledBy(leaderName)}
-              </span>
-            )}
-          </div>
+          {leaderName && (
+            <span className={cn(LABEL_SM, 'text-muted-foreground')}>
+              {ridesContent.card.ledBy(leaderName)}
+            </span>
+          )}
           {availability.canSignUp && (
             <CardSignupButton
               rideId={ride.id}

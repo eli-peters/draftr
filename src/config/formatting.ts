@@ -31,9 +31,19 @@ export function formatTime(time: string): string {
   return time.slice(0, 5);
 }
 
-/** Get today's date as an ISO string (YYYY-MM-DD) */
+/** Parse "YYYY-MM-DD" as local midnight (not UTC midnight). */
+export function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+/** Get today's date as a local ISO string (YYYY-MM-DD) */
 export function todayDateString(): string {
-  return new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 /** Measurement unit suffixes */

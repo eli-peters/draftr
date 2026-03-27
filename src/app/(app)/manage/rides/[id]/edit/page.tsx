@@ -8,8 +8,6 @@ import {
   getRideById,
   getMeetingLocations,
   getPaceGroups,
-  getClubTags,
-  getRideTagIds,
   getRideSignups,
 } from '@/lib/rides/queries';
 import { getClubMembers } from '@/lib/manage/queries';
@@ -39,17 +37,14 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
 
   const userId = membership.user_id;
 
-  const [ride, meetingLocations, paceGroups, tags, tagIds, signups, members, connections] =
-    await Promise.all([
-      getRideById(id),
-      getMeetingLocations(membership.club_id),
-      getPaceGroups(membership.club_id),
-      getClubTags(membership.club_id),
-      getRideTagIds(id),
-      getRideSignups(id),
-      getClubMembers(membership.club_id),
-      getUserConnections(userId),
-    ]);
+  const [ride, meetingLocations, paceGroups, signups, members, connections] = await Promise.all([
+    getRideById(id),
+    getMeetingLocations(membership.club_id),
+    getPaceGroups(membership.club_id),
+    getRideSignups(id),
+    getClubMembers(membership.club_id),
+    getUserConnections(userId),
+  ]);
 
   if (!ride) notFound();
 
@@ -97,7 +92,6 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
         clubId={membership.club_id}
         meetingLocations={meetingLocations}
         paceGroups={paceGroups}
-        tags={tags}
         rideId={id}
         templateId={ride.template_id ?? undefined}
         initialData={{
@@ -115,7 +109,6 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
           route_polyline: ride.route_polyline ?? '',
           is_drop_ride: ride.is_drop_ride ?? false,
           organiser_notes: ride.organiser_notes ?? '',
-          tag_ids: tagIds,
         }}
         connectedServices={connections.map((c) => c.service).filter((s) => s !== 'ridewithgps')}
       />

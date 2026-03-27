@@ -262,7 +262,6 @@ export interface CreateRideData {
   route_polyline?: string;
   is_drop_ride: boolean;
   organiser_notes?: string;
-  tag_ids: string[];
   // Recurring ride options
   recurring?: {
     recurrence: string;
@@ -354,20 +353,6 @@ export async function createRide(data: CreateRideData) {
     return { error: rideError?.message ?? errors.createRideFailed };
   }
 
-  // Insert tags
-  if (data.tag_ids.length > 0) {
-    const tagRows = data.tag_ids.map((tag_id) => ({
-      ride_id: ride.id,
-      tag_id,
-    }));
-
-    const { error: tagError } = await supabase.from('ride_tags').insert(tagRows);
-
-    if (tagError) {
-      return { error: tagError.message };
-    }
-  }
-
   // Generate future recurring ride instances
   if (templateId) {
     try {
@@ -429,7 +414,6 @@ export interface UpdateRideData {
   route_polyline?: string;
   is_drop_ride: boolean;
   organiser_notes?: string;
-  tag_ids: string[];
 }
 
 /**
@@ -478,15 +462,6 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
     .eq('id', rideId);
 
   if (rideError) return { error: rideError.message };
-
-  // Replace tags: delete all then re-insert
-  await supabase.from('ride_tags').delete().eq('ride_id', rideId);
-
-  if (data.tag_ids.length > 0) {
-    await supabase
-      .from('ride_tags')
-      .insert(data.tag_ids.map((tag_id) => ({ ride_id: rideId, tag_id })));
-  }
 
   // Notify signed-up riders about the update
   const { data: signups } = await supabase
@@ -589,25 +564,6 @@ export async function updateRecurringSeries(rideId: string, data: UpdateRideData
     .eq('template_id', templateId)
     .gte('ride_date', today)
     .eq('status', 'scheduled');
-
-  // Replace tags on all future instances
-  const { data: futureRides } = await supabase
-    .from('rides')
-    .select('id')
-    .eq('template_id', templateId)
-    .gte('ride_date', today)
-    .eq('status', 'scheduled');
-
-  if (futureRides) {
-    for (const fr of futureRides) {
-      await supabase.from('ride_tags').delete().eq('ride_id', fr.id);
-      if (data.tag_ids.length > 0) {
-        await supabase
-          .from('ride_tags')
-          .insert(data.tag_ids.map((tag_id) => ({ ride_id: fr.id, tag_id })));
-      }
-    }
-  }
 
   revalidatePath('/rides');
   revalidatePath('/manage');

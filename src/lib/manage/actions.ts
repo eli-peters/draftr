@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient, getUser } from '@/lib/supabase/server';
 import { appContent } from '@/content/app';
 import type { AnnouncementType, MemberRole, MemberStatus } from '@/types/database';
+import { parseLocalDate } from '@/config/formatting';
 
 const { common, errors } = appContent;
 
@@ -393,94 +394,6 @@ export async function reorderPaceTiers(clubId: string, orderedIds: string[]) {
   return { success: true };
 }
 
-// ---------------------------------------------------------------------------
-// Vibe Tag Management
-// ---------------------------------------------------------------------------
-
-export async function addVibeTag(clubId: string, name: string) {
-  const supabase = await createClient();
-  const user = await getUser();
-  if (!user) return { error: common.notAuthenticated };
-
-  const { data: existing } = await supabase
-    .from('tags')
-    .select('sort_order')
-    .eq('club_id', clubId)
-    .order('sort_order', { ascending: false })
-    .limit(1);
-
-  const nextOrder = (existing?.[0]?.sort_order ?? 0) + 1;
-
-  const { error } = await supabase.from('tags').insert({
-    club_id: clubId,
-    name: name.trim(),
-    color: null,
-    is_archived: false,
-    sort_order: nextOrder,
-  });
-
-  if (error) {
-    if (error.code === '23505') return { error: appContent.manage.vibeTags.duplicateName };
-    return { error: error.message };
-  }
-
-  revalidatePath('/manage');
-  return { success: true };
-}
-
-export async function updateVibeTag(tagId: string, data: { name?: string; sort_order?: number }) {
-  const supabase = await createClient();
-  const user = await getUser();
-  if (!user) return { error: common.notAuthenticated };
-
-  const updates: Record<string, unknown> = {};
-  if (data.name !== undefined) updates.name = data.name.trim();
-  if (data.sort_order !== undefined) updates.sort_order = data.sort_order;
-
-  const { error } = await supabase.from('tags').update(updates).eq('id', tagId);
-
-  if (error) {
-    if (error.code === '23505') return { error: appContent.manage.vibeTags.duplicateName };
-    return { error: error.message };
-  }
-
-  revalidatePath('/manage');
-  revalidatePath('/rides');
-  return { success: true };
-}
-
-export async function deleteVibeTag(tagId: string) {
-  const supabase = await createClient();
-  const user = await getUser();
-  if (!user) return { error: common.notAuthenticated };
-
-  const { error } = await supabase.from('tags').delete().eq('id', tagId);
-  if (error) return { error: error.message };
-
-  revalidatePath('/manage');
-  revalidatePath('/rides');
-  return { success: true };
-}
-
-export async function reorderVibeTags(clubId: string, orderedIds: string[]) {
-  const supabase = await createClient();
-  const user = await getUser();
-  if (!user) return { error: common.notAuthenticated };
-
-  await Promise.all(
-    orderedIds.map((id, i) =>
-      supabase
-        .from('tags')
-        .update({ sort_order: i + 1 })
-        .eq('id', id)
-        .eq('club_id', clubId),
-    ),
-  );
-
-  revalidatePath('/manage');
-  return { success: true };
-}
-
 /**
  * Update season dates for a club (admin only).
  * Stored in clubs.settings JSONB.
@@ -570,14 +483,6 @@ export async function createRecurringRide(
   revalidatePath('/rides');
   revalidatePath('/');
   return { success: true };
-}
-
-/**
- * Parse a YYYY-MM-DD string into a local Date (avoids UTC timezone shift).
- */
-function parseLocalDate(dateStr: string): Date {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  return new Date(y, m - 1, d);
 }
 
 /**

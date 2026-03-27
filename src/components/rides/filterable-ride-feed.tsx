@@ -22,7 +22,6 @@ const MAX_PACE_TIER = 8;
 interface FilterableRideFeedProps {
   rides: RideWithDetails[];
   paceGroups: { id: string; name: string; sort_order: number }[];
-  tags: { id: string; name: string }[];
   heading?: string;
   emptyTitle: string;
   emptyDescription: string;
@@ -32,7 +31,6 @@ interface FilterableRideFeedProps {
 export function FilterableRideFeed({
   rides,
   paceGroups,
-  tags,
   heading,
   emptyTitle,
   emptyDescription,
@@ -44,19 +42,16 @@ export function FilterableRideFeed({
   const [isRefreshing, startTransition] = useTransition();
 
   const paceIds = searchParams.get('pace')?.split(',').filter(Boolean) ?? [];
-  const tagIds = searchParams.get('tags')?.split(',').filter(Boolean) ?? [];
   const sortBy = (searchParams.get('sort') as SortOption) ?? 'date_asc';
-  const activeCount = paceIds.length + tagIds.length;
-  const hasFilters = activeCount > 0;
+  const hasFilters = paceIds.length > 0;
 
-  const filtered = filterRides(rides, paceIds, tagIds);
+  const filtered = filterRides(rides, paceIds);
 
   const sorted = sortRides(filtered, sortBy);
 
-  function handleApply(newPaceIds: string[], newTagIds: string[], newSort: SortOption) {
+  function handleApply(newPaceIds: string[], _newTagIds: string[], newSort: SortOption) {
     const params = new URLSearchParams();
     if (newPaceIds.length > 0) params.set('pace', newPaceIds.join(','));
-    if (newTagIds.length > 0) params.set('tags', newTagIds.join(','));
     if (newSort !== 'date_asc') params.set('sort', newSort);
     const qs = params.toString();
     router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false });
@@ -66,22 +61,13 @@ export function FilterableRideFeed({
     router.replace(pathname, { scroll: false });
   }
 
-  function dismissFilter(type: 'pace' | 'tag', id: string) {
+  function dismissFilter(id: string) {
     const params = new URLSearchParams(searchParams.toString());
-    if (type === 'pace') {
-      const remaining = paceIds.filter((p) => p !== id);
-      if (remaining.length > 0) {
-        params.set('pace', remaining.join(','));
-      } else {
-        params.delete('pace');
-      }
-    } else if (type === 'tag') {
-      const remaining = tagIds.filter((t) => t !== id);
-      if (remaining.length > 0) {
-        params.set('tags', remaining.join(','));
-      } else {
-        params.delete('tags');
-      }
+    const remaining = paceIds.filter((p) => p !== id);
+    if (remaining.length > 0) {
+      params.set('pace', remaining.join(','));
+    } else {
+      params.delete('pace');
     }
     const qs = params.toString();
     router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false });
@@ -119,9 +105,7 @@ export function FilterableRideFeed({
             </Button>
             <RideFilterDrawer
               paceGroups={paceGroups}
-              tags={tags}
               activePaceGroupIds={paceIds}
-              activeTagIds={tagIds}
               activeSort={sortBy}
               onApply={handleApply}
               onClear={handleClear}
@@ -143,24 +127,9 @@ export function FilterableRideFeed({
                   `pace-${Math.min(Math.max(pg.sort_order, MIN_PACE_TIER), MAX_PACE_TIER)}` as BadgeVariant
                 }
                 className="cursor-pointer gap-1"
-                onClick={() => dismissFilter('pace', id)}
+                onClick={() => dismissFilter(id)}
               >
                 {pg.name}
-                <X className="h-3 w-3" />
-              </Badge>
-            );
-          })}
-          {tagIds.map((id) => {
-            const tag = tags.find((t) => t.id === id);
-            if (!tag) return null;
-            return (
-              <Badge
-                key={id}
-                variant="secondary"
-                className="cursor-pointer gap-1"
-                onClick={() => dismissFilter('tag', id)}
-              >
-                {tag.name}
                 <X className="h-3 w-3" />
               </Badge>
             );

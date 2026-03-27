@@ -112,6 +112,20 @@
   --color-feedback-info-bg: var(--feedback-info-bg);
   --color-feedback-info-text: var(--feedback-info-text);
 
+  /* Banner tokens → Tailwind (bold card header banners) */
+  --color-banner-success-bg: var(--banner-success-bg);
+  --color-banner-success-text: var(--banner-success-text);
+  --color-banner-warning-bg: var(--banner-warning-bg);
+  --color-banner-warning-text: var(--banner-warning-text);
+  --color-banner-error-bg: var(--banner-error-bg);
+  --color-banner-error-text: var(--banner-error-text);
+  --color-banner-info-bg: var(--banner-info-bg);
+  --color-banner-info-text: var(--banner-info-text);
+  --color-banner-secondary-bg: var(--banner-secondary-bg);
+  --color-banner-secondary-text: var(--banner-secondary-text);
+  --color-banner-muted-bg: var(--banner-muted-bg);
+  --color-banner-muted-text: var(--banner-muted-text);
+
   /* Accent tokens → Tailwind */
   --color-accent-primary-default: var(--accent-primary-default);
   --color-accent-primary-muted: var(--accent-primary-muted);
@@ -153,8 +167,6 @@
   --color-badge-role-admin-text: var(--badge-role-admin-text);
   --color-badge-role-new-bg: var(--badge-role-new-bg);
   --color-badge-role-new-text: var(--badge-role-new-text);
-  --color-badge-vibe-bg: var(--badge-vibe-bg);
-  --color-badge-vibe-text: var(--badge-vibe-text);
   --color-badge-count-bg: var(--badge-count-bg);
   --color-badge-count-text: var(--badge-count-text);
   --color-badge-tag-selected-bg: var(--badge-tag-selected-bg);

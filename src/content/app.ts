@@ -87,7 +87,7 @@ export const appContent = {
         `${rideTitle} may be affected by weather conditions`,
     },
     feed: {
-      heading: 'Upcoming Rides',
+      heading: 'More upcoming rides for you',
     },
     announcementBanner: {
       dismiss: 'Dismiss',
@@ -114,7 +114,7 @@ export const appContent = {
 
   rides: {
     feed: {
-      heading: 'Upcoming Rides',
+      heading: 'All Upcoming Rides',
       refreshLabel: 'Refresh rides',
       emptyState: {
         title: 'No upcoming rides',
@@ -315,7 +315,7 @@ export const appContent = {
   },
 
   schedule: {
-    heading: 'Schedule',
+    heading: 'Your Schedule',
     sections: {
       upcoming: 'Upcoming',
       past: 'Past',
@@ -459,6 +459,7 @@ export const appContent = {
       noPastRides: 'No past rides',
       noCancelledRides: 'No cancelled rides',
       createdBy: (name: string) => `Created by ${name}`,
+      leaderColumn: 'Leader',
     },
     members: {
       heading: 'Members',
@@ -528,22 +529,6 @@ export const appContent = {
       upTo: (max: number, unit: string) => `up to ${max} ${unit}`,
       minPlaceholder: 'min',
       maxPlaceholder: 'max',
-    },
-    vibeTags: {
-      heading: 'Vibe Tags',
-      description: 'Optional descriptors that communicate the feel and culture of a ride.',
-      add: 'Add Tag',
-      namePlaceholder: 'Tag name (1–3 words)',
-      save: 'Save',
-      saved: 'Tag saved',
-      deleted: 'Tag deleted',
-      restored: 'Tag restored',
-      undo: 'Undo',
-      noTags: 'No vibe tags yet. Add one to get started.',
-      duplicateName: 'A tag with this name already exists.',
-      nameRequired: 'Name is required.',
-      nameTooLong: 'Tag names should be 1–3 words.',
-      usageCount: (count: number) => `${count} ride${count === 1 ? '' : 's'}`,
     },
     memberActions: {
       searchPlaceholder: 'Search members...',

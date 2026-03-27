@@ -7,7 +7,6 @@ import { format } from 'date-fns';
 import {
   MapPin,
   Users,
-  CaretRight,
   CloudRain,
   ArrowsClockwise,
   ArrowClockwise,
@@ -15,8 +14,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { CapacityBar } from '@/components/ui/capacity-bar';
-import { MetadataItem } from '@/components/ui/metadata-item';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { RideFilterDrawer, type SortOption } from '@/components/rides/ride-filter-drawer';
 import { ContentToolbar } from '@/components/layout/content-toolbar';
@@ -25,7 +22,7 @@ import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { RideStatus } from '@/config/statuses';
-import { dateFormats, separators } from '@/config/formatting';
+import { dateFormats, separators, formatTime, getPaceBadgeVariant } from '@/config/formatting';
 
 const { manage: content, rides: ridesContent } = appContent;
 
@@ -41,113 +38,205 @@ export interface ManageRideData {
   meeting_location_name: string | null;
   pace_group_id: string | null;
   pace_group_name: string | null;
-  tags: { id: string; name: string }[];
+  pace_group_sort_order: number | null;
   signup_count: number;
   created_by_name: string | null;
 }
 
-function ManageRideItem({ ride }: { ride: ManageRideData }) {
+// ---------------------------------------------------------------------------
+// ManageRideRow — desktop table row / mobile stacked card
+// ---------------------------------------------------------------------------
+
+function ManageRideRow({ ride }: { ride: ManageRideData }) {
   const isCancelled = ride.status === RideStatus.CANCELLED;
+  const isWeatherWatch = ride.status === RideStatus.WEATHER_WATCH;
+  const spotsText =
+    ride.capacity != null ? `${ride.signup_count}/${ride.capacity}` : `${ride.signup_count}`;
 
   return (
     <Link
       href={routes.manageEditRide(ride.id)}
       className={cn(
-        'block group border-b border-border last:border-b-0 px-5 py-4',
+        'group block border-b border-border last:border-b-0',
         isCancelled && 'opacity-disabled',
       )}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-foreground truncate">{ride.title}</h3>
+      {/* Desktop: table row */}
+      <div className="hidden items-center gap-3 px-4 py-3 md:flex">
+        {/* Date/Time — fixed width */}
+        <div className="w-36 shrink-0 text-sm text-muted-foreground">
+          {format(new Date(ride.ride_date), dateFormats.dayMonthDay)}
+          {separators.at}
+          {formatTime(ride.start_time)}
+        </div>
+
+        {/* Title + status badges — flex-1 */}
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <span className="truncate text-sm font-semibold text-foreground">{ride.title}</span>
+          {ride.template_id && (
+            <ArrowsClockwise className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+          )}
+          {isWeatherWatch && (
+            <Badge variant="warning" size="sm" className="shrink-0 gap-1">
+              <CloudRain className="h-3 w-3" />
+              {ridesContent.status.weatherWatch}
+            </Badge>
+          )}
+          {isCancelled && (
+            <Badge variant="destructive" size="sm" className="shrink-0">
+              {ridesContent.status.cancelled}
+            </Badge>
+          )}
+        </div>
+
+        {/* Pace — fixed width */}
+        <div className="w-24 shrink-0">
+          {ride.pace_group_name && (
+            <Badge
+              variant={
+                ride.pace_group_sort_order
+                  ? getPaceBadgeVariant(ride.pace_group_sort_order)
+                  : 'secondary'
+              }
+              size="sm"
+            >
+              {ride.pace_group_name}
+            </Badge>
+          )}
+        </div>
+
+        {/* Spots — fixed width */}
+        <div className="flex w-20 shrink-0 items-center gap-1.5 text-sm text-muted-foreground">
+          <Users className="size-3.5 shrink-0" />
+          <span>{spotsText}</span>
+        </div>
+
+        {/* Location — fixed width, truncated */}
+        <div className="w-32 shrink-0 truncate text-sm text-muted-foreground">
+          {ride.meeting_location_name && (
+            <span className="flex items-center gap-1">
+              <MapPin className="size-3.5 shrink-0" />
+              <span className="truncate">{ride.meeting_location_name}</span>
+            </span>
+          )}
+        </div>
+
+        {/* Leader — fixed width */}
+        <div className="w-28 shrink-0 truncate text-sm text-muted-foreground/60">
+          {ride.created_by_name}
+        </div>
+      </div>
+
+      {/* Mobile: stacked compact layout */}
+      <div className="flex flex-col gap-2 px-4 py-3 md:hidden">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <span className="truncate text-sm font-semibold text-foreground">{ride.title}</span>
             {ride.template_id && (
               <ArrowsClockwise className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
             )}
-            {ride.status === RideStatus.WEATHER_WATCH && (
-              <Badge variant="warning" className="shrink-0 text-sm gap-1">
-                <CloudRain className="h-3.5 w-3.5" />
-                {ridesContent.status.weatherWatch}
+          </div>
+          <div className="flex shrink-0 items-center gap-1.5">
+            {isWeatherWatch && (
+              <Badge variant="warning" size="sm" className="gap-1">
+                <CloudRain className="h-3 w-3" />
               </Badge>
             )}
             {isCancelled && (
-              <Badge variant="destructive" className="shrink-0 text-sm">
+              <Badge variant="destructive" size="sm">
                 {ridesContent.status.cancelled}
               </Badge>
             )}
           </div>
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
-            <span>
-              {format(new Date(ride.ride_date), dateFormats.dayMonthDay)}
-              {separators.at}
-              {ride.start_time.slice(0, 5)}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <span>
+            {format(new Date(ride.ride_date), dateFormats.dayMonthDay)}
+            {separators.at}
+            {formatTime(ride.start_time)}
+          </span>
+          <span className="flex items-center gap-1">
+            <Users className="size-3 shrink-0" />
+            {spotsText}
+          </span>
+          {ride.meeting_location_name && (
+            <span className="flex items-center gap-1">
+              <MapPin className="size-3 shrink-0" />
+              <span className="truncate">{ride.meeting_location_name}</span>
             </span>
-            {ride.meeting_location_name && (
-              <MetadataItem icon={MapPin}>{ride.meeting_location_name}</MetadataItem>
-            )}
-            <MetadataItem icon={Users}>
-              {ride.capacity != null ? `${ride.signup_count}/${ride.capacity}` : ride.signup_count}
-            </MetadataItem>
-          </div>
-          {ride.tags.length > 0 && (
-            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-              {ride.tags.slice(0, 2).map((tag) => (
-                <Badge key={tag.id} variant="secondary" size="sm">
-                  {tag.name}
-                </Badge>
-              ))}
-              {ride.tags.length > 2 && (
-                <span className="text-xs text-muted-foreground">
-                  {ridesContent.card.moreTags(ride.tags.length - 2)}
-                </span>
-              )}
-            </div>
           )}
-          {ride.created_by_name && (
-            <p className="mt-1 text-sm text-muted-foreground/60">
-              {content.rides.createdBy(ride.created_by_name)}
-            </p>
+          {ride.pace_group_name && (
+            <Badge
+              variant={
+                ride.pace_group_sort_order
+                  ? getPaceBadgeVariant(ride.pace_group_sort_order)
+                  : 'secondary'
+              }
+              size="sm"
+            >
+              {ride.pace_group_name}
+            </Badge>
           )}
         </div>
-        <CaretRight className="ml-2 h-4 w-4 shrink-0 text-muted-foreground/40" />
       </div>
-      {!isCancelled && (
-        <CapacityBar signupCount={ride.signup_count} capacity={ride.capacity} className="mt-3" />
-      )}
     </Link>
   );
 }
 
-interface ManageRidesPanelProps {
-  rides: ManageRideData[];
-  paceGroups: { id: string; name: string; sort_order: number }[];
-  tags: { id: string; name: string }[];
-  initialPaceFilter?: string[];
+// ---------------------------------------------------------------------------
+// Table header (desktop only)
+// ---------------------------------------------------------------------------
+
+function ManageTableHeader() {
+  return (
+    <div className="hidden border-b border-border bg-surface-sunken px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground md:flex items-center gap-3">
+      <div className="w-36 shrink-0">{appContent.rides.form.date}</div>
+      <div className="min-w-0 flex-1">{appContent.rides.form.title}</div>
+      <div className="w-24 shrink-0">{appContent.rides.form.paceGroup}</div>
+      <div className="w-20 shrink-0">{appContent.rides.card.riders}</div>
+      <div className="w-32 shrink-0">{appContent.rides.form.meetingLocation}</div>
+      <div className="w-28 shrink-0">{content.rides.leaderColumn}</div>
+    </div>
+  );
 }
+
+// ---------------------------------------------------------------------------
+// RideList
+// ---------------------------------------------------------------------------
 
 function RideList({ rides, emptyMessage }: { rides: ManageRideData[]; emptyMessage: string }) {
   if (rides.length === 0) {
     return <p className="mt-6 text-center text-base text-muted-foreground">{emptyMessage}</p>;
   }
   return (
-    <Card className="mt-4 overflow-clip">
+    <Card className="mt-4 overflow-clip p-0">
+      <ManageTableHeader />
       {rides.map((ride) => (
-        <ManageRideItem key={ride.id} ride={ride} />
+        <ManageRideRow key={ride.id} ride={ride} />
       ))}
     </Card>
   );
 }
 
+// ---------------------------------------------------------------------------
+// ManageRidesPanel
+// ---------------------------------------------------------------------------
+
+interface ManageRidesPanelProps {
+  rides: ManageRideData[];
+  paceGroups: { id: string; name: string; sort_order: number }[];
+  initialPaceFilter?: string[];
+}
+
 export function ManageRidesPanel({
   rides,
   paceGroups,
-  tags,
   initialPaceFilter = [],
 }: ManageRidesPanelProps) {
   const router = useRouter();
   const [isRefreshing, startTransition] = useTransition();
   const [paceIds, setPaceIds] = useState<string[]>(initialPaceFilter);
-  const [tagIds, setTagIds] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('date_asc');
   const [activeTab, setActiveTab] = useState('upcoming');
 
@@ -159,7 +248,7 @@ export function ManageRidesPanel({
 
   const today = new Date().toISOString().split('T')[0];
 
-  const filtered = filterRides(rides, paceIds, tagIds);
+  const filtered = filterRides(rides, paceIds);
 
   const sorted = sortRides(filtered, sortBy);
 
@@ -170,7 +259,7 @@ export function ManageRidesPanel({
   const pastRides = sorted.filter((r) => r.ride_date < today && r.status !== RideStatus.CANCELLED);
   const cancelledRides = sorted.filter((r) => r.status === RideStatus.CANCELLED);
 
-  const activeCount = paceIds.length + tagIds.length;
+  const activeCount = paceIds.length;
   const hasFilters = activeCount > 0 || sortBy !== 'date_asc';
 
   const ridesByTab: Record<string, typeof upcomingRides> = {
@@ -180,15 +269,13 @@ export function ManageRidesPanel({
   };
   const visibleRides = ridesByTab[activeTab] ?? upcomingRides;
 
-  function handleApply(newPaceIds: string[], newTagIds: string[], newSort: SortOption) {
+  function handleApply(newPaceIds: string[], _newTagIds: string[], newSort: SortOption) {
     setPaceIds(newPaceIds);
-    setTagIds(newTagIds);
     setSortBy(newSort);
   }
 
   function handleClear() {
     setPaceIds([]);
-    setTagIds([]);
     setSortBy('date_asc');
   }
 
@@ -222,9 +309,7 @@ export function ManageRidesPanel({
               </Button>
               <RideFilterDrawer
                 paceGroups={paceGroups}
-                tags={tags}
                 activePaceGroupIds={paceIds}
-                activeTagIds={tagIds}
                 activeSort={sortBy}
                 onApply={handleApply}
                 onClear={handleClear}

@@ -2,12 +2,7 @@
 
 import { useEffect, useState, useRef, useTransition } from 'react';
 import { toast } from 'sonner';
-import {
-  ArrowCounterClockwise,
-  CheckCircle,
-  Hourglass,
-  SpinnerGap,
-} from '@phosphor-icons/react/dist/ssr';
+import { ArrowCounterClockwise, SpinnerGap } from '@phosphor-icons/react/dist/ssr';
 import { signUpForRide, cancelSignUp } from '@/lib/rides/actions';
 import { Button } from '@/components/ui/button';
 import { appContent } from '@/content/app';
@@ -113,34 +108,9 @@ export function CardSignupButton({ rideId, rideName, isFull, userStatus }: CardS
     });
   }
 
-  // Already signed up — show confirmed state
-  if (effectiveStatus === SignupStatus.CONFIRMED) {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        className="shrink-0 border-success/30 text-success"
-        disabled
-      >
-        <CheckCircle className="size-4" />
-        {card.signedUp}
-      </Button>
-    );
-  }
-
-  // Waitlisted — show waitlisted state
-  if (effectiveStatus === SignupStatus.WAITLISTED) {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        className="shrink-0 border-warning/30 text-warning"
-        disabled
-      >
-        <Hourglass className="size-4" />
-        {card.waitlisted}
-      </Button>
-    );
+  // Already signed up or waitlisted — banner handles this, hide button
+  if (effectiveStatus === SignupStatus.CONFIRMED || effectiveStatus === SignupStatus.WAITLISTED) {
+    return null;
   }
 
   // Not signed up — show action button

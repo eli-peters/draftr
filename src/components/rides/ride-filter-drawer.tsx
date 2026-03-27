@@ -22,9 +22,7 @@ const { rides: ridesContent } = appContent;
 
 interface RideFilterDrawerProps {
   paceGroups: { id: string; name: string; sort_order: number }[];
-  tags: { id: string; name: string }[];
   activePaceGroupIds: string[];
-  activeTagIds: string[];
   activeSort: SortOption;
   onApply: (paceGroupIds: string[], tagIds: string[], sort: SortOption) => void;
   onClear: () => void;
@@ -32,9 +30,7 @@ interface RideFilterDrawerProps {
 
 export function RideFilterDrawer({
   paceGroups,
-  tags,
   activePaceGroupIds,
-  activeTagIds,
   activeSort,
   onApply,
   onClear,
@@ -48,18 +44,15 @@ export function RideFilterDrawer({
 
   const [open, setOpen] = useState(false);
   const [pendingPaceGroups, setPendingPaceGroups] = useState<string[]>([]);
-  const [pendingTags, setPendingTags] = useState<string[]>([]);
   const [pendingSort, setPendingSort] = useState<SortOption>('date_asc');
 
-  const activeCount = activePaceGroupIds.length + activeTagIds.length;
+  const activeCount = activePaceGroupIds.length;
 
-  const hasActiveFilters =
-    pendingPaceGroups.length > 0 || pendingTags.length > 0 || pendingSort !== 'date_asc';
+  const hasActiveFilters = pendingPaceGroups.length > 0 || pendingSort !== 'date_asc';
 
   function handleOpenChange(nextOpen: boolean) {
     if (nextOpen) {
       setPendingPaceGroups(activePaceGroupIds);
-      setPendingTags(activeTagIds);
       setPendingSort(activeSort);
     }
     setOpen(nextOpen);
@@ -71,12 +64,8 @@ export function RideFilterDrawer({
     );
   }
 
-  function toggleTag(id: string) {
-    setPendingTags((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
-  }
-
   function handleApply() {
-    onApply(pendingPaceGroups, pendingTags, pendingSort);
+    onApply(pendingPaceGroups, [], pendingSort);
     setOpen(false);
   }
 
@@ -119,12 +108,9 @@ export function RideFilterDrawer({
             <div className="min-w-0 flex-1 overflow-y-auto">
               <RideFilterContent
                 paceGroups={paceGroups}
-                tags={tags}
                 pendingPaceGroups={pendingPaceGroups}
-                pendingTags={pendingTags}
                 pendingSort={pendingSort}
                 onTogglePaceGroup={togglePaceGroup}
-                onToggleTag={toggleTag}
                 onSortChange={setPendingSort}
               />
             </div>

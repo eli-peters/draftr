@@ -1,27 +1,23 @@
 import Link from 'next/link';
-import { parseISO } from 'date-fns';
 import {
   CalendarDots,
-  MapPin,
-  Users,
-  FlagBanner,
-  Hourglass,
-  UserPlus,
-  FlagPennant,
   CloudRain,
-  Timer,
+  FlagBanner,
+  FlagPennant,
+  Hourglass,
   Play,
+  Timer,
+  UserPlus,
 } from '@phosphor-icons/react/dist/ssr';
 import { Card } from '@/components/ui/card';
-import { CapacityBar } from '@/components/ui/capacity-bar';
-import { MetadataItem } from '@/components/ui/metadata-item';
-import { CardBanner, DateTimeRow } from '@/components/rides/ride-card-parts';
+import { CardBanner, CardContentSection } from '@/components/rides/ride-card-parts';
 import { appContent } from '@/content/app';
-import { formatTime } from '@/config/formatting';
+import { formatTime, formatDuration, parseLocalDate } from '@/config/formatting';
 import { getRideLifecycle } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
 import { getRelativeDay } from '@/lib/utils';
 import type { UserRole } from '@/config/navigation';
+import type { RideWeatherSnapshot } from '@/types/database';
 
 const { dashboard: content } = appContent;
 
@@ -33,8 +29,12 @@ interface NextSignup {
   end_time: string | null;
   meeting_location_name: string | null;
   pace_group_name: string | null;
+  pace_group_sort_order: number | null;
+  distance_km: number | null;
+  elevation_m: number | null;
   signup_count: number;
   capacity: number | null;
+  weather: RideWeatherSnapshot | null;
 }
 
 interface NextLedRide {
@@ -42,9 +42,15 @@ interface NextLedRide {
   title: string;
   ride_date: string;
   start_time: string;
+  end_time: string | null;
   meeting_location_name: string | null;
+  pace_group_name: string | null;
+  pace_group_sort_order: number | null;
+  distance_km: number | null;
+  elevation_m: number | null;
   signup_count: number;
   capacity: number | null;
+  weather: RideWeatherSnapshot | null;
 }
 
 interface NextWaitlistedRide {
@@ -93,7 +99,7 @@ function ActionCard({
     <Link href={href} className="group block">
       <Card className="overflow-clip p-0">
         <CardBanner icon={icon} label={label} bgClass={bgClass} textClass={textClass} />
-        <div className="px-5 pt-3 pb-5">{children}</div>
+        <div className="px-5 pt-3 pb-4">{children}</div>
       </Card>
     </Link>
   );
@@ -144,21 +150,21 @@ export function ActionBar({
               label={bannerLabel}
               icon={bannerIcon}
               href={routes.ride(nextSignup.id)}
-              bgClass={isLive ? 'bg-feedback-info-bg' : 'bg-feedback-success-bg'}
-              textClass={isLive ? 'text-feedback-info-text' : 'text-feedback-success-text'}
+              bgClass={isLive ? 'bg-banner-info-bg' : 'bg-banner-success-bg'}
+              textClass={isLive ? 'text-banner-info-text' : 'text-banner-success-text'}
             >
-              <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
-                {nextSignup.title}
-              </h3>
-              <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
-                <DateTimeRow
-                  date={getRelativeDay(parseISO(nextSignup.ride_date))}
-                  time={formatTime(nextSignup.start_time)}
-                />
-                {nextSignup.meeting_location_name && (
-                  <MetadataItem icon={MapPin}>{nextSignup.meeting_location_name}</MetadataItem>
-                )}
-              </div>
+              <CardContentSection
+                date={getRelativeDay(parseLocalDate(nextSignup.ride_date))}
+                time={formatTime(nextSignup.start_time)}
+                title={nextSignup.title}
+                paceGroupName={nextSignup.pace_group_name}
+                paceGroupSortOrder={nextSignup.pace_group_sort_order}
+                distanceKm={nextSignup.distance_km}
+                elevationM={nextSignup.elevation_m}
+                durationDisplay={formatDuration(nextSignup.start_time, nextSignup.end_time)}
+                locationName={nextSignup.meeting_location_name}
+                weather={nextSignup.weather}
+              />
             </ActionCard>
           );
         })()}
@@ -181,28 +187,21 @@ export function ActionBar({
               }
               icon={Hourglass}
               href={routes.ride(nextWaitlistedRide.id)}
-              bgClass={waitlistClosed ? 'bg-muted' : 'bg-feedback-warning-bg'}
-              textClass={waitlistClosed ? 'text-muted-foreground' : 'text-feedback-warning-text'}
+              bgClass={waitlistClosed ? 'bg-banner-muted-bg' : 'bg-banner-warning-bg'}
+              textClass={waitlistClosed ? 'text-banner-muted-text' : 'text-banner-warning-text'}
             >
-              <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
-                {nextWaitlistedRide.title}
-              </h3>
-              <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
-                <DateTimeRow
-                  date={getRelativeDay(parseISO(nextWaitlistedRide.ride_date))}
-                  time={formatTime(nextWaitlistedRide.start_time)}
-                />
-                {nextWaitlistedRide.meeting_location_name && (
-                  <MetadataItem icon={MapPin}>
-                    {nextWaitlistedRide.meeting_location_name}
-                  </MetadataItem>
-                )}
+              <CardContentSection
+                date={getRelativeDay(parseLocalDate(nextWaitlistedRide.ride_date))}
+                time={formatTime(nextWaitlistedRide.start_time)}
+                title={nextWaitlistedRide.title}
+                locationName={nextWaitlistedRide.meeting_location_name}
+              >
                 {!waitlistClosed && (
-                  <MetadataItem className="text-warning">
+                  <p className="text-sm font-medium text-warning">
                     {appContent.schedule.waitlistPosition(nextWaitlistedRide.waitlist_position)}
-                  </MetadataItem>
+                  </p>
                 )}
-              </div>
+              </CardContentSection>
             </ActionCard>
           );
         })()}
@@ -213,28 +212,20 @@ export function ActionBar({
           label={content.actionBar.nextLedRide}
           icon={FlagBanner}
           href={routes.ride(nextLedRide.id)}
-          bgClass="bg-accent-secondary-subtle"
-          textClass="text-accent-secondary-default"
+          bgClass="bg-banner-secondary-bg"
+          textClass="text-banner-secondary-text"
         >
-          <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
-            {nextLedRide.title}
-          </h3>
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
-            <DateTimeRow
-              date={getRelativeDay(parseISO(nextLedRide.ride_date))}
-              time={formatTime(nextLedRide.start_time)}
-            />
-            {nextLedRide.meeting_location_name && (
-              <MetadataItem icon={MapPin}>{nextLedRide.meeting_location_name}</MetadataItem>
-            )}
-            <MetadataItem icon={Users}>
-              {content.actionBar.signedUp(nextLedRide.signup_count, nextLedRide.capacity)}
-            </MetadataItem>
-          </div>
-          <CapacityBar
-            signupCount={nextLedRide.signup_count}
-            capacity={nextLedRide.capacity}
-            className="mt-3"
+          <CardContentSection
+            date={getRelativeDay(parseLocalDate(nextLedRide.ride_date))}
+            time={formatTime(nextLedRide.start_time)}
+            title={nextLedRide.title}
+            paceGroupName={nextLedRide.pace_group_name}
+            paceGroupSortOrder={nextLedRide.pace_group_sort_order}
+            distanceKm={nextLedRide.distance_km}
+            elevationM={nextLedRide.elevation_m}
+            durationDisplay={formatDuration(nextLedRide.start_time, nextLedRide.end_time)}
+            locationName={nextLedRide.meeting_location_name}
+            weather={nextLedRide.weather}
           />
         </ActionCard>
       )}
@@ -245,8 +236,8 @@ export function ActionBar({
           label={content.actionBar.weatherWatch}
           icon={CloudRain}
           href={routes.ride(weatherWatchRide.id)}
-          bgClass="bg-feedback-warning-bg"
-          textClass="text-feedback-warning-text"
+          bgClass="bg-banner-warning-bg"
+          textClass="text-banner-warning-text"
         >
           <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
             {weatherWatchRide.title}

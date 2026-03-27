@@ -7,6 +7,7 @@ export const SignupStatus = {
   CONFIRMED: 'confirmed',
   WAITLISTED: 'waitlisted',
   CHECKED_IN: 'checked_in',
+  COMPLETED: 'completed',
 } as const;
 
 export const MemberStatus = {

@@ -1,11 +1,6 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
-import {
-  getUpcomingRides,
-  getUserClubMembership,
-  getPaceGroups,
-  getClubTags,
-} from '@/lib/rides/queries';
+import { getUpcomingRides, getUserClubMembership, getPaceGroups } from '@/lib/rides/queries';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
@@ -18,10 +13,9 @@ export default async function RidesPage() {
   const membership = await getUserClubMembership();
   if (!membership) redirect(routes.signIn);
 
-  const [rides, paceGroups, tags] = await Promise.all([
+  const [rides, paceGroups] = await Promise.all([
     getUpcomingRides(membership.club_id, membership.user_id),
     getPaceGroups(membership.club_id),
-    getClubTags(membership.club_id),
   ]);
 
   return (
@@ -33,7 +27,6 @@ export default async function RidesPage() {
           <FilterableRideFeed
             rides={rides}
             paceGroups={paceGroups}
-            tags={tags}
             emptyTitle={ridesContent.feed.emptyState.title}
             emptyDescription={ridesContent.feed.emptyState.description}
           />

@@ -19,7 +19,6 @@ import { RideWeatherSummary } from '@/components/weather/ride-weather-summary';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
-import { CapacityBar } from '@/components/ui/capacity-bar';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { SignupStatus } from '@/config/statuses';
@@ -104,7 +103,6 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       {/* Signup CTA — context-aware */}
       {availability.canSignUp && !isSignedUp && (
         <div className="mt-6">
-          <CapacityBar signupCount={confirmedCount} capacity={ride.capacity} className="mb-4" />
           <SignupButton
             rideId={ride.id}
             isSignedUp={false}

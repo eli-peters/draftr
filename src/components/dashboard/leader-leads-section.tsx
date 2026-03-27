@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { MapPin, Users, CaretRight, FlagBanner } from '@phosphor-icons/react/dist/ssr';
 import { Card } from '@/components/ui/card';
-import { CapacityBar } from '@/components/ui/capacity-bar';
 import { MetadataItem } from '@/components/ui/metadata-item';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SectionHeading } from '@/components/ui/section-heading';
@@ -42,7 +41,6 @@ function LeadRideItem({ ride }: { ride: LeadRide }) {
           </div>
           <CaretRight className="ml-2 h-4 w-4 shrink-0 text-muted-foreground/40" />
         </div>
-        <CapacityBar signupCount={ride.signup_count} capacity={ride.capacity} className="mt-4" />
       </Card>
     </Link>
   );

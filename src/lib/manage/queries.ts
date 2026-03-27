@@ -111,43 +111,6 @@ export async function getPaceTiersWithUsage(clubId: string): Promise<PaceTierWit
   }));
 }
 
-// ---------------------------------------------------------------------------
-// Vibe Tags with usage
-// ---------------------------------------------------------------------------
-
-export interface VibeTagWithUsage {
-  id: string;
-  name: string;
-  sort_order: number;
-  ride_count: number;
-}
-
-export async function getVibeTagsWithUsage(clubId: string): Promise<VibeTagWithUsage[]> {
-  const supabase = await createClient();
-
-  const { data: tags } = await supabase
-    .from('tags')
-    .select('id, name, sort_order')
-    .eq('club_id', clubId)
-    .order('sort_order');
-
-  if (!tags || tags.length === 0) return [];
-
-  // Count rides per tag via ride_tags
-  const tagIds = tags.map((t) => t.id);
-  const { data: rideTags } = await supabase.from('ride_tags').select('tag_id').in('tag_id', tagIds);
-
-  const countMap = new Map<string, number>();
-  for (const rt of rideTags ?? []) {
-    countMap.set(rt.tag_id, (countMap.get(rt.tag_id) ?? 0) + 1);
-  }
-
-  return tags.map((t) => ({
-    ...t,
-    ride_count: countMap.get(t.id) ?? 0,
-  }));
-}
-
 /**
  * Count pending member approvals for a club.
  */

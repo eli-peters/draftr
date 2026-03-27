@@ -5,9 +5,7 @@ import {
   getUserClubMembership,
   getMeetingLocations,
   getPaceGroups,
-  getClubTags,
   getRideById,
-  getRideTagIds,
 } from '@/lib/rides/queries';
 import { getUserConnections } from '@/lib/integrations/queries';
 import { appContent } from '@/content/app';
@@ -37,32 +35,22 @@ export default async function CreateRidePage({
 
   const authUser = await getUser();
 
-  const [
-    clubResult,
-    meetingLocations,
-    paceGroups,
-    tags,
-    sourceRide,
-    sourceTagIds,
-    templateData,
-    connections,
-  ] = await Promise.all([
-    supabase.from('clubs').select('settings').eq('id', membership.club_id).single(),
-    getMeetingLocations(membership.club_id),
-    getPaceGroups(membership.club_id),
-    getClubTags(membership.club_id),
-    duplicateId ? getRideById(duplicateId) : null,
-    duplicateId ? getRideTagIds(duplicateId) : [],
-    templateId
-      ? supabase
-          .from('ride_templates')
-          .select('*')
-          .eq('id', templateId)
-          .single()
-          .then((r) => r.data)
-      : null,
-    authUser ? getUserConnections(authUser.id) : [],
-  ]);
+  const [clubResult, meetingLocations, paceGroups, sourceRide, templateData, connections] =
+    await Promise.all([
+      supabase.from('clubs').select('settings').eq('id', membership.club_id).single(),
+      getMeetingLocations(membership.club_id),
+      getPaceGroups(membership.club_id),
+      duplicateId ? getRideById(duplicateId) : null,
+      templateId
+        ? supabase
+            .from('ride_templates')
+            .select('*')
+            .eq('id', templateId)
+            .single()
+            .then((r) => r.data)
+        : null,
+      authUser ? getUserConnections(authUser.id) : [],
+    ]);
 
   const clubSettings = (clubResult.data?.settings ?? {}) as Record<string, string>;
 
@@ -84,7 +72,6 @@ export default async function CreateRidePage({
       route_polyline: sourceRide.route_polyline ?? '',
       is_drop_ride: sourceRide.is_drop_ride ?? false,
       organiser_notes: sourceRide.organiser_notes ?? '',
-      tag_ids: sourceTagIds,
     };
   } else if (templateData) {
     initialData = {
@@ -103,7 +90,6 @@ export default async function CreateRidePage({
       route_polyline: templateData.default_route_polyline ?? '',
       is_drop_ride: templateData.is_drop_ride ?? false,
       organiser_notes: '',
-      tag_ids: [] as string[],
     };
   }
 
@@ -116,7 +102,6 @@ export default async function CreateRidePage({
         clubId={membership.club_id}
         meetingLocations={meetingLocations}
         paceGroups={paceGroups}
-        tags={tags}
         initialData={initialData}
         seasonStart={clubSettings.season_start}
         seasonEnd={clubSettings.season_end}

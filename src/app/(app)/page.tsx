@@ -10,7 +10,6 @@ import {
   getRidesNeedingLeaderCount,
   getLeaderWeatherWatchRide,
   getPaceGroups,
-  getClubTags,
 } from '@/lib/rides/queries';
 import { getPendingMemberCount } from '@/lib/manage/queries';
 import { createClient } from '@/lib/supabase/server';
@@ -57,7 +56,6 @@ export default async function HomePage() {
     ridesNeedingLeaderCount,
     rides,
     paceGroups,
-    tags,
   ] = await Promise.all([
     getUserNextSignup(userId, membership.club_id),
     isLeader ? getLeaderNextLedRide(userId, membership.club_id) : null,
@@ -67,7 +65,6 @@ export default async function HomePage() {
     isAdmin ? getRidesNeedingLeaderCount(membership.club_id) : 0,
     getUpcomingRides(membership.club_id, userId),
     getPaceGroups(membership.club_id),
-    getClubTags(membership.club_id),
   ]);
 
   return (
@@ -99,7 +96,6 @@ export default async function HomePage() {
             <FilterableRideFeed
               rides={rides}
               paceGroups={paceGroups}
-              tags={tags}
               heading={dashboard.feed.heading}
               emptyTitle={dashboard.noRides}
               emptyDescription={dashboard.noRidesDescription}

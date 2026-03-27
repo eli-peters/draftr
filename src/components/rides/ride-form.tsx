@@ -41,14 +41,12 @@ interface RideFormInitialData {
   route_polyline: string;
   is_drop_ride: boolean;
   organiser_notes: string;
-  tag_ids: string[];
 }
 
 interface RideFormProps {
   clubId: string;
   meetingLocations: { id: string; name: string }[];
   paceGroups: { id: string; name: string }[];
-  tags: { id: string; name: string }[];
   rideId?: string;
   templateId?: string;
   initialData?: RideFormInitialData;
@@ -61,7 +59,6 @@ export function RideForm({
   clubId,
   meetingLocations,
   paceGroups,
-  tags,
   rideId,
   templateId,
   initialData,
@@ -74,7 +71,6 @@ export function RideForm({
   const isRecurringSeries = isEdit && !!templateId;
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tag_ids ?? []);
   const [isRecurring, setIsRecurring] = useState(false);
   const [editScope, setEditScope] = useState<'this' | 'all'>('this');
   const [importOpen, setImportOpen] = useState(false);
@@ -116,12 +112,6 @@ export function RideForm({
     toast.success(appContent.rides.importRoute.imported);
   }
 
-  function toggleTag(tagId: string) {
-    setSelectedTags((prev) =>
-      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId],
-    );
-  }
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsPending(true);
@@ -153,7 +143,6 @@ export function RideForm({
       route_polyline: (fd.get('route_polyline') as string) || undefined,
       is_drop_ride: fd.get('is_drop_ride') === 'on',
       organiser_notes: (fd.get('organiser_notes') as string) || undefined,
-      tag_ids: selectedTags,
     };
 
     let result: { error?: string; success?: boolean };
@@ -361,26 +350,6 @@ export function RideForm({
         <Label htmlFor="is_drop_ride" className="cursor-pointer">
           {form.isDropRide}
         </Label>
-      </div>
-
-      <div className="space-y-2">
-        <Label>{form.tags}</Label>
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag) => {
-            const isSelected = selectedTags.includes(tag.id);
-            return (
-              <Badge
-                key={tag.id}
-                variant={isSelected ? 'default' : 'outline'}
-                size="lg"
-                className="cursor-pointer"
-                onClick={() => toggleTag(tag.id)}
-              >
-                {tag.name}
-              </Badge>
-            );
-          })}
-        </div>
       </div>
 
       <div className="space-y-2">

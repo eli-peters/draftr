@@ -559,6 +559,176 @@
       }
     }
   },
+  "banner": {
+    "success": {
+      "bg": {
+        "$type": "color",
+        "$description": "Card banner background — confirmed / signed-up state",
+        "$value": "{color.success.600}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.success.600}",
+              "Dark": "{color.success.700}"
+            }
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$description": "Card banner text — confirmed / signed-up state",
+        "$value": "{color.neutral.0}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.0}",
+              "Dark": "{color.neutral.0}"
+            }
+          }
+        }
+      }
+    },
+    "warning": {
+      "bg": {
+        "$type": "color",
+        "$description": "Card banner background — waitlisted / weather watch state",
+        "$value": "{color.warning.600}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.warning.600}",
+              "Dark": "{color.warning.700}"
+            }
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$description": "Card banner text — waitlisted / weather watch state",
+        "$value": "{color.neutral.0}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.0}",
+              "Dark": "{color.neutral.0}"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "bg": {
+        "$type": "color",
+        "$description": "Card banner background — cancelled state",
+        "$value": "{color.error.600}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.error.600}",
+              "Dark": "{color.error.700}"
+            }
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$description": "Card banner text — cancelled state",
+        "$value": "{color.neutral.0}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.0}",
+              "Dark": "{color.neutral.0}"
+            }
+          }
+        }
+      }
+    },
+    "info": {
+      "bg": {
+        "$type": "color",
+        "$description": "Card banner background — about to start / in progress state",
+        "$value": "{color.info.600}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.info.600}",
+              "Dark": "{color.info.700}"
+            }
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$description": "Card banner text — about to start / in progress state",
+        "$value": "{color.neutral.0}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.0}",
+              "Dark": "{color.neutral.0}"
+            }
+          }
+        }
+      }
+    },
+    "secondary": {
+      "bg": {
+        "$type": "color",
+        "$description": "Card banner background — leader context (next led ride)",
+        "$value": "{color.secondary.600}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.secondary.600}",
+              "Dark": "{color.secondary.700}"
+            }
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$description": "Card banner text — leader context (next led ride)",
+        "$value": "{color.neutral.0}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.0}",
+              "Dark": "{color.neutral.0}"
+            }
+          }
+        }
+      }
+    },
+    "muted": {
+      "bg": {
+        "$type": "color",
+        "$description": "Card banner background — completed / waitlist closed state",
+        "$value": "{color.neutral.100}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.100}",
+              "Dark": "{color.neutral.975}"
+            }
+          }
+        }
+      },
+      "text": {
+        "$type": "color",
+        "$description": "Card banner text — completed / waitlist closed state",
+        "$value": "{color.neutral.500}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.500}",
+              "Dark": "{color.neutral.400}"
+            }
+          }
+        }
+      }
+    }
+  },
   "accent": {
     "primary": {
       "default": {
@@ -676,19 +846,19 @@
       "1": {
         "bg": {
           "$type": "color",
-          "$value": "{color.success.100}",
+          "$value": "{color.success.50}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.success.100}", "Dark": "{color.success.500-alpha-12}" }
+              "modes": { "Light": "{color.success.50}", "Dark": "{color.success.500-alpha-12}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.success.700}",
+          "$value": "{color.success.600}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.success.700}", "Dark": "{color.success.300}" }
+              "modes": { "Light": "{color.success.600}", "Dark": "{color.success.300}" }
             }
           }
         }
@@ -705,10 +875,10 @@
         },
         "text": {
           "$type": "color",
-          "$value": "{color.success.600}",
+          "$value": "{color.success.500}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.success.600}", "Dark": "{color.success.400}" }
+              "modes": { "Light": "{color.success.500}", "Dark": "{color.success.400}" }
             }
           }
         }
@@ -716,19 +886,19 @@
       "3": {
         "bg": {
           "$type": "color",
-          "$value": "{color.warning.100}",
+          "$value": "{color.warning.50}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.warning.100}", "Dark": "{color.warning.500-alpha-12}" }
+              "modes": { "Light": "{color.warning.50}", "Dark": "{color.warning.500-alpha-12}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.warning.700}",
+          "$value": "{color.warning.600}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.warning.700}", "Dark": "{color.warning.300}" }
+              "modes": { "Light": "{color.warning.600}", "Dark": "{color.warning.300}" }
             }
           }
         }
@@ -745,10 +915,10 @@
         },
         "text": {
           "$type": "color",
-          "$value": "{color.warning.600}",
+          "$value": "{color.warning.500}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.warning.600}", "Dark": "{color.warning.400}" }
+              "modes": { "Light": "{color.warning.500}", "Dark": "{color.warning.400}" }
             }
           }
         }
@@ -765,46 +935,46 @@
         },
         "text": {
           "$type": "color",
-          "$value": "{color.error.600}",
+          "$value": "{color.error.500}",
           "$extensions": {
-            "com.figma": { "modes": { "Light": "{color.error.600}", "Dark": "{color.error.400}" } }
+            "com.figma": { "modes": { "Light": "{color.error.500}", "Dark": "{color.error.400}" } }
           }
         }
       },
       "6": {
         "bg": {
           "$type": "color",
-          "$value": "{color.error.100}",
+          "$value": "{color.error.50}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.error.100}", "Dark": "{color.error.500-alpha-12}" }
+              "modes": { "Light": "{color.error.50}", "Dark": "{color.error.500-alpha-12}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.error.700}",
+          "$value": "{color.error.600}",
           "$extensions": {
-            "com.figma": { "modes": { "Light": "{color.error.700}", "Dark": "{color.error.300}" } }
+            "com.figma": { "modes": { "Light": "{color.error.600}", "Dark": "{color.error.300}" } }
           }
         }
       },
       "7": {
         "bg": {
           "$type": "color",
-          "$value": "{color.primary.100}",
+          "$value": "{color.primary.50}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.primary.100}", "Dark": "{color.primary.500-alpha-12}" }
+              "modes": { "Light": "{color.primary.50}", "Dark": "{color.primary.500-alpha-12}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.primary.700}",
+          "$value": "{color.primary.600}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.primary.700}", "Dark": "{color.primary.300}" }
+              "modes": { "Light": "{color.primary.600}", "Dark": "{color.primary.300}" }
             }
           }
         }
@@ -812,18 +982,18 @@
       "8": {
         "bg": {
           "$type": "color",
-          "$value": "{color.info.100}",
+          "$value": "{color.info.50}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.info.100}", "Dark": "{color.info.500-alpha-12}" }
+              "modes": { "Light": "{color.info.50}", "Dark": "{color.info.500-alpha-12}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.info.700}",
+          "$value": "{color.info.600}",
           "$extensions": {
-            "com.figma": { "modes": { "Light": "{color.info.700}", "Dark": "{color.info.300}" } }
+            "com.figma": { "modes": { "Light": "{color.info.600}", "Dark": "{color.info.300}" } }
           }
         }
       }
@@ -1009,32 +1179,6 @@
                 "Light": "{color.neutral.500}",
                 "Dark": "{color.neutral.400}"
               }
-            }
-          }
-        }
-      }
-    },
-    "vibe": {
-      "bg": {
-        "$type": "color",
-        "$value": "{color.neutral.100}",
-        "$extensions": {
-          "com.figma": {
-            "modes": {
-              "Light": "{color.neutral.100}",
-              "Dark": "{color.neutral.800}"
-            }
-          }
-        }
-      },
-      "text": {
-        "$type": "color",
-        "$value": "{color.neutral.400}",
-        "$extensions": {
-          "com.figma": {
-            "modes": {
-              "Light": "{color.neutral.400}",
-              "Dark": "{color.neutral.500}"
             }
           }
         }

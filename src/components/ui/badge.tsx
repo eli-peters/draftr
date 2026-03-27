@@ -31,7 +31,6 @@ const badgeVariants = cva(
         'role-leader': 'bg-badge-role-leader-bg text-badge-role-leader-text',
         'role-admin': 'bg-badge-role-admin-bg text-badge-role-admin-text',
         'role-new': 'bg-badge-role-new-bg text-badge-role-new-text',
-        vibe: 'bg-badge-vibe-bg text-badge-vibe-text',
         count: 'bg-badge-count-bg text-badge-count-text',
         'tag-selected': 'bg-badge-tag-selected-bg text-badge-tag-selected-text',
       },

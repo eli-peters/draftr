@@ -1,4 +1,4 @@
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import Link from 'next/link';
 import {
   MapPin,
@@ -10,12 +10,11 @@ import {
   Play,
 } from '@phosphor-icons/react/dist/ssr';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { CardBanner, RideBanner } from '@/components/rides/ride-card-parts';
 import { RouteMapPlaceholder } from '@/components/rides/route-map-placeholder';
 import { RouteMapLoader } from '@/components/rides/route-map-loader';
 import { appContent } from '@/content/app';
-import { dateFormats, formatTime, separators, units } from '@/config/formatting';
+import { dateFormats, formatTime, separators, units, parseLocalDate } from '@/config/formatting';
 import { RideStatus, SignupStatus } from '@/config/statuses';
 import { routes } from '@/config/routes';
 import type { RideLifecycle } from '@/lib/rides/lifecycle';
@@ -42,7 +41,7 @@ export function RideDetailCard({
   confirmedCount,
   lifecycle,
 }: RideDetailCardProps) {
-  const rideDate = parseISO(ride.ride_date);
+  const rideDate = parseLocalDate(ride.ride_date);
   const isCancelled = ride.status === RideStatus.CANCELLED;
   const isWeatherWatch = ride.status === RideStatus.WEATHER_WATCH;
   const isWaitlisted = signupStatus === SignupStatus.WAITLISTED;
@@ -77,32 +76,32 @@ export function RideDetailCard({
         <CardBanner
           icon={Timer}
           label={detail.waitlistClosed}
-          bgClass="bg-muted"
-          textClass="text-muted-foreground"
+          bgClass="bg-banner-muted-bg"
+          textClass="text-banner-muted-text"
         />
       )}
       {isSignedUp && !isCancelled && !(isWaitlisted && lifecycle !== 'upcoming') && (
         <CardBanner
           icon={CheckCircle}
           label={isWaitlisted ? appContent.rides.roster.waitlisted : detail.signedUp}
-          bgClass="bg-feedback-success-bg"
-          textClass="text-feedback-success-text"
+          bgClass="bg-banner-success-bg"
+          textClass="text-banner-success-text"
         />
       )}
       {lifecycle === 'about_to_start' && !isCancelled && (
         <CardBanner
           icon={Timer}
           label={rideStatus.aboutToStart}
-          bgClass="bg-feedback-info-bg"
-          textClass="text-feedback-info-text"
+          bgClass="bg-banner-info-bg"
+          textClass="text-banner-info-text"
         />
       )}
       {lifecycle === 'in_progress' && !isCancelled && (
         <CardBanner
           icon={Play}
           label={rideStatus.inProgress}
-          bgClass="bg-feedback-info-bg"
-          textClass="text-feedback-info-text"
+          bgClass="bg-banner-info-bg"
+          textClass="text-banner-info-text"
         />
       )}
 
@@ -191,17 +190,6 @@ export function RideDetailCard({
                 {ride.organiser_notes}
               </p>
             )}
-          </div>
-        )}
-
-        {/* Tags */}
-        {ride.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {ride.tags.map((tag) => (
-              <Badge key={tag.id} variant="vibe">
-                {tag.name}
-              </Badge>
-            ))}
           </div>
         )}
 

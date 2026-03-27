@@ -6,7 +6,6 @@ import type {
   Ride,
   MeetingLocation,
   PaceGroup,
-  Tag,
   User,
   RideWithDetails,
   RideWeatherSnapshot,
@@ -18,7 +17,6 @@ import type {
 interface RawRideRow extends Ride {
   meeting_location: MeetingLocation | null;
   pace_group: PaceGroup | null;
-  ride_tags: { tag: Tag }[] | null;
   creator: Pick<User, 'id' | 'full_name' | 'display_name' | 'avatar_url'> | null;
   ride_signups: { status: string; user_id: string }[] | null;
   ride_weather_snapshots: RideWeatherSnapshot | null;
@@ -29,7 +27,6 @@ const RIDE_WITH_DETAILS_SELECT = `
   *,
   meeting_location:meeting_locations(*),
   pace_group:pace_groups(*),
-  ride_tags(tag:tags(*)),
   creator:users!rides_created_by_fkey(id, full_name, display_name, avatar_url),
   ride_signups(status, user_id),
   ride_weather_snapshots(*)
@@ -48,7 +45,7 @@ function toRideWithDetails(ride: RawRideRow, currentUserId?: string): RideWithDe
 
   return {
     ...ride,
-    tags: ride.ride_tags?.map((rt) => rt.tag).filter(Boolean) ?? [],
+    tags: [],
     signup_count: signups.filter(
       (s) => s.status === SignupStatus.CONFIRMED || s.status === SignupStatus.CHECKED_IN,
     ).length,
@@ -138,10 +135,11 @@ export async function getUserNextSignup(userId: string, clubId: string) {
       `
       id, status,
       ride:rides!inner(
-        id, title, ride_date, start_time, end_time, status, capacity,
+        id, title, ride_date, start_time, end_time, status, capacity, distance_km, elevation_m,
         meeting_location:meeting_locations(name),
-        pace_group:pace_groups(name),
-        ride_signups(count)
+        pace_group:pace_groups(name, sort_order),
+        ride_signups(count),
+        ride_weather_snapshots(*)
       )
     `,
     )
@@ -164,9 +162,12 @@ export async function getUserNextSignup(userId: string, clubId: string) {
     start_time: string;
     end_time: string | null;
     capacity: number | null;
+    distance_km: number | null;
+    elevation_m: number | null;
     meeting_location: { name: string } | null;
-    pace_group: { name: string } | null;
+    pace_group: { name: string; sort_order: number } | null;
     ride_signups: { count: number }[];
+    ride_weather_snapshots: RideWeatherSnapshot | null;
   };
 
   return {
@@ -177,8 +178,12 @@ export async function getUserNextSignup(userId: string, clubId: string) {
     end_time: ride.end_time,
     meeting_location_name: ride.meeting_location?.name ?? null,
     pace_group_name: ride.pace_group?.name ?? null,
+    pace_group_sort_order: ride.pace_group?.sort_order ?? null,
+    distance_km: ride.distance_km,
+    elevation_m: ride.elevation_m,
     signup_count: ride.ride_signups?.[0]?.count ?? 0,
     capacity: ride.capacity,
+    weather: ride.ride_weather_snapshots ?? null,
   };
 }
 
@@ -193,9 +198,11 @@ export async function getLeaderNextLedRide(userId: string, clubId: string) {
     .from('rides')
     .select(
       `
-      id, title, ride_date, start_time, capacity,
+      id, title, ride_date, start_time, end_time, capacity, distance_km, elevation_m,
       meeting_location:meeting_locations(name),
-      ride_signups(count)
+      pace_group:pace_groups(name, sort_order),
+      ride_signups(count),
+      ride_weather_snapshots(*)
     `,
     )
     .eq('club_id', clubId)
@@ -210,16 +217,27 @@ export async function getLeaderNextLedRide(userId: string, clubId: string) {
   if (!data) return null;
 
   const location = data.meeting_location as unknown as { name: string } | null;
+  const pace = data.pace_group as unknown as { name: string; sort_order: number } | null;
   const signups = data.ride_signups as unknown as { count: number }[];
+  const weatherSnapshot = (data as Record<string, unknown>)
+    .ride_weather_snapshots as RideWeatherSnapshot | null;
+
+  const raw = data as Record<string, unknown>;
 
   return {
     id: data.id,
     title: data.title,
     ride_date: data.ride_date,
     start_time: data.start_time,
+    end_time: raw.end_time as string | null,
     meeting_location_name: location?.name ?? null,
+    pace_group_name: pace?.name ?? null,
+    pace_group_sort_order: pace?.sort_order ?? null,
+    distance_km: raw.distance_km as number | null,
+    elevation_m: raw.elevation_m as number | null,
     signup_count: signups?.[0]?.count ?? 0,
     capacity: data.capacity as number | null,
+    weather: weatherSnapshot ?? null,
   };
 }
 
@@ -394,10 +412,9 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
       `
       id, title, ride_date, start_time, status, capacity, template_id, distance_km,
       meeting_location:meeting_locations(name),
-      pace_group:pace_groups(id, name),
+      pace_group:pace_groups(id, name, sort_order),
       creator:users!rides_created_by_fkey(full_name, display_name),
-      ride_signups(count),
-      ride_tags(tag:tags(id, name, color))
+      ride_signups(count)
     `,
     )
     .eq('club_id', clubId)
@@ -417,16 +434,16 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
 
   return (data ?? []).map((ride) => {
     const location = ride.meeting_location as unknown as { name: string } | null;
-    const pace = ride.pace_group as unknown as { id: string; name: string } | null;
+    const pace = ride.pace_group as unknown as {
+      id: string;
+      name: string;
+      sort_order: number;
+    } | null;
     const signups = ride.ride_signups as unknown as { count: number }[];
     const creator = ride.creator as unknown as {
       full_name: string;
       display_name: string | null;
     } | null;
-    const rideTags = ride.ride_tags as unknown as {
-      tag: { id: string; name: string; color: string | null };
-    }[];
-
     return {
       id: ride.id,
       title: ride.title,
@@ -439,7 +456,8 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
       meeting_location_name: location?.name ?? null,
       pace_group_id: pace?.id ?? null,
       pace_group_name: pace?.name ?? null,
-      tags: rideTags?.map((rt) => rt.tag).filter(Boolean) ?? [],
+      pace_group_sort_order: pace?.sort_order ?? null,
+      tags: [],
       signup_count: signups?.[0]?.count ?? 0,
       created_by_name: creator?.display_name ?? creator?.full_name ?? null,
     };
@@ -504,6 +522,9 @@ export type UserRideSignup = {
   start_time: string;
   pace_group_name: string | null;
   meeting_location_name: string | null;
+  meeting_location_address: string | null;
+  meeting_location_latitude: number | null;
+  meeting_location_longitude: number | null;
   distance_km: number | null;
   elevation_m: number | null;
   end_time: string | null;
@@ -511,7 +532,7 @@ export type UserRideSignup = {
   capacity: number | null;
   signed_up_at: string | null;
   waitlist_position: number | null;
-  signup_status: 'confirmed' | 'waitlisted' | 'checked_in';
+  signup_status: 'confirmed' | 'waitlisted' | 'checked_in' | 'completed';
   pace_group_sort_order: number | null;
   weather: RideWeatherSnapshot | null;
 };
@@ -534,7 +555,7 @@ export async function getUserRideSignups(
       id, status, signed_up_at, waitlist_position,
       ride:rides!inner(
         id, title, ride_date, start_time, end_time, distance_km, elevation_m, capacity,
-        meeting_location:meeting_locations(name),
+        meeting_location:meeting_locations(name, address, latitude, longitude),
         pace_group:pace_groups(name, sort_order),
         ride_signups(count),
         ride_weather_snapshots(*)
@@ -581,7 +602,12 @@ export async function getUserRideSignups(
       distance_km: number | null;
       elevation_m: number | null;
       capacity: number | null;
-      meeting_location: { name: string } | null;
+      meeting_location: {
+        name: string;
+        address: string | null;
+        latitude: number | null;
+        longitude: number | null;
+      } | null;
       pace_group: { name: string; sort_order: number } | null;
       ride_signups: { count: number }[];
       ride_weather_snapshots: RideWeatherSnapshot | null;
@@ -596,13 +622,17 @@ export async function getUserRideSignups(
       pace_group_name: ride.pace_group?.name ?? null,
       pace_group_sort_order: ride.pace_group?.sort_order ?? null,
       meeting_location_name: ride.meeting_location?.name ?? null,
+      meeting_location_address: ride.meeting_location?.address ?? null,
+      meeting_location_latitude: ride.meeting_location?.latitude ?? null,
+      meeting_location_longitude: ride.meeting_location?.longitude ?? null,
       distance_km: ride.distance_km,
       elevation_m: ride.elevation_m ?? null,
       signup_count: ride.ride_signups?.[0]?.count ?? 0,
       capacity: ride.capacity,
       signed_up_at: signup.signed_up_at,
       waitlist_position: signup.waitlist_position,
-      signup_status: signup.status as UserRideSignup['signup_status'],
+      signup_status:
+        filter === 'past' ? 'completed' : (signup.status as UserRideSignup['signup_status']),
       weather: ride.ride_weather_snapshots ?? null,
     };
   });
