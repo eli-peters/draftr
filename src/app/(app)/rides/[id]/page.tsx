@@ -15,7 +15,6 @@ import { SignupRoster } from '@/components/rides/signup-roster';
 import { RideComments } from '@/components/rides/ride-comments';
 import { RidePickups } from '@/components/rides/ride-pickups';
 import { RideDetailCard } from '@/components/rides/ride-detail-card';
-import { RideWeatherSummary } from '@/components/weather/ride-weather-summary';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -88,10 +87,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         }
       />
 
-      {/* Weather summary */}
-      <RideWeatherSummary weather={ride.weather} />
-
-      {/* Main ride detail card */}
+      {/* Main ride detail card — weather integrated near metadata */}
       <RideDetailCard
         ride={ride}
         isSignedUp={isSignedUp}
@@ -99,6 +95,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         waitlistPosition={signup?.waitlist_position ?? null}
         confirmedCount={confirmedCount}
         lifecycle={availability.lifecycle}
+        weather={ride.weather}
       />
 
       {/* Signup CTA — context-aware */}

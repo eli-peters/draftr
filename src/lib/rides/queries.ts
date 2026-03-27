@@ -18,7 +18,9 @@ interface RawRideRow extends Ride {
   meeting_location: MeetingLocation | null;
   pace_group: PaceGroup | null;
   creator: Pick<User, 'id' | 'full_name' | 'display_name' | 'avatar_url'> | null;
-  ride_signups: { status: string; user_id: string; waitlist_position: number | null }[] | null;
+  ride_signups:
+    | { status: string; user_id: string; waitlist_position: number | null; signed_up_at: string }[]
+    | null;
   ride_weather_snapshots: RideWeatherSnapshot | null;
 }
 
@@ -28,7 +30,7 @@ const RIDE_WITH_DETAILS_SELECT = `
   meeting_location:meeting_locations(*),
   pace_group:pace_groups(*),
   creator:users!rides_created_by_fkey(id, full_name, display_name, avatar_url),
-  ride_signups(status, user_id, waitlist_position),
+  ride_signups(status, user_id, waitlist_position, signed_up_at),
   ride_weather_snapshots(*)
 `;
 
@@ -51,7 +53,13 @@ function toRideWithDetails(ride: RawRideRow, currentUserId?: string): RideWithDe
     ).length,
     creator: ride.creator ?? null,
     current_user_signup_status: (userSignup?.status as 'confirmed' | 'waitlisted') ?? null,
-    current_user_waitlist_position: userSignup?.waitlist_position ?? null,
+    current_user_waitlist_position:
+      userSignup?.status === SignupStatus.WAITLISTED
+        ? signups
+            .filter((s) => s.status === SignupStatus.WAITLISTED)
+            .sort((a, b) => new Date(a.signed_up_at).getTime() - new Date(b.signed_up_at).getTime())
+            .findIndex((s) => s.user_id === currentUserId) + 1 || null
+        : null,
     // PostgREST returns object (not array) for 1-to-1 joins via UNIQUE constraint
     weather: ride.ride_weather_snapshots ?? null,
   };
@@ -113,13 +121,27 @@ export async function getUserSignupStatus(rideId: string) {
 
   const { data } = await supabase
     .from('ride_signups')
-    .select('id, status, waitlist_position')
+    .select('id, status, signed_up_at')
     .eq('ride_id', rideId)
     .eq('user_id', user.id)
     .neq('status', 'cancelled')
     .maybeSingle();
 
-  return data;
+  if (!data) return null;
+
+  // Derive waitlist position from signed_up_at order
+  let waitlist_position: number | null = null;
+  if (data.status === 'waitlisted' && data.signed_up_at) {
+    const { count } = await supabase
+      .from('ride_signups')
+      .select('*', { count: 'exact', head: true })
+      .eq('ride_id', rideId)
+      .eq('status', 'waitlisted')
+      .lte('signed_up_at', data.signed_up_at);
+    waitlist_position = count ?? null;
+  }
+
+  return { id: data.id, status: data.status, waitlist_position };
 }
 
 /**
@@ -252,7 +274,7 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string) 
     .from('ride_signups')
     .select(
       `
-      id, status, waitlist_position,
+      id, status, signed_up_at,
       ride:rides!inner(
         id, title, ride_date, start_time, end_time, status,
         distance_km, elevation_m,
@@ -284,6 +306,14 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string) 
     pace_group: { name: string; sort_order: number } | null;
   };
 
+  // Derive waitlist position from signed_up_at order
+  const { count } = await supabase
+    .from('ride_signups')
+    .select('*', { count: 'exact', head: true })
+    .eq('ride_id', ride.id)
+    .eq('status', 'waitlisted')
+    .lte('signed_up_at', data.signed_up_at);
+
   return {
     id: ride.id,
     title: ride.title,
@@ -295,7 +325,7 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string) 
     meeting_location_name: ride.meeting_location?.name ?? null,
     pace_group_name: ride.pace_group?.name ?? null,
     pace_group_sort_order: ride.pace_group?.sort_order ?? null,
-    waitlist_position: data.waitlist_position as number,
+    waitlist_position: count ?? 1,
   };
 }
 
@@ -496,6 +526,8 @@ export async function getRideSignups(rideId: string) {
     return [];
   }
 
+  // Derive waitlist positions from signed_up_at order (already sorted ascending)
+  let waitlistIndex = 0;
   return (data ?? []).map((signup) => {
     const user = signup.user as unknown as {
       id: string;
@@ -503,11 +535,12 @@ export async function getRideSignups(rideId: string) {
       display_name: string | null;
       avatar_url: string | null;
     };
+    const isWaitlisted = signup.status === 'waitlisted';
     return {
       id: signup.id,
       status: signup.status,
       signed_up_at: signup.signed_up_at,
-      waitlist_position: signup.waitlist_position,
+      waitlist_position: isWaitlisted ? ++waitlistIndex : null,
       user_id: user.id,
       user_name: user.display_name ?? user.full_name,
       avatar_url: user.avatar_url,
@@ -597,6 +630,29 @@ export async function getUserRideSignups(
     return [];
   }
 
+  // Derive waitlist positions from signed_up_at order per ride
+  const positionMap = new Map<string, number>();
+  if (filter === 'waitlisted' && data && data.length > 0) {
+    const rideIds = data.map((s) => (s.ride as unknown as { id: string }).id);
+    const { data: allWaitlisted } = await supabase
+      .from('ride_signups')
+      .select('ride_id, user_id, signed_up_at')
+      .in('ride_id', rideIds)
+      .eq('status', 'waitlisted')
+      .order('signed_up_at', { ascending: true });
+
+    if (allWaitlisted) {
+      const byRide = new Map<string, number>();
+      for (const entry of allWaitlisted) {
+        const pos = (byRide.get(entry.ride_id) ?? 0) + 1;
+        byRide.set(entry.ride_id, pos);
+        if (entry.user_id === userId) {
+          positionMap.set(entry.ride_id, pos);
+        }
+      }
+    }
+  }
+
   return (data ?? []).map((signup) => {
     const ride = signup.ride as unknown as {
       id: string;
@@ -635,7 +691,7 @@ export async function getUserRideSignups(
       signup_count: ride.ride_signups?.[0]?.count ?? 0,
       capacity: ride.capacity,
       signed_up_at: signup.signed_up_at,
-      waitlist_position: signup.waitlist_position,
+      waitlist_position: positionMap.get(ride.id) ?? signup.waitlist_position,
       signup_status:
         signup.status === 'cancelled'
           ? 'cancelled'

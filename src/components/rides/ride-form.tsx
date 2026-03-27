@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { RouteImportDrawer } from '@/components/rides/route-import-drawer';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
+import { todayDateString } from '@/config/formatting';
 import {
   createRide,
   updateRide,
@@ -70,6 +71,8 @@ export function RideForm({
   const router = useRouter();
   const isEdit = !!rideId;
   const isRecurringSeries = isEdit && !!templateId;
+  const today = todayDateString();
+  const effectiveMin = seasonStart && seasonStart > today ? seasonStart : today;
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isRecurring, setIsRecurring] = useState(false);
@@ -145,7 +148,7 @@ export function RideForm({
       is_drop_ride: fd.get('is_drop_ride') === 'on',
     };
 
-    let result: { error?: string; success?: boolean };
+    let result: { error?: string; success?: boolean; rideId?: string };
 
     if (isEdit && editScope === 'all' && isRecurringSeries) {
       result = await updateRecurringSeries(rideId, shared as UpdateRideData);
@@ -176,7 +179,12 @@ export function RideForm({
     if (result.error) {
       setError(result.error);
     } else {
-      router.push(returnTo && returnTo.startsWith('/') ? returnTo : routes.manage);
+      // After creation, redirect to the ride detail page; after edit, use returnTo or manage
+      if (!isEdit && result.rideId) {
+        router.push(routes.ride(result.rideId));
+      } else {
+        router.push(returnTo && returnTo.startsWith('/') ? returnTo : routes.manage);
+      }
     }
   }
 
@@ -226,9 +234,14 @@ export function RideForm({
             type="date"
             required
             defaultValue={initialData?.ride_date}
-            min={seasonStart || undefined}
+            min={effectiveMin}
             max={seasonEnd || undefined}
           />
+          <p className="text-xs text-muted-foreground">
+            {seasonStart && seasonEnd
+              ? form.dateHelper(seasonStart, seasonEnd)
+              : form.dateHelperNoSeason}
+          </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="start_time">{form.startTime} *</Label>

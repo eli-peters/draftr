@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -9,6 +10,7 @@ import { SectionHeading } from '@/components/ui/section-heading';
 import { addComment, editComment, deleteComment } from '@/lib/rides/actions';
 import { appContent } from '@/content/app';
 import { getInitials } from '@/lib/utils';
+import { routes } from '@/config/routes';
 import type { CommentWithUser } from '@/types/database';
 
 const content = appContent.rides.comments;
@@ -96,7 +98,12 @@ function CommentRow({
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2">
-          <span className="text-sm font-medium text-foreground">{comment.user_name}</span>
+          <Link
+            href={routes.publicProfile(comment.user_id)}
+            className="text-sm font-medium text-foreground hover:underline"
+          >
+            {comment.user_name}
+          </Link>
           <span className="text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
           </span>

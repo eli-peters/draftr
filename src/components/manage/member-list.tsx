@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import { format } from 'date-fns';
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr';
@@ -13,6 +14,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ContentToolbar } from '@/components/layout/content-toolbar';
 import { appContent } from '@/content/app';
 import { cn, getInitials } from '@/lib/utils';
+import { routes } from '@/config/routes';
 import {
   updateMemberRole,
   deactivateMember,
@@ -276,7 +278,9 @@ function MemberRow({
           </Avatar>
           <div className="min-w-0">
             <p className="text-base font-medium text-foreground truncate">
-              {name}
+              <Link href={routes.publicProfile(member.user_id)} className="hover:underline">
+                {name}
+              </Link>
               {isSelf && (
                 <span className="ml-1.5 text-sm font-normal text-muted-foreground">
                   ({content.members.you})

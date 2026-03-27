@@ -7,6 +7,7 @@ import { appContent } from '@/content/app';
 import { RideStatus } from '@/config/statuses';
 import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { estimateEndTime } from '@/lib/rides/estimate-duration';
+import { todayDateString } from '@/config/formatting';
 import { syncWeatherForRide } from '@/lib/weather/sync';
 
 const { errors, common, notificationMessages: notif, rides: ridesContent } = appContent;
@@ -76,6 +77,13 @@ export async function signUpForRide(rideId: string) {
 
   const currentCount = count ?? 0;
 
+  // Count existing waitlisted riders to determine next position
+  const { count: waitlistedCount } = await supabase
+    .from('ride_signups')
+    .select('*', { count: 'exact', head: true })
+    .eq('ride_id', rideId)
+    .eq('status', 'waitlisted');
+
   // Check availability — enforces cancelled check + timing cutoff
   const availability = getRideAvailability(ride, currentCount);
   if (!availability.canSignUp) {
@@ -90,7 +98,7 @@ export async function signUpForRide(rideId: string) {
       ride_id: rideId,
       user_id: user.id,
       status: isFull ? 'waitlisted' : 'confirmed',
-      waitlist_position: isFull ? currentCount - ride.capacity! + 1 : null,
+      waitlist_position: isFull ? (waitlistedCount ?? 0) + 1 : null,
       signed_up_at: new Date().toISOString(),
       cancelled_at: null,
     },
@@ -193,10 +201,10 @@ export async function cancelSignUp(rideId: string) {
   if (wasConfirmed) {
     const { data: nextWaitlisted } = await supabase
       .from('ride_signups')
-      .select('id, user_id, waitlist_position')
+      .select('id, user_id')
       .eq('ride_id', rideId)
       .eq('status', 'waitlisted')
-      .order('waitlist_position', { ascending: true })
+      .order('signed_up_at', { ascending: true })
       .limit(1)
       .maybeSingle();
 
@@ -209,25 +217,6 @@ export async function cancelSignUp(rideId: string) {
           waitlist_position: null,
         })
         .eq('id', nextWaitlisted.id);
-
-      // Reorder remaining waitlisted positions
-      const { data: remainingWaitlisted } = await supabase
-        .from('ride_signups')
-        .select('id')
-        .eq('ride_id', rideId)
-        .eq('status', 'waitlisted')
-        .order('waitlist_position', { ascending: true });
-
-      if (remainingWaitlisted && remainingWaitlisted.length > 0) {
-        await Promise.all(
-          remainingWaitlisted.map((entry, i) =>
-            supabase
-              .from('ride_signups')
-              .update({ waitlist_position: i + 1 })
-              .eq('id', entry.id),
-          ),
-        );
-      }
 
       // Notify the promoted rider
       // Uses admin client — the canceling rider can't insert notifications for other users via RLS
@@ -294,18 +283,31 @@ export async function createRide(data: CreateRideData) {
 
   if (!user) return { error: common.notAuthenticated };
 
+  // Fetch club settings once — used for date validation and recurring template creation
+  const { data: club } = await supabase
+    .from('clubs')
+    .select('settings')
+    .eq('id', data.club_id)
+    .single();
+
+  const settings = (club?.settings ?? {}) as Record<string, string>;
+
+  // Validate ride_date: must not be in the past
+  if (data.ride_date < todayDateString()) {
+    return { error: errors.rideDateInPast };
+  }
+
+  // Validate ride_date: must fall within the club's active season (if configured)
+  if (settings.season_start && data.ride_date < settings.season_start) {
+    return { error: errors.rideDateOutsideSeason };
+  }
+  if (settings.season_end && data.ride_date > settings.season_end) {
+    return { error: errors.rideDateOutsideSeason };
+  }
+
   // If recurring, create the template first
   let templateId: string | null = null;
   if (data.recurring) {
-    // Fetch club season dates to cap generation window
-    const { data: club } = await supabase
-      .from('clubs')
-      .select('settings')
-      .eq('id', data.club_id)
-      .single();
-
-    const settings = (club?.settings ?? {}) as Record<string, string>;
-
     const { data: template, error: tplError } = await supabase
       .from('ride_templates')
       .insert({
@@ -376,6 +378,18 @@ export async function createRide(data: CreateRideData) {
 
   if (rideError || !ride) {
     return { error: rideError?.message ?? errors.createRideFailed };
+  }
+
+  // Auto-enroll creator as rider #1
+  const { error: signupError } = await supabase.from('ride_signups').insert({
+    ride_id: ride.id,
+    user_id: user.id,
+    status: 'confirmed',
+    signed_up_at: new Date().toISOString(),
+  });
+
+  if (signupError?.message) {
+    console.error('Failed to auto-enroll ride creator:', signupError.message);
   }
 
   // Generate future recurring ride instances
@@ -628,12 +642,19 @@ export async function addWalkUpRider(rideId: string, riderUserId: string) {
   const currentCount = count ?? 0;
   const isFull = ride.capacity != null && currentCount >= ride.capacity;
 
+  // Count existing waitlisted riders to determine next position
+  const { count: waitlistedCount } = await supabase
+    .from('ride_signups')
+    .select('*', { count: 'exact', head: true })
+    .eq('ride_id', rideId)
+    .eq('status', 'waitlisted');
+
   const { error } = await supabase.from('ride_signups').upsert(
     {
       ride_id: rideId,
       user_id: riderUserId,
       status: isFull ? 'waitlisted' : 'confirmed',
-      waitlist_position: isFull ? currentCount - ride.capacity! + 1 : null,
+      waitlist_position: isFull ? (waitlistedCount ?? 0) + 1 : null,
       signed_up_at: new Date().toISOString(),
       cancelled_at: null,
     },

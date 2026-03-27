@@ -7,6 +7,8 @@ export interface UserProfile {
   email: string;
   avatar_url: string | null;
   bio: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
   preferred_pace_group: string | null;
   created_at: string;
   role: string;
@@ -21,7 +23,9 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
 
   const { data: user } = await supabase
     .from('users')
-    .select('id, full_name, display_name, email, avatar_url, bio, preferred_pace_group, created_at')
+    .select(
+      'id, full_name, display_name, email, avatar_url, bio, emergency_contact_name, emergency_contact_phone, preferred_pace_group, created_at',
+    )
     .eq('id', userId)
     .single();
 

@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Bicycle, Path, CaretRight, FirstAidKit } from '@phosphor-icons/react/dist/ssr';
-import { createClient, getUser } from '@/lib/supabase/server';
+import { getUser } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -24,21 +24,14 @@ export default async function ProfilePage() {
   const authUser = await getUser();
   if (!authUser) redirect(routes.signIn);
 
-  const supabase = await createClient();
-  const [profile, stats, recentRides, emergencyContact, connections] = await Promise.all([
+  const [profile, stats, recentRides, connections] = await Promise.all([
     getUserProfile(authUser.id),
     getUserProfileStats(authUser.id),
     getUserRecentRides(authUser.id),
-    supabase
-      .from('users')
-      .select('emergency_contact_name, emergency_contact_phone')
-      .eq('id', authUser.id)
-      .single(),
     getUserConnections(authUser.id),
   ]);
 
   if (!profile) redirect(routes.signIn);
-  const ec = emergencyContact.data;
 
   const displayName = profile.display_name ?? profile.full_name;
   const initials = getInitials(profile.full_name);
@@ -126,14 +119,16 @@ export default async function ProfilePage() {
       {/* Emergency Contact */}
       <div className="mt-8">
         <SectionHeading>{content.sections.emergencyContact}</SectionHeading>
-        {ec?.emergency_contact_name ? (
+        {profile.emergency_contact_name ? (
           <div className="mt-3 flex items-center gap-3 rounded-xl border border-border bg-card p-5">
             <FirstAidKit className="h-5 w-5 text-destructive" />
             <div>
-              <p className="font-medium text-foreground text-base">{ec.emergency_contact_name}</p>
-              {ec.emergency_contact_phone && (
+              <p className="font-medium text-foreground text-base">
+                {profile.emergency_contact_name}
+              </p>
+              {profile.emergency_contact_phone && (
                 <p className="text-sm text-muted-foreground">
-                  {formatPhoneDisplay(ec.emergency_contact_phone)}
+                  {formatPhoneDisplay(profile.emergency_contact_phone)}
                 </p>
               )}
             </div>

@@ -78,6 +78,10 @@ export default async function HomePage() {
   // Home feed shows only rides this user is signed up or waitlisted for
   const myRides = activeRides.filter((r) => r.current_user_signup_status != null);
 
+  // Suppress nextLedRide if it refers to the same ride as nextSignup (avoid ActionBar duplication)
+  const dedupedNextLedRide =
+    nextLedRide && nextSignup && nextLedRide.id === nextSignup.id ? null : nextLedRide;
+
   return (
     <DashboardShell>
       <GreetingSection firstName={firstName} />
@@ -91,7 +95,7 @@ export default async function HomePage() {
       <div className="mt-8">
         <ActionBar
           nextSignup={nextSignup}
-          nextLedRide={nextLedRide}
+          nextLedRide={dedupedNextLedRide}
           nextWaitlistedRide={nextWaitlistedRide}
           weatherWatchRide={weatherWatchRide}
           pendingMemberCount={pendingMemberCount}

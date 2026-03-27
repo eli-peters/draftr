@@ -259,6 +259,8 @@ export const appContent = {
       selectLocation: 'Select location...',
       selectPace: 'Select pace...',
       required: 'Title, date, and start time are required.',
+      dateHelper: (start: string, end: string) => `Season: ${start} – ${end}`,
+      dateHelperNoSeason: 'Future dates only',
       descriptionPlaceholder: 'Brief description of the ride...',
     },
     roster: {
@@ -388,6 +390,9 @@ export const appContent = {
     },
     publicProfile: {
       deactivated: 'This member is no longer active.',
+      contactInfoHeading: 'Contact Information',
+      contactInfoNote: 'Visible to admins only',
+      emergencyContactNote: 'Visible to ride leaders and admins',
     },
     roles: {
       rider: 'Rider',
@@ -656,6 +661,8 @@ export const appContent = {
     signupClosed: 'Sign-ups are closed for this ride',
     cancellationClosed: 'Cancellation is closed for this ride',
     createRideFailed: 'Failed to create ride',
+    rideDateInPast: 'Ride date cannot be in the past.',
+    rideDateOutsideSeason: "Ride date must be within the club's active season.",
     notAuthorized: 'You do not have permission to perform this action',
     cannotDeactivateSelf: 'Cannot deactivate yourself',
     lastAdmin: 'Cannot change role — this is the only admin in the club.',

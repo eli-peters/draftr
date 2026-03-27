@@ -655,7 +655,30 @@ export async function generateRidesFromRecurring(templateId: string) {
     template_id: template.id,
   }));
 
-  await supabase.from('rides').insert(rides);
+  const { data: insertedRides, error: insertError } = await supabase
+    .from('rides')
+    .insert(rides)
+    .select('id');
+
+  if (insertError?.message) {
+    console.error('Failed to insert recurring rides:', insertError.message);
+    return { error: insertError.message };
+  }
+
+  // Auto-enroll creator in each generated ride
+  if (insertedRides && insertedRides.length > 0) {
+    const signups = insertedRides.map((r) => ({
+      ride_id: r.id,
+      user_id: template.created_by,
+      status: 'confirmed',
+      signed_up_at: new Date().toISOString(),
+    }));
+
+    const { error: signupError } = await supabase.from('ride_signups').insert(signups);
+    if (signupError?.message) {
+      console.error('Failed to auto-enroll creator in recurring rides:', signupError.message);
+    }
+  }
 
   // Update last_generated_date
   await supabase

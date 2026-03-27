@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { Bicycle, Path, CaretRight } from '@phosphor-icons/react/dist/ssr';
+import { Bicycle, Path, CaretRight, FirstAidKit } from '@phosphor-icons/react/dist/ssr';
 import { createClient, getUser } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -10,9 +10,11 @@ import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { MemberStatus } from '@/config/statuses';
 import { getInitials } from '@/lib/utils';
+import { formatPhoneDisplay } from '@/lib/phone';
 import { dateFormats, units } from '@/config/formatting';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { getUserProfile, getUserProfileStats, getUserRecentRides } from '@/lib/profile/queries';
+import type { UserRole } from '@/config/navigation';
 
 const { profile: content } = appContent;
 
@@ -32,12 +34,20 @@ export default async function PublicProfilePage({
   // If viewing your own profile, redirect to the main profile page
   if (authUser.id === userId) redirect(routes.profile);
 
-  // Check if user exists and their membership status
-  const { data: membership } = await supabase
-    .from('club_memberships')
-    .select('status')
-    .eq('user_id', userId)
-    .maybeSingle();
+  // Fetch the viewer's role and the subject's membership status in parallel
+  const [{ data: viewerMembership }, { data: membership }] = await Promise.all([
+    supabase
+      .from('club_memberships')
+      .select('role')
+      .eq('user_id', authUser.id)
+      .eq('status', 'active')
+      .maybeSingle(),
+    supabase.from('club_memberships').select('status').eq('user_id', userId).maybeSingle(),
+  ]);
+
+  const viewerRole: UserRole = (viewerMembership?.role as UserRole) ?? 'rider';
+  const isLeaderOrAbove = viewerRole === 'ride_leader' || viewerRole === 'admin';
+  const isAdmin = viewerRole === 'admin';
 
   // Deactivated member state
   if (membership?.status === MemberStatus.INACTIVE) {
@@ -89,6 +99,7 @@ export default async function PublicProfilePage({
           </AvatarFallback>
         </Avatar>
         <h1 className="mt-4 text-2xl font-bold tracking-tight text-foreground">{displayName}</h1>
+        {isAdmin && <p className="text-base text-muted-foreground">{profile.email}</p>}
         <Badge variant="default" className="mt-2">
           {content.roles[role] ?? role}
         </Badge>
@@ -137,6 +148,35 @@ export default async function PublicProfilePage({
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Emergency Contact — visible to ride leaders and admins */}
+      {isLeaderOrAbove && (
+        <div className="mt-8">
+          <SectionHeading>{content.sections.emergencyContact}</SectionHeading>
+          <p className="text-xs text-muted-foreground mt-1">
+            {content.publicProfile.emergencyContactNote}
+          </p>
+          {profile.emergency_contact_name ? (
+            <div className="mt-3 flex items-center gap-3 rounded-xl border border-border bg-card p-5">
+              <FirstAidKit className="h-5 w-5 text-destructive" />
+              <div>
+                <p className="font-medium text-foreground text-base">
+                  {profile.emergency_contact_name}
+                </p>
+                {profile.emergency_contact_phone && (
+                  <p className="text-sm text-muted-foreground">
+                    {formatPhoneDisplay(profile.emergency_contact_phone)}
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <p className="mt-3 text-base text-muted-foreground italic">
+              {content.emergencyContact.noContact}
+            </p>
+          )}
         </div>
       )}
 

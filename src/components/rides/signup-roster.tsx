@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -5,6 +6,7 @@ import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { getInitials } from '@/lib/utils';
 import { SignupStatus } from '@/config/statuses';
+import { routes } from '@/config/routes';
 
 const { rides: ridesContent } = appContent;
 
@@ -69,7 +71,10 @@ function SignupRow({ signup, isLeader }: { signup: SignupEntry; isLeader?: boole
   const initials = getInitials(signup.user_name);
 
   return (
-    <div className="flex items-center gap-3 rounded-lg px-2 py-2">
+    <Link
+      href={routes.publicProfile(signup.user_id)}
+      className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-accent/50 transition-colors"
+    >
       <Avatar className="h-8 w-8">
         {signup.avatar_url && <AvatarImage src={signup.avatar_url} alt={signup.user_name} />}
         <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
@@ -94,6 +99,6 @@ function SignupRow({ signup, isLeader }: { signup: SignupEntry; isLeader?: boole
           #{signup.waitlist_position}
         </Badge>
       )}
-    </div>
+    </Link>
   );
 }

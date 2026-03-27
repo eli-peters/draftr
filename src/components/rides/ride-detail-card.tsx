@@ -12,11 +12,13 @@ import {
 import { Card } from '@/components/ui/card';
 import { CardBanner, RideBanner } from '@/components/rides/ride-card-parts';
 import { RouteMapLoader } from '@/components/rides/route-map-loader';
+import { RideWeatherSummary } from '@/components/weather/ride-weather-summary';
 import { appContent } from '@/content/app';
 import { dateFormats, formatTime, separators, units, parseLocalDate } from '@/config/formatting';
 import { RideStatus, SignupStatus } from '@/config/statuses';
 import type { RideLifecycle } from '@/lib/rides/lifecycle';
 import type { RideWithDetails } from '@/types/database';
+import type { RideWeatherSnapshot } from '@/types/database';
 
 const { detail, status: rideStatus } = appContent.rides;
 
@@ -27,6 +29,7 @@ interface RideDetailCardProps {
   waitlistPosition: number | null;
   confirmedCount: number;
   lifecycle: RideLifecycle;
+  weather: RideWeatherSnapshot | null;
 }
 
 /**
@@ -40,6 +43,7 @@ export function RideDetailCard({
   waitlistPosition,
   confirmedCount,
   lifecycle,
+  weather,
 }: RideDetailCardProps) {
   const rideDate = parseLocalDate(ride.ride_date);
   const isCancelled = ride.status === RideStatus.CANCELLED;
@@ -135,6 +139,9 @@ export function RideDetailCard({
             </div>
           </div>
         )}
+
+        {/* Weather summary — part of the "should I ride?" decision */}
+        <RideWeatherSummary weather={weather} />
 
         {/* Metadata rows */}
         <div className="space-y-1">
