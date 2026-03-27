@@ -69,7 +69,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           canEdit || (hasEditRole && (availability.isCancelled || availability.isPast)) ? (
             <>
               {canEdit && (
-                <Link href={routes.manageEditRide(ride.id)}>
+                <Link href={routes.manageEditRide(ride.id, routes.ride(id))}>
                   <Button variant="outline" size="sm">
                     {appContent.rides.edit.heading}
                   </Button>

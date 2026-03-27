@@ -846,19 +846,20 @@
       "1": {
         "bg": {
           "$type": "color",
-          "$value": "{color.success.50}",
+          "$description": "Social — hot pink (accent-primary-muted)",
+          "$value": "{color.primary.300}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.success.50}", "Dark": "{color.success.500-alpha-12}" }
+              "modes": { "Light": "{color.primary.300}", "Dark": "{color.primary.300}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.success.600}",
+          "$value": "{color.neutral.950}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.success.600}", "Dark": "{color.success.300}" }
+              "modes": { "Light": "{color.neutral.950}", "Dark": "{color.neutral.950}" }
             }
           }
         }
@@ -866,19 +867,20 @@
       "2": {
         "bg": {
           "$type": "color",
-          "$value": "{color.success.50}",
+          "$description": "Intermediate B — mint green",
+          "$value": "{color.success.300}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.success.50}", "Dark": "{color.success.500-alpha-12}" }
+              "modes": { "Light": "{color.success.300}", "Dark": "{color.success.300}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.success.500}",
+          "$value": "{color.neutral.950}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.success.500}", "Dark": "{color.success.400}" }
+              "modes": { "Light": "{color.neutral.950}", "Dark": "{color.neutral.950}" }
             }
           }
         }
@@ -886,19 +888,20 @@
       "3": {
         "bg": {
           "$type": "color",
-          "$value": "{color.warning.50}",
+          "$description": "Intermediate A — mint green (same as Int B)",
+          "$value": "{color.success.300}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.warning.50}", "Dark": "{color.warning.500-alpha-12}" }
+              "modes": { "Light": "{color.success.300}", "Dark": "{color.success.300}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.warning.600}",
+          "$value": "{color.neutral.950}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.warning.600}", "Dark": "{color.warning.300}" }
+              "modes": { "Light": "{color.neutral.950}", "Dark": "{color.neutral.950}" }
             }
           }
         }
@@ -906,19 +909,20 @@
       "4": {
         "bg": {
           "$type": "color",
-          "$value": "{color.warning.50}",
+          "$description": "Advanced B — steel teal",
+          "$value": "{color.secondary.300}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.warning.50}", "Dark": "{color.warning.500-alpha-12}" }
+              "modes": { "Light": "{color.secondary.300}", "Dark": "{color.secondary.300}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.warning.500}",
+          "$value": "{color.neutral.950}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.warning.500}", "Dark": "{color.warning.400}" }
+              "modes": { "Light": "{color.neutral.950}", "Dark": "{color.neutral.950}" }
             }
           }
         }
@@ -926,74 +930,42 @@
       "5": {
         "bg": {
           "$type": "color",
-          "$value": "{color.error.50}",
+          "$description": "Advanced A — steel teal (same as Adv B)",
+          "$value": "{color.secondary.300}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.error.50}", "Dark": "{color.error.500-alpha-12}" }
+              "modes": { "Light": "{color.secondary.300}", "Dark": "{color.secondary.300}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.error.500}",
+          "$value": "{color.neutral.950}",
           "$extensions": {
-            "com.figma": { "modes": { "Light": "{color.error.500}", "Dark": "{color.error.400}" } }
+            "com.figma": {
+              "modes": { "Light": "{color.neutral.950}", "Dark": "{color.neutral.950}" }
+            }
           }
         }
       },
       "6": {
         "bg": {
           "$type": "color",
-          "$value": "{color.error.50}",
+          "$description": "Elite — black (lightened in dark mode for contrast)",
+          "$value": "{color.neutral.900}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.error.50}", "Dark": "{color.error.500-alpha-12}" }
+              "modes": { "Light": "{color.neutral.900}", "Dark": "{color.neutral.700}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.error.600}",
-          "$extensions": {
-            "com.figma": { "modes": { "Light": "{color.error.600}", "Dark": "{color.error.300}" } }
-          }
-        }
-      },
-      "7": {
-        "bg": {
-          "$type": "color",
-          "$value": "{color.primary.50}",
+          "$value": "{color.neutral.0}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.primary.50}", "Dark": "{color.primary.500-alpha-12}" }
+              "modes": { "Light": "{color.neutral.0}", "Dark": "{color.neutral.100}" }
             }
-          }
-        },
-        "text": {
-          "$type": "color",
-          "$value": "{color.primary.600}",
-          "$extensions": {
-            "com.figma": {
-              "modes": { "Light": "{color.primary.600}", "Dark": "{color.primary.300}" }
-            }
-          }
-        }
-      },
-      "8": {
-        "bg": {
-          "$type": "color",
-          "$value": "{color.info.50}",
-          "$extensions": {
-            "com.figma": {
-              "modes": { "Light": "{color.info.50}", "Dark": "{color.info.500-alpha-12}" }
-            }
-          }
-        },
-        "text": {
-          "$type": "color",
-          "$value": "{color.info.600}",
-          "$extensions": {
-            "com.figma": { "modes": { "Light": "{color.info.600}", "Dark": "{color.info.300}" } }
           }
         }
       }

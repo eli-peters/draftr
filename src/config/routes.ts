@@ -7,7 +7,10 @@ export const routes = {
   schedule: '/my-rides',
   manage: '/manage',
   manageNewRide: '/manage/rides/new',
-  manageEditRide: (id: string) => `/manage/rides/${id}/edit`,
+  manageEditRide: (id: string, returnTo?: string) =>
+    returnTo
+      ? `/manage/rides/${id}/edit?returnTo=${encodeURIComponent(returnTo)}`
+      : `/manage/rides/${id}/edit`,
   manageTab: (tab: string) => `/manage?tab=${tab}`,
   profile: '/profile',
   profileEdit: '/profile/edit',

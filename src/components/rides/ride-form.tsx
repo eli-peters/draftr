@@ -40,7 +40,6 @@ interface RideFormInitialData {
   route_url: string;
   route_polyline: string;
   is_drop_ride: boolean;
-  organiser_notes: string;
 }
 
 interface RideFormProps {
@@ -53,6 +52,7 @@ interface RideFormProps {
   seasonStart?: string;
   seasonEnd?: string;
   connectedServices?: IntegrationService[];
+  returnTo?: string;
 }
 
 export function RideForm({
@@ -65,6 +65,7 @@ export function RideForm({
   seasonStart,
   seasonEnd,
   connectedServices = [],
+  returnTo,
 }: RideFormProps) {
   const router = useRouter();
   const isEdit = !!rideId;
@@ -142,7 +143,6 @@ export function RideForm({
       route_name: (fd.get('route_name') as string) || undefined,
       route_polyline: (fd.get('route_polyline') as string) || undefined,
       is_drop_ride: fd.get('is_drop_ride') === 'on',
-      organiser_notes: (fd.get('organiser_notes') as string) || undefined,
     };
 
     let result: { error?: string; success?: boolean };
@@ -176,7 +176,7 @@ export function RideForm({
     if (result.error) {
       setError(result.error);
     } else {
-      router.push(routes.manage);
+      router.push(returnTo && returnTo.startsWith('/') ? returnTo : routes.manage);
     }
   }
 
@@ -361,17 +361,6 @@ export function RideForm({
           rows={2}
           defaultValue={initialData?.description}
           placeholder={form.descriptionPlaceholder}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="organiser_notes">{form.organiserNotes}</Label>
-        <Textarea
-          id="organiser_notes"
-          name="organiser_notes"
-          rows={2}
-          defaultValue={initialData?.organiser_notes}
-          placeholder={form.organiserNotesPlaceholder}
         />
       </div>
 

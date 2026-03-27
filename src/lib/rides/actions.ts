@@ -263,7 +263,6 @@ export interface CreateRideData {
   route_name?: string;
   route_polyline?: string;
   is_drop_ride: boolean;
-  organiser_notes?: string;
   // Recurring ride options
   recurring?: {
     recurrence: string;
@@ -358,7 +357,6 @@ export async function createRide(data: CreateRideData) {
       route_name: data.route_name || null,
       route_polyline: data.route_polyline || null,
       is_drop_ride: data.is_drop_ride,
-      organiser_notes: data.organiser_notes || null,
       status: 'scheduled',
       template_id: templateId,
     })
@@ -429,7 +427,6 @@ export interface UpdateRideData {
   route_name?: string;
   route_polyline?: string;
   is_drop_ride: boolean;
-  organiser_notes?: string;
 }
 
 /**
@@ -472,7 +469,6 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
       route_name: data.route_name || null,
       route_polyline: data.route_polyline || null,
       is_drop_ride: data.is_drop_ride,
-      organiser_notes: data.organiser_notes || null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', rideId);
@@ -574,7 +570,6 @@ export async function updateRecurringSeries(rideId: string, data: UpdateRideData
       capacity: data.capacity ?? null,
       route_polyline: data.route_polyline || null,
       is_drop_ride: data.is_drop_ride,
-      organiser_notes: data.organiser_notes || null,
       updated_at: new Date().toISOString(),
     })
     .eq('template_id', templateId)

@@ -4,6 +4,13 @@
  * Structured for future CMS migration.
  */
 
+function ordinal(n: number): string {
+  if (n === 1) return 'first';
+  const suffixes = ['th', 'st', 'nd', 'rd'];
+  const mod100 = n % 100;
+  return `${n}${suffixes[(mod100 - 20) % 10] || suffixes[mod100] || suffixes[0]}`;
+}
+
 export const appContent = {
   meta: {
     title: 'Draftr',
@@ -58,6 +65,11 @@ export const appContent = {
   dashboard: {
     noRides: 'No upcoming rides',
     noRidesDescription: 'Check back soon — ride leaders will post new rides here.',
+    myRides: {
+      emptyTitle: "You haven't signed up for any rides yet",
+      emptyDescription: 'Browse upcoming club rides and sign up for one that fits your schedule.',
+      emptyCta: 'Browse Rides',
+    },
     greeting: {
       morning: 'Good morning',
       afternoon: 'Good afternoon',
@@ -73,9 +85,6 @@ export const appContent = {
       signedUp: (count: number, capacity: number | null) =>
         capacity != null ? `${count}/${capacity} signed up` : `${count} signed up`,
       waitlistClosed: 'No Spots Opened',
-      waitlistPosition: 'Waitlisted',
-      waitlistDetail: (position: number, rideTitle: string) =>
-        `#${position} on waitlist for ${rideTitle}`,
       pendingApprovals: 'Pending Approvals',
       pendingApprovalsCount: (count: number) =>
         `${count} member${count === 1 ? '' : 's'} waiting for approval`,
@@ -114,9 +123,9 @@ export const appContent = {
 
   rides: {
     feed: {
-      heading: 'All Upcoming Rides',
+      heading: 'All Upcoming Club Rides',
       emptyState: {
-        title: 'No upcoming rides',
+        title: 'No upcoming club rides',
         description: 'Check back soon — ride leaders will post new rides here.',
       },
     },
@@ -130,7 +139,7 @@ export const appContent = {
       },
     },
     toolbar: {
-      homeFeed: (count: number) => `${count} upcoming ride${count !== 1 ? 's' : ''} for you`,
+      homeFeed: (count: number) => `${count} ride${count !== 1 ? 's' : ''} you're signed up for`,
       allRides: (count: number) => `${count} total ride${count !== 1 ? 's' : ''}`,
     },
     card: {
@@ -178,7 +187,6 @@ export const appContent = {
       dropRide: 'Drop ride',
       noDrop: 'No-drop',
       viewRoute: 'View Route',
-      organiserNotesHeading: 'Notes from the organiser',
       signedUp: "You're signed up!",
       cancelled: 'This ride has been cancelled',
       cancelledLocked: 'Cancelled rides cannot be edited.',
@@ -247,13 +255,10 @@ export const appContent = {
       isDropRide: 'This is a drop ride',
       tags: 'Tags',
       description: 'Description',
-      organiserNotes: 'Organiser Notes',
       selectLocation: 'Select location...',
       selectPace: 'Select pace...',
       required: 'Title, date, and start time are required.',
       descriptionPlaceholder: 'Brief description of the ride...',
-      organiserNotesPlaceholder:
-        'Notes for riders (meeting point details, things to bring, etc.)...',
     },
     roster: {
       noSignups: 'No signups yet.',
@@ -328,7 +333,7 @@ export const appContent = {
     },
     status: {
       confirmed: 'Confirmed',
-      waitlisted: (position: number) => `Waitlisted \u00b7 #${position}`,
+      waitlisted: (position: number) => `Waitlisted — You're ${ordinal(position)} in line`,
       completed: 'Completed',
       cancelled: 'Cancelled',
     },
@@ -339,7 +344,6 @@ export const appContent = {
       viewDetails: 'View details',
     },
     signedUpOn: 'Signed up',
-    waitlistPosition: (position: number) => `#${position} on waitlist`,
   },
 
   profile: {

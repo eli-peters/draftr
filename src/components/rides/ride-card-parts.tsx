@@ -222,9 +222,9 @@ export function CardMetadataRow({
   }
   if (locationName) {
     dataItems.push(
-      <span key="loc" className="flex shrink-0 items-center gap-1">
+      <span key="loc" className="flex min-w-0 items-center gap-1">
         <MapPin className="size-3.5 shrink-0" />
-        <span className="max-w-48 truncate">{locationName}</span>
+        <span className="truncate">{locationName}</span>
       </span>,
     );
   }
@@ -235,7 +235,7 @@ export function CardMetadataRow({
     <div
       className={cn(
         DATA_SM,
-        'grid min-w-0 grid-cols-2 gap-x-4 gap-y-2 text-muted-foreground',
+        'grid min-w-0 grid-cols-[6rem_1fr] gap-x-3 gap-y-2 text-muted-foreground',
         'sm:flex sm:items-center sm:gap-3',
         className,
       )}

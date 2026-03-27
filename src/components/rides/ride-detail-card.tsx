@@ -168,6 +168,13 @@ export function RideDetailCard({
           )}
         </div>
 
+        {/* Description — full text, reads as prose after the metadata */}
+        {ride.description && (
+          <p className="whitespace-pre-line text-[0.9375rem] leading-relaxed text-muted-foreground">
+            {ride.description}
+          </p>
+        )}
+
         {/* Stats box */}
         {statsItems.length > 0 && (
           <div className="rounded-xl bg-accent-secondary-subtle p-4">
@@ -184,13 +191,6 @@ export function RideDetailCard({
                 </div>
               ))}
             </div>
-
-            {/* Organiser notes — inside the stats box per design */}
-            {ride.organiser_notes && (
-              <p className="mt-3 whitespace-pre-line text-[0.8125rem] leading-relaxed text-foreground">
-                {ride.organiser_notes}
-              </p>
-            )}
           </div>
         )}
 

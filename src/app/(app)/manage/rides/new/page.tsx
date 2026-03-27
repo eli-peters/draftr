@@ -71,7 +71,6 @@ export default async function CreateRidePage({
       route_url: sourceRide.route_url ?? '',
       route_polyline: sourceRide.route_polyline ?? '',
       is_drop_ride: sourceRide.is_drop_ride ?? false,
-      organiser_notes: sourceRide.organiser_notes ?? '',
     };
   } else if (templateData) {
     initialData = {
@@ -89,7 +88,6 @@ export default async function CreateRidePage({
       route_url: templateData.default_route_url ?? '',
       route_polyline: templateData.default_route_polyline ?? '',
       is_drop_ride: templateData.is_drop_ride ?? false,
-      organiser_notes: '',
     };
   }
 

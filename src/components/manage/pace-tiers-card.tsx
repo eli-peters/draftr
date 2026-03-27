@@ -29,18 +29,16 @@ import { TOAST_ACTION_STYLES } from '@/lib/toast-styles';
 import type { PaceTierWithUsage } from '@/lib/manage/queries';
 
 const content = appContent.manage.paceTiers;
-const MAX_PACE_TIERS = 8;
+const MAX_PACE_TIERS = 6;
 
 /** Static class names so Tailwind can detect them at build time. */
 const PACE_SWATCH_CLASSES = [
-  'bg-badge-pace-1-text',
-  'bg-badge-pace-2-text',
-  'bg-badge-pace-3-text',
-  'bg-badge-pace-4-text',
-  'bg-badge-pace-5-text',
-  'bg-badge-pace-6-text',
-  'bg-badge-pace-7-text',
-  'bg-badge-pace-8-text',
+  'bg-badge-pace-1-bg',
+  'bg-badge-pace-2-bg',
+  'bg-badge-pace-3-bg',
+  'bg-badge-pace-4-bg',
+  'bg-badge-pace-5-bg',
+  'bg-badge-pace-6-bg',
 ];
 
 interface EditState {

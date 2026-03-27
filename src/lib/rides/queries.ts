@@ -255,7 +255,9 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string) 
       id, status, waitlist_position,
       ride:rides!inner(
         id, title, ride_date, start_time, end_time, status,
-        meeting_location:meeting_locations(name)
+        distance_km, elevation_m,
+        meeting_location:meeting_locations(name),
+        pace_group:pace_groups(name, sort_order)
       )
     `,
     )
@@ -276,7 +278,10 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string) 
     ride_date: string;
     start_time: string;
     end_time: string | null;
+    distance_km: number | null;
+    elevation_m: number | null;
     meeting_location: { name: string } | null;
+    pace_group: { name: string; sort_order: number } | null;
   };
 
   return {
@@ -285,7 +290,11 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string) 
     ride_date: ride.ride_date,
     start_time: ride.start_time,
     end_time: ride.end_time,
+    distance_km: ride.distance_km,
+    elevation_m: ride.elevation_m,
     meeting_location_name: ride.meeting_location?.name ?? null,
+    pace_group_name: ride.pace_group?.name ?? null,
+    pace_group_sort_order: ride.pace_group?.sort_order ?? null,
     waitlist_position: data.waitlist_position as number,
   };
 }

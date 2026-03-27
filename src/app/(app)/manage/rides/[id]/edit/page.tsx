@@ -24,8 +24,15 @@ import type { UserRole } from '@/config/navigation';
 
 const { rides: ridesContent } = appContent;
 
-export default async function EditRidePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditRidePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ returnTo?: string }>;
+}) {
   const { id } = await params;
+  const { returnTo } = await searchParams;
 
   const membership = await getUserClubMembership();
   if (!membership) redirect(routes.signIn);
@@ -108,9 +115,9 @@ export default async function EditRidePage({ params }: { params: Promise<{ id: s
           route_url: ride.route_url ?? '',
           route_polyline: ride.route_polyline ?? '',
           is_drop_ride: ride.is_drop_ride ?? false,
-          organiser_notes: ride.organiser_notes ?? '',
         }}
         connectedServices={connections.map((c) => c.service).filter((s) => s !== 'ridewithgps')}
+        returnTo={returnTo}
       />
 
       {/* Signups section */}

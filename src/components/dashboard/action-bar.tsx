@@ -59,7 +59,11 @@ interface NextWaitlistedRide {
   ride_date: string;
   start_time: string;
   end_time: string | null;
+  distance_km: number | null;
+  elevation_m: number | null;
   meeting_location_name: string | null;
+  pace_group_name: string | null;
+  pace_group_sort_order: number | null;
   waitlist_position: number;
 }
 
@@ -183,7 +187,7 @@ export function ActionBar({
               label={
                 waitlistClosed
                   ? content.actionBar.waitlistClosed
-                  : content.actionBar.waitlistPosition
+                  : appContent.schedule.status.waitlisted(nextWaitlistedRide.waitlist_position)
               }
               icon={Hourglass}
               href={routes.ride(nextWaitlistedRide.id)}
@@ -194,14 +198,16 @@ export function ActionBar({
                 date={getRelativeDay(parseLocalDate(nextWaitlistedRide.ride_date))}
                 time={formatTime(nextWaitlistedRide.start_time)}
                 title={nextWaitlistedRide.title}
-                locationName={nextWaitlistedRide.meeting_location_name}
-              >
-                {!waitlistClosed && (
-                  <p className="text-sm font-medium text-warning">
-                    {appContent.schedule.waitlistPosition(nextWaitlistedRide.waitlist_position)}
-                  </p>
+                paceGroupName={nextWaitlistedRide.pace_group_name}
+                paceGroupSortOrder={nextWaitlistedRide.pace_group_sort_order}
+                distanceKm={nextWaitlistedRide.distance_km}
+                elevationM={nextWaitlistedRide.elevation_m}
+                durationDisplay={formatDuration(
+                  nextWaitlistedRide.start_time,
+                  nextWaitlistedRide.end_time,
                 )}
-              </CardContentSection>
+                locationName={nextWaitlistedRide.meeting_location_name}
+              />
             </ActionCard>
           );
         })()}

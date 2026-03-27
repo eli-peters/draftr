@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { Bicycle } from '@phosphor-icons/react/dist/ssr';
 import {
   getUpcomingRides,
@@ -23,6 +24,7 @@ import { FilterableRideFeed } from '@/components/rides/filterable-ride-feed';
 import { CurrentWeather } from '@/components/weather/current-weather';
 
 import { EmptyState } from '@/components/ui/empty-state';
+import { Button } from '@/components/ui/button';
 import type { UserRole } from '@/config/navigation';
 
 const { dashboard } = appContent;
@@ -73,6 +75,9 @@ export default async function HomePage() {
     (r) => getRideLifecycle(r.ride_date, r.start_time, r.end_time) !== 'completed',
   );
 
+  // Home feed shows only rides this user is signed up or waitlisted for
+  const myRides = activeRides.filter((r) => r.current_user_signup_status != null);
+
   return (
     <DashboardShell>
       <GreetingSection firstName={firstName} />
@@ -95,27 +100,31 @@ export default async function HomePage() {
         />
       </div>
 
-      {/* Ride feed — identical for all roles */}
-      {activeRides.length > 0 ? (
+      {/* Ride feed — shows only this user's signed-up rides */}
+      {myRides.length > 0 ? (
         <div className="mt-10">
           <Suspense>
             <FilterableRideFeed
-              rides={activeRides}
+              rides={myRides}
               paceGroups={paceGroups}
-              toolbarLabel={appContent.rides.toolbar.homeFeed(activeRides.length)}
-              emptyTitle={dashboard.noRides}
-              emptyDescription={dashboard.noRidesDescription}
+              toolbarLabel={appContent.rides.toolbar.homeFeed(myRides.length)}
+              emptyTitle={dashboard.myRides.emptyTitle}
+              emptyDescription={dashboard.myRides.emptyDescription}
               cardVariant="home"
             />
           </Suspense>
         </div>
       ) : (
         <EmptyState
-          title={dashboard.noRides}
-          description={dashboard.noRidesDescription}
+          title={dashboard.myRides.emptyTitle}
+          description={dashboard.myRides.emptyDescription}
           icon={Bicycle}
           className="mt-12"
-        />
+        >
+          <Link href={routes.rides} className="mt-4">
+            <Button size="sm">{dashboard.myRides.emptyCta}</Button>
+          </Link>
+        </EmptyState>
       )}
     </DashboardShell>
   );

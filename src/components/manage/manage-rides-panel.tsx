@@ -48,7 +48,7 @@ function ManageRideRow({ ride }: { ride: ManageRideData }) {
 
   return (
     <Link
-      href={routes.manageEditRide(ride.id)}
+      href={routes.manageEditRide(ride.id, routes.manage)}
       className={cn(
         'group block border-b border-border last:border-b-0',
         isCancelled && 'opacity-disabled',

@@ -369,10 +369,38 @@ export async function deletePaceTier(tierId: string) {
     return { error: appContent.manage.paceTiers.cannotDelete };
   }
 
+  // Look up club_id before deleting so we can renormalize sort_orders
+  const { data: tier } = await supabase
+    .from('pace_groups')
+    .select('club_id')
+    .eq('id', tierId)
+    .single();
+
   const { error } = await supabase.from('pace_groups').delete().eq('id', tierId);
   if (error) return { error: error.message };
 
+  // Renormalize sort_orders to close any gap left by the deletion
+  if (tier?.club_id) {
+    const { data: remaining } = await supabase
+      .from('pace_groups')
+      .select('id')
+      .eq('club_id', tier.club_id)
+      .order('sort_order');
+
+    if (remaining) {
+      await Promise.all(
+        remaining.map((pg, i) =>
+          supabase
+            .from('pace_groups')
+            .update({ sort_order: i + 1 })
+            .eq('id', pg.id),
+        ),
+      );
+    }
+  }
+
   revalidatePath('/manage');
+  revalidatePath('/rides');
   return { success: true };
 }
 

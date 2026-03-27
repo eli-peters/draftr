@@ -78,8 +78,8 @@ export function formatDuration(startTime: string, endTime: string | null): strin
   return `${h}${units.hours} ${m}${units.minutes}`;
 }
 
-/** Get badge variant for a pace group by sort order (1–8). */
+/** Get badge variant for a pace group by sort order (1–6). */
 export function getPaceBadgeVariant(sortOrder: number): BadgeVariant {
-  const slot = Math.min(Math.max(sortOrder, 1), 8);
+  const slot = Math.min(Math.max(sortOrder, 1), 6);
   return `pace-${slot}` as BadgeVariant;
 }

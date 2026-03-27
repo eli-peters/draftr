@@ -102,7 +102,6 @@ export interface Ride {
   route_name: string | null;
   route_polyline: string | null;
   is_drop_ride: boolean;
-  organiser_notes: string | null;
   status: RideStatus;
   cancellation_reason: string | null;
   weather_watch_auto: boolean;

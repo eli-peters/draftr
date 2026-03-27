@@ -66,7 +66,7 @@ export function RideFilterBar({
               )}
               aria-label={ridesContent.filter.paceLabel}
             >
-              <FunnelSimple className="size-5" />
+              <FunnelSimple className="size-6" />
               {hasFilter && (
                 <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-primary-foreground ring-2 ring-background" />
               )}

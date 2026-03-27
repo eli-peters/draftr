@@ -22,8 +22,6 @@ const badgeVariants = cva(
         'pace-4': 'bg-badge-pace-4-bg text-badge-pace-4-text',
         'pace-5': 'bg-badge-pace-5-bg text-badge-pace-5-text',
         'pace-6': 'bg-badge-pace-6-bg text-badge-pace-6-text',
-        'pace-7': 'bg-badge-pace-7-bg text-badge-pace-7-text',
-        'pace-8': 'bg-badge-pace-8-bg text-badge-pace-8-text',
         'status-cancelled': 'bg-badge-status-cancelled-bg text-badge-status-cancelled-text',
         'status-full': 'bg-badge-status-full-bg text-badge-status-full-text',
         'status-confirmed': 'bg-badge-status-confirmed-bg text-badge-status-confirmed-text',
