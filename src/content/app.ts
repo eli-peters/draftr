@@ -31,6 +31,7 @@ export const appContent = {
     viewAllNotifications: 'View All',
     signOut: 'Sign Out',
     profile: 'Profile',
+    profileMenu: 'Profile menu',
     noNotifications: 'No new notifications',
   },
 
@@ -626,9 +627,18 @@ export const appContent = {
     },
   },
 
+  dev: {
+    toolbar: {
+      title: 'Dev Tools',
+      syncWeather: 'Sync Weather',
+      weatherSyncFailed: 'Weather sync failed',
+    },
+  },
+
   common: {
     loading: 'Loading...',
     error: 'Something went wrong',
+    errorDescription: 'An unexpected error occurred. Please try again.',
     retry: 'Try again',
     cancel: 'Cancel',
     save: 'Save',

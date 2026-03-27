@@ -17,7 +17,7 @@ export default function AppError({
   return (
     <EmptyState
       title={common.error}
-      description={error.message || 'An unexpected error occurred. Please try again.'}
+      description={error.message || common.errorDescription}
       icon={WarningCircle}
       variant="destructive"
       className="flex-1 px-4 py-16"

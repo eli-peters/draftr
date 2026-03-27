@@ -4,6 +4,9 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { Wrench, CloudArrowDown, X, SpinnerGap } from '@phosphor-icons/react/dist/ssr';
 import { devSyncWeather } from '@/lib/dev/actions';
+import { appContent } from '@/content/app';
+
+const { dev } = appContent;
 
 /**
  * Floating dev toolbar — only rendered in development.
@@ -30,7 +33,7 @@ export function DevToolbar() {
           : '';
         toast.success(result.message, { description: details || undefined });
       } else {
-        toast.error('Weather sync failed', { description: result.message });
+        toast.error(dev.toolbar.weatherSyncFailed, { description: result.message });
       }
     });
   }
@@ -49,7 +52,7 @@ export function DevToolbar() {
             ) : (
               <CloudArrowDown size={16} />
             )}
-            Sync Weather
+            {dev.toolbar.syncWeather}
           </button>
         </div>
       )}
@@ -57,7 +60,7 @@ export function DevToolbar() {
       <button
         onClick={() => setOpen(!open)}
         className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface-primary shadow-lg transition-colors hover:bg-surface-hover"
-        title="Dev Tools"
+        title={dev.toolbar.title}
       >
         {open ? <X size={18} /> : <Wrench size={18} />}
       </button>

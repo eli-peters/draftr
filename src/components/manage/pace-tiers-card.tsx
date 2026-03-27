@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { routes } from '@/config/routes';
 import {
   Plus,
   Pencil,
@@ -290,7 +291,7 @@ export function PaceTiersCard({ clubId, initialTiers }: PaceTiersCardProps) {
                     )}
                   </div>
                   {tier.upcoming_ride_count > 0 && (
-                    <Link href={`/manage?tab=rides&pace=${tier.id}`}>
+                    <Link href={`${routes.manageTab('rides')}&pace=${tier.id}`}>
                       <Button
                         variant="ghost"
                         size="sm"

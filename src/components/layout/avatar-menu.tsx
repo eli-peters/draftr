@@ -55,7 +55,11 @@ export function AvatarMenu({ userName, userEmail, userInitials, avatarUrl }: Ava
   return (
     <>
       {/* Mobile: navigate to profile page */}
-      <Link href={routes.profile} className={`${ringClassName} md:hidden`}>
+      <Link
+        href={routes.profile}
+        className={`${ringClassName} md:hidden`}
+        aria-label={header.profileMenu}
+      >
         {avatarElement}
       </Link>
 
@@ -63,7 +67,10 @@ export function AvatarMenu({ userName, userEmail, userInitials, avatarUrl }: Ava
       {mounted && (
         <div className="hidden md:block">
           <DropdownMenu>
-            <DropdownMenuTrigger className={`${ringClassName} cursor-pointer`}>
+            <DropdownMenuTrigger
+              className={`${ringClassName} cursor-pointer`}
+              aria-label={header.profileMenu}
+            >
               {avatarElement}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" sideOffset={8}>

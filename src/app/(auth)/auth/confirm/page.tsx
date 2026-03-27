@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { routes } from '@/config/routes';
 import { appContent } from '@/content/app';
 
 const { common, auth } = appContent;
@@ -26,7 +27,7 @@ export default function AuthConfirmPage() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        router.replace('/setup-profile');
+        router.replace(routes.setupProfile);
       }
     });
 

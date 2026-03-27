@@ -103,7 +103,7 @@ export async function signUpForRide(rideId: string) {
 
   // Create notification for the rider
   if (!isFull) {
-    await supabase.from('notifications').insert({
+    const { error: notifError } = await supabase.from('notifications').insert({
       user_id: user.id,
       type: 'signup_confirmed',
       title: notif.signupConfirmed.title(ride.title),
@@ -111,13 +111,16 @@ export async function signUpForRide(rideId: string) {
       ride_id: rideId,
       channel: 'push',
     });
+    if (notifError?.message) {
+      console.error('Failed to create signup notification:', notifError.message);
+    }
   }
 
   // Notify the ride leader when a rider joins the waitlist
   // Uses admin client — RLS doesn't allow riders to insert notifications for other users
   if (isFull) {
     const admin = createAdminClient();
-    await admin.from('notifications').insert({
+    const { error: notifError } = await admin.from('notifications').insert({
       user_id: ride.created_by,
       type: 'waitlist_joined',
       title: notif.waitlistJoined.title(ride.title),
@@ -125,6 +128,9 @@ export async function signUpForRide(rideId: string) {
       ride_id: rideId,
       channel: 'push',
     });
+    if (notifError?.message) {
+      console.error('Failed to create waitlist notification:', notifError.message);
+    }
   }
 
   revalidatePath(`/rides/${rideId}`);
@@ -212,13 +218,15 @@ export async function cancelSignUp(rideId: string) {
         .eq('status', 'waitlisted')
         .order('waitlist_position', { ascending: true });
 
-      if (remainingWaitlisted) {
-        for (let i = 0; i < remainingWaitlisted.length; i++) {
-          await supabase
-            .from('ride_signups')
-            .update({ waitlist_position: i + 1 })
-            .eq('id', remainingWaitlisted[i].id);
-        }
+      if (remainingWaitlisted && remainingWaitlisted.length > 0) {
+        await Promise.all(
+          remainingWaitlisted.map((entry, i) =>
+            supabase
+              .from('ride_signups')
+              .update({ waitlist_position: i + 1 })
+              .eq('id', entry.id),
+          ),
+        );
       }
 
       // Notify the promoted rider
@@ -227,7 +235,7 @@ export async function cancelSignUp(rideId: string) {
 
       if (ride) {
         const admin = createAdminClient();
-        await admin.from('notifications').insert({
+        const { error: notifError } = await admin.from('notifications').insert({
           user_id: nextWaitlisted.user_id,
           type: 'waitlist_promoted',
           title: notif.waitlistPromoted.title(ride.title),
@@ -235,6 +243,9 @@ export async function cancelSignUp(rideId: string) {
           ride_id: rideId,
           channel: 'push',
         });
+        if (notifError?.message) {
+          console.error('Failed to create waitlist promotion notification:', notifError.message);
+        }
       }
     }
   }
@@ -397,7 +408,10 @@ export async function createRide(data: CreateRideData) {
       }));
 
     if (notifications.length > 0) {
-      await supabase.from('notifications').insert(notifications);
+      const { error: notifError } = await supabase.from('notifications').insert(notifications);
+      if (notifError?.message) {
+        console.error('Failed to create new ride notifications:', notifError.message);
+      }
     }
   }
 
@@ -495,7 +509,10 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
       }));
 
     if (notifications.length > 0) {
-      await supabase.from('notifications').insert(notifications);
+      const { error: notifError } = await supabase.from('notifications').insert(notifications);
+      if (notifError?.message) {
+        console.error('Failed to create ride update notifications:', notifError.message);
+      }
     }
   }
 

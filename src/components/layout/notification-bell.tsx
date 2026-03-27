@@ -63,7 +63,11 @@ export function NotificationBell({ notifications, unreadCount }: NotificationBel
   return (
     <>
       {/* Mobile: navigate to notifications page */}
-      <Link href={routes.notifications} className={`${bellClassName} md:hidden`}>
+      <Link
+        href={routes.notifications}
+        className={`${bellClassName} md:hidden`}
+        aria-label={notifContent.heading}
+      >
         {bellIcon}
       </Link>
 
@@ -71,7 +75,10 @@ export function NotificationBell({ notifications, unreadCount }: NotificationBel
       {mounted && (
         <div className="hidden md:block">
           <Popover>
-            <PopoverTrigger className={`${bellClassName} cursor-pointer`}>
+            <PopoverTrigger
+              className={`${bellClassName} cursor-pointer`}
+              aria-label={notifContent.heading}
+            >
               <div>{bellIcon}</div>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-80 p-0" sideOffset={8}>
