@@ -34,7 +34,7 @@ export default async function ManagePage({
 }) {
   const params = await searchParams;
   const activeTab = params.tab ?? 'rides';
-  const initialPaceFilter = params.pace ? [params.pace] : [];
+  const initialPaceFilter = params.pace ?? null;
 
   const membership = await getUserClubMembership();
   if (!membership) redirect(routes.signIn);

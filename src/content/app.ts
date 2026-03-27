@@ -115,33 +115,23 @@ export const appContent = {
   rides: {
     feed: {
       heading: 'All Upcoming Rides',
-      refreshLabel: 'Refresh rides',
       emptyState: {
         title: 'No upcoming rides',
         description: 'Check back soon — ride leaders will post new rides here.',
       },
     },
     filter: {
-      button: 'Filter',
-      heading: 'Filter Rides',
-      paceGroupLabel: 'Pace Group',
-      tagsLabel: 'Tags',
-      sortLabel: 'Sort By',
-      clearAll: 'Clear Filters',
-      apply: 'Show Rides',
-      activeCount: (count: number) => `${count}`,
-      showingCount: (filtered: number) => `Showing ${filtered} result${filtered === 1 ? '' : 's'}`,
-      totalCount: (count: number) => `${count} ride${count === 1 ? '' : 's'}`,
+      paceLabel: 'Filter by pace',
+      clearFilter: 'Clear filter',
+      filteredCount: (count: number) => `${count} ride${count !== 1 ? 's' : ''} showing`,
       noResults: {
         title: 'No matching rides',
         description: 'Try adjusting your filters to see more rides.',
       },
-      sort: {
-        dateAsc: 'Date (soonest first)',
-        dateDesc: 'Date (latest first)',
-        distanceAsc: 'Distance (shortest first)',
-        distanceDesc: 'Distance (longest first)',
-      },
+    },
+    toolbar: {
+      homeFeed: (count: number) => `${count} upcoming ride${count !== 1 ? 's' : ''} for you`,
+      allRides: (count: number) => `${count} total ride${count !== 1 ? 's' : ''}`,
     },
     card: {
       drop: 'Drop',
@@ -197,7 +187,7 @@ export const appContent = {
       waitlistClosed: 'Waitlist closed — no spots opened',
       distanceLabel: 'Distance',
       elevationLabel: 'Elevation',
-      spotsRemainingLabel: 'Spots remaining',
+      spotsRemainingLabel: 'Riders',
       routeMapPlaceholder: 'Route map coming soon',
       ridersHeading: (confirmed: number, waitlisted: number, capacity: number | null) => {
         const parts: string[] = [];
@@ -316,9 +306,14 @@ export const appContent = {
 
   schedule: {
     heading: 'Your Schedule',
-    sections: {
-      upcoming: 'Upcoming',
-      past: 'Past',
+    toolbar: {
+      upcoming: (count: number) => `${count} ride${count !== 1 ? 's' : ''} coming up`,
+      past: (count: number) => `${count} past ride${count !== 1 ? 's' : ''}`,
+    },
+    statusFilter: {
+      label: 'View',
+      upcoming: 'Active rides',
+      past: 'Past rides',
     },
     emptyState: {
       upcoming: {
@@ -335,6 +330,7 @@ export const appContent = {
       confirmed: 'Confirmed',
       waitlisted: (position: number) => `Waitlisted \u00b7 #${position}`,
       completed: 'Completed',
+      cancelled: 'Cancelled',
     },
     actions: {
       cancelSignup: 'Cancel signup',
@@ -454,6 +450,7 @@ export const appContent = {
       past: 'Past',
       cancelled: 'Cancelled',
       drafts: 'Drafts',
+      toolbar: (count: number) => `${count} ride${count !== 1 ? 's' : ''} managed`,
       noRides: 'No rides to manage. Create your first one!',
       noUpcomingRides: 'No upcoming rides',
       noPastRides: 'No past rides',

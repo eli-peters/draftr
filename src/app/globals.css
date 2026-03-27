@@ -247,10 +247,10 @@
   --input-border-invalid: var(--action-danger-default);
   --input-ring-invalid: color-mix(in srgb, var(--action-danger-default) 20%, transparent);
   --tabs-list-bg: var(--surface-sunken);
-  --tabs-trigger-text: color-mix(in srgb, var(--text-primary) 60%, transparent);
-  --tabs-trigger-active-bg: var(--surface-page);
+  --tabs-trigger-text: var(--text-secondary);
+  --tabs-trigger-active-bg: var(--action-primary-default);
   --tabs-trigger-active-border: transparent;
-  --tabs-trigger-active-text: var(--text-primary);
+  --tabs-trigger-active-text: var(--text-on-primary);
   --destructive-focus-bg: color-mix(in srgb, var(--action-danger-default) 10%, transparent);
 
   /* ── Charts ── */
@@ -304,9 +304,9 @@
   --input-ring-invalid: color-mix(in srgb, var(--action-danger-default) 40%, transparent);
   --tabs-list-bg: color-mix(in srgb, var(--color-neutral-0) 5%, transparent);
   --tabs-trigger-text: var(--text-secondary);
-  --tabs-trigger-active-bg: color-mix(in srgb, var(--border-default) 30%, transparent);
-  --tabs-trigger-active-border: var(--border-default);
-  --tabs-trigger-active-text: var(--action-primary-default);
+  --tabs-trigger-active-bg: var(--action-primary-default);
+  --tabs-trigger-active-border: transparent;
+  --tabs-trigger-active-text: var(--text-on-primary);
   --destructive-focus-bg: color-mix(in srgb, var(--action-danger-default) 20%, transparent);
 
   /* ── Charts ── */

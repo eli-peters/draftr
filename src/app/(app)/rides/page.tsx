@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { getUpcomingRides, getUserClubMembership, getPaceGroups } from '@/lib/rides/queries';
+import { getRideLifecycle } from '@/lib/rides/lifecycle';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
@@ -13,10 +14,15 @@ export default async function RidesPage() {
   const membership = await getUserClubMembership();
   if (!membership) redirect(routes.signIn);
 
-  const [rides, paceGroups] = await Promise.all([
+  const [allRides, paceGroups] = await Promise.all([
     getUpcomingRides(membership.club_id, membership.user_id),
     getPaceGroups(membership.club_id),
   ]);
+
+  // Filter out rides that have already completed (past their end_time today)
+  const rides = allRides.filter(
+    (r) => getRideLifecycle(r.ride_date, r.start_time, r.end_time) !== 'completed',
+  );
 
   return (
     <DashboardShell>
@@ -27,6 +33,7 @@ export default async function RidesPage() {
           <FilterableRideFeed
             rides={rides}
             paceGroups={paceGroups}
+            toolbarLabel={ridesContent.toolbar.allRides(rides.length)}
             emptyTitle={ridesContent.feed.emptyState.title}
             emptyDescription={ridesContent.feed.emptyState.description}
           />

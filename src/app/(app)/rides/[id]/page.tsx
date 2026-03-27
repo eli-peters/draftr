@@ -96,6 +96,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         ride={ride}
         isSignedUp={isSignedUp}
         signupStatus={signup?.status ?? null}
+        waitlistPosition={signup?.waitlist_position ?? null}
         confirmedCount={confirmedCount}
         lifecycle={availability.lifecycle}
       />

@@ -11,6 +11,7 @@ import {
   getLeaderWeatherWatchRide,
   getPaceGroups,
 } from '@/lib/rides/queries';
+import { getRideLifecycle } from '@/lib/rides/lifecycle';
 import { getPendingMemberCount } from '@/lib/manage/queries';
 import { createClient } from '@/lib/supabase/server';
 import { appContent } from '@/content/app';
@@ -67,6 +68,11 @@ export default async function HomePage() {
     getPaceGroups(membership.club_id),
   ]);
 
+  // Filter out rides that have already completed (past their end_time today)
+  const activeRides = rides.filter(
+    (r) => getRideLifecycle(r.ride_date, r.start_time, r.end_time) !== 'completed',
+  );
+
   return (
     <DashboardShell>
       <GreetingSection firstName={firstName} />
@@ -90,13 +96,13 @@ export default async function HomePage() {
       </div>
 
       {/* Ride feed — identical for all roles */}
-      {rides.length > 0 ? (
+      {activeRides.length > 0 ? (
         <div className="mt-10">
           <Suspense>
             <FilterableRideFeed
-              rides={rides}
+              rides={activeRides}
               paceGroups={paceGroups}
-              heading={dashboard.feed.heading}
+              toolbarLabel={appContent.rides.toolbar.homeFeed(activeRides.length)}
               emptyTitle={dashboard.noRides}
               emptyDescription={dashboard.noRidesDescription}
               cardVariant="home"

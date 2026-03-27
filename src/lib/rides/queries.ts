@@ -18,7 +18,7 @@ interface RawRideRow extends Ride {
   meeting_location: MeetingLocation | null;
   pace_group: PaceGroup | null;
   creator: Pick<User, 'id' | 'full_name' | 'display_name' | 'avatar_url'> | null;
-  ride_signups: { status: string; user_id: string }[] | null;
+  ride_signups: { status: string; user_id: string; waitlist_position: number | null }[] | null;
   ride_weather_snapshots: RideWeatherSnapshot | null;
 }
 
@@ -28,7 +28,7 @@ const RIDE_WITH_DETAILS_SELECT = `
   meeting_location:meeting_locations(*),
   pace_group:pace_groups(*),
   creator:users!rides_created_by_fkey(id, full_name, display_name, avatar_url),
-  ride_signups(status, user_id),
+  ride_signups(status, user_id, waitlist_position),
   ride_weather_snapshots(*)
 `;
 
@@ -51,6 +51,7 @@ function toRideWithDetails(ride: RawRideRow, currentUserId?: string): RideWithDe
     ).length,
     creator: ride.creator ?? null,
     current_user_signup_status: (userSignup?.status as 'confirmed' | 'waitlisted') ?? null,
+    current_user_waitlist_position: userSignup?.waitlist_position ?? null,
     // PostgREST returns object (not array) for 1-to-1 joins via UNIQUE constraint
     weather: ride.ride_weather_snapshots ?? null,
   };
@@ -71,7 +72,6 @@ export async function getUpcomingRides(
     .select(RIDE_WITH_DETAILS_SELECT)
     .eq('club_id', clubId)
     .gte('ride_date', today)
-    .neq('status', 'cancelled')
     .order('ride_date', { ascending: true })
     .order('start_time', { ascending: true });
 
@@ -113,7 +113,7 @@ export async function getUserSignupStatus(rideId: string) {
 
   const { data } = await supabase
     .from('ride_signups')
-    .select('id, status')
+    .select('id, status, waitlist_position')
     .eq('ride_id', rideId)
     .eq('user_id', user.id)
     .neq('status', 'cancelled')
@@ -532,7 +532,7 @@ export type UserRideSignup = {
   capacity: number | null;
   signed_up_at: string | null;
   waitlist_position: number | null;
-  signup_status: 'confirmed' | 'waitlisted' | 'checked_in' | 'completed';
+  signup_status: 'confirmed' | 'waitlisted' | 'checked_in' | 'completed' | 'cancelled';
   pace_group_sort_order: number | null;
   weather: RideWeatherSnapshot | null;
 };
@@ -567,19 +567,15 @@ export async function getUserRideSignups(
 
   switch (filter) {
     case 'upcoming':
-      query = query
-        .eq('status', 'confirmed')
-        .gte('ride.ride_date', today)
-        .neq('ride.status', 'cancelled');
+      query = query.in('status', ['confirmed', 'cancelled']).gte('ride.ride_date', today);
       break;
     case 'past':
-      query = query.in('status', ['confirmed', 'checked_in']).lt('ride.ride_date', today);
+      query = query
+        .in('status', ['confirmed', 'checked_in', 'cancelled'])
+        .lt('ride.ride_date', today);
       break;
     case 'waitlisted':
-      query = query
-        .eq('status', 'waitlisted')
-        .gte('ride.ride_date', today)
-        .neq('ride.status', 'cancelled');
+      query = query.eq('status', 'waitlisted').gte('ride.ride_date', today);
       break;
   }
 
@@ -632,7 +628,11 @@ export async function getUserRideSignups(
       signed_up_at: signup.signed_up_at,
       waitlist_position: signup.waitlist_position,
       signup_status:
-        filter === 'past' ? 'completed' : (signup.status as UserRideSignup['signup_status']),
+        signup.status === 'cancelled'
+          ? 'cancelled'
+          : filter === 'past'
+            ? 'completed'
+            : (signup.status as UserRideSignup['signup_status']),
       weather: ride.ride_weather_snapshots ?? null,
     };
   });

@@ -15,7 +15,7 @@ interface RouteMapPlaceholderProps {
  */
 export function RouteMapPlaceholder({ routeUrl, routeName }: RouteMapPlaceholderProps) {
   const content = (
-    <div className="flex aspect-video flex-col items-center justify-center gap-2 rounded-xl bg-surface-sunken">
+    <div className="flex aspect-square flex-col items-center justify-center gap-2 rounded-xl bg-surface-sunken">
       <MapTrifold weight="duotone" className="size-10 text-muted-foreground/40" />
       <span className="text-[0.8125rem] text-muted-foreground/60">
         {detail.routeMapPlaceholder}

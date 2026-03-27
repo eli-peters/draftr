@@ -8,6 +8,7 @@ import {
   RideBanner,
   CardContentSection,
   CardFooterSection,
+  RiderCount,
 } from '@/components/rides/ride-card-parts';
 import { CardSignupButton } from '@/components/rides/card-signup-button';
 import { appContent } from '@/content/app';
@@ -102,7 +103,9 @@ function RidesLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: bo
           label={
             userStatus === SignupStatus.CONFIRMED
               ? ridesContent.card.signedUp
-              : ridesContent.card.waitlisted
+              : ride.current_user_waitlist_position
+                ? appContent.schedule.status.waitlisted(ride.current_user_waitlist_position)
+                : ridesContent.card.waitlisted
           }
           bgClass={
             userStatus === SignupStatus.CONFIRMED ? 'bg-banner-success-bg' : 'bg-banner-warning-bg'
@@ -135,11 +138,14 @@ function RidesLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: bo
       {/* Footer section */}
       <CardFooterSection>
         <div className="flex items-center justify-between gap-4">
-          {leaderName && (
-            <span className={cn(LABEL_SM, 'text-muted-foreground')}>
-              {ridesContent.card.ledBy(leaderName)}
-            </span>
-          )}
+          <div className="flex flex-col gap-1">
+            <RiderCount signupCount={ride.signup_count} capacity={ride.capacity} />
+            {leaderName && (
+              <span className={cn(LABEL_SM, 'text-muted-foreground')}>
+                {ridesContent.card.ledBy(leaderName)}
+              </span>
+            )}
+          </div>
           {availability.canSignUp && (
             <CardSignupButton
               rideId={ride.id}

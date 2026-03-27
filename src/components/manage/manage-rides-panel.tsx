@@ -1,23 +1,16 @@
 'use client';
 
-import { useState, useTransition, useCallback } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import {
-  MapPin,
-  Users,
-  CloudRain,
-  ArrowsClockwise,
-  ArrowClockwise,
-} from '@phosphor-icons/react/dist/ssr';
-import { Button } from '@/components/ui/button';
+import { MapPin, Users, CloudRain, ArrowsClockwise } from '@phosphor-icons/react/dist/ssr';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { RideFilterDrawer, type SortOption } from '@/components/rides/ride-filter-drawer';
 import { ContentToolbar } from '@/components/layout/content-toolbar';
-import { filterRides, sortRides } from '@/lib/rides/sort';
+import { SectionHeading } from '@/components/ui/section-heading';
+import { RideFilterBar } from '@/components/rides/ride-filter-bar';
+import { filterRides } from '@/lib/rides/sort';
 import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
@@ -226,41 +219,32 @@ function RideList({ rides, emptyMessage }: { rides: ManageRideData[]; emptyMessa
 interface ManageRidesPanelProps {
   rides: ManageRideData[];
   paceGroups: { id: string; name: string; sort_order: number }[];
-  initialPaceFilter?: string[];
+  initialPaceFilter?: string | null;
 }
 
 export function ManageRidesPanel({
   rides,
   paceGroups,
-  initialPaceFilter = [],
+  initialPaceFilter = null,
 }: ManageRidesPanelProps) {
-  const router = useRouter();
-  const [isRefreshing, startTransition] = useTransition();
-  const [paceIds, setPaceIds] = useState<string[]>(initialPaceFilter);
-  const [sortBy, setSortBy] = useState<SortOption>('date_asc');
+  const [activePaceIds, setActivePaceIds] = useState<string[]>(
+    initialPaceFilter ? [initialPaceFilter] : [],
+  );
   const [activeTab, setActiveTab] = useState('upcoming');
-
-  const handleRefresh = useCallback(() => {
-    startTransition(() => {
-      router.refresh();
-    });
-  }, [router]);
 
   const today = new Date().toISOString().split('T')[0];
 
-  const filtered = filterRides(rides, paceIds);
+  const filtered = filterRides(rides, activePaceIds);
 
-  const sorted = sortRides(filtered, sortBy);
-
-  // Split into categories
-  const upcomingRides = sorted.filter(
+  const upcomingRides = filtered.filter(
     (r) => r.ride_date >= today && r.status !== RideStatus.CANCELLED,
   );
-  const pastRides = sorted.filter((r) => r.ride_date < today && r.status !== RideStatus.CANCELLED);
-  const cancelledRides = sorted.filter((r) => r.status === RideStatus.CANCELLED);
+  const pastRides = filtered.filter(
+    (r) => r.ride_date < today && r.status !== RideStatus.CANCELLED,
+  );
+  const cancelledRides = filtered.filter((r) => r.status === RideStatus.CANCELLED);
 
-  const activeCount = paceIds.length;
-  const hasFilters = activeCount > 0 || sortBy !== 'date_asc';
+  const hasFilter = activePaceIds.length > 0;
 
   const ridesByTab: Record<string, typeof upcomingRides> = {
     upcoming: upcomingRides,
@@ -268,16 +252,6 @@ export function ManageRidesPanel({
     cancelled: cancelledRides,
   };
   const visibleRides = ridesByTab[activeTab] ?? upcomingRides;
-
-  function handleApply(newPaceIds: string[], _newTagIds: string[], newSort: SortOption) {
-    setPaceIds(newPaceIds);
-    setSortBy(newSort);
-  }
-
-  function handleClear() {
-    setPaceIds([]);
-    setSortBy('date_asc');
-  }
 
   return (
     <div className="mt-4">
@@ -290,31 +264,20 @@ export function ManageRidesPanel({
 
         <ContentToolbar
           left={
-            <span className="text-sm text-muted-foreground">
-              {hasFilters
-                ? ridesContent.filter.showingCount(visibleRides.length)
-                : ridesContent.filter.totalCount(visibleRides.length)}
-            </span>
+            <SectionHeading as="span">
+              {hasFilter
+                ? ridesContent.filter.filteredCount(visibleRides.length)
+                : content.rides.toolbar(visibleRides.length)}
+            </SectionHeading>
           }
           right={
-            <>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                aria-label={ridesContent.feed.refreshLabel}
-              >
-                <ArrowClockwise className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              </Button>
-              <RideFilterDrawer
+            paceGroups.length > 0 ? (
+              <RideFilterBar
                 paceGroups={paceGroups}
-                activePaceGroupIds={paceIds}
-                activeSort={sortBy}
-                onApply={handleApply}
-                onClear={handleClear}
+                activePaceIds={activePaceIds}
+                onChangePace={setActivePaceIds}
               />
-            </>
+            ) : undefined
           }
           className="mt-3"
         />

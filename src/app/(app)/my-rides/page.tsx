@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getUserClubMembership, getUserRideSignups } from '@/lib/rides/queries';
+import { getRideLifecycle } from '@/lib/rides/lifecycle';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
@@ -14,11 +15,27 @@ export default async function MySchedulePage() {
 
   const userId = membership.user_id;
 
-  const [upcoming, past, waitlisted] = await Promise.all([
+  const [upcomingRaw, pastRaw, waitlistedRaw] = await Promise.all([
     getUserRideSignups(userId, membership.club_id, 'upcoming'),
     getUserRideSignups(userId, membership.club_id, 'past'),
     getUserRideSignups(userId, membership.club_id, 'waitlisted'),
   ]);
+
+  // Post-filter: rides past their end_time today should move to "past"
+  const isCompleted = (r: { ride_date: string; start_time: string; end_time: string | null }) =>
+    getRideLifecycle(r.ride_date, r.start_time, r.end_time) === 'completed';
+
+  const upcoming = upcomingRaw.filter((r) => !isCompleted(r));
+  const waitlisted = waitlistedRaw.filter((r) => !isCompleted(r));
+  const completedToday = [
+    ...upcomingRaw.filter(isCompleted).map((r) => ({ ...r, signup_status: 'completed' as const })),
+    ...waitlistedRaw
+      .filter(isCompleted)
+      .map((r) => ({ ...r, signup_status: 'completed' as const })),
+  ];
+  const past = [...completedToday, ...pastRaw].sort(
+    (a, b) => b.ride_date.localeCompare(a.ride_date) || b.start_time.localeCompare(a.start_time),
+  );
 
   // Merge confirmed (upcoming) + waitlisted into a single list, sorted by date
   const upcomingAll = [...upcoming, ...waitlisted].sort(

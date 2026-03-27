@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { CheckCircle, Hourglass } from '@phosphor-icons/react/dist/ssr';
+import { CheckCircleIcon, HourglassIcon, XCircleIcon } from '@phosphor-icons/react/dist/ssr';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -12,7 +12,7 @@ import {
 } from '@/components/rides/ride-card-parts';
 import { appContent } from '@/content/app';
 import { cn, getRelativeDay } from '@/lib/utils';
-import { SignupStatus } from '@/config/statuses';
+import { RideStatus, SignupStatus } from '@/config/statuses';
 import { dateFormats, formatTime, formatDuration, parseLocalDate } from '@/config/formatting';
 import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
@@ -38,19 +38,24 @@ interface ScheduleCardProps {
 
 const statusBannerConfig = {
   confirmed: {
-    icon: CheckCircle,
+    icon: CheckCircleIcon,
     bgClass: 'bg-banner-success-bg',
     textClass: 'text-banner-success-text',
   },
   waitlisted: {
-    icon: Hourglass,
+    icon: HourglassIcon,
     bgClass: 'bg-banner-warning-bg',
     textClass: 'text-banner-warning-text',
   },
   completed: {
-    icon: CheckCircle,
+    icon: CheckCircleIcon,
     bgClass: 'bg-banner-muted-bg',
     textClass: 'text-banner-muted-text',
+  },
+  cancelled: {
+    icon: XCircleIcon,
+    bgClass: 'bg-banner-error-bg',
+    textClass: 'text-banner-error-text',
   },
 } as const;
 
@@ -62,6 +67,7 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
   const rideDate = parseLocalDate(ride.ride_date);
   const relativeDay = getRelativeDay(rideDate, dateFormats.dayShort);
   const isCompleted = ride.signup_status === SignupStatus.COMPLETED;
+  const isCancelled = ride.signup_status === SignupStatus.CANCELLED;
   const isWaitlisted = ride.signup_status === SignupStatus.WAITLISTED;
 
   // Availability check — hides cancel/leave buttons past cutoff
@@ -70,15 +76,18 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
       ride_date: ride.ride_date,
       start_time: ride.start_time,
       end_time: ride.end_time,
-      status: 'scheduled', // upcoming tab already filters out cancelled rides
+      status: isCancelled ? RideStatus.CANCELLED : 'scheduled',
       capacity: ride.capacity,
     },
     ride.signup_count,
   );
 
-  let statusKey: 'completed' | 'waitlisted' | 'confirmed';
+  let statusKey: 'completed' | 'waitlisted' | 'confirmed' | 'cancelled';
   let statusLabel: string;
-  if (isCompleted) {
+  if (isCancelled) {
+    statusKey = 'cancelled';
+    statusLabel = schedule.status.cancelled;
+  } else if (isCompleted) {
     statusKey = 'completed';
     statusLabel = schedule.status.completed;
   } else if (isWaitlisted) {
@@ -99,7 +108,7 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
     name: ride.meeting_location_name,
   });
 
-  const hasFooter = statusKey !== 'completed';
+  const hasFooter = statusKey !== 'completed' && statusKey !== 'cancelled';
 
   return (
     <Card className={cn('overflow-clip p-0', isCompleted && 'opacity-completed')}>

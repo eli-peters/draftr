@@ -5,6 +5,7 @@ import { createClient, getUser } from '@/lib/supabase/server';
 import { appContent } from '@/content/app';
 import type { AnnouncementType, MemberRole, MemberStatus } from '@/types/database';
 import { parseLocalDate } from '@/config/formatting';
+import { estimateEndTime } from '@/lib/rides/estimate-duration';
 
 const { common, errors } = appContent;
 
@@ -595,6 +596,19 @@ export async function generateRidesFromRecurring(templateId: string) {
     return { success: true, count: 0 };
   }
 
+  // Estimate end_time from template's distance + pace group
+  let endTime: string | null = null;
+  if (template.pace_group_id && template.default_distance_km) {
+    const { data: pg } = await supabase
+      .from('pace_groups')
+      .select('moving_pace_min, moving_pace_max')
+      .eq('id', template.pace_group_id)
+      .single();
+    if (pg) {
+      endTime = estimateEndTime(template.default_distance_km, pg, template.start_time);
+    }
+  }
+
   // Bulk insert rides
   const rides = datesToCreate.map((date) => ({
     club_id: template.club_id,
@@ -603,6 +617,7 @@ export async function generateRidesFromRecurring(templateId: string) {
     description: template.description,
     ride_date: date,
     start_time: template.start_time,
+    end_time: endTime,
     meeting_location_id: template.meeting_location_id,
     pace_group_id: template.pace_group_id,
     distance_km: template.default_distance_km,

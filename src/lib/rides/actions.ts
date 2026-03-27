@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { appContent } from '@/content/app';
 import { RideStatus } from '@/config/statuses';
 import { getRideAvailability } from '@/lib/rides/lifecycle';
+import { estimateEndTime } from '@/lib/rides/estimate-duration';
 import { syncWeatherForRide } from '@/lib/weather/sync';
 
 const { errors, common, notificationMessages: notif, rides: ridesContent } = appContent;
@@ -252,6 +253,7 @@ export interface CreateRideData {
   description?: string;
   ride_date: string;
   start_time: string;
+  end_time?: string;
   meeting_location_id?: string;
   pace_group_id?: string;
   distance_km?: number;
@@ -323,6 +325,19 @@ export async function createRide(data: CreateRideData) {
     templateId = template?.id ?? null;
   }
 
+  // Estimate end_time from distance + pace group if not manually provided
+  let endTime: string | null = data.end_time || null;
+  if (!endTime && data.pace_group_id && data.distance_km) {
+    const { data: pg } = await supabase
+      .from('pace_groups')
+      .select('moving_pace_min, moving_pace_max')
+      .eq('id', data.pace_group_id)
+      .single();
+    if (pg) {
+      endTime = estimateEndTime(data.distance_km, pg, data.start_time);
+    }
+  }
+
   // Insert ride
   const { data: ride, error: rideError } = await supabase
     .from('rides')
@@ -333,6 +348,7 @@ export async function createRide(data: CreateRideData) {
       description: data.description || null,
       ride_date: data.ride_date,
       start_time: data.start_time,
+      end_time: endTime,
       meeting_location_id: data.meeting_location_id || null,
       pace_group_id: data.pace_group_id || null,
       distance_km: data.distance_km ?? null,

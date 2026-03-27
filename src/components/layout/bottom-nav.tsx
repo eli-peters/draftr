@@ -18,7 +18,7 @@ export function BottomNav({ items }: BottomNavProps) {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-surface-default pb-[env(safe-area-inset-bottom)] md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-surface-default/80 backdrop-blur-md pb-[env(safe-area-inset-bottom)] md:hidden">
       <div className="flex items-center justify-around px-2">
         {items.map((item) => {
           const isActive =

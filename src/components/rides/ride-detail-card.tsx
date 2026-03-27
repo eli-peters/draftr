@@ -1,5 +1,4 @@
 import { format } from 'date-fns';
-import Link from 'next/link';
 import {
   MapPin,
   CalendarBlank,
@@ -8,15 +7,14 @@ import {
   CheckCircle,
   Timer,
   Play,
+  HourglassSimpleMedium,
 } from '@phosphor-icons/react/dist/ssr';
 import { Card } from '@/components/ui/card';
 import { CardBanner, RideBanner } from '@/components/rides/ride-card-parts';
-import { RouteMapPlaceholder } from '@/components/rides/route-map-placeholder';
 import { RouteMapLoader } from '@/components/rides/route-map-loader';
 import { appContent } from '@/content/app';
 import { dateFormats, formatTime, separators, units, parseLocalDate } from '@/config/formatting';
 import { RideStatus, SignupStatus } from '@/config/statuses';
-import { routes } from '@/config/routes';
 import type { RideLifecycle } from '@/lib/rides/lifecycle';
 import type { RideWithDetails } from '@/types/database';
 
@@ -26,6 +24,7 @@ interface RideDetailCardProps {
   ride: RideWithDetails;
   isSignedUp: boolean;
   signupStatus: string | null;
+  waitlistPosition: number | null;
   confirmedCount: number;
   lifecycle: RideLifecycle;
 }
@@ -38,6 +37,7 @@ export function RideDetailCard({
   ride,
   isSignedUp,
   signupStatus,
+  waitlistPosition,
   confirmedCount,
   lifecycle,
 }: RideDetailCardProps) {
@@ -80,10 +80,22 @@ export function RideDetailCard({
           textClass="text-banner-muted-text"
         />
       )}
-      {isSignedUp && !isCancelled && !(isWaitlisted && lifecycle !== 'upcoming') && (
+      {isSignedUp && !isCancelled && isWaitlisted && lifecycle === 'upcoming' && (
+        <CardBanner
+          icon={HourglassSimpleMedium}
+          label={
+            waitlistPosition
+              ? appContent.schedule.status.waitlisted(waitlistPosition)
+              : appContent.rides.roster.waitlisted
+          }
+          bgClass="bg-banner-warning-bg"
+          textClass="text-banner-warning-text"
+        />
+      )}
+      {isSignedUp && !isCancelled && !isWaitlisted && (
         <CardBanner
           icon={CheckCircle}
-          label={isWaitlisted ? appContent.rides.roster.waitlisted : detail.signedUp}
+          label={detail.signedUp}
           bgClass="bg-banner-success-bg"
           textClass="text-banner-success-text"
         />
@@ -156,17 +168,6 @@ export function RideDetailCard({
           )}
         </div>
 
-        {/* Route map */}
-        {ride.route_polyline ? (
-          <RouteMapLoader
-            polylineStr={ride.route_polyline}
-            routeUrl={ride.route_url}
-            routeName={ride.route_name}
-          />
-        ) : (
-          <RouteMapPlaceholder routeUrl={ride.route_url} routeName={ride.route_name} />
-        )}
-
         {/* Stats box */}
         {statsItems.length > 0 && (
           <div className="rounded-xl bg-accent-secondary-subtle p-4">
@@ -193,14 +194,13 @@ export function RideDetailCard({
           </div>
         )}
 
-        {/* Creator attribution */}
-        {ride.creator && (
-          <Link
-            href={routes.publicProfile(ride.creator.id)}
-            className="text-[0.6875rem] text-muted-foreground transition-colors hover:text-foreground"
-          >
-            {detail.createdBy(ride.creator.display_name ?? ride.creator.full_name)}
-          </Link>
+        {/* Route map — only shown when route data exists */}
+        {ride.route_polyline && (
+          <RouteMapLoader
+            polylineStr={ride.route_polyline}
+            routeUrl={ride.route_url}
+            routeName={ride.route_name}
+          />
         )}
       </div>
     </Card>
