@@ -15,11 +15,13 @@ import {
   ArrowCounterClockwise,
 } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
+import { getPaceBadgeVariant } from '@/config/formatting';
 import {
   addPaceTier,
   updatePaceTier,
@@ -34,12 +36,12 @@ const MAX_PACE_TIERS = 6;
 
 /** Static class names so Tailwind can detect them at build time. */
 const PACE_SWATCH_CLASSES = [
-  'bg-badge-pace-1-bg',
-  'bg-badge-pace-2-bg',
-  'bg-badge-pace-3-bg',
-  'bg-badge-pace-4-bg',
-  'bg-badge-pace-5-bg',
-  'bg-badge-pace-6-bg',
+  'bg-badge-pace-1-text',
+  'bg-badge-pace-2-text',
+  'bg-badge-pace-3-text',
+  'bg-badge-pace-4-text',
+  'bg-badge-pace-5-text',
+  'bg-badge-pace-6-text',
 ];
 
 interface EditState {
@@ -230,6 +232,7 @@ export function PaceTiersCard({ clubId, initialTiers }: PaceTiersCardProps) {
 
       <div className="space-y-2">
         {tiers.map((tier, index) => {
+          const badgeVariant = getPaceBadgeVariant(index + 1);
           const swatchClass = PACE_SWATCH_CLASSES[Math.min(index, MAX_PACE_TIERS - 1)];
           const paceRange = formatRange(
             tier.moving_pace_min,
@@ -284,10 +287,10 @@ export function PaceTiersCard({ clubId, initialTiers }: PaceTiersCardProps) {
               ) : (
                 <div className="flex items-center gap-3">
                   <div className={`h-4 w-4 shrink-0 rounded-full ${swatchClass}`} />
+                  <Badge variant={badgeVariant}>{tier.name}</Badge>
                   <div className="min-w-0 flex-1">
-                    <span className="text-sm font-medium text-foreground">{tier.name}</span>
                     {paceRange && (
-                      <span className="ml-2 text-xs text-muted-foreground">{paceRange}</span>
+                      <span className="text-xs text-muted-foreground">{paceRange}</span>
                     )}
                   </div>
                   {tier.upcoming_ride_count > 0 && (

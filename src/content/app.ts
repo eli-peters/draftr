@@ -241,8 +241,38 @@ export const appContent = {
       addWalkUp: 'Add Walk-Up Rider',
       walkUpPlaceholder: 'Select a member...',
       walkUpAdded: 'Rider added successfully',
+      coLeaders: 'Co-Leaders',
+      addCoLeader: 'Add',
+      coLeaderPlaceholder: 'Select a leader...',
+      coLeaderAdded: 'Co-leader added',
+      coLeaderRemoved: 'Co-leader removed',
+      noEligibleLeaders: 'No eligible leaders to add.',
     },
     form: {
+      // Section headings
+      sectionWhen: 'When',
+      sectionWhere: 'Where',
+      sectionRideType: 'Ride Type',
+      sectionRouteStats: 'Route Stats',
+      sectionDetails: 'Details',
+      sectionSchedule: 'Schedule',
+
+      // Import quick-start
+      importHeading: 'Start from a route',
+      importDescription: 'Import from a connected service to pre-fill ride details.',
+      importConfirmed: (routeName: string) => `"${routeName}" imported`,
+      importChange: 'Change Route',
+      connectPrompt: 'Connect Strava to import routes',
+
+      // URL detection
+      fetchRouteDetails: 'Fetch route details',
+      fetchingRoute: 'Fetching\u2026',
+      fetchRouteError: 'Could not fetch route details.',
+      pasteRouteLink: 'Paste a route link',
+      pasteRoutePlaceholder: 'https://strava.com/routes/...',
+      routeLinkAdded: 'Route link added',
+
+      // Fields
       title: 'Title',
       date: 'Date',
       startTime: 'Start time',
@@ -253,20 +283,23 @@ export const appContent = {
       capacity: 'Capacity',
       routeName: 'Route Name',
       routeLink: 'Route Link',
-      isDropRide: 'This is a drop ride',
+      isDropRide: 'Drop ride',
       tags: 'Tags',
       description: 'Description',
       selectLocation: 'Select location...',
       selectPace: 'Select pace...',
-      required: 'Title, date, and start time are required.',
+      optional: '(optional)',
+      required: 'Title, date, start time, meeting location, pace group, and capacity are required.',
       dateHelper: (start: string, end: string) => `Season: ${start} – ${end}`,
       dateHelperNoSeason: 'Future dates only',
       descriptionPlaceholder: 'Brief description of the ride...',
+      descriptionHelper: 'A few words help riders know what to expect.',
     },
     roster: {
       noSignups: 'No signups yet.',
       waitlisted: 'Waitlisted',
       leader: 'Leader',
+      joined: (timeAgo: string) => `Joined ${timeAgo} ago`,
     },
     comments: {
       heading: 'Comments',
@@ -513,7 +546,7 @@ export const appContent = {
     },
     paceTiers: {
       heading: 'Pace Tiers',
-      description: "Define your club's pace groups. Each ride requires exactly one.",
+      description: "Define your club's pace groups. Colors are assigned automatically by position.",
       add: 'Add Tier',
       namePlaceholder: 'Tier name',
       colorLabel: 'Color',
@@ -670,6 +703,7 @@ export const appContent = {
     commentEmpty: 'Comment cannot be empty.',
     commentNotFound: 'Comment not found.',
     commentTooLong: (max: number) => `Comment must be ${max} characters or fewer.`,
+    alreadyExists: 'Already added.',
   },
 
   notificationMessages: {

@@ -85,7 +85,7 @@ function SignupRow({ signup, isLeader }: { signup: SignupEntry; isLeader?: boole
         <p className="text-sm font-medium text-foreground truncate">{signup.user_name}</p>
         {signup.signed_up_at && (
           <p className="text-xs text-muted-foreground">
-            {formatDistanceToNow(new Date(signup.signed_up_at), { addSuffix: true })}
+            {ridesContent.roster.joined(formatDistanceToNow(new Date(signup.signed_up_at)))}
           </p>
         )}
       </div>

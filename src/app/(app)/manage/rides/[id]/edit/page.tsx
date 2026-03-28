@@ -9,6 +9,7 @@ import {
   getMeetingLocations,
   getPaceGroups,
   getRideSignups,
+  getRideCoLeaders,
 } from '@/lib/rides/queries';
 import { getClubMembers } from '@/lib/manage/queries';
 import { getUserConnections } from '@/lib/integrations/queries';
@@ -17,6 +18,7 @@ import { RideForm } from '@/components/rides/ride-form';
 import { CancelRideButton } from '@/components/rides/cancel-ride-button';
 import { SignupRoster } from '@/components/rides/signup-roster';
 import { WalkUpRiderForm } from '@/components/rides/walk-up-rider-form';
+import { CoLeaderPicker } from '@/components/rides/co-leader-picker';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { MemberStatus, RideStatus } from '@/config/statuses';
@@ -44,14 +46,16 @@ export default async function EditRidePage({
 
   const userId = membership.user_id;
 
-  const [ride, meetingLocations, paceGroups, signups, members, connections] = await Promise.all([
-    getRideById(id),
-    getMeetingLocations(membership.club_id),
-    getPaceGroups(membership.club_id),
-    getRideSignups(id),
-    getClubMembers(membership.club_id),
-    getUserConnections(userId),
-  ]);
+  const [ride, meetingLocations, paceGroups, signups, members, connections, coLeaders] =
+    await Promise.all([
+      getRideById(id),
+      getMeetingLocations(membership.club_id),
+      getPaceGroups(membership.club_id),
+      getRideSignups(id),
+      getClubMembers(membership.club_id),
+      getUserConnections(userId),
+      getRideCoLeaders(id),
+    ]);
 
   if (!ride) notFound();
 
@@ -68,14 +72,29 @@ export default async function EditRidePage({
     redirect(routes.ride(id));
   }
 
-  // Leaders can only edit rides they created; admins can edit any ride
-  if (userRole === 'ride_leader' && ride.created_by !== userId) {
+  // Leaders can only edit rides they created or co-lead; admins can edit any ride
+  const isCreator = ride.created_by === userId;
+  const isCoLeader = coLeaders.some((cl) => cl.user_id === userId);
+  if (userRole === 'ride_leader' && !isCreator && !isCoLeader) {
     redirect(routes.ride(id));
   }
 
   const existingSignupUserIds = signups.map((s) => s.user_id);
   const clubMembersForWalkUp = members
     .filter((m) => m.status === MemberStatus.ACTIVE)
+    .map((m) => ({
+      user_id: m.user_id,
+      name: m.display_name ?? m.full_name,
+    }));
+
+  // Eligible co-leaders: active members with ride_leader or admin role, excluding the ride creator
+  const eligibleLeaders = members
+    .filter(
+      (m) =>
+        m.status === MemberStatus.ACTIVE &&
+        (m.role === 'ride_leader' || m.role === 'admin') &&
+        m.user_id !== ride.created_by,
+    )
     .map((m) => ({
       user_id: m.user_id,
       name: m.display_name ?? m.full_name,
@@ -116,9 +135,15 @@ export default async function EditRidePage({
           route_polyline: ride.route_polyline ?? '',
           is_drop_ride: ride.is_drop_ride ?? false,
         }}
-        connectedServices={connections.map((c) => c.service).filter((s) => s !== 'ridewithgps')}
+        connectedServices={connections.map((c) => c.service)}
         returnTo={returnTo}
       />
+
+      {/* Co-leaders section */}
+      <div className="mt-12">
+        <SectionHeading className="mb-4">{ridesContent.edit.coLeaders}</SectionHeading>
+        <CoLeaderPicker rideId={id} coLeaders={coLeaders} eligibleLeaders={eligibleLeaders} />
+      </div>
 
       {/* Signups section */}
       <div className="mt-12">

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { CheckCircle, Hourglass } from '@phosphor-icons/react/dist/ssr';
+import { CheckCircle, Hourglass, Play, Timer } from '@phosphor-icons/react/dist/ssr';
 import { Card } from '@/components/ui/card';
 import {
   LABEL_SM,
@@ -15,7 +15,7 @@ import { appContent } from '@/content/app';
 import { cn, getRelativeDay } from '@/lib/utils';
 import { RideStatus, SignupStatus } from '@/config/statuses';
 import { dateFormats, formatTime, formatDuration, parseLocalDate } from '@/config/formatting';
-import { getRideAvailability } from '@/lib/rides/lifecycle';
+import { getRideAvailability, getRideLifecycle } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
 import type { RideWithDetails } from '@/types/database';
 
@@ -89,32 +89,54 @@ function RidesLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: bo
   const relativeDay = getRelativeDay(rideDate, dateFormats.dayShort);
   const leaderName = ride.creator?.display_name ?? ride.creator?.full_name ?? null;
   const availability = getRideAvailability(ride, ride.signup_count);
+  const lifecycle = getRideLifecycle(ride.ride_date, ride.start_time, ride.end_time);
   const userStatus = ride.current_user_signup_status;
   const hasSignupBanner =
     userStatus === SignupStatus.CONFIRMED || userStatus === SignupStatus.WAITLISTED;
+  const isLive = lifecycle === 'in_progress' || lifecycle === 'about_to_start';
   const hasAnyBanner = hasBanner || hasSignupBanner;
+
+  // Resolve the signup/lifecycle banner (lifecycle overrides signup status)
+  const signupBanner =
+    hasSignupBanner && isLive
+      ? {
+          icon: lifecycle === 'in_progress' ? Play : Timer,
+          label:
+            lifecycle === 'in_progress'
+              ? appContent.rides.status.inProgress
+              : appContent.rides.status.aboutToStart,
+          bgClass: 'bg-banner-soft-info-bg',
+          textClass: 'text-banner-soft-info-text',
+        }
+      : hasSignupBanner
+        ? {
+            icon: userStatus === SignupStatus.CONFIRMED ? CheckCircle : Hourglass,
+            label:
+              userStatus === SignupStatus.CONFIRMED
+                ? ridesContent.card.signedUp
+                : ride.current_user_waitlist_position
+                  ? appContent.schedule.status.waitlisted(ride.current_user_waitlist_position)
+                  : ridesContent.card.waitlisted,
+            bgClass:
+              userStatus === SignupStatus.CONFIRMED
+                ? 'bg-banner-soft-success-bg'
+                : 'bg-banner-soft-warning-bg',
+            textClass:
+              userStatus === SignupStatus.CONFIRMED
+                ? 'text-banner-soft-success-text'
+                : 'text-banner-soft-warning-text',
+          }
+        : null;
 
   return (
     <>
-      {/* Signup status banner — shown when user is signed up or waitlisted */}
-      {hasSignupBanner && (
+      {/* Signup/lifecycle banner — lifecycle overrides signup status */}
+      {signupBanner && (
         <CardBanner
-          icon={userStatus === SignupStatus.CONFIRMED ? CheckCircle : Hourglass}
-          label={
-            userStatus === SignupStatus.CONFIRMED
-              ? ridesContent.card.signedUp
-              : ride.current_user_waitlist_position
-                ? appContent.schedule.status.waitlisted(ride.current_user_waitlist_position)
-                : ridesContent.card.waitlisted
-          }
-          bgClass={
-            userStatus === SignupStatus.CONFIRMED ? 'bg-banner-success-bg' : 'bg-banner-warning-bg'
-          }
-          textClass={
-            userStatus === SignupStatus.CONFIRMED
-              ? 'text-banner-success-text'
-              : 'text-banner-warning-text'
-          }
+          icon={signupBanner.icon}
+          label={signupBanner.label}
+          bgClass={signupBanner.bgClass}
+          textClass={signupBanner.textClass}
         />
       )}
 

@@ -176,6 +176,16 @@
   --banner-secondary-text: var(--color-neutral-0);
   --banner-muted-bg: var(--color-neutral-100);
   --banner-muted-text: var(--color-neutral-500);
+  --banner-soft-success-bg: var(--color-success-100);
+  --banner-soft-success-text: var(--color-success-800);
+  --banner-soft-warning-bg: var(--color-warning-100);
+  --banner-soft-warning-text: var(--color-warning-800);
+  --banner-soft-error-bg: var(--color-error-100);
+  --banner-soft-error-text: var(--color-error-800);
+  --banner-soft-info-bg: var(--color-info-100);
+  --banner-soft-info-text: var(--color-info-800);
+  --banner-soft-secondary-bg: var(--color-secondary-100);
+  --banner-soft-secondary-text: var(--color-secondary-800);
 
   /* accent */
   --accent-primary-default: var(--color-primary-500);
@@ -188,18 +198,18 @@
   --accent-neutral-muted: var(--color-neutral-300);
 
   /* badge */
-  --badge-pace-1-bg: var(--color-primary-300);
-  --badge-pace-1-text: var(--color-neutral-950);
-  --badge-pace-2-bg: var(--color-success-300);
-  --badge-pace-2-text: var(--color-neutral-950);
-  --badge-pace-3-bg: var(--color-success-300);
-  --badge-pace-3-text: var(--color-neutral-950);
-  --badge-pace-4-bg: var(--color-secondary-300);
-  --badge-pace-4-text: var(--color-neutral-950);
-  --badge-pace-5-bg: var(--color-secondary-300);
-  --badge-pace-5-text: var(--color-neutral-950);
-  --badge-pace-6-bg: var(--color-neutral-900);
-  --badge-pace-6-text: var(--color-neutral-0);
+  --badge-pace-1-bg: var(--color-primary-50);
+  --badge-pace-1-text: var(--color-primary-700);
+  --badge-pace-2-bg: var(--color-success-50);
+  --badge-pace-2-text: var(--color-success-700);
+  --badge-pace-3-bg: var(--color-success-50);
+  --badge-pace-3-text: var(--color-success-600);
+  --badge-pace-4-bg: var(--color-secondary-50);
+  --badge-pace-4-text: var(--color-secondary-700);
+  --badge-pace-5-bg: var(--color-secondary-50);
+  --badge-pace-5-text: var(--color-secondary-600);
+  --badge-pace-6-bg: var(--color-neutral-100);
+  --badge-pace-6-text: var(--color-neutral-700);
   --badge-status-cancelled-bg: var(--color-error-50);
   --badge-status-cancelled-text: var(--color-error-800);
   --badge-status-full-bg: var(--color-warning-50);
@@ -295,6 +305,16 @@
   --banner-secondary-text: var(--color-neutral-0);
   --banner-muted-bg: var(--color-neutral-975);
   --banner-muted-text: var(--color-neutral-400);
+  --banner-soft-success-bg: var(--color-success-500-alpha-12);
+  --banner-soft-success-text: var(--color-success-300);
+  --banner-soft-warning-bg: var(--color-warning-500-alpha-12);
+  --banner-soft-warning-text: var(--color-warning-300);
+  --banner-soft-error-bg: var(--color-error-500-alpha-12);
+  --banner-soft-error-text: var(--color-error-300);
+  --banner-soft-info-bg: var(--color-info-500-alpha-12);
+  --banner-soft-info-text: var(--color-info-300);
+  --banner-soft-secondary-bg: var(--color-secondary-500-alpha-12);
+  --banner-soft-secondary-text: var(--color-secondary-300);
 
   /* accent */
   --accent-primary-default: var(--color-primary-400);
@@ -307,18 +327,18 @@
   --accent-neutral-muted: var(--color-neutral-600);
 
   /* badge */
-  --badge-pace-1-bg: var(--color-primary-300);
-  --badge-pace-1-text: var(--color-neutral-950);
-  --badge-pace-2-bg: var(--color-success-300);
-  --badge-pace-2-text: var(--color-neutral-950);
-  --badge-pace-3-bg: var(--color-success-300);
-  --badge-pace-3-text: var(--color-neutral-950);
-  --badge-pace-4-bg: var(--color-secondary-300);
-  --badge-pace-4-text: var(--color-neutral-950);
-  --badge-pace-5-bg: var(--color-secondary-300);
-  --badge-pace-5-text: var(--color-neutral-950);
-  --badge-pace-6-bg: var(--color-neutral-700);
-  --badge-pace-6-text: var(--color-neutral-100);
+  --badge-pace-1-bg: var(--color-primary-950);
+  --badge-pace-1-text: var(--color-primary-300);
+  --badge-pace-2-bg: var(--color-success-950);
+  --badge-pace-2-text: var(--color-success-300);
+  --badge-pace-3-bg: var(--color-success-950);
+  --badge-pace-3-text: var(--color-success-400);
+  --badge-pace-4-bg: var(--color-secondary-950);
+  --badge-pace-4-text: var(--color-secondary-300);
+  --badge-pace-5-bg: var(--color-secondary-950);
+  --badge-pace-5-text: var(--color-secondary-400);
+  --badge-pace-6-bg: var(--color-neutral-900);
+  --badge-pace-6-text: var(--color-neutral-300);
   --badge-status-cancelled-bg: var(--color-error-500-alpha-12);
   --badge-status-cancelled-text: var(--color-error-300);
   --badge-status-full-bg: var(--color-warning-500-alpha-12);

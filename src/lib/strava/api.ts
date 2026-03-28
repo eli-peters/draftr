@@ -207,6 +207,56 @@ export async function getActivities(
 }
 
 /**
+ * Fetch a single route by ID.
+ * Returns null on failure.
+ */
+export async function getRouteById(
+  accessToken: string,
+  routeId: string,
+): Promise<StravaRoute | null> {
+  try {
+    const res = await fetch(`${config.apiBase}/routes/${routeId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!res.ok) {
+      console.error('[strava] Get route by ID error:', res.status, await res.text());
+      return null;
+    }
+
+    return (await res.json()) as StravaRoute;
+  } catch (error) {
+    console.error('[strava] Failed to get route by ID:', error);
+    return null;
+  }
+}
+
+/**
+ * Fetch a single activity by ID.
+ * Returns null on failure.
+ */
+export async function getActivityById(
+  accessToken: string,
+  activityId: string,
+): Promise<StravaActivity | null> {
+  try {
+    const res = await fetch(`${config.apiBase}/activities/${activityId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!res.ok) {
+      console.error('[strava] Get activity by ID error:', res.status, await res.text());
+      return null;
+    }
+
+    return (await res.json()) as StravaActivity;
+  } catch (error) {
+    console.error('[strava] Failed to get activity by ID:', error);
+    return null;
+  }
+}
+
+/**
  * Fetch the authenticated athlete's profile.
  * Returns null on failure.
  */

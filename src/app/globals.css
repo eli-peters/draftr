@@ -126,6 +126,18 @@
   --color-banner-muted-bg: var(--banner-muted-bg);
   --color-banner-muted-text: var(--banner-muted-text);
 
+  /* Soft banner tokens → Tailwind (subdued card header banners) */
+  --color-banner-soft-success-bg: var(--banner-soft-success-bg);
+  --color-banner-soft-success-text: var(--banner-soft-success-text);
+  --color-banner-soft-warning-bg: var(--banner-soft-warning-bg);
+  --color-banner-soft-warning-text: var(--banner-soft-warning-text);
+  --color-banner-soft-error-bg: var(--banner-soft-error-bg);
+  --color-banner-soft-error-text: var(--banner-soft-error-text);
+  --color-banner-soft-info-bg: var(--banner-soft-info-bg);
+  --color-banner-soft-info-text: var(--banner-soft-info-text);
+  --color-banner-soft-secondary-bg: var(--banner-soft-secondary-bg);
+  --color-banner-soft-secondary-text: var(--banner-soft-secondary-text);
+
   /* Accent tokens → Tailwind */
   --color-accent-primary-default: var(--accent-primary-default);
   --color-accent-primary-muted: var(--accent-primary-muted);

@@ -33,7 +33,7 @@ async function checkRideEditPermission(
   const role = membership.role;
   if (role !== 'ride_leader' && role !== 'admin') return errors.notAuthorized;
 
-  // Admins can edit any ride; leaders can only edit rides they created
+  // Admins can edit any ride; leaders can only edit rides they created or co-lead
   if (role === 'ride_leader') {
     const { data: ride } = await supabase
       .from('rides')
@@ -41,7 +41,17 @@ async function checkRideEditPermission(
       .eq('id', rideId)
       .single();
 
-    if (ride?.created_by !== userId) return errors.notAuthorized;
+    if (ride?.created_by !== userId) {
+      // Check if user is a co-leader
+      const { data: coLeader } = await supabase
+        .from('ride_leaders')
+        .select('id')
+        .eq('ride_id', rideId)
+        .eq('user_id', userId)
+        .single();
+
+      if (!coLeader) return errors.notAuthorized;
+    }
   }
 
   return null;
@@ -254,11 +264,11 @@ export interface CreateRideData {
   ride_date: string;
   start_time: string;
   end_time?: string;
-  meeting_location_id?: string;
-  pace_group_id?: string;
+  meeting_location_id: string;
+  pace_group_id: string;
   distance_km?: number;
   elevation_m?: number;
-  capacity?: number;
+  capacity: number;
   route_url?: string;
   route_name?: string;
   route_polyline?: string;
@@ -446,11 +456,11 @@ export interface UpdateRideData {
   description?: string;
   ride_date: string;
   start_time: string;
-  meeting_location_id?: string;
-  pace_group_id?: string;
+  meeting_location_id: string;
+  pace_group_id: string;
   distance_km?: number;
   elevation_m?: number;
-  capacity?: number;
+  capacity: number;
   route_url?: string;
   route_name?: string;
   route_polyline?: string;
@@ -865,5 +875,60 @@ export async function deleteComment(commentId: string) {
   if (error) return { error: error.message };
 
   revalidatePath(`/rides/${permission.comment.ride_id}`);
+  return { success: true };
+}
+
+// ---------------------------------------------------------------------------
+// Co-Leaders
+// ---------------------------------------------------------------------------
+
+/**
+ * Add a co-leader to a ride.
+ * Only the ride creator or admin can add co-leaders.
+ */
+export async function addCoLeader(rideId: string, userId: string) {
+  const supabase = await createClient();
+  const user = await getUser();
+
+  if (!user) return { error: common.notAuthenticated };
+
+  const permissionError = await checkRideEditPermission(supabase, user.id, rideId);
+  if (permissionError) return { error: permissionError };
+
+  const { error } = await supabase
+    .from('ride_leaders')
+    .insert({ ride_id: rideId, user_id: userId });
+
+  if (error) {
+    if (error.code === '23505') return { error: errors.alreadyExists };
+    return { error: error.message };
+  }
+
+  revalidatePath('/');
+  return { success: true };
+}
+
+/**
+ * Remove a co-leader from a ride.
+ * Only the ride creator or admin can remove co-leaders.
+ */
+export async function removeCoLeader(rideId: string, userId: string) {
+  const supabase = await createClient();
+  const user = await getUser();
+
+  if (!user) return { error: common.notAuthenticated };
+
+  const permissionError = await checkRideEditPermission(supabase, user.id, rideId);
+  if (permissionError) return { error: permissionError };
+
+  const { error } = await supabase
+    .from('ride_leaders')
+    .delete()
+    .eq('ride_id', rideId)
+    .eq('user_id', userId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/');
   return { success: true };
 }

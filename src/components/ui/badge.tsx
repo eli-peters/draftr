@@ -16,12 +16,18 @@ const badgeVariants = cva(
         warning:
           'bg-warning/10 text-warning border-warning/50 focus-visible:ring-warning/20 [a]:hover:bg-warning/20',
         outline: 'border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground',
-        'pace-1': 'bg-badge-pace-1-bg text-badge-pace-1-text',
-        'pace-2': 'bg-badge-pace-2-bg text-badge-pace-2-text',
-        'pace-3': 'bg-badge-pace-3-bg text-badge-pace-3-text',
-        'pace-4': 'bg-badge-pace-4-bg text-badge-pace-4-text',
-        'pace-5': 'bg-badge-pace-5-bg text-badge-pace-5-text',
-        'pace-6': 'bg-badge-pace-6-bg text-badge-pace-6-text',
+        'pace-1':
+          'border border-badge-pace-1-text bg-badge-pace-1-bg text-badge-pace-1-text uppercase tracking-wide font-semibold',
+        'pace-2':
+          'border border-badge-pace-2-text bg-badge-pace-2-bg text-badge-pace-2-text uppercase tracking-wide font-semibold',
+        'pace-3':
+          'border border-badge-pace-3-text bg-badge-pace-3-bg text-badge-pace-3-text uppercase tracking-wide font-semibold',
+        'pace-4':
+          'border border-badge-pace-4-text bg-badge-pace-4-bg text-badge-pace-4-text uppercase tracking-wide font-semibold',
+        'pace-5':
+          'border border-badge-pace-5-text bg-badge-pace-5-bg text-badge-pace-5-text uppercase tracking-wide font-semibold',
+        'pace-6':
+          'border border-badge-pace-6-text bg-badge-pace-6-bg text-badge-pace-6-text uppercase tracking-wide font-semibold',
         'status-cancelled': 'bg-badge-status-cancelled-bg text-badge-status-cancelled-text',
         'status-full': 'bg-badge-status-full-bg text-badge-status-full-text',
         'status-confirmed': 'bg-badge-status-confirmed-bg text-badge-status-confirmed-text',
@@ -38,7 +44,7 @@ const badgeVariants = cva(
         subtle: 'rounded',
       },
       size: {
-        default: 'h-[1.375rem] px-2.5 py-0.5 text-xs',
+        default: 'px-3 py-1 text-xs',
         sm: 'min-w-5 px-3 py-1.5 text-xs',
         lg: 'px-3 py-1 text-sm',
       },

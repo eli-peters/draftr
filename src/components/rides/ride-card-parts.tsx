@@ -76,8 +76,8 @@ export function RideBanner({ type }: RideBannerProps) {
     <CardBanner
       icon={isWarning ? WarningCircle : XCircle}
       label={isWarning ? ridesContent.status.weatherWatch : ridesContent.status.cancelled}
-      bgClass={isWarning ? 'bg-banner-warning-bg' : 'bg-banner-error-bg'}
-      textClass={isWarning ? 'text-banner-warning-text' : 'text-banner-error-text'}
+      bgClass={isWarning ? 'bg-banner-soft-warning-bg' : 'bg-banner-soft-error-bg'}
+      textClass={isWarning ? 'text-banner-soft-warning-text' : 'text-banner-soft-error-text'}
     />
   );
 }

@@ -771,3 +771,40 @@ export async function getRidePickups(rideId: string): Promise<RidePickupWithLoca
     location: pickup.location as unknown as { name: string; address: string | null },
   })) as RidePickupWithLocation[];
 }
+
+// ---------------------------------------------------------------------------
+// Co-Leaders
+// ---------------------------------------------------------------------------
+
+export interface RideLeader {
+  user_id: string;
+  name: string;
+  added_at: string;
+}
+
+/**
+ * Fetch co-leaders for a ride (not including the ride creator).
+ */
+export async function getRideCoLeaders(rideId: string): Promise<RideLeader[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('ride_leaders')
+    .select('user_id, added_at, user:users!ride_leaders_user_id_fkey(full_name, display_name)')
+    .eq('ride_id', rideId)
+    .order('added_at', { ascending: true });
+
+  if (error?.message) {
+    console.error('Error fetching ride co-leaders:', error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row) => {
+    const user = row.user as unknown as { full_name: string; display_name: string | null };
+    return {
+      user_id: row.user_id,
+      name: user?.display_name ?? user?.full_name ?? '',
+      added_at: row.added_at,
+    };
+  });
+}

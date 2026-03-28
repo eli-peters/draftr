@@ -19,4 +19,5 @@ export const routes = {
   stravaCallback: '/api/integrations/strava/callback',
   rwgpsCallback: '/api/integrations/ridewithgps/callback',
   importRoutes: '/api/integrations/routes',
+  importRouteById: (id: string) => `/api/integrations/routes/${id}`,
 } as const;

@@ -73,18 +73,33 @@ export function RideDetailCard({
 
   return (
     <Card className="mt-6 overflow-clip p-0">
-      {/* Status banners — priority: cancelled > weather watch > signed up */}
-      {isCancelled && <RideBanner type={RideStatus.CANCELLED} />}
-      {isWeatherWatch && !isCancelled && <RideBanner type={RideStatus.WEATHER_WATCH} />}
-      {isSignedUp && !isCancelled && isWaitlisted && lifecycle !== 'upcoming' && (
+      {/* Single priority banner — cancelled > weather watch > in progress > about to start > waitlisted > signed up */}
+      {isCancelled ? (
+        <RideBanner type={RideStatus.CANCELLED} />
+      ) : isWeatherWatch ? (
+        <RideBanner type={RideStatus.WEATHER_WATCH} />
+      ) : lifecycle === 'in_progress' ? (
+        <CardBanner
+          icon={Play}
+          label={rideStatus.inProgress}
+          bgClass="bg-banner-soft-info-bg"
+          textClass="text-banner-soft-info-text"
+        />
+      ) : lifecycle === 'about_to_start' ? (
+        <CardBanner
+          icon={Timer}
+          label={rideStatus.aboutToStart}
+          bgClass="bg-banner-soft-info-bg"
+          textClass="text-banner-soft-info-text"
+        />
+      ) : isSignedUp && isWaitlisted && lifecycle !== 'upcoming' ? (
         <CardBanner
           icon={Timer}
           label={detail.waitlistClosed}
           bgClass="bg-banner-muted-bg"
           textClass="text-banner-muted-text"
         />
-      )}
-      {isSignedUp && !isCancelled && isWaitlisted && lifecycle === 'upcoming' && (
+      ) : isSignedUp && isWaitlisted ? (
         <CardBanner
           icon={HourglassSimpleMedium}
           label={
@@ -92,34 +107,17 @@ export function RideDetailCard({
               ? appContent.schedule.status.waitlisted(waitlistPosition)
               : appContent.rides.roster.waitlisted
           }
-          bgClass="bg-banner-warning-bg"
-          textClass="text-banner-warning-text"
+          bgClass="bg-banner-soft-warning-bg"
+          textClass="text-banner-soft-warning-text"
         />
-      )}
-      {isSignedUp && !isCancelled && !isWaitlisted && (
+      ) : isSignedUp ? (
         <CardBanner
           icon={CheckCircle}
           label={detail.signedUp}
-          bgClass="bg-banner-success-bg"
-          textClass="text-banner-success-text"
+          bgClass="bg-banner-soft-success-bg"
+          textClass="text-banner-soft-success-text"
         />
-      )}
-      {lifecycle === 'about_to_start' && !isCancelled && (
-        <CardBanner
-          icon={Timer}
-          label={rideStatus.aboutToStart}
-          bgClass="bg-banner-info-bg"
-          textClass="text-banner-info-text"
-        />
-      )}
-      {lifecycle === 'in_progress' && !isCancelled && (
-        <CardBanner
-          icon={Play}
-          label={rideStatus.inProgress}
-          bgClass="bg-banner-info-bg"
-          textClass="text-banner-info-text"
-        />
-      )}
+      ) : null}
 
       {/* Card body */}
       <div className="flex flex-col gap-4 px-6 pb-6 pt-5">

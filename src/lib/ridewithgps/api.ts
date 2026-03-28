@@ -118,16 +118,29 @@ export interface RwgpsTrip {
 // ---------------------------------------------------------------------------
 
 /**
- * Build RWGPS API URL with auth token as query parameter.
- * RWGPS v1 API accepts auth_token + apikey as query params (legacy)
- * or x-rwgps-api-key + x-rwgps-auth-token headers.
- * Using query params as fallback since header auth returns 401.
+ * Build a full RWGPS API URL with optional query params.
  */
-function authenticatedUrl(path: string, accessToken: string, extraParams = '') {
-  const sep = path.includes('?') ? '&' : '?';
+function apiUrl(path: string, params: Record<string, string | number> = {}) {
+  const url = new URL(`${config.apiBase}${path}`);
+  for (const [k, v] of Object.entries(params)) {
+    url.searchParams.set(k, String(v));
+  }
+  return url.toString();
+}
+
+/**
+ * Build headers for authenticated RWGPS API requests.
+ * Sends both Bearer token and RWGPS custom headers for compatibility.
+ */
+function authHeaders(accessToken: string): Record<string, string> {
   const apiKey = process.env.RWGPS_CLIENT_ID;
   if (!apiKey) throw new Error('RWGPS_CLIENT_ID environment variable is not set');
-  return `${config.apiBase}${path}${sep}auth_token=${accessToken}&apikey=${apiKey}${extraParams ? '&' + extraParams : ''}`;
+  return {
+    Authorization: `Bearer ${accessToken}`,
+    'x-rwgps-api-key': apiKey,
+    'x-rwgps-auth-token': accessToken,
+    Accept: 'application/json',
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -140,13 +153,13 @@ function authenticatedUrl(path: string, accessToken: string, extraParams = '') {
  */
 export async function getUserRoutes(
   accessToken: string,
-  _userId: string,
+  userId: string,
   page = 1,
   pageSize = 30,
 ): Promise<RwgpsRoute[] | null> {
   try {
-    const url = authenticatedUrl('/routes.json', accessToken, `page=${page}&page_size=${pageSize}`);
-    const res = await fetch(url);
+    const url = apiUrl('/routes.json', { page, page_size: pageSize });
+    const res = await fetch(url, { headers: authHeaders(accessToken) });
 
     if (!res.ok) {
       console.error('[rwgps] Get routes error:', res.status, await res.text());
@@ -167,13 +180,13 @@ export async function getUserRoutes(
  */
 export async function getUserTrips(
   accessToken: string,
-  _userId: string,
+  userId: string,
   page = 1,
   pageSize = 30,
 ): Promise<RwgpsTrip[] | null> {
   try {
-    const url = authenticatedUrl('/trips.json', accessToken, `page=${page}&page_size=${pageSize}`);
-    const res = await fetch(url);
+    const url = apiUrl('/trips.json', { page, page_size: pageSize });
+    const res = await fetch(url, { headers: authHeaders(accessToken) });
 
     if (!res.ok) {
       console.error('[rwgps] Get trips error:', res.status, await res.text());
@@ -189,12 +202,109 @@ export async function getUserTrips(
 }
 
 /**
+ * Fetch a single route by ID.
+ * Uses authenticated endpoint. Returns null on failure.
+ */
+export async function getRouteById(
+  accessToken: string,
+  routeId: string,
+): Promise<RwgpsRoute | null> {
+  try {
+    const url = apiUrl(`/routes/${routeId}.json`);
+    const res = await fetch(url, { headers: authHeaders(accessToken) });
+
+    if (!res.ok) {
+      console.error('[rwgps] Get route by ID error:', res.status, await res.text());
+      return null;
+    }
+
+    const data = await res.json();
+    return (data.route ?? data) as RwgpsRoute;
+  } catch (error) {
+    console.error('[rwgps] Failed to get route by ID:', error);
+    return null;
+  }
+}
+
+/**
+ * Fetch a single trip by ID.
+ * Uses authenticated endpoint. Returns null on failure.
+ */
+export async function getTripById(accessToken: string, tripId: string): Promise<RwgpsTrip | null> {
+  try {
+    const url = apiUrl(`/trips/${tripId}.json`);
+    const res = await fetch(url, { headers: authHeaders(accessToken) });
+
+    if (!res.ok) {
+      console.error('[rwgps] Get trip by ID error:', res.status, await res.text());
+      return null;
+    }
+
+    const data = await res.json();
+    return (data.trip ?? data) as RwgpsTrip;
+  } catch (error) {
+    console.error('[rwgps] Failed to get trip by ID:', error);
+    return null;
+  }
+}
+
+/**
+ * Fetch the encoded polyline for a route.
+ * Returns the encoded polyline string or null on failure.
+ */
+export async function getRoutePolyline(
+  accessToken: string,
+  routeId: string | number,
+): Promise<string | null> {
+  try {
+    const url = apiUrl(`/routes/${routeId}/polyline.json`);
+    const res = await fetch(url, { headers: authHeaders(accessToken) });
+
+    if (!res.ok) {
+      console.error('[rwgps] Get route polyline error:', res.status, await res.text());
+      return null;
+    }
+
+    const data = await res.json();
+    return data.polyline?.data ?? null;
+  } catch (error) {
+    console.error('[rwgps] Failed to get route polyline:', error);
+    return null;
+  }
+}
+
+/**
+ * Fetch the encoded polyline for a trip.
+ * Returns the encoded polyline string or null on failure.
+ */
+export async function getTripPolyline(
+  accessToken: string,
+  tripId: string | number,
+): Promise<string | null> {
+  try {
+    const url = apiUrl(`/trips/${tripId}/polyline.json`);
+    const res = await fetch(url, { headers: authHeaders(accessToken) });
+
+    if (!res.ok) {
+      console.error('[rwgps] Get trip polyline error:', res.status, await res.text());
+      return null;
+    }
+
+    const data = await res.json();
+    return data.polyline?.data ?? null;
+  } catch (error) {
+    console.error('[rwgps] Failed to get trip polyline:', error);
+    return null;
+  }
+}
+
+/**
  * Fetch the authenticated user's profile.
  * Returns null on failure.
  */
 export async function getCurrentUser(accessToken: string): Promise<RwgpsUser | null> {
   try {
-    const res = await fetch(authenticatedUrl('/users/current.json', accessToken));
+    const res = await fetch(apiUrl('/users/current'), { headers: authHeaders(accessToken) });
 
     if (!res.ok) {
       console.error('[rwgps] Get current user error:', res.status, await res.text());

@@ -8,6 +8,7 @@ import {
   getUserClubMembership,
   getRideComments,
   getRidePickups,
+  getRideCoLeaders,
 } from '@/lib/rides/queries';
 import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { SignupButton } from '@/components/rides/signup-button';
@@ -32,13 +33,14 @@ interface RideDetailPageProps {
 
 export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const { id } = await params;
-  const [ride, signup, signups, membership, comments, pickups] = await Promise.all([
+  const [ride, signup, signups, membership, comments, pickups, coLeaders] = await Promise.all([
     getRideById(id),
     getUserSignupStatus(id),
     getRideSignups(id),
     getUserClubMembership(),
     getRideComments(id),
     getRidePickups(id),
+    getRideCoLeaders(id),
   ]);
   if (!ride) notFound();
 
@@ -55,7 +57,9 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
   const userRole = (membership?.role as UserRole) ?? 'rider';
   const isCreator = membership?.user_id === ride.created_by;
-  const hasEditRole = userRole === 'admin' || (userRole === 'ride_leader' && isCreator);
+  const isCoLeader = coLeaders.some((cl) => cl.user_id === membership?.user_id);
+  const hasEditRole =
+    userRole === 'admin' || (userRole === 'ride_leader' && (isCreator || isCoLeader));
   const canEdit = !availability.isPast && !availability.isCancelled && hasEditRole;
   const currentUserId = membership?.user_id ?? null;
 

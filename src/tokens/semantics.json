@@ -727,6 +727,148 @@
           }
         }
       }
+    },
+    "soft": {
+      "success": {
+        "bg": {
+          "$type": "color",
+          "$description": "Subdued card banner background — confirmed / signed-up state (list, schedule, detail contexts)",
+          "$value": "{color.success.100}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.success.100}",
+                "Dark": "{color.success.500-alpha-12}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$description": "Subdued card banner text — confirmed / signed-up state",
+          "$value": "{color.success.800}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.success.800}",
+                "Dark": "{color.success.300}"
+              }
+            }
+          }
+        }
+      },
+      "warning": {
+        "bg": {
+          "$type": "color",
+          "$description": "Subdued card banner background — waitlisted / weather watch state (list, schedule, detail contexts)",
+          "$value": "{color.warning.100}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.warning.100}",
+                "Dark": "{color.warning.500-alpha-12}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$description": "Subdued card banner text — waitlisted / weather watch state",
+          "$value": "{color.warning.800}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.warning.800}",
+                "Dark": "{color.warning.300}"
+              }
+            }
+          }
+        }
+      },
+      "error": {
+        "bg": {
+          "$type": "color",
+          "$description": "Subdued card banner background — cancelled state (list, schedule, detail contexts)",
+          "$value": "{color.error.100}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.error.100}",
+                "Dark": "{color.error.500-alpha-12}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$description": "Subdued card banner text — cancelled state",
+          "$value": "{color.error.800}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.error.800}",
+                "Dark": "{color.error.300}"
+              }
+            }
+          }
+        }
+      },
+      "info": {
+        "bg": {
+          "$type": "color",
+          "$description": "Subdued card banner background — about to start / in progress state (list, schedule, detail contexts)",
+          "$value": "{color.info.100}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.info.100}",
+                "Dark": "{color.info.500-alpha-12}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$description": "Subdued card banner text — about to start / in progress state",
+          "$value": "{color.info.800}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.info.800}",
+                "Dark": "{color.info.300}"
+              }
+            }
+          }
+        }
+      },
+      "secondary": {
+        "bg": {
+          "$type": "color",
+          "$description": "Subdued card banner background — leader context (list, schedule, detail contexts)",
+          "$value": "{color.secondary.100}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.secondary.100}",
+                "Dark": "{color.secondary.500-alpha-12}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$description": "Subdued card banner text — leader context",
+          "$value": "{color.secondary.800}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.secondary.800}",
+                "Dark": "{color.secondary.300}"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "accent": {
@@ -846,20 +988,21 @@
       "1": {
         "bg": {
           "$type": "color",
-          "$description": "Social — hot pink (accent-primary-muted)",
-          "$value": "{color.primary.300}",
+          "$description": "Social — subdued pink tint",
+          "$value": "{color.primary.50}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.primary.300}", "Dark": "{color.primary.300}" }
+              "modes": { "Light": "{color.primary.50}", "Dark": "{color.primary.950}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.neutral.950}",
+          "$description": "Social — strong pink for text",
+          "$value": "{color.primary.700}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.neutral.950}", "Dark": "{color.neutral.950}" }
+              "modes": { "Light": "{color.primary.700}", "Dark": "{color.primary.300}" }
             }
           }
         }
@@ -867,20 +1010,21 @@
       "2": {
         "bg": {
           "$type": "color",
-          "$description": "Intermediate B — mint green",
-          "$value": "{color.success.300}",
+          "$description": "Intermediate B — subdued green tint",
+          "$value": "{color.success.50}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.success.300}", "Dark": "{color.success.300}" }
+              "modes": { "Light": "{color.success.50}", "Dark": "{color.success.950}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.neutral.950}",
+          "$description": "Intermediate B — strong green for text",
+          "$value": "{color.success.700}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.neutral.950}", "Dark": "{color.neutral.950}" }
+              "modes": { "Light": "{color.success.700}", "Dark": "{color.success.300}" }
             }
           }
         }
@@ -888,20 +1032,21 @@
       "3": {
         "bg": {
           "$type": "color",
-          "$description": "Intermediate A — mint green (same as Int B)",
-          "$value": "{color.success.300}",
+          "$description": "Intermediate A — subdued green tint",
+          "$value": "{color.success.50}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.success.300}", "Dark": "{color.success.300}" }
+              "modes": { "Light": "{color.success.50}", "Dark": "{color.success.950}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.neutral.950}",
+          "$description": "Intermediate A — shifted green for text (distinguishes from Int B)",
+          "$value": "{color.success.600}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.neutral.950}", "Dark": "{color.neutral.950}" }
+              "modes": { "Light": "{color.success.600}", "Dark": "{color.success.400}" }
             }
           }
         }
@@ -909,20 +1054,21 @@
       "4": {
         "bg": {
           "$type": "color",
-          "$description": "Advanced B — steel teal",
-          "$value": "{color.secondary.300}",
+          "$description": "Advanced B — subdued teal tint",
+          "$value": "{color.secondary.50}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.secondary.300}", "Dark": "{color.secondary.300}" }
+              "modes": { "Light": "{color.secondary.50}", "Dark": "{color.secondary.950}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.neutral.950}",
+          "$description": "Advanced B — strong teal for text",
+          "$value": "{color.secondary.700}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.neutral.950}", "Dark": "{color.neutral.950}" }
+              "modes": { "Light": "{color.secondary.700}", "Dark": "{color.secondary.300}" }
             }
           }
         }
@@ -930,20 +1076,21 @@
       "5": {
         "bg": {
           "$type": "color",
-          "$description": "Advanced A — steel teal (same as Adv B)",
-          "$value": "{color.secondary.300}",
+          "$description": "Advanced A — subdued teal tint",
+          "$value": "{color.secondary.50}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.secondary.300}", "Dark": "{color.secondary.300}" }
+              "modes": { "Light": "{color.secondary.50}", "Dark": "{color.secondary.950}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.neutral.950}",
+          "$description": "Advanced A — shifted teal for text (distinguishes from Adv B)",
+          "$value": "{color.secondary.600}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.neutral.950}", "Dark": "{color.neutral.950}" }
+              "modes": { "Light": "{color.secondary.600}", "Dark": "{color.secondary.400}" }
             }
           }
         }
@@ -951,20 +1098,21 @@
       "6": {
         "bg": {
           "$type": "color",
-          "$description": "Elite — black (lightened in dark mode for contrast)",
-          "$value": "{color.neutral.900}",
+          "$description": "Elite — subdued neutral tint",
+          "$value": "{color.neutral.100}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.neutral.900}", "Dark": "{color.neutral.700}" }
+              "modes": { "Light": "{color.neutral.100}", "Dark": "{color.neutral.900}" }
             }
           }
         },
         "text": {
           "$type": "color",
-          "$value": "{color.neutral.0}",
+          "$description": "Elite — strong neutral for text",
+          "$value": "{color.neutral.700}",
           "$extensions": {
             "com.figma": {
-              "modes": { "Light": "{color.neutral.0}", "Dark": "{color.neutral.100}" }
+              "modes": { "Light": "{color.neutral.700}", "Dark": "{color.neutral.300}" }
             }
           }
         }

@@ -71,16 +71,25 @@ export default async function HomePage() {
   ]);
 
   // Filter out rides that have already completed (past their end_time today)
-  const activeRides = rides.filter(
-    (r) => getRideLifecycle(r.ride_date, r.start_time, r.end_time) !== 'completed',
-  );
+  const isNotCompleted = (r: { ride_date: string; start_time: string; end_time: string | null }) =>
+    getRideLifecycle(r.ride_date, r.start_time, r.end_time) !== 'completed';
+
+  const activeRides = rides.filter(isNotCompleted);
 
   // Home feed shows only rides this user is signed up or waitlisted for
   const myRides = activeRides.filter((r) => r.current_user_signup_status != null);
 
+  // Filter completed rides from action bar items
+  const filteredNextSignup = nextSignup && isNotCompleted(nextSignup) ? nextSignup : null;
+  const filteredNextLedRide = nextLedRide && isNotCompleted(nextLedRide) ? nextLedRide : null;
+  const filteredNextWaitlistedRide =
+    nextWaitlistedRide && isNotCompleted(nextWaitlistedRide) ? nextWaitlistedRide : null;
+
   // Suppress nextLedRide if it refers to the same ride as nextSignup (avoid ActionBar duplication)
   const dedupedNextLedRide =
-    nextLedRide && nextSignup && nextLedRide.id === nextSignup.id ? null : nextLedRide;
+    filteredNextLedRide && filteredNextSignup && filteredNextLedRide.id === filteredNextSignup.id
+      ? null
+      : filteredNextLedRide;
 
   return (
     <DashboardShell>
@@ -94,9 +103,9 @@ export default async function HomePage() {
       {/* Role-contextual action bar — only renders if there are items needing attention */}
       <div className="mt-8">
         <ActionBar
-          nextSignup={nextSignup}
+          nextSignup={filteredNextSignup}
           nextLedRide={dedupedNextLedRide}
-          nextWaitlistedRide={nextWaitlistedRide}
+          nextWaitlistedRide={filteredNextWaitlistedRide}
           weatherWatchRide={weatherWatchRide}
           pendingMemberCount={pendingMemberCount}
           ridesNeedingLeaderCount={ridesNeedingLeaderCount}

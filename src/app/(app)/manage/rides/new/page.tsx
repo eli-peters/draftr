@@ -103,7 +103,7 @@ export default async function CreateRidePage({
         initialData={initialData}
         seasonStart={clubSettings.season_start}
         seasonEnd={clubSettings.season_end}
-        connectedServices={connections.map((c) => c.service).filter((s) => s !== 'ridewithgps')}
+        connectedServices={connections.map((c) => c.service)}
       />
     </DashboardShell>
   );

@@ -213,28 +213,43 @@ export function ActionBar({
         })()}
 
       {/* Leader: next led ride */}
-      {nextLedRide && (
-        <ActionCard
-          label={content.actionBar.nextLedRide}
-          icon={FlagBanner}
-          href={routes.ride(nextLedRide.id)}
-          bgClass="bg-banner-secondary-bg"
-          textClass="text-banner-secondary-text"
-        >
-          <CardContentSection
-            date={getRelativeDay(parseLocalDate(nextLedRide.ride_date))}
-            time={formatTime(nextLedRide.start_time)}
-            title={nextLedRide.title}
-            paceGroupName={nextLedRide.pace_group_name}
-            paceGroupSortOrder={nextLedRide.pace_group_sort_order}
-            distanceKm={nextLedRide.distance_km}
-            elevationM={nextLedRide.elevation_m}
-            durationDisplay={formatDuration(nextLedRide.start_time, nextLedRide.end_time)}
-            locationName={nextLedRide.meeting_location_name}
-            weather={nextLedRide.weather}
-          />
-        </ActionCard>
-      )}
+      {nextLedRide &&
+        (() => {
+          const ledLifecycle = getRideLifecycle(
+            nextLedRide.ride_date,
+            nextLedRide.start_time,
+            nextLedRide.end_time,
+          );
+          const ledIsLive = ledLifecycle === 'in_progress' || ledLifecycle === 'about_to_start';
+          const ledLabel = ledIsLive
+            ? ledLifecycle === 'in_progress'
+              ? appContent.rides.status.inProgress
+              : appContent.rides.status.aboutToStart
+            : content.actionBar.nextLedRide;
+          const ledIcon = ledIsLive ? (ledLifecycle === 'in_progress' ? Play : Timer) : FlagBanner;
+          return (
+            <ActionCard
+              label={ledLabel}
+              icon={ledIcon}
+              href={routes.ride(nextLedRide.id)}
+              bgClass={ledIsLive ? 'bg-banner-info-bg' : 'bg-banner-secondary-bg'}
+              textClass={ledIsLive ? 'text-banner-info-text' : 'text-banner-secondary-text'}
+            >
+              <CardContentSection
+                date={getRelativeDay(parseLocalDate(nextLedRide.ride_date))}
+                time={formatTime(nextLedRide.start_time)}
+                title={nextLedRide.title}
+                paceGroupName={nextLedRide.pace_group_name}
+                paceGroupSortOrder={nextLedRide.pace_group_sort_order}
+                distanceKm={nextLedRide.distance_km}
+                elevationM={nextLedRide.elevation_m}
+                durationDisplay={formatDuration(nextLedRide.start_time, nextLedRide.end_time)}
+                locationName={nextLedRide.meeting_location_name}
+                weather={nextLedRide.weather}
+              />
+            </ActionCard>
+          );
+        })()}
 
       {/* Leader: weather watch */}
       {weatherWatchRide && (

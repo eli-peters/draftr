@@ -2,7 +2,13 @@
 
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { CheckCircleIcon, HourglassIcon, XCircleIcon } from '@phosphor-icons/react/dist/ssr';
+import {
+  CheckCircleIcon,
+  HourglassIcon,
+  PlayIcon,
+  TimerIcon,
+  XCircleIcon,
+} from '@phosphor-icons/react/dist/ssr';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -14,7 +20,7 @@ import { appContent } from '@/content/app';
 import { cn, getRelativeDay } from '@/lib/utils';
 import { RideStatus, SignupStatus } from '@/config/statuses';
 import { dateFormats, formatTime, formatDuration, parseLocalDate } from '@/config/formatting';
-import { getRideAvailability } from '@/lib/rides/lifecycle';
+import { getRideAvailability, getRideLifecycle } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
 import { buildDirectionsUrl } from '@/lib/maps/directions';
 import type { UserRideSignup } from '@/lib/rides/queries';
@@ -39,13 +45,13 @@ interface ScheduleCardProps {
 const statusBannerConfig = {
   confirmed: {
     icon: CheckCircleIcon,
-    bgClass: 'bg-banner-success-bg',
-    textClass: 'text-banner-success-text',
+    bgClass: 'bg-banner-soft-success-bg',
+    textClass: 'text-banner-soft-success-text',
   },
   waitlisted: {
     icon: HourglassIcon,
-    bgClass: 'bg-banner-warning-bg',
-    textClass: 'text-banner-warning-text',
+    bgClass: 'bg-banner-soft-warning-bg',
+    textClass: 'text-banner-soft-warning-text',
   },
   completed: {
     icon: CheckCircleIcon,
@@ -54,8 +60,8 @@ const statusBannerConfig = {
   },
   cancelled: {
     icon: XCircleIcon,
-    bgClass: 'bg-banner-error-bg',
-    textClass: 'text-banner-error-text',
+    bgClass: 'bg-banner-soft-error-bg',
+    textClass: 'text-banner-soft-error-text',
   },
 } as const;
 
@@ -82,6 +88,8 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
     ride.signup_count,
   );
 
+  const lifecycle = getRideLifecycle(ride.ride_date, ride.start_time, ride.end_time);
+
   let statusKey: 'completed' | 'waitlisted' | 'confirmed' | 'cancelled';
   let statusLabel: string;
   if (isCancelled) {
@@ -97,7 +105,23 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
     statusKey = 'confirmed';
     statusLabel = schedule.status.confirmed;
   }
-  const bannerConfig = statusBannerConfig[statusKey];
+
+  // Lifecycle overrides signup status — temporal urgency trumps confirmation
+  const isLive = lifecycle === 'in_progress' || lifecycle === 'about_to_start';
+  const bannerConfig =
+    isLive && !isCancelled && !isCompleted
+      ? {
+          icon: lifecycle === 'in_progress' ? PlayIcon : TimerIcon,
+          bgClass: 'bg-banner-soft-info-bg' as const,
+          textClass: 'text-banner-soft-info-text' as const,
+        }
+      : statusBannerConfig[statusKey];
+  const bannerLabel =
+    isLive && !isCancelled && !isCompleted
+      ? lifecycle === 'in_progress'
+        ? appContent.rides.status.inProgress
+        : appContent.rides.status.aboutToStart
+      : statusLabel;
 
   const durationDisplay = formatDuration(ride.start_time, ride.end_time);
 
@@ -112,10 +136,10 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
 
   return (
     <Card className={cn('overflow-clip p-0', isCompleted && 'opacity-completed')}>
-      {/* Banner — always present */}
+      {/* Banner — always present, lifecycle overrides signup status */}
       <CardBanner
         icon={bannerConfig.icon}
-        label={statusLabel}
+        label={bannerLabel}
         bgClass={bannerConfig.bgClass}
         textClass={bannerConfig.textClass}
       />
@@ -158,7 +182,7 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
                     href={directionsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={buttonVariants({ variant: 'default', size: 'sm' })}
+                    className={cn(buttonVariants({ variant: 'default', size: 'sm' }), 'ml-auto')}
                   >
                     {schedule.actions.getDirections}
                   </a>
