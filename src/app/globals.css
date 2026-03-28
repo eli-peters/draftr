@@ -388,7 +388,7 @@
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-sans scroll-smooth;
+    @apply font-sans scroll-smooth overflow-x-hidden;
   }
   /* Prevent overscroll color flash in iOS standalone PWA mode */
   @media (display-mode: standalone) {
