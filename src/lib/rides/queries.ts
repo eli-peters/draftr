@@ -11,15 +11,22 @@ import type {
   RideWeatherSnapshot,
   CommentWithUser,
   RidePickupWithLocation,
+  SignupAvatar,
 } from '@/types/database';
 
 /** Shape returned by Supabase for the RIDE_WITH_DETAILS_SELECT join query. */
 interface RawRideRow extends Ride {
   meeting_location: MeetingLocation | null;
   pace_group: PaceGroup | null;
-  creator: Pick<User, 'id' | 'full_name' | 'display_name' | 'avatar_url'> | null;
+  creator: Pick<User, 'id' | 'full_name' | 'avatar_url'> | null;
   ride_signups:
-    | { status: string; user_id: string; waitlist_position: number | null; signed_up_at: string }[]
+    | {
+        status: string;
+        user_id: string;
+        waitlist_position: number | null;
+        signed_up_at: string;
+        user: Pick<User, 'avatar_url' | 'full_name'>;
+      }[]
     | null;
   ride_weather_snapshots: RideWeatherSnapshot | null;
 }
@@ -29,8 +36,8 @@ const RIDE_WITH_DETAILS_SELECT = `
   *,
   meeting_location:meeting_locations(*),
   pace_group:pace_groups(*),
-  creator:users!rides_created_by_fkey(id, full_name, display_name, avatar_url),
-  ride_signups(status, user_id, waitlist_position, signed_up_at),
+  creator:users!rides_created_by_fkey(id, full_name, avatar_url),
+  ride_signups(status, user_id, waitlist_position, signed_up_at, user:users!inner(avatar_url, full_name)),
   ride_weather_snapshots(*)
 `;
 
@@ -45,12 +52,21 @@ function toRideWithDetails(ride: RawRideRow, currentUserId?: string): RideWithDe
       )
     : undefined;
 
+  // First 4 confirmed signups for avatar display, ordered by sign-up time
+  const confirmedSignups = signups
+    .filter((s) => s.status === SignupStatus.CONFIRMED || s.status === SignupStatus.CHECKED_IN)
+    .sort((a, b) => new Date(a.signed_up_at).getTime() - new Date(b.signed_up_at).getTime());
+
+  const signupAvatars: SignupAvatar[] = confirmedSignups.slice(0, 4).map((s) => ({
+    avatar_url: s.user.avatar_url,
+    full_name: s.user.full_name,
+  }));
+
   return {
     ...ride,
     tags: [],
-    signup_count: signups.filter(
-      (s) => s.status === SignupStatus.CONFIRMED || s.status === SignupStatus.CHECKED_IN,
-    ).length,
+    signup_count: confirmedSignups.length,
+    signup_avatars: signupAvatars,
     creator: ride.creator ?? null,
     current_user_signup_status: (userSignup?.status as 'confirmed' | 'waitlisted') ?? null,
     current_user_waitlist_position:
@@ -452,7 +468,7 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
       id, title, ride_date, start_time, status, capacity, template_id, distance_km,
       meeting_location:meeting_locations(name),
       pace_group:pace_groups(id, name, sort_order),
-      creator:users!rides_created_by_fkey(full_name, display_name),
+      creator:users!rides_created_by_fkey(full_name),
       ride_signups(count)
     `,
     )
@@ -481,7 +497,6 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
     const signups = ride.ride_signups as unknown as { count: number }[];
     const creator = ride.creator as unknown as {
       full_name: string;
-      display_name: string | null;
     } | null;
     return {
       id: ride.id,
@@ -498,7 +513,7 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
       pace_group_sort_order: pace?.sort_order ?? null,
       tags: [],
       signup_count: signups?.[0]?.count ?? 0,
-      created_by_name: creator?.display_name ?? creator?.full_name ?? null,
+      created_by_name: creator?.full_name ?? null,
     };
   });
 }
@@ -514,7 +529,7 @@ export async function getRideSignups(rideId: string) {
     .select(
       `
       id, status, signed_up_at, waitlist_position,
-      user:users!inner(id, full_name, display_name, avatar_url)
+      user:users!inner(id, full_name, avatar_url)
     `,
     )
     .eq('ride_id', rideId)
@@ -532,7 +547,6 @@ export async function getRideSignups(rideId: string) {
     const user = signup.user as unknown as {
       id: string;
       full_name: string;
-      display_name: string | null;
       avatar_url: string | null;
     };
     const isWaitlisted = signup.status === 'waitlisted';
@@ -542,7 +556,7 @@ export async function getRideSignups(rideId: string) {
       signed_up_at: signup.signed_up_at,
       waitlist_position: isWaitlisted ? ++waitlistIndex : null,
       user_id: user.id,
-      user_name: user.display_name ?? user.full_name,
+      user_name: user.full_name,
       avatar_url: user.avatar_url,
     };
   });
@@ -714,7 +728,7 @@ export async function getRideComments(rideId: string): Promise<CommentWithUser[]
     .select(
       `
       id, ride_id, user_id, body, created_at, updated_at,
-      user:users!inner(full_name, display_name, avatar_url)
+      user:users!inner(full_name, avatar_url)
     `,
     )
     .eq('ride_id', rideId)
@@ -728,7 +742,6 @@ export async function getRideComments(rideId: string): Promise<CommentWithUser[]
   return (data ?? []).map((comment) => {
     const user = comment.user as unknown as {
       full_name: string;
-      display_name: string | null;
       avatar_url: string | null;
     };
     return {
@@ -738,7 +751,7 @@ export async function getRideComments(rideId: string): Promise<CommentWithUser[]
       body: comment.body,
       created_at: comment.created_at,
       updated_at: comment.updated_at,
-      user_name: user.display_name ?? user.full_name,
+      user_name: user.full_name,
       avatar_url: user.avatar_url,
     };
   });
@@ -790,7 +803,7 @@ export async function getRideCoLeaders(rideId: string): Promise<RideLeader[]> {
 
   const { data, error } = await supabase
     .from('ride_leaders')
-    .select('user_id, added_at, user:users!ride_leaders_user_id_fkey(full_name, display_name)')
+    .select('user_id, added_at, user:users!ride_leaders_user_id_fkey(full_name)')
     .eq('ride_id', rideId)
     .order('added_at', { ascending: true });
 
@@ -800,10 +813,10 @@ export async function getRideCoLeaders(rideId: string): Promise<RideLeader[]> {
   }
 
   return (data ?? []).map((row) => {
-    const user = row.user as unknown as { full_name: string; display_name: string | null };
+    const user = row.user as unknown as { full_name: string };
     return {
       user_id: row.user_id,
-      name: user?.display_name ?? user?.full_name ?? '',
+      name: user?.full_name ?? '',
       added_at: row.added_at,
     };
   });

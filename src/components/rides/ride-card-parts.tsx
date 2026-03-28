@@ -1,20 +1,26 @@
 import {
   ArrowsClockwise,
+  Bicycle,
   Clock,
+  ClockCountdown,
+  CloudWarning,
+  Hourglass,
   MapPin,
   Mountains,
   Path,
+  Prohibit,
+  SealCheck,
   Users,
-  WarningCircle,
-  XCircle,
 } from '@phosphor-icons/react/dist/ssr';
+import { RiderAvatar, RiderAvatarOverflow, RiderAvatarStack } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { RideWeatherBadge } from '@/components/weather/ride-weather-badge';
 import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
 import { separators, units, getPaceBadgeVariant } from '@/config/formatting';
-import { RideStatus } from '@/config/statuses';
-import type { RideWeatherSnapshot } from '@/types/database';
+import { RideStatus, SignupStatus } from '@/config/statuses';
+import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
+import type { RideWeatherSnapshot, SignupAvatar } from '@/types/database';
 
 const { rides: ridesContent } = appContent;
 
@@ -34,21 +40,168 @@ export const LABEL_SM = 'font-sans text-[0.6875rem]';
 /** caption/sm token: 10px mono for small data labels */
 export const CAPTION_SM = 'font-mono text-[0.625rem]';
 
+/** data/sm token: 12px mono, regular weight */
+export const DATA_SM = 'font-mono text-xs';
+
+// ---------------------------------------------------------------------------
+// Card state style — unified visual state for all card types
+// ---------------------------------------------------------------------------
+
+export type CardState =
+  | 'confirmed'
+  | 'waitlisted'
+  | 'weather_watch'
+  | 'cancelled'
+  | 'in_progress'
+  | 'about_to_start'
+  | 'completed'
+  | 'default';
+
+interface CardStateStyle {
+  /** Muted status border for the card outline (300 light / 700 dark) */
+  borderClass: string;
+  /** Status-coloured stroke between banner and content (matches banner text) */
+  bannerBorderClass: string | null;
+  bannerBg: string | null;
+  bannerText: string | null;
+  bannerIcon: PhosphorIcon | null;
+  bannerLabel: string | null;
+}
+
+export function getCardStateStyle(state: CardState): CardStateStyle {
+  switch (state) {
+    case 'confirmed':
+      return {
+        borderClass: 'border-card-border-success',
+        bannerBorderClass: 'border-card-border-success',
+        bannerBg: 'bg-banner-soft-success-bg',
+        bannerText: 'text-banner-soft-success-text',
+        bannerIcon: SealCheck,
+        bannerLabel: ridesContent.card.signedUp,
+      };
+    case 'waitlisted':
+      return {
+        borderClass: 'border-card-border-warning',
+        bannerBorderClass: 'border-card-border-warning',
+        bannerBg: 'bg-banner-soft-warning-bg',
+        bannerText: 'text-banner-soft-warning-text',
+        bannerIcon: Hourglass,
+        bannerLabel: ridesContent.card.waitlisted,
+      };
+    case 'weather_watch':
+      return {
+        borderClass: 'border-card-border-warning',
+        bannerBorderClass: 'border-card-border-warning',
+        bannerBg: 'bg-banner-soft-warning-bg',
+        bannerText: 'text-banner-soft-warning-text',
+        bannerIcon: CloudWarning,
+        bannerLabel: ridesContent.status.weatherWatch,
+      };
+    case 'cancelled':
+      return {
+        borderClass: 'border-card-border-error',
+        bannerBorderClass: 'border-card-border-error',
+        bannerBg: 'bg-banner-soft-error-bg',
+        bannerText: 'text-banner-soft-error-text',
+        bannerIcon: Prohibit,
+        bannerLabel: ridesContent.status.cancelled,
+      };
+    case 'in_progress':
+      return {
+        borderClass: 'border-card-border-info',
+        bannerBorderClass: 'border-card-border-info',
+        bannerBg: 'bg-banner-soft-info-bg',
+        bannerText: 'text-banner-soft-info-text',
+        bannerIcon: Bicycle,
+        bannerLabel: ridesContent.status.inProgress,
+      };
+    case 'about_to_start':
+      return {
+        borderClass: 'border-card-border-info',
+        bannerBorderClass: 'border-card-border-info',
+        bannerBg: 'bg-banner-soft-info-bg',
+        bannerText: 'text-banner-soft-info-text',
+        bannerIcon: ClockCountdown,
+        bannerLabel: ridesContent.status.aboutToStart,
+      };
+    case 'completed':
+      return {
+        borderClass: 'border-border-default',
+        bannerBorderClass: 'border-border-default',
+        bannerBg: 'bg-banner-muted-bg',
+        bannerText: 'text-banner-muted-text',
+        bannerIcon: SealCheck,
+        bannerLabel: ridesContent.status.completed,
+      };
+    case 'default':
+    default:
+      return {
+        borderClass: 'border-border-default',
+        bannerBorderClass: null,
+        bannerBg: null,
+        bannerText: null,
+        bannerIcon: null,
+        bannerLabel: null,
+      };
+  }
+}
+
+/**
+ * Resolve the single card state from ride status, signup status, and lifecycle.
+ * Priority: cancelled > weather_watch > in_progress > about_to_start > waitlisted > confirmed > completed > default
+ */
+export function resolveCardState({
+  rideStatus,
+  signupStatus,
+  lifecycle,
+}: {
+  rideStatus?: string | null;
+  signupStatus?: string | null;
+  lifecycle?: string | null;
+}): CardState {
+  // Ride-level status always wins
+  if (rideStatus === RideStatus.CANCELLED) return 'cancelled';
+  if (rideStatus === RideStatus.WEATHER_WATCH) return 'weather_watch';
+  // Lifecycle urgency beats signup status
+  if (lifecycle === 'in_progress') return 'in_progress';
+  if (lifecycle === 'about_to_start') return 'about_to_start';
+  // User's signup status
+  if (signupStatus === SignupStatus.WAITLISTED) return 'waitlisted';
+  if (signupStatus === SignupStatus.CONFIRMED) return 'confirmed';
+  // Past rides
+  if (lifecycle === 'completed') return 'completed';
+  return 'default';
+}
+
 // ---------------------------------------------------------------------------
 // CardBanner — universal full-width card header banner
 // ---------------------------------------------------------------------------
 
 interface CardBannerProps {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: PhosphorIcon;
   label: string;
   bgClass: string;
   textClass: string;
+  /** Status-coloured bottom border (stroke between banner and content) */
+  borderClass?: string;
 }
 
-export function CardBanner({ icon: Icon, label, bgClass, textClass }: CardBannerProps) {
+export function CardBanner({
+  icon: Icon,
+  label,
+  bgClass,
+  textClass,
+  borderClass,
+}: CardBannerProps) {
   return (
-    <div className={cn('flex w-full items-center gap-2 overflow-clip px-5 py-2', bgClass)}>
-      <Icon className={cn('size-3.5 shrink-0', textClass)} />
+    <div
+      className={cn(
+        'flex w-full items-center gap-2 overflow-clip px-5 py-2',
+        bgClass,
+        borderClass && `border-b ${borderClass}`,
+      )}
+    >
+      <Icon weight="bold" className={cn('size-3.5 shrink-0', textClass)} />
       <span
         className={cn(
           'font-sans text-xs font-semibold uppercase tracking-[0.06em] leading-4.25 whitespace-nowrap',
@@ -61,23 +214,25 @@ export function CardBanner({ icon: Icon, label, bgClass, textClass }: CardBanner
   );
 }
 
-// ---------------------------------------------------------------------------
-// RideBanner — convenience wrapper for ride status banners
-// ---------------------------------------------------------------------------
-
-interface RideBannerProps {
-  type: typeof RideStatus.WEATHER_WATCH | typeof RideStatus.CANCELLED;
-}
-
-export function RideBanner({ type }: RideBannerProps) {
-  const isWarning = type === RideStatus.WEATHER_WATCH;
-
+/**
+ * Render a CardBanner from a CardStateStyle, if the state has banner config.
+ * Accepts an optional label override (e.g. for waitlist position text).
+ */
+export function StateCardBanner({
+  style,
+  labelOverride,
+}: {
+  style: CardStateStyle;
+  labelOverride?: string;
+}) {
+  if (!style.bannerBg || !style.bannerText || !style.bannerIcon || !style.bannerLabel) return null;
   return (
     <CardBanner
-      icon={isWarning ? WarningCircle : XCircle}
-      label={isWarning ? ridesContent.status.weatherWatch : ridesContent.status.cancelled}
-      bgClass={isWarning ? 'bg-banner-soft-warning-bg' : 'bg-banner-soft-error-bg'}
-      textClass={isWarning ? 'text-banner-soft-warning-text' : 'text-banner-soft-error-text'}
+      icon={style.bannerIcon}
+      label={labelOverride ?? style.bannerLabel}
+      bgClass={style.bannerBg}
+      textClass={style.bannerText}
+      borderClass={style.bannerBorderClass ?? undefined}
     />
   );
 }
@@ -89,10 +244,9 @@ export function RideBanner({ type }: RideBannerProps) {
 interface DateTimeRowProps {
   date: string;
   time: string;
-  isRecurring?: boolean;
 }
 
-export function DateTimeRow({ date, time, isRecurring }: DateTimeRowProps) {
+export function DateTimeRow({ date, time }: DateTimeRowProps) {
   return (
     <div className="flex items-center gap-1.5">
       <span className={cn(OVERLINE, 'text-primary')}>{date}</span>
@@ -100,7 +254,6 @@ export function DateTimeRow({ date, time, isRecurring }: DateTimeRowProps) {
         {separators.dot.trim()}
       </span>
       <span className={cn(OVERLINE, 'text-muted-foreground')}>{time}</span>
-      {isRecurring && <ArrowsClockwise className="h-3.5 w-3.5 text-muted-foreground/50" />}
     </div>
   );
 }
@@ -143,7 +296,7 @@ export function MetadataStats({ distanceKm, elevationM }: MetadataStatsProps) {
 }
 
 // ---------------------------------------------------------------------------
-// RiderCount — icon + count text
+// RiderCount — icon + count text (kept for non-card contexts)
 // ---------------------------------------------------------------------------
 
 interface RiderCountProps {
@@ -165,13 +318,43 @@ export function RiderCount({ signupCount, capacity }: RiderCountProps) {
 }
 
 // ---------------------------------------------------------------------------
-// CardMetadataRow — inline data values with icons
-//
-// Uses data/sm token (12px JB Mono 400) for all data values.
+// RiderAvatarGroup — avatar stack with overflow count + total
 // ---------------------------------------------------------------------------
 
-/** data/sm token: 12px mono, regular weight */
-export const DATA_SM = 'font-mono text-xs';
+const MAX_VISIBLE_AVATARS = 4;
+
+interface RiderAvatarGroupProps {
+  avatars: SignupAvatar[];
+  totalCount: number;
+  /** When true, avatars render in grayscale (e.g. cancelled rides) */
+  cancelled?: boolean;
+}
+
+export function RiderAvatarGroup({ avatars, totalCount, cancelled }: RiderAvatarGroupProps) {
+  const visibleAvatars = avatars.slice(0, MAX_VISIBLE_AVATARS);
+  const overflowCount = totalCount - visibleAvatars.length;
+  const countNumber = `${totalCount}`;
+
+  return (
+    <div className="flex items-center gap-3">
+      {visibleAvatars.length > 0 && (
+        <RiderAvatarStack className={cn(cancelled && 'grayscale')}>
+          {visibleAvatars.map((person, i) => (
+            <RiderAvatar key={i} avatarUrl={person.avatar_url} name={person.full_name} />
+          ))}
+          {overflowCount > 0 && <RiderAvatarOverflow count={overflowCount} />}
+        </RiderAvatarStack>
+      )}
+      <span className={cn(BODY_SM, 'font-medium text-foreground')}>
+        {countNumber} {ridesContent.card.riding}
+      </span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// CardMetadataRow — inline data values with icons
+// ---------------------------------------------------------------------------
 
 interface CardMetadataRowProps {
   distanceKm?: number | null;
@@ -235,15 +418,14 @@ export function CardMetadataRow({
     <div
       className={cn(
         DATA_SM,
-        'grid min-w-0 grid-cols-[6rem_1fr] gap-x-3 gap-y-2 text-muted-foreground',
-        'sm:flex sm:items-center sm:gap-3',
+        'flex min-w-0 items-center gap-2 overflow-hidden text-muted-foreground',
         className,
       )}
     >
       {dataItems.map((item, i) => (
-        <span key={i} className="flex items-center">
+        <span key={i} className="flex shrink-0 items-center last:shrink last:overflow-hidden">
           {i > 0 && (
-            <span className="mr-3 hidden text-border-default sm:inline">
+            <span className="mr-2 hidden text-border-default sm:inline">
               {separators.dot.trim()}
             </span>
           )}
@@ -255,11 +437,13 @@ export function CardMetadataRow({
 }
 
 // ---------------------------------------------------------------------------
-// CardContentSection — shared four-corner content layout for all card types
+// CardContentSection — unified content layout for all card types
 //
-// Top row:    DateTimeRow (left) + Pace Badge (right)
-// Middle:     Title + optional description + optional children
-// Bottom row: CardMetadataRow (left) + RideWeatherBadge (right)
+// Top row:    [DateTimeRow · WeatherBadge (left)] ... [Recurring icon (right)]
+// Title
+// Description (line-clamped)
+// Pace Badge (left-aligned)
+// CardMetadataRow (full-width, stackable)
 // ---------------------------------------------------------------------------
 
 interface CardContentSectionProps {
@@ -297,35 +481,47 @@ export function CardContentSection({
   className,
 }: CardContentSectionProps) {
   return (
-    <div className={cn('flex flex-col gap-2', className)}>
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between">
-          <DateTimeRow date={date} time={time} isRecurring={isRecurring} />
-          {paceGroupName && (
-            <Badge
-              variant={paceGroupSortOrder ? getPaceBadgeVariant(paceGroupSortOrder) : 'secondary'}
-            >
-              {paceGroupName}
-            </Badge>
-          )}
+    <div className={cn('flex flex-col gap-3', className)}>
+      {/* Top row: date/time · weather (left) ... recurring icon (right) */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <DateTimeRow date={date} time={time} />
+          <span className={cn(BODY_SM, 'font-bold leading-5 text-muted-foreground/40')}>
+            {separators.dot.trim()}
+          </span>
+          <RideWeatherBadge weather={weather ?? null} layout="inline" />
         </div>
-        <h3 className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
-          {title}
-        </h3>
+        {isRecurring && (
+          <ArrowsClockwise weight="bold" className="size-4 shrink-0 text-muted-foreground" />
+        )}
       </div>
 
+      {/* Title */}
+      <h3 className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
+        {title}
+      </h3>
+
+      {/* Description */}
       {description && <p className="line-clamp-2 text-sm text-muted-foreground">{description}</p>}
 
       {children}
 
-      <div className="flex flex-wrap items-end justify-between gap-y-2">
+      {/* Bottom row: metadata (left) + pace badge (right), stacks at small widths */}
+      <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <CardMetadataRow
           distanceKm={distanceKm}
           elevationM={elevationM}
           durationDisplay={durationDisplay}
           locationName={locationName}
         />
-        <RideWeatherBadge weather={weather ?? null} />
+        {paceGroupName && (
+          <Badge
+            variant={paceGroupSortOrder ? getPaceBadgeVariant(paceGroupSortOrder) : 'secondary'}
+            className="self-start sm:self-auto"
+          >
+            {paceGroupName}
+          </Badge>
+        )}
       </div>
     </div>
   );
@@ -333,6 +529,7 @@ export function CardContentSection({
 
 // ---------------------------------------------------------------------------
 // CardFooterSection — visually distinct footer area for Rides/Schedule cards
+// No top border — the stroke is between the banner and content instead.
 // ---------------------------------------------------------------------------
 
 interface CardFooterSectionProps {
@@ -341,5 +538,5 @@ interface CardFooterSectionProps {
 }
 
 export function CardFooterSection({ children, className }: CardFooterSectionProps) {
-  return <div className={cn('bg-surface-page px-5 py-3', className)}>{children}</div>;
+  return <div className={cn('bg-surface-page px-5 py-3.5', className)}>{children}</div>;
 }

@@ -29,7 +29,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from('users')
-    .select('full_name, display_name, email, avatar_url, onboarding_completed')
+    .select('full_name, email, avatar_url, onboarding_completed')
     .eq('id', authUser.id)
     .single();
 
@@ -37,7 +37,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect(routes.setupProfile);
   }
 
-  const userName = profile.display_name ?? profile.full_name ?? 'User';
+  const userName = profile.full_name ?? 'User';
   const userEmail = profile.email ?? authUser.email ?? '';
 
   const [notifications, pinnedAnnouncement] = await Promise.all([

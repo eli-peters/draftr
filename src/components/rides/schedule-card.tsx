@@ -2,19 +2,14 @@
 
 import Link from 'next/link';
 import { format } from 'date-fns';
-import {
-  CheckCircleIcon,
-  HourglassIcon,
-  PlayIcon,
-  TimerIcon,
-  XCircleIcon,
-} from '@phosphor-icons/react/dist/ssr';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
-  CardBanner,
   CardContentSection,
   CardFooterSection,
+  StateCardBanner,
+  getCardStateStyle,
+  resolveCardState,
 } from '@/components/rides/ride-card-parts';
 import { appContent } from '@/content/app';
 import { cn, getRelativeDay } from '@/lib/utils';
@@ -37,33 +32,6 @@ interface ScheduleCardProps {
   ride: UserRideSignup;
   onAction?: (action: ScheduleAction, rideId: string) => void;
 }
-
-// ---------------------------------------------------------------------------
-// Status banner config
-// ---------------------------------------------------------------------------
-
-const statusBannerConfig = {
-  confirmed: {
-    icon: CheckCircleIcon,
-    bgClass: 'bg-banner-soft-success-bg',
-    textClass: 'text-banner-soft-success-text',
-  },
-  waitlisted: {
-    icon: HourglassIcon,
-    bgClass: 'bg-banner-soft-warning-bg',
-    textClass: 'text-banner-soft-warning-text',
-  },
-  completed: {
-    icon: CheckCircleIcon,
-    bgClass: 'bg-banner-muted-bg',
-    textClass: 'text-banner-muted-text',
-  },
-  cancelled: {
-    icon: XCircleIcon,
-    bgClass: 'bg-banner-soft-error-bg',
-    textClass: 'text-banner-soft-error-text',
-  },
-} as const;
 
 // ---------------------------------------------------------------------------
 // ScheduleCard
@@ -90,38 +58,21 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
 
   const lifecycle = getRideLifecycle(ride.ride_date, ride.start_time, ride.end_time);
 
-  let statusKey: 'completed' | 'waitlisted' | 'confirmed' | 'cancelled';
-  let statusLabel: string;
-  if (isCancelled) {
-    statusKey = 'cancelled';
-    statusLabel = schedule.status.cancelled;
-  } else if (isCompleted) {
-    statusKey = 'completed';
-    statusLabel = schedule.status.completed;
-  } else if (isWaitlisted) {
-    statusKey = 'waitlisted';
-    statusLabel = schedule.status.waitlisted(ride.waitlist_position ?? 0);
-  } else {
-    statusKey = 'confirmed';
-    statusLabel = schedule.status.confirmed;
-  }
+  // Resolve unified card state
+  const cardState = resolveCardState({
+    rideStatus: isCancelled ? RideStatus.CANCELLED : undefined,
+    signupStatus: ride.signup_status,
+    lifecycle,
+  });
+  const stateStyle = getCardStateStyle(cardState);
 
-  // Lifecycle overrides signup status — temporal urgency trumps confirmation
-  const isLive = lifecycle === 'in_progress' || lifecycle === 'about_to_start';
-  const bannerConfig =
-    isLive && !isCancelled && !isCompleted
-      ? {
-          icon: lifecycle === 'in_progress' ? PlayIcon : TimerIcon,
-          bgClass: 'bg-banner-soft-info-bg' as const,
-          textClass: 'text-banner-soft-info-text' as const,
-        }
-      : statusBannerConfig[statusKey];
-  const bannerLabel =
-    isLive && !isCancelled && !isCompleted
-      ? lifecycle === 'in_progress'
-        ? appContent.rides.status.inProgress
-        : appContent.rides.status.aboutToStart
-      : statusLabel;
+  // Banner label — use schedule-specific copy for status labels
+  let bannerLabel: string | undefined;
+  if (cardState === 'confirmed') bannerLabel = schedule.status.confirmed;
+  else if (cardState === 'waitlisted')
+    bannerLabel = schedule.status.waitlisted(ride.waitlist_position ?? 0);
+  else if (cardState === 'completed') bannerLabel = schedule.status.completed;
+  else if (cardState === 'cancelled') bannerLabel = schedule.status.cancelled;
 
   const durationDisplay = formatDuration(ride.start_time, ride.end_time);
 
@@ -132,22 +83,31 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
     name: ride.meeting_location_name,
   });
 
+  const statusKey = isCancelled
+    ? 'cancelled'
+    : isCompleted
+      ? 'completed'
+      : isWaitlisted
+        ? 'waitlisted'
+        : 'confirmed';
+
   const hasFooter = statusKey !== 'completed' && statusKey !== 'cancelled';
 
   return (
-    <Card className={cn('overflow-clip p-0', isCompleted && 'opacity-completed')}>
-      {/* Banner — always present, lifecycle overrides signup status */}
-      <CardBanner
-        icon={bannerConfig.icon}
-        label={bannerLabel}
-        bgClass={bannerConfig.bgClass}
-        textClass={bannerConfig.textClass}
-      />
+    <Card
+      className={cn(
+        'overflow-clip p-0',
+        stateStyle.borderClass,
+        isCompleted && 'opacity-completed',
+      )}
+    >
+      {/* Banner — always present, unified style */}
+      <StateCardBanner style={stateStyle} labelOverride={bannerLabel} />
 
       {/* Content — tappable, links to ride detail */}
       <Link href={routes.ride(ride.id)} className="block">
         <CardContentSection
-          className="px-5 pt-3 pb-5"
+          className="px-5 pt-4 pb-5"
           date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
           time={formatTime(ride.start_time)}
           title={ride.title}

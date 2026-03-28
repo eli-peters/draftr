@@ -41,7 +41,7 @@ export function AvatarMenu({ userName, userEmail, userInitials, avatarUrl }: Ava
   useEffect(() => setMounted(true), []);
 
   const avatarElement = (
-    <Avatar className="h-9 w-9">
+    <Avatar className="h-9 w-9 after:border-border-strong">
       {avatarUrl && <AvatarImage src={avatarUrl} alt={userName} />}
       <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground text-xs font-bold">
         {userInitials}

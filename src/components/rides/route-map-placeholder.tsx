@@ -1,29 +1,34 @@
 import { MapTrifold, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr';
 import { appContent } from '@/content/app';
+import { parseRouteUrl } from '@/lib/rides/parse-route-url';
+import { serviceLabels } from '@/config/integrations';
 
 const { detail } = appContent.rides;
 
 interface RouteMapPlaceholderProps {
   routeUrl: string | null;
-  routeName: string | null;
 }
 
 /**
- * Placeholder for the route map embed (Strava / RideWithGPS).
- * Shows a tappable gray box when a route URL exists, or a static placeholder otherwise.
- * Will be replaced with a real map embed once route API integration lands.
+ * Placeholder for the route map when no polyline data is available.
+ * Shows a tappable card linking to the external route when a URL exists,
+ * or a static placeholder otherwise.
  */
-export function RouteMapPlaceholder({ routeUrl, routeName }: RouteMapPlaceholderProps) {
+export function RouteMapPlaceholder({ routeUrl }: RouteMapPlaceholderProps) {
+  const parsed = routeUrl ? parseRouteUrl(routeUrl) : null;
+  const serviceName = parsed ? serviceLabels[parsed.service] : null;
+
   const content = (
-    <div className="flex aspect-square flex-col items-center justify-center gap-2 rounded-xl bg-surface-sunken">
-      <MapTrifold weight="duotone" className="size-10 text-muted-foreground/40" />
-      <span className="text-[0.8125rem] text-muted-foreground/60">
-        {detail.routeMapPlaceholder}
-      </span>
-      {routeUrl && routeName && (
-        <span className="flex items-center gap-1.5 text-xs font-medium text-info">
-          {routeName}
+    <div className="flex h-32 flex-col items-center justify-center gap-2 rounded-xl bg-surface-sunken">
+      <MapTrifold weight="duotone" className="size-6 text-muted-foreground/40" />
+      {routeUrl ? (
+        <span className="flex items-center gap-1.5 text-sm font-medium text-info">
+          {serviceName ? detail.viewRouteOn(serviceName) : detail.viewRoute}
           <ArrowSquareOut className="size-3.5" />
+        </span>
+      ) : (
+        <span className="text-[0.8125rem] text-muted-foreground/60">
+          {detail.routeMapPlaceholder}
         </span>
       )}
     </div>

@@ -33,7 +33,6 @@ export default async function ProfileEditPage() {
 
       <ProfileEditForm
         profile={{
-          display_name: profile.display_name ?? '',
           bio: profile.bio ?? '',
           preferred_pace_group: profile.preferred_pace_group ?? '',
           emergency_contact_name: userFull?.emergency_contact_name ?? '',

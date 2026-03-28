@@ -64,8 +64,12 @@ export async function setupProfile(formData: FormData) {
   }
 
   const password = formData.get('password') as string;
-  const fullName = formData.get('full_name') as string;
-  const displayName = formData.get('display_name') as string;
+  const fullName = (formData.get('full_name') as string).trim();
+
+  // Require at least a first and last name
+  if (fullName.split(/\s+/).filter(Boolean).length < 2) {
+    return { error: appContent.errors.fullNameRequired };
+  }
   const bio = formData.get('bio') as string;
   const preferredPace = formData.get('preferred_pace_group') as string;
 
@@ -77,7 +81,6 @@ export async function setupProfile(formData: FormData) {
     id: user.id,
     email: user.email!,
     full_name: fullName,
-    display_name: displayName || null,
     bio: bio || null,
     preferred_pace_group: preferredPace || null,
     onboarding_completed: true,

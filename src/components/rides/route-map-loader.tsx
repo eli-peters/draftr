@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 
 const RouteMap = dynamic(() => import('@/components/rides/route-map').then((mod) => mod.RouteMap), {
   ssr: false,
-  loading: () => <div className="aspect-square animate-pulse rounded-xl bg-surface-sunken" />,
+  loading: () => <div className="aspect-3/2 animate-pulse rounded-xl bg-surface-sunken" />,
 });
 
 interface RouteMapLoaderProps {

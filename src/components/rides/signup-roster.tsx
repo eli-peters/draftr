@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { Badge } from '@/components/ui/badge';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
@@ -77,7 +78,9 @@ function SignupRow({ signup, isLeader }: { signup: SignupEntry; isLeader?: boole
     >
       <Avatar className="h-8 w-8">
         {signup.avatar_url && <AvatarImage src={signup.avatar_url} alt={signup.user_name} />}
-        <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
+        <AvatarFallback
+          className={`text-xs font-medium ${getAvatarColourClasses(signup.user_name)}`}
+        >
           {initials}
         </AvatarFallback>
       </Avatar>

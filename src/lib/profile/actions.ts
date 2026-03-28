@@ -8,7 +8,6 @@ import { toE164 } from '@/lib/phone';
 const { common, errors, profile: profileContent } = appContent;
 
 interface UpdateProfileData {
-  display_name?: string;
   bio?: string;
   preferred_pace_group?: string;
   emergency_contact_name?: string;
@@ -33,7 +32,6 @@ export async function updateProfile(data: UpdateProfileData) {
   const { error } = await supabase
     .from('users')
     .update({
-      display_name: data.display_name || null,
       bio: data.bio || null,
       preferred_pace_group: data.preferred_pace_group || null,
       emergency_contact_name: data.emergency_contact_name || null,

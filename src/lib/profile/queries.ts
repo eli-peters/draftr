@@ -3,7 +3,6 @@ import { createClient } from '@/lib/supabase/server';
 export interface UserProfile {
   id: string;
   full_name: string;
-  display_name: string | null;
   email: string;
   avatar_url: string | null;
   bio: string | null;
@@ -24,7 +23,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   const { data: user } = await supabase
     .from('users')
     .select(
-      'id, full_name, display_name, email, avatar_url, bio, emergency_contact_name, emergency_contact_phone, preferred_pace_group, created_at',
+      'id, full_name, email, avatar_url, bio, emergency_contact_name, emergency_contact_phone, preferred_pace_group, created_at',
     )
     .eq('id', userId)
     .single();

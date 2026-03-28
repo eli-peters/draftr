@@ -8,6 +8,7 @@ import {
   MapTrifold,
   CheckCircle,
   ArrowRight,
+  ArrowSquareOut,
   LinkSimple,
 } from '@phosphor-icons/react/dist/ssr';
 import { toast } from 'sonner';
@@ -24,6 +25,7 @@ import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { todayDateString } from '@/config/formatting';
 import { parseRouteUrl } from '@/lib/rides/parse-route-url';
+import { serviceLabels } from '@/config/integrations';
 import {
   createRide,
   updateRide,
@@ -105,6 +107,7 @@ export function RideForm({
   );
   const [isFetchingRoute, setIsFetchingRoute] = useState(false);
   const [fetchRouteError, setFetchRouteError] = useState<string | null>(null);
+  const [detectedService, setDetectedService] = useState<IntegrationService | null>(null);
 
   // Paste URL input for non-connected leaders
   const pasteUrlRef = useRef<HTMLInputElement>(null);
@@ -178,8 +181,9 @@ export function RideForm({
 
     // If the leader has a connected account for this service, fetch route data
     if (!connectedServices.includes(parsed.service)) {
-      // No connection — URL stored as link-only, that's fine
+      // No connection — URL stored as link-only, show preview nudge
       setImportedRouteName(form.routeLinkAdded);
+      setDetectedService(parsed.service);
       return;
     }
 
@@ -326,34 +330,75 @@ export function RideForm({
 
       {/* ── Zone 0: Route ────────────────────────────────────────── */}
       {importedRouteName ? (
-        /* Confirmed state — route has been imported or link pasted */
-        <div className="rounded-xl border border-border bg-muted/30 px-4 py-3 flex items-center justify-between mb-8">
-          <div className="flex items-center gap-2 min-w-0">
-            <CheckCircle className="size-4 shrink-0 text-primary" weight="fill" />
-            <p className="text-sm text-foreground truncate">
-              {form.importConfirmed(importedRouteName)}
+        !routePolyline && detectedService ? (
+          /* Link-only preview — show what riders will see + nudge to connect */
+          <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3 mb-8">
+            <div className="rounded-lg bg-surface-sunken flex flex-col items-center justify-center gap-1.5 py-6">
+              <MapTrifold weight="duotone" className="size-8 text-muted-foreground/40" />
+              <span className="text-xs text-muted-foreground/60">{form.linkOnlyPreviewLabel}</span>
+              <span className="flex items-center gap-1 text-xs font-medium text-info">
+                {form.linkOnlyViewRoute(serviceLabels[detectedService])}
+                <ArrowSquareOut className="size-3" />
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {form.linkOnlyHint(serviceLabels[detectedService])}
             </p>
+            <div className="flex items-center justify-between">
+              <Link
+                href={routes.profileEdit}
+                className="text-xs font-medium text-info hover:underline"
+              >
+                {form.linkOnlyConnect(serviceLabels[detectedService])}
+              </Link>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setImportedRouteName(null);
+                  setRouteUrl('');
+                  setRouteName('');
+                  setRoutePolyline('');
+                  setDetectedService(null);
+                  if (pasteUrlRef.current) pasteUrlRef.current.value = '';
+                }}
+              >
+                {form.linkOnlyRemove}
+              </Button>
+            </div>
           </div>
-          {connectedServices.length > 0 ? (
-            <Button type="button" variant="ghost" size="sm" onClick={() => setImportOpen(true)}>
-              {form.importChange}
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setImportedRouteName(null);
-                setRouteUrl('');
-                setRouteName('');
-                setRoutePolyline('');
-              }}
-            >
-              {form.importChange}
-            </Button>
-          )}
-        </div>
+        ) : (
+          /* Compact confirmation — route imported with data, or preview dismissed */
+          <div className="rounded-xl border border-border bg-muted/30 px-4 py-3 flex items-center justify-between mb-8">
+            <div className="flex items-center gap-2 min-w-0">
+              <CheckCircle className="size-4 shrink-0 text-primary" weight="fill" />
+              <p className="text-sm text-foreground truncate">
+                {form.importConfirmed(importedRouteName)}
+              </p>
+            </div>
+            {connectedServices.length > 0 ? (
+              <Button type="button" variant="ghost" size="sm" onClick={() => setImportOpen(true)}>
+                {form.importChange}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setImportedRouteName(null);
+                  setRouteUrl('');
+                  setRouteName('');
+                  setRoutePolyline('');
+                  setDetectedService(null);
+                }}
+              >
+                {form.importChange}
+              </Button>
+            )}
+          </div>
+        )
       ) : connectedServices.length > 0 ? (
         /* Connected — show import drawer CTA */
         <div className="rounded-xl border-2 border-dashed border-border bg-muted/30 p-6 flex flex-col items-center gap-3 text-center mb-8">

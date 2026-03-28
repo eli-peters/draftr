@@ -10,7 +10,8 @@ import { Select } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { SectionHeading } from '@/components/ui/section-heading';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { ContentToolbar } from '@/components/layout/content-toolbar';
 import { appContent } from '@/content/app';
 import { cn, getInitials } from '@/lib/utils';
@@ -30,7 +31,6 @@ const { manage: content } = appContent;
 interface MemberData {
   user_id: string;
   full_name: string;
-  display_name: string | null;
   email: string;
   avatar_url: string | null;
   preferred_pace_group: string | null;
@@ -68,8 +68,8 @@ function sortMembers(members: MemberData[], sortBy: SortOption): MemberData[] {
   return [...members].sort((a, b) => {
     switch (sortBy) {
       case 'alpha': {
-        const nameA = (a.display_name ?? a.full_name).toLowerCase();
-        const nameB = (b.display_name ?? b.full_name).toLowerCase();
+        const nameA = a.full_name.toLowerCase();
+        const nameB = b.full_name.toLowerCase();
         return nameA.localeCompare(nameB);
       }
       case 'newest':
@@ -91,11 +91,7 @@ export function MemberList({ members, clubId, currentUserId }: MemberListProps) 
     if (roleFilter !== 'all' && m.role !== roleFilter) return false;
     if (!search) return true;
     const q = search.toLowerCase();
-    return (
-      m.full_name.toLowerCase().includes(q) ||
-      (m.display_name?.toLowerCase().includes(q) ?? false) ||
-      m.email.toLowerCase().includes(q)
-    );
+    return m.full_name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q);
   });
 
   // Group by status, then sort within groups (current user pinned in active)
@@ -254,7 +250,7 @@ function MemberRow({
   onReactivate?: (userId: string) => void;
   onApprove?: (userId: string) => void;
 }) {
-  const name = member.display_name ?? member.full_name;
+  const name = member.full_name;
   const initials = getInitials(member.full_name);
   const isInactive = member.status === MemberStatus.INACTIVE;
   const isPending = member.status === MemberStatus.PENDING;
@@ -272,7 +268,8 @@ function MemberRow({
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <Avatar className="h-9 w-9 shrink-0">
-            <AvatarFallback className="text-sm font-medium bg-primary/10 text-primary">
+            {member.avatar_url && <AvatarImage src={member.avatar_url} alt={name} />}
+            <AvatarFallback className={`text-sm font-medium ${getAvatarColourClasses(name)}`}>
               {initials}
             </AvatarFallback>
           </Avatar>

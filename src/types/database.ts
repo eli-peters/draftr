@@ -24,7 +24,6 @@ export interface User {
   id: string;
   email: string;
   full_name: string;
-  display_name: string | null;
   avatar_url: string | null;
   bio: string | null;
   emergency_contact_name: string | null;
@@ -296,12 +295,20 @@ export interface ImportableRoute {
 /**
  * Ride with joined relations — common query shape for the feed and detail pages.
  */
+/** Minimal user info for signup avatar display. */
+export interface SignupAvatar {
+  avatar_url: string | null;
+  full_name: string;
+}
+
 export interface RideWithDetails extends Ride {
   meeting_location: MeetingLocation | null;
   pace_group: PaceGroup | null;
   tags: Tag[];
   signup_count: number;
-  creator: Pick<User, 'id' | 'full_name' | 'display_name' | 'avatar_url'> | null;
+  /** First few confirmed signups for avatar display (ordered by signed_up_at). */
+  signup_avatars: SignupAvatar[];
+  creator: Pick<User, 'id' | 'full_name' | 'avatar_url'> | null;
   current_user_signup_status: 'confirmed' | 'waitlisted' | null;
   current_user_waitlist_position: number | null;
   weather: RideWeatherSnapshot | null;

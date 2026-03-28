@@ -1,12 +1,12 @@
 import Link from 'next/link';
 import {
+  Bicycle,
   CalendarDots,
-  CloudRain,
+  ClockCountdown,
+  CloudWarning,
   FlagBanner,
   FlagPennant,
   Hourglass,
-  Play,
-  Timer,
   UserPlus,
 } from '@phosphor-icons/react/dist/ssr';
 import { Card } from '@/components/ui/card';
@@ -15,7 +15,8 @@ import { appContent } from '@/content/app';
 import { formatTime, formatDuration, parseLocalDate } from '@/config/formatting';
 import { getRideLifecycle } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
-import { getRelativeDay } from '@/lib/utils';
+import { cn, getRelativeDay } from '@/lib/utils';
+import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 import type { UserRole } from '@/config/navigation';
 import type { RideWeatherSnapshot } from '@/types/database';
 
@@ -90,19 +91,29 @@ function ActionCard({
   href,
   bgClass,
   textClass,
+  borderClass,
+  bannerBorderClass,
   children,
 }: {
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: PhosphorIcon;
   href: string;
   bgClass: string;
   textClass: string;
+  borderClass?: string;
+  bannerBorderClass?: string;
   children: React.ReactNode;
 }) {
   return (
     <Link href={href} className="group block">
-      <Card className="overflow-clip p-0">
-        <CardBanner icon={icon} label={label} bgClass={bgClass} textClass={textClass} />
+      <Card className={cn('overflow-clip p-0', borderClass)}>
+        <CardBanner
+          icon={icon}
+          label={label}
+          bgClass={bgClass}
+          textClass={textClass}
+          borderClass={bannerBorderClass}
+        />
         <div className="px-5 pt-3 pb-4">{children}</div>
       </Card>
     </Link>
@@ -148,14 +159,20 @@ export function ActionBar({
             : isStartingSoon
               ? appContent.rides.status.aboutToStart
               : content.actionBar.yourNextRide;
-          const bannerIcon = isInProgress ? Play : isStartingSoon ? Timer : CalendarDots;
+          const bannerIcon = isInProgress
+            ? Bicycle
+            : isStartingSoon
+              ? ClockCountdown
+              : CalendarDots;
           return (
             <ActionCard
               label={bannerLabel}
               icon={bannerIcon}
               href={routes.ride(nextSignup.id)}
-              bgClass={isLive ? 'bg-banner-info-bg' : 'bg-banner-success-bg'}
-              textClass={isLive ? 'text-banner-info-text' : 'text-banner-success-text'}
+              bgClass={isLive ? 'bg-banner-soft-info-bg' : 'bg-banner-soft-success-bg'}
+              textClass={isLive ? 'text-banner-soft-info-text' : 'text-banner-soft-success-text'}
+              borderClass={isLive ? 'border-card-border-info' : 'border-card-border-success'}
+              bannerBorderClass={isLive ? 'border-card-border-info' : 'border-card-border-success'}
             >
               <CardContentSection
                 date={getRelativeDay(parseLocalDate(nextSignup.ride_date))}
@@ -191,8 +208,14 @@ export function ActionBar({
               }
               icon={Hourglass}
               href={routes.ride(nextWaitlistedRide.id)}
-              bgClass={waitlistClosed ? 'bg-banner-muted-bg' : 'bg-banner-warning-bg'}
-              textClass={waitlistClosed ? 'text-banner-muted-text' : 'text-banner-warning-text'}
+              bgClass={waitlistClosed ? 'bg-banner-muted-bg' : 'bg-banner-soft-warning-bg'}
+              textClass={
+                waitlistClosed ? 'text-banner-muted-text' : 'text-banner-soft-warning-text'
+              }
+              borderClass={waitlistClosed ? 'border-border-default' : 'border-card-border-warning'}
+              bannerBorderClass={
+                waitlistClosed ? 'border-border-default' : 'border-card-border-warning'
+              }
             >
               <CardContentSection
                 date={getRelativeDay(parseLocalDate(nextWaitlistedRide.ride_date))}
@@ -226,14 +249,22 @@ export function ActionBar({
               ? appContent.rides.status.inProgress
               : appContent.rides.status.aboutToStart
             : content.actionBar.nextLedRide;
-          const ledIcon = ledIsLive ? (ledLifecycle === 'in_progress' ? Play : Timer) : FlagBanner;
+          const ledIcon = ledIsLive
+            ? ledLifecycle === 'in_progress'
+              ? Bicycle
+              : ClockCountdown
+            : FlagBanner;
           return (
             <ActionCard
               label={ledLabel}
               icon={ledIcon}
               href={routes.ride(nextLedRide.id)}
-              bgClass={ledIsLive ? 'bg-banner-info-bg' : 'bg-banner-secondary-bg'}
-              textClass={ledIsLive ? 'text-banner-info-text' : 'text-banner-secondary-text'}
+              bgClass={ledIsLive ? 'bg-banner-soft-info-bg' : 'bg-banner-soft-secondary-bg'}
+              textClass={
+                ledIsLive ? 'text-banner-soft-info-text' : 'text-banner-soft-secondary-text'
+              }
+              borderClass={ledIsLive ? 'border-card-border-info' : 'border-border-default'}
+              bannerBorderClass={ledIsLive ? 'border-card-border-info' : 'border-border-default'}
             >
               <CardContentSection
                 date={getRelativeDay(parseLocalDate(nextLedRide.ride_date))}
@@ -255,10 +286,12 @@ export function ActionBar({
       {weatherWatchRide && (
         <ActionCard
           label={content.actionBar.weatherWatch}
-          icon={CloudRain}
+          icon={CloudWarning}
           href={routes.ride(weatherWatchRide.id)}
-          bgClass="bg-banner-warning-bg"
-          textClass="text-banner-warning-text"
+          bgClass="bg-banner-soft-warning-bg"
+          textClass="text-banner-soft-warning-text"
+          borderClass="border-card-border-warning"
+          bannerBorderClass="border-card-border-warning"
         >
           <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
             {weatherWatchRide.title}

@@ -1,26 +1,21 @@
 import { format } from 'date-fns';
-import {
-  MapPin,
-  CalendarBlank,
-  Clock,
-  Path,
-  CheckCircle,
-  Timer,
-  Play,
-  HourglassSimpleMedium,
-} from '@phosphor-icons/react/dist/ssr';
+import { MapPin, CalendarBlank, Clock, Path } from '@phosphor-icons/react/dist/ssr';
 import { Card } from '@/components/ui/card';
-import { CardBanner, RideBanner } from '@/components/rides/ride-card-parts';
+import {
+  StateCardBanner,
+  getCardStateStyle,
+  resolveCardState,
+} from '@/components/rides/ride-card-parts';
 import { RouteMapLoader } from '@/components/rides/route-map-loader';
+import { RouteMapPlaceholder } from '@/components/rides/route-map-placeholder';
 import { RideWeatherSummary } from '@/components/weather/ride-weather-summary';
 import { appContent } from '@/content/app';
 import { dateFormats, formatTime, separators, units, parseLocalDate } from '@/config/formatting';
-import { RideStatus, SignupStatus } from '@/config/statuses';
+import { cn } from '@/lib/utils';
 import type { RideLifecycle } from '@/lib/rides/lifecycle';
-import type { RideWithDetails } from '@/types/database';
-import type { RideWeatherSnapshot } from '@/types/database';
+import type { RideWithDetails, RideWeatherSnapshot } from '@/types/database';
 
-const { detail, status: rideStatus } = appContent.rides;
+const { detail } = appContent.rides;
 
 interface RideDetailCardProps {
   ride: RideWithDetails;
@@ -46,9 +41,23 @@ export function RideDetailCard({
   weather,
 }: RideDetailCardProps) {
   const rideDate = parseLocalDate(ride.ride_date);
-  const isCancelled = ride.status === RideStatus.CANCELLED;
-  const isWeatherWatch = ride.status === RideStatus.WEATHER_WATCH;
-  const isWaitlisted = signupStatus === SignupStatus.WAITLISTED;
+
+  // Resolve unified card state
+  const cardState = resolveCardState({
+    rideStatus: ride.status,
+    signupStatus: isSignedUp ? signupStatus : undefined,
+    lifecycle,
+  });
+  const stateStyle = getCardStateStyle(cardState);
+
+  // Banner label override for context-specific copy
+  let bannerLabel: string | undefined;
+  if (cardState === 'confirmed') bannerLabel = detail.signedUp;
+  else if (cardState === 'waitlisted') {
+    bannerLabel = waitlistPosition
+      ? appContent.schedule.status.waitlisted(waitlistPosition)
+      : appContent.rides.roster.waitlisted;
+  }
 
   // Stats items — only render columns with data
   const statsItems: { label: string; value: string }[] = [];
@@ -72,52 +81,9 @@ export function RideDetailCard({
   }
 
   return (
-    <Card className="mt-6 overflow-clip p-0">
-      {/* Single priority banner — cancelled > weather watch > in progress > about to start > waitlisted > signed up */}
-      {isCancelled ? (
-        <RideBanner type={RideStatus.CANCELLED} />
-      ) : isWeatherWatch ? (
-        <RideBanner type={RideStatus.WEATHER_WATCH} />
-      ) : lifecycle === 'in_progress' ? (
-        <CardBanner
-          icon={Play}
-          label={rideStatus.inProgress}
-          bgClass="bg-banner-soft-info-bg"
-          textClass="text-banner-soft-info-text"
-        />
-      ) : lifecycle === 'about_to_start' ? (
-        <CardBanner
-          icon={Timer}
-          label={rideStatus.aboutToStart}
-          bgClass="bg-banner-soft-info-bg"
-          textClass="text-banner-soft-info-text"
-        />
-      ) : isSignedUp && isWaitlisted && lifecycle !== 'upcoming' ? (
-        <CardBanner
-          icon={Timer}
-          label={detail.waitlistClosed}
-          bgClass="bg-banner-muted-bg"
-          textClass="text-banner-muted-text"
-        />
-      ) : isSignedUp && isWaitlisted ? (
-        <CardBanner
-          icon={HourglassSimpleMedium}
-          label={
-            waitlistPosition
-              ? appContent.schedule.status.waitlisted(waitlistPosition)
-              : appContent.rides.roster.waitlisted
-          }
-          bgClass="bg-banner-soft-warning-bg"
-          textClass="text-banner-soft-warning-text"
-        />
-      ) : isSignedUp ? (
-        <CardBanner
-          icon={CheckCircle}
-          label={detail.signedUp}
-          bgClass="bg-banner-soft-success-bg"
-          textClass="text-banner-soft-success-text"
-        />
-      ) : null}
+    <Card className={cn('mt-6 overflow-clip p-0', stateStyle.borderClass)}>
+      {/* Unified banner */}
+      <StateCardBanner style={stateStyle} labelOverride={bannerLabel} />
 
       {/* Card body */}
       <div className="flex flex-col gap-4 px-6 pb-6 pt-5">
@@ -199,14 +165,16 @@ export function RideDetailCard({
           </div>
         )}
 
-        {/* Route map — only shown when route data exists */}
-        {ride.route_polyline && (
+        {/* Route map — full map when polyline exists, link-only placeholder otherwise */}
+        {ride.route_polyline ? (
           <RouteMapLoader
             polylineStr={ride.route_polyline}
             routeUrl={ride.route_url}
             routeName={ride.route_name}
           />
-        )}
+        ) : ride.route_url ? (
+          <RouteMapPlaceholder routeUrl={ride.route_url} />
+        ) : null}
       </div>
     </Card>
   );

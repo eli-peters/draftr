@@ -33,7 +33,7 @@ export default async function ProfilePage() {
 
   if (!profile) redirect(routes.signIn);
 
-  const displayName = profile.display_name ?? profile.full_name;
+  const displayName = profile.full_name;
   const initials = getInitials(profile.full_name);
   const memberSince = format(new Date(profile.created_at), dateFormats.monthYear);
   const role = profile.role as keyof typeof content.roles;

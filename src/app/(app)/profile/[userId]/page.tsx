@@ -53,11 +53,11 @@ export default async function PublicProfilePage({
   if (membership?.status === MemberStatus.INACTIVE) {
     const { data: basicUser } = await supabase
       .from('users')
-      .select('full_name, display_name, avatar_url')
+      .select('full_name, avatar_url')
       .eq('id', userId)
       .single();
 
-    const name = basicUser?.display_name ?? basicUser?.full_name ?? 'Member';
+    const name = basicUser?.full_name ?? 'Member';
     const initials = getInitials(name);
 
     return (
@@ -83,7 +83,7 @@ export default async function PublicProfilePage({
 
   if (!profile) notFound();
 
-  const displayName = profile.display_name ?? profile.full_name;
+  const displayName = profile.full_name;
   const initials = getInitials(profile.full_name);
   const memberSince = format(new Date(profile.created_at), dateFormats.monthYear);
   const role = profile.role as keyof typeof content.roles;

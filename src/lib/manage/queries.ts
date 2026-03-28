@@ -4,7 +4,6 @@ import type { AnnouncementType } from '@/types/database';
 export interface ClubMember {
   user_id: string;
   full_name: string;
-  display_name: string | null;
   email: string;
   avatar_url: string | null;
   preferred_pace_group: string | null;
@@ -24,7 +23,7 @@ export async function getClubMembers(clubId: string): Promise<ClubMember[]> {
     .select(
       `
       user_id, role, status, joined_at,
-      user:users!club_memberships_user_id_fkey(full_name, display_name, email, avatar_url, preferred_pace_group)
+      user:users!club_memberships_user_id_fkey(full_name, email, avatar_url, preferred_pace_group)
     `,
     )
     .eq('club_id', clubId)
@@ -38,7 +37,6 @@ export async function getClubMembers(clubId: string): Promise<ClubMember[]> {
   return (data ?? []).map((m) => {
     const user = m.user as unknown as {
       full_name: string;
-      display_name: string | null;
       email: string;
       avatar_url: string | null;
       preferred_pace_group: string | null;
@@ -46,7 +44,6 @@ export async function getClubMembers(clubId: string): Promise<ClubMember[]> {
     return {
       user_id: m.user_id,
       full_name: user.full_name,
-      display_name: user.display_name,
       email: user.email,
       avatar_url: user.avatar_url,
       preferred_pace_group: user.preferred_pace_group,
@@ -135,7 +132,7 @@ export async function getClubAnnouncements(clubId: string) {
       `
       id, title, body, is_pinned, published_at, expires_at,
       announcement_type, is_dismissible,
-      creator:users!announcements_created_by_fkey(display_name, full_name)
+      creator:users!announcements_created_by_fkey(full_name)
     `,
     )
     .eq('club_id', clubId)
@@ -149,7 +146,6 @@ export async function getClubAnnouncements(clubId: string) {
 
   return (data ?? []).map((a) => {
     const creator = a.creator as unknown as {
-      display_name: string | null;
       full_name: string;
     } | null;
     return {
@@ -161,7 +157,7 @@ export async function getClubAnnouncements(clubId: string) {
       expires_at: a.expires_at,
       announcement_type: a.announcement_type as AnnouncementType,
       is_dismissible: a.is_dismissible,
-      created_by_name: creator?.display_name ?? creator?.full_name ?? null,
+      created_by_name: creator?.full_name ?? null,
     };
   });
 }
@@ -214,7 +210,7 @@ export async function getPinnedAnnouncement(clubId: string, userId: string) {
       `
       id, title, body, published_at, expires_at, max_duration_days,
       announcement_type, is_dismissible,
-      creator:users!announcements_created_by_fkey(display_name, full_name)
+      creator:users!announcements_created_by_fkey(full_name)
     `,
     )
     .eq('club_id', clubId)
@@ -248,7 +244,6 @@ export async function getPinnedAnnouncement(clubId: string, userId: string) {
   }
 
   const creator = data.creator as unknown as {
-    display_name: string | null;
     full_name: string;
   } | null;
   return {
@@ -258,7 +253,7 @@ export async function getPinnedAnnouncement(clubId: string, userId: string) {
     published_at: data.published_at,
     announcement_type: data.announcement_type as AnnouncementType,
     is_dismissible: data.is_dismissible,
-    created_by_name: creator?.display_name ?? creator?.full_name ?? null,
+    created_by_name: creator?.full_name ?? null,
   };
 }
 

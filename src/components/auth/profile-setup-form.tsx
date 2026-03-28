@@ -44,18 +44,16 @@ export function ProfileSetupForm({ userEmail }: ProfileSetupFormProps) {
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="full_name">{content.nameLabel}</Label>
-        <Input id="full_name" name="full_name" type="text" required autoComplete="name" />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="display_name">{content.displayNameLabel}</Label>
         <Input
-          id="display_name"
-          name="display_name"
+          id="full_name"
+          name="full_name"
           type="text"
-          placeholder="Optional"
-          autoComplete="nickname"
+          required
+          pattern=".*\S+\s+\S+.*"
+          title={content.nameValidationError}
+          autoComplete="name"
         />
+        <p className="text-xs text-muted-foreground">{content.nameHelperText}</p>
       </div>
 
       <div className="flex flex-col gap-2">

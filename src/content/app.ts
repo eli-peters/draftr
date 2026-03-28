@@ -48,8 +48,8 @@ export const appContent = {
       heading: 'Set up your profile',
       subheading: 'Tell us about yourself so we can match you with the right rides',
       nameLabel: 'Full name',
-      displayNameLabel: 'Display name',
-      displayNamePlaceholder: 'How you want to be called',
+      nameHelperText: 'First and last name required',
+      nameValidationError: 'Please enter both your first and last name.',
       passwordLabel: 'Password',
       passwordPlaceholder: 'Create a password (min. 6 characters)',
       bioLabel: 'Bio',
@@ -145,7 +145,8 @@ export const appContent = {
     },
     card: {
       drop: 'Drop',
-      riders: 'riders',
+      riding: 'riding',
+      riders: 'Riders',
       distance: 'Distance',
       elevation: 'Elevation',
       time: 'Time',
@@ -163,7 +164,6 @@ export const appContent = {
       undo: 'Undo',
       rateLimited: 'Easy there — give it a moment',
       spotsRemaining: (remaining: number) => `${remaining} spots left`,
-      ledBy: (name: string) => `Led by ${name}`,
       moreTags: (count: number) => `+${count}`,
     },
     status: {
@@ -188,6 +188,7 @@ export const appContent = {
       dropRide: 'Drop ride',
       noDrop: 'No-drop',
       viewRoute: 'View Route',
+      viewRouteOn: (serviceName: string) => `View route on ${serviceName}`,
       signedUp: "You're signed up!",
       cancelled: 'This ride has been cancelled',
       cancelledLocked: 'Cancelled rides cannot be edited.',
@@ -262,15 +263,23 @@ export const appContent = {
       importDescription: 'Import from a connected service to pre-fill ride details.',
       importConfirmed: (routeName: string) => `"${routeName}" imported`,
       importChange: 'Change Route',
-      connectPrompt: 'Connect Strava to import routes',
+      connectPrompt: 'Connect a service to import routes',
 
       // URL detection
       fetchRouteDetails: 'Fetch route details',
       fetchingRoute: 'Fetching\u2026',
       fetchRouteError: 'Could not fetch route details.',
       pasteRouteLink: 'Paste a route link',
-      pasteRoutePlaceholder: 'https://strava.com/routes/...',
+      pasteRoutePlaceholder: 'https://strava.com/routes/... or ridewithgps.com/routes/...',
       routeLinkAdded: 'Route link added',
+      linkOnlyPreviewLabel: 'This is what riders will see',
+      linkOnlyViewRoute: (serviceName: string) => `View route on ${serviceName}`,
+      linkOnlyHint: (serviceName: string) =>
+        `Riders will see a link to ${serviceName}. Connect your account to show them the route map.`,
+      linkOnlyHintGeneric:
+        'Riders will see a link to the route. Connect a service to show them the route map.',
+      linkOnlyConnect: (serviceName: string) => `Connect ${serviceName}`,
+      linkOnlyRemove: 'Remove',
 
       // Fields
       title: 'Title',
@@ -704,6 +713,7 @@ export const appContent = {
     commentNotFound: 'Comment not found.',
     commentTooLong: (max: number) => `Comment must be ${max} characters or fewer.`,
     alreadyExists: 'Already added.',
+    fullNameRequired: 'Full name must include both a first and last name.',
   },
 
   notificationMessages: {

@@ -17,17 +17,17 @@ const badgeVariants = cva(
           'bg-warning/10 text-warning border-warning/50 focus-visible:ring-warning/20 [a]:hover:bg-warning/20',
         outline: 'border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground',
         'pace-1':
-          'border border-badge-pace-1-text bg-badge-pace-1-bg text-foreground font-semibold',
+          'border border-badge-pace-1-border bg-badge-pace-1-bg text-foreground font-semibold',
         'pace-2':
-          'border border-badge-pace-2-text bg-badge-pace-2-bg text-foreground font-semibold',
+          'border border-badge-pace-2-border bg-badge-pace-2-bg text-foreground font-semibold',
         'pace-3':
-          'border border-badge-pace-3-text bg-badge-pace-3-bg text-foreground font-semibold',
+          'border border-badge-pace-3-border bg-badge-pace-3-bg text-foreground font-semibold',
         'pace-4':
-          'border border-badge-pace-4-text bg-badge-pace-4-bg text-foreground font-semibold',
+          'border border-badge-pace-4-border bg-badge-pace-4-bg text-foreground font-semibold',
         'pace-5':
-          'border border-badge-pace-5-text bg-badge-pace-5-bg text-foreground font-semibold',
+          'border border-badge-pace-5-border bg-badge-pace-5-bg text-foreground font-semibold',
         'pace-6':
-          'border border-badge-pace-6-text bg-badge-pace-6-bg text-foreground font-semibold',
+          'border border-badge-pace-6-border bg-badge-pace-6-bg text-foreground font-semibold',
         'status-cancelled': 'bg-badge-status-cancelled-bg text-badge-status-cancelled-text',
         'status-full': 'bg-badge-status-full-bg text-badge-status-full-text',
         'status-confirmed': 'bg-badge-status-confirmed-bg text-badge-status-confirmed-text',
@@ -36,7 +36,6 @@ const badgeVariants = cva(
         'role-admin': 'bg-badge-role-admin-bg text-badge-role-admin-text',
         'role-new': 'bg-badge-role-new-bg text-badge-role-new-text',
         count: 'bg-badge-count-bg text-badge-count-text',
-        'tag-selected': 'bg-badge-tag-selected-bg text-badge-tag-selected-text',
       },
       shape: {
         pill: 'rounded-full',

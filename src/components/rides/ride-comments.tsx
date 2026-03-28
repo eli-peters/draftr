@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { SectionHeading } from '@/components/ui/section-heading';
@@ -92,7 +93,9 @@ function CommentRow({
     <div className="flex gap-3 rounded-lg px-2 py-2.5">
       <Avatar className="h-8 w-8 shrink-0">
         {comment.avatar_url && <AvatarImage src={comment.avatar_url} alt={comment.user_name} />}
-        <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
+        <AvatarFallback
+          className={`text-xs font-medium ${getAvatarColourClasses(comment.user_name)}`}
+        >
           {getInitials(comment.user_name)}
         </AvatarFallback>
       </Avatar>

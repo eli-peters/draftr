@@ -3,7 +3,12 @@
 import * as React from 'react';
 import { Avatar as AvatarPrimitive } from '@base-ui/react/avatar';
 
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
+import { getAvatarColour } from '@/lib/avatar-colours';
+
+// ---------------------------------------------------------------------------
+// Core Avatar primitives (used across the app: profiles, comments, roster)
+// ---------------------------------------------------------------------------
 
 function Avatar({
   className,
@@ -17,7 +22,7 @@ function Avatar({
       data-slot="avatar"
       data-size={size}
       className={cn(
-        'group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten',
+        'group/avatar relative flex size-8 shrink-0 rounded-full select-none after:pointer-events-none after:absolute after:inset-0 after:rounded-full after:border after:border-border data-[size=lg]:size-10 data-[size=sm]:size-6',
         className,
       )}
       {...props}
@@ -40,7 +45,7 @@ function AvatarFallback({ className, ...props }: AvatarPrimitive.Fallback.Props)
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
-        'flex size-full items-center justify-center rounded-full bg-muted text-sm text-muted-foreground group-data-[size=sm]/avatar:text-xs',
+        'flex size-full items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground group-data-[size=sm]/avatar:text-[0.5625rem]',
         className,
       )}
       {...props}
@@ -90,4 +95,107 @@ function AvatarGroupCount({ className, ...props }: React.ComponentProps<'div'>) 
   );
 }
 
-export { Avatar, AvatarImage, AvatarFallback, AvatarGroup, AvatarGroupCount, AvatarBadge };
+// ---------------------------------------------------------------------------
+// Rider avatar components — for ride card contexts
+//
+// These use accent-coloured backgrounds for fallbacks and are designed to
+// stack with overlap. The "border" between stacked circles is created by
+// each circle having a 2px border that inherits the parent surface colour,
+// so the stack works on any background without hardcoding a colour.
+// ---------------------------------------------------------------------------
+
+/**
+ * Single rider avatar circle — matches the roster/detail page avatar exactly.
+ *
+ * Initials fallback: coloured bg + accent border + accent text (font-medium).
+ * Photo: clipped image with subtle border overlay.
+ *
+ * When placed inside a RiderAvatarStack, an outer ring in the surface colour
+ * is applied via the stack's CSS to create visual padding between overlaps.
+ */
+interface RiderAvatarProps {
+  avatarUrl: string | null;
+  name: string;
+  className?: string;
+}
+
+function RiderAvatar({ avatarUrl, name, className }: RiderAvatarProps) {
+  const [bg, fg] = getAvatarColour(name);
+  return (
+    <div
+      data-slot="rider-avatar"
+      className={cn('relative size-8 shrink-0 rounded-full', !avatarUrl && bg, className)}
+    >
+      {avatarUrl ? (
+        <img src={avatarUrl} alt={name} className="size-full rounded-full object-cover" />
+      ) : (
+        <div className="flex size-full items-center justify-center">
+          <span className={cn('text-xs font-medium', fg)}>{getInitials(name)}</span>
+        </div>
+      )}
+      {/* Consistent border overlay — renders on top of both photos and initials */}
+      <span className="absolute inset-0 rounded-full border border-border" />
+    </div>
+  );
+}
+
+/** Overflow count circle (+X) — subtle secondary tint with accent border. */
+interface RiderAvatarOverflowProps {
+  count: number;
+  className?: string;
+}
+
+function RiderAvatarOverflow({ count, className }: RiderAvatarOverflowProps) {
+  return (
+    <div
+      data-slot="rider-avatar"
+      className={cn(
+        'relative flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-accent-secondary-subtle',
+        className,
+      )}
+    >
+      <span className="text-xs font-medium text-accent-secondary-default">+{count}</span>
+    </div>
+  );
+}
+
+/**
+ * Overlapping avatar stack for ride cards.
+ *
+ * Adds a 2px ring in the parent surface colour around each child avatar,
+ * creating visual padding between the overlapping circles. The ring colour
+ * is set via `--stack-ring` and defaults to `var(--surface-page)` (card footer).
+ */
+interface RiderAvatarStackProps {
+  children: React.ReactNode;
+  /** CSS value for the ring colour. Defaults to var(--surface-page). */
+  surface?: string;
+  className?: string;
+}
+
+function RiderAvatarStack({ children, surface, className }: RiderAvatarStackProps) {
+  return (
+    <div
+      data-slot="rider-avatar-stack"
+      className={cn(
+        'flex -space-x-2 *:data-[slot=rider-avatar]:ring-2 *:data-[slot=rider-avatar]:ring-(--stack-ring)',
+        className,
+      )}
+      style={{ '--stack-ring': surface ?? 'var(--surface-page)' } as React.CSSProperties}
+    >
+      {children}
+    </div>
+  );
+}
+
+export {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+  AvatarGroup,
+  AvatarGroupCount,
+  AvatarBadge,
+  RiderAvatar,
+  RiderAvatarOverflow,
+  RiderAvatarStack,
+};

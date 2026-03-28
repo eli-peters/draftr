@@ -151,16 +151,22 @@
   /* Badge tokens → Tailwind */
   --color-badge-pace-1-bg: var(--badge-pace-1-bg);
   --color-badge-pace-1-text: var(--badge-pace-1-text);
+  --color-badge-pace-1-border: var(--badge-pace-1-border);
   --color-badge-pace-2-bg: var(--badge-pace-2-bg);
   --color-badge-pace-2-text: var(--badge-pace-2-text);
+  --color-badge-pace-2-border: var(--badge-pace-2-border);
   --color-badge-pace-3-bg: var(--badge-pace-3-bg);
   --color-badge-pace-3-text: var(--badge-pace-3-text);
+  --color-badge-pace-3-border: var(--badge-pace-3-border);
   --color-badge-pace-4-bg: var(--badge-pace-4-bg);
   --color-badge-pace-4-text: var(--badge-pace-4-text);
+  --color-badge-pace-4-border: var(--badge-pace-4-border);
   --color-badge-pace-5-bg: var(--badge-pace-5-bg);
   --color-badge-pace-5-text: var(--badge-pace-5-text);
+  --color-badge-pace-5-border: var(--badge-pace-5-border);
   --color-badge-pace-6-bg: var(--badge-pace-6-bg);
   --color-badge-pace-6-text: var(--badge-pace-6-text);
+  --color-badge-pace-6-border: var(--badge-pace-6-border);
   --color-badge-status-cancelled-bg: var(--badge-status-cancelled-bg);
   --color-badge-status-cancelled-text: var(--badge-status-cancelled-text);
   --color-badge-status-full-bg: var(--badge-status-full-bg);
@@ -177,8 +183,26 @@
   --color-badge-role-new-text: var(--badge-role-new-text);
   --color-badge-count-bg: var(--badge-count-bg);
   --color-badge-count-text: var(--badge-count-text);
-  --color-badge-tag-selected-bg: var(--badge-tag-selected-bg);
-  --color-badge-tag-selected-text: var(--badge-tag-selected-text);
+
+  /* Card border tokens → Tailwind (muted status borders for card outlines) */
+  --color-card-border-success: var(--card-border-success);
+  --color-card-border-warning: var(--card-border-warning);
+  --color-card-border-error: var(--card-border-error);
+  --color-card-border-info: var(--card-border-info);
+
+  /* Avatar fallback colour tokens → Tailwind (fg = text + border) */
+  --color-avatar-1-bg: var(--avatar-1-bg);
+  --color-avatar-1-fg: var(--avatar-1-fg);
+  --color-avatar-2-bg: var(--avatar-2-bg);
+  --color-avatar-2-fg: var(--avatar-2-fg);
+  --color-avatar-3-bg: var(--avatar-3-bg);
+  --color-avatar-3-fg: var(--avatar-3-fg);
+  --color-avatar-4-bg: var(--avatar-4-bg);
+  --color-avatar-4-fg: var(--avatar-4-fg);
+  --color-avatar-5-bg: var(--avatar-5-bg);
+  --color-avatar-5-fg: var(--avatar-5-fg);
+  --color-avatar-6-bg: var(--avatar-6-bg);
+  --color-avatar-6-fg: var(--avatar-6-fg);
 
   /* Weather condition tokens → Tailwind */
   --color-weather-clear: var(--weather-clear);
@@ -248,6 +272,12 @@
   --warning-foreground: var(--text-on-primary);
   --success: var(--feedback-success-default);
   --success-foreground: var(--text-on-primary);
+
+  /* ── Card border — muted status borders (200 light) ── */
+  --card-border-success: var(--color-success-200);
+  --card-border-warning: var(--color-warning-200);
+  --card-border-error: var(--color-error-200);
+  --card-border-info: var(--color-info-200);
 
   /* ── Component-level color tokens ── */
   --input-bg: transparent;
@@ -338,6 +368,12 @@
   --toast-warning-bg: color-mix(in srgb, var(--color-warning-500) 12%, var(--surface-default));
   --toast-error-bg: color-mix(in srgb, var(--color-error-500) 12%, var(--surface-default));
   --toast-info-bg: color-mix(in srgb, var(--color-info-500) 12%, var(--surface-default));
+
+  /* ── Card border — muted status borders (700 dark) ── */
+  --card-border-success: var(--color-success-700);
+  --card-border-warning: var(--color-warning-700);
+  --card-border-error: var(--color-error-700);
+  --card-border-info: var(--color-info-700);
 
   /* ── shadcn bridge overrides ── */
   --warning-foreground: var(--color-neutral-900);

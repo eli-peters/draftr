@@ -84,7 +84,7 @@ export default async function EditRidePage({
     .filter((m) => m.status === MemberStatus.ACTIVE)
     .map((m) => ({
       user_id: m.user_id,
-      name: m.display_name ?? m.full_name,
+      name: m.full_name,
     }));
 
   // Eligible co-leaders: active members with ride_leader or admin role, excluding the ride creator
@@ -97,7 +97,7 @@ export default async function EditRidePage({
     )
     .map((m) => ({
       user_id: m.user_id,
-      name: m.display_name ?? m.full_name,
+      name: m.full_name,
     }));
 
   return (

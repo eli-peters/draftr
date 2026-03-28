@@ -1005,6 +1005,16 @@
               "modes": { "Light": "{color.primary.700}", "Dark": "{color.primary.300}" }
             }
           }
+        },
+        "border": {
+          "$type": "color",
+          "$description": "Social — subtle pink border",
+          "$value": "{color.primary.200}",
+          "$extensions": {
+            "com.figma": {
+              "modes": { "Light": "{color.primary.200}", "Dark": "{color.primary.800}" }
+            }
+          }
         }
       },
       "2": {
@@ -1025,6 +1035,16 @@
           "$extensions": {
             "com.figma": {
               "modes": { "Light": "{color.success.700}", "Dark": "{color.success.300}" }
+            }
+          }
+        },
+        "border": {
+          "$type": "color",
+          "$description": "Intermediate B — subtle green border",
+          "$value": "{color.success.200}",
+          "$extensions": {
+            "com.figma": {
+              "modes": { "Light": "{color.success.200}", "Dark": "{color.success.800}" }
             }
           }
         }
@@ -1049,6 +1069,16 @@
               "modes": { "Light": "{color.success.600}", "Dark": "{color.success.400}" }
             }
           }
+        },
+        "border": {
+          "$type": "color",
+          "$description": "Intermediate A — subtle green border",
+          "$value": "{color.success.200}",
+          "$extensions": {
+            "com.figma": {
+              "modes": { "Light": "{color.success.200}", "Dark": "{color.success.800}" }
+            }
+          }
         }
       },
       "4": {
@@ -1069,6 +1099,16 @@
           "$extensions": {
             "com.figma": {
               "modes": { "Light": "{color.secondary.700}", "Dark": "{color.secondary.300}" }
+            }
+          }
+        },
+        "border": {
+          "$type": "color",
+          "$description": "Advanced B — subtle teal border",
+          "$value": "{color.secondary.200}",
+          "$extensions": {
+            "com.figma": {
+              "modes": { "Light": "{color.secondary.200}", "Dark": "{color.secondary.800}" }
             }
           }
         }
@@ -1093,6 +1133,16 @@
               "modes": { "Light": "{color.secondary.600}", "Dark": "{color.secondary.400}" }
             }
           }
+        },
+        "border": {
+          "$type": "color",
+          "$description": "Advanced A — subtle teal border",
+          "$value": "{color.secondary.200}",
+          "$extensions": {
+            "com.figma": {
+              "modes": { "Light": "{color.secondary.200}", "Dark": "{color.secondary.800}" }
+            }
+          }
         }
       },
       "6": {
@@ -1113,6 +1163,16 @@
           "$extensions": {
             "com.figma": {
               "modes": { "Light": "{color.neutral.700}", "Dark": "{color.neutral.300}" }
+            }
+          }
+        },
+        "border": {
+          "$type": "color",
+          "$description": "Elite — subtle neutral border",
+          "$value": "{color.neutral.200}",
+          "$extensions": {
+            "com.figma": {
+              "modes": { "Light": "{color.neutral.200}", "Dark": "{color.neutral.700}" }
             }
           }
         }
@@ -1329,32 +1389,6 @@
           }
         }
       }
-    },
-    "tag-selected": {
-      "bg": {
-        "$type": "color",
-        "$value": "{color.primary.50}",
-        "$extensions": {
-          "com.figma": {
-            "modes": {
-              "Light": "{color.primary.50}",
-              "Dark": "{color.primary.500-alpha-12}"
-            }
-          }
-        }
-      },
-      "text": {
-        "$type": "color",
-        "$value": "{color.primary.700}",
-        "$extensions": {
-          "com.figma": {
-            "modes": {
-              "Light": "{color.primary.700}",
-              "Dark": "{color.primary.300}"
-            }
-          }
-        }
-      }
     }
   },
   "weather": {
@@ -1438,6 +1472,141 @@
           "modes": {
             "Light": "{color.error.500}",
             "Dark": "{color.error.400}"
+          }
+        }
+      }
+    }
+  },
+  "avatar": {
+    "$description": "Rider avatar fallback colours — deterministic per-name hashing picks one pair",
+    "1": {
+      "bg": {
+        "$type": "color",
+        "$description": "Primary — pink tint",
+        "$value": "{color.primary.50}",
+        "$extensions": {
+          "com.figma": {
+            "modes": { "Light": "{color.primary.50}", "Dark": "{color.primary.950}" }
+          }
+        }
+      },
+      "fg": {
+        "$type": "color",
+        "$description": "Primary — pink foreground (text + border)",
+        "$value": "{color.primary.700}",
+        "$extensions": {
+          "com.figma": {
+            "modes": { "Light": "{color.primary.700}", "Dark": "{color.primary.300}" }
+          }
+        }
+      }
+    },
+    "2": {
+      "bg": {
+        "$type": "color",
+        "$description": "Secondary — teal tint",
+        "$value": "{color.secondary.50}",
+        "$extensions": {
+          "com.figma": {
+            "modes": { "Light": "{color.secondary.50}", "Dark": "{color.secondary.950}" }
+          }
+        }
+      },
+      "fg": {
+        "$type": "color",
+        "$description": "Secondary — teal foreground (text + border)",
+        "$value": "{color.secondary.700}",
+        "$extensions": {
+          "com.figma": {
+            "modes": { "Light": "{color.secondary.700}", "Dark": "{color.secondary.300}" }
+          }
+        }
+      }
+    },
+    "3": {
+      "bg": {
+        "$type": "color",
+        "$description": "Success — green tint",
+        "$value": "{color.success.50}",
+        "$extensions": {
+          "com.figma": {
+            "modes": { "Light": "{color.success.50}", "Dark": "{color.success.950}" }
+          }
+        }
+      },
+      "fg": {
+        "$type": "color",
+        "$description": "Success — green foreground (text + border)",
+        "$value": "{color.success.700}",
+        "$extensions": {
+          "com.figma": {
+            "modes": { "Light": "{color.success.700}", "Dark": "{color.success.300}" }
+          }
+        }
+      }
+    },
+    "4": {
+      "bg": {
+        "$type": "color",
+        "$description": "Warning — amber tint",
+        "$value": "{color.warning.50}",
+        "$extensions": {
+          "com.figma": {
+            "modes": { "Light": "{color.warning.50}", "Dark": "{color.warning.950}" }
+          }
+        }
+      },
+      "fg": {
+        "$type": "color",
+        "$description": "Warning — amber foreground (text + border)",
+        "$value": "{color.warning.700}",
+        "$extensions": {
+          "com.figma": {
+            "modes": { "Light": "{color.warning.700}", "Dark": "{color.warning.300}" }
+          }
+        }
+      }
+    },
+    "5": {
+      "bg": {
+        "$type": "color",
+        "$description": "Info — blue tint",
+        "$value": "{color.info.50}",
+        "$extensions": {
+          "com.figma": {
+            "modes": { "Light": "{color.info.50}", "Dark": "{color.info.950}" }
+          }
+        }
+      },
+      "fg": {
+        "$type": "color",
+        "$description": "Info — blue foreground (text + border)",
+        "$value": "{color.info.700}",
+        "$extensions": {
+          "com.figma": {
+            "modes": { "Light": "{color.info.700}", "Dark": "{color.info.300}" }
+          }
+        }
+      }
+    },
+    "6": {
+      "bg": {
+        "$type": "color",
+        "$description": "Error — red tint",
+        "$value": "{color.error.50}",
+        "$extensions": {
+          "com.figma": {
+            "modes": { "Light": "{color.error.50}", "Dark": "{color.error.950}" }
+          }
+        }
+      },
+      "fg": {
+        "$type": "color",
+        "$description": "Error — red foreground (text + border)",
+        "$value": "{color.error.700}",
+        "$extensions": {
+          "com.figma": {
+            "modes": { "Light": "{color.error.700}", "Dark": "{color.error.300}" }
           }
         }
       }

@@ -200,16 +200,22 @@
   /* badge */
   --badge-pace-1-bg: var(--color-primary-50);
   --badge-pace-1-text: var(--color-primary-700);
+  --badge-pace-1-border: var(--color-primary-200);
   --badge-pace-2-bg: var(--color-success-50);
   --badge-pace-2-text: var(--color-success-700);
+  --badge-pace-2-border: var(--color-success-200);
   --badge-pace-3-bg: var(--color-success-50);
   --badge-pace-3-text: var(--color-success-600);
+  --badge-pace-3-border: var(--color-success-200);
   --badge-pace-4-bg: var(--color-secondary-50);
   --badge-pace-4-text: var(--color-secondary-700);
+  --badge-pace-4-border: var(--color-secondary-200);
   --badge-pace-5-bg: var(--color-secondary-50);
   --badge-pace-5-text: var(--color-secondary-600);
+  --badge-pace-5-border: var(--color-secondary-200);
   --badge-pace-6-bg: var(--color-neutral-100);
   --badge-pace-6-text: var(--color-neutral-700);
+  --badge-pace-6-border: var(--color-neutral-200);
   --badge-status-cancelled-bg: var(--color-error-50);
   --badge-status-cancelled-text: var(--color-error-800);
   --badge-status-full-bg: var(--color-warning-50);
@@ -226,8 +232,20 @@
   --badge-role-new-text: var(--color-neutral-500);
   --badge-count-bg: var(--color-neutral-300);
   --badge-count-text: var(--color-neutral-900);
-  --badge-tag-selected-bg: var(--color-primary-50);
-  --badge-tag-selected-text: var(--color-primary-700);
+
+  /* avatar */
+  --avatar-1-bg: var(--color-primary-50);
+  --avatar-1-fg: var(--color-primary-700);
+  --avatar-2-bg: var(--color-secondary-50);
+  --avatar-2-fg: var(--color-secondary-700);
+  --avatar-3-bg: var(--color-success-50);
+  --avatar-3-fg: var(--color-success-700);
+  --avatar-4-bg: var(--color-warning-50);
+  --avatar-4-fg: var(--color-warning-700);
+  --avatar-5-bg: var(--color-info-50);
+  --avatar-5-fg: var(--color-info-700);
+  --avatar-6-bg: var(--color-error-50);
+  --avatar-6-fg: var(--color-error-700);
 
   /* weather */
   --weather-clear: var(--color-warning-500);
@@ -329,16 +347,22 @@
   /* badge */
   --badge-pace-1-bg: var(--color-primary-950);
   --badge-pace-1-text: var(--color-primary-300);
+  --badge-pace-1-border: var(--color-primary-800);
   --badge-pace-2-bg: var(--color-success-950);
   --badge-pace-2-text: var(--color-success-300);
+  --badge-pace-2-border: var(--color-success-800);
   --badge-pace-3-bg: var(--color-success-950);
   --badge-pace-3-text: var(--color-success-400);
+  --badge-pace-3-border: var(--color-success-800);
   --badge-pace-4-bg: var(--color-secondary-950);
   --badge-pace-4-text: var(--color-secondary-300);
+  --badge-pace-4-border: var(--color-secondary-800);
   --badge-pace-5-bg: var(--color-secondary-950);
   --badge-pace-5-text: var(--color-secondary-400);
+  --badge-pace-5-border: var(--color-secondary-800);
   --badge-pace-6-bg: var(--color-neutral-900);
   --badge-pace-6-text: var(--color-neutral-300);
+  --badge-pace-6-border: var(--color-neutral-700);
   --badge-status-cancelled-bg: var(--color-error-500-alpha-12);
   --badge-status-cancelled-text: var(--color-error-300);
   --badge-status-full-bg: var(--color-warning-500-alpha-12);
@@ -355,8 +379,20 @@
   --badge-role-new-text: var(--color-neutral-400);
   --badge-count-bg: var(--color-neutral-600);
   --badge-count-text: var(--color-neutral-50);
-  --badge-tag-selected-bg: var(--color-primary-500-alpha-12);
-  --badge-tag-selected-text: var(--color-primary-300);
+
+  /* avatar */
+  --avatar-1-bg: var(--color-primary-950);
+  --avatar-1-fg: var(--color-primary-300);
+  --avatar-2-bg: var(--color-secondary-950);
+  --avatar-2-fg: var(--color-secondary-300);
+  --avatar-3-bg: var(--color-success-950);
+  --avatar-3-fg: var(--color-success-300);
+  --avatar-4-bg: var(--color-warning-950);
+  --avatar-4-fg: var(--color-warning-300);
+  --avatar-5-bg: var(--color-info-950);
+  --avatar-5-fg: var(--color-info-300);
+  --avatar-6-bg: var(--color-error-950);
+  --avatar-6-fg: var(--color-error-300);
 
   /* weather */
   --weather-clear: var(--color-warning-400);

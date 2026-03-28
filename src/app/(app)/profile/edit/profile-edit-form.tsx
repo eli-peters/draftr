@@ -20,7 +20,6 @@ const { auth, common, profile: profileContent } = appContent;
 
 interface ProfileEditFormProps {
   profile: {
-    display_name: string;
     bio: string;
     preferred_pace_group: string;
     emergency_contact_name: string;
@@ -72,7 +71,6 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
 
     const formData = new FormData(e.currentTarget);
     const result = await updateProfile({
-      display_name: formData.get('display_name') as string,
       bio: formData.get('bio') as string,
       preferred_pace_group: formData.get('preferred_pace_group') as string,
       emergency_contact_name: formData.get('emergency_contact_name') as string,
@@ -139,16 +137,6 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
           </button>
         )}
         {avatarError && <p className="mt-1 text-sm text-destructive">{avatarError}</p>}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="display_name">{auth.setupProfile.displayNameLabel}</Label>
-        <Input
-          id="display_name"
-          name="display_name"
-          defaultValue={profile.display_name}
-          placeholder={auth.setupProfile.displayNamePlaceholder}
-        />
       </div>
 
       <div className="space-y-2">

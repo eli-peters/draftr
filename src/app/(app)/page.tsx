@@ -43,11 +43,11 @@ export default async function HomePage() {
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from('users')
-    .select('display_name, full_name')
+    .select('full_name')
     .eq('id', userId)
     .single();
 
-  const firstName = profile?.display_name ?? profile?.full_name?.split(' ')[0] ?? '';
+  const firstName = profile?.full_name?.split(' ')[0] ?? '';
 
   // Fetch action bar data + ride feed + filter options in parallel
   const [
