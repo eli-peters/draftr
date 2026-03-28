@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { Copy } from '@phosphor-icons/react/dist/ssr';
+import { Copy, PencilSimple } from '@phosphor-icons/react/dist/ssr';
 import Link from 'next/link';
 import {
   getRideById,
@@ -69,20 +69,25 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       <PageHeader
         title={ride.title}
         actions={
-          canEdit || (hasEditRole && (availability.isCancelled || availability.isPast)) ? (
+          hasEditRole ? (
             <>
+              <Link href={`${routes.manageNewRide}?duplicate=${ride.id}`}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
+                >
+                  <Copy className="size-6" />
+                </Button>
+              </Link>
               {canEdit && (
                 <Link href={routes.manageEditRide(ride.id, routes.ride(id))}>
-                  <Button variant="outline" size="sm">
-                    {appContent.rides.edit.heading}
-                  </Button>
-                </Link>
-              )}
-              {hasEditRole && (availability.isCancelled || availability.isPast) && (
-                <Link href={`${routes.manageNewRide}?duplicate=${ride.id}`}>
-                  <Button variant="outline" size="sm">
-                    <Copy className="mr-1.5 h-4 w-4" />
-                    {detail.duplicateAsNew}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
+                  >
+                    <PencilSimple className="size-6" />
                   </Button>
                 </Link>
               )}

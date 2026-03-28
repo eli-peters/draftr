@@ -418,7 +418,7 @@ export function CardMetadataRow({
     <div
       className={cn(
         DATA_SM,
-        'flex min-w-0 items-center gap-2 overflow-hidden text-muted-foreground',
+        'flex min-w-0 items-center gap-4 overflow-hidden text-muted-foreground',
         className,
       )}
     >

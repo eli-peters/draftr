@@ -105,7 +105,9 @@ export function RideDetailCard({
         )}
 
         {/* Weather summary — part of the "should I ride?" decision */}
-        <RideWeatherSummary weather={weather} />
+        <div className="-mt-1.5">
+          <RideWeatherSummary weather={weather} />
+        </div>
 
         {/* Metadata rows */}
         <div className="space-y-1">
