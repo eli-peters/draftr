@@ -30,9 +30,16 @@ interface RouteMapProps {
   routeUrl?: string | null;
   routeName?: string | null;
   className?: string;
+  aspectRatio?: string;
 }
 
-export function RouteMap({ polylineStr, routeUrl, routeName, className }: RouteMapProps) {
+export function RouteMap({
+  polylineStr,
+  routeUrl,
+  routeName,
+  className,
+  aspectRatio = '3/2',
+}: RouteMapProps) {
   const mapRef = useRef<MapRef>(null);
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
 
@@ -90,11 +97,23 @@ export function RouteMap({ polylineStr, routeUrl, routeName, className }: RouteM
           className="block overflow-hidden rounded-xl"
           title={routeName ?? undefined}
         >
-          <MapInner ref={mapRef} isDark={isDark} geojson={geojson} onLoad={onLoad} />
+          <MapInner
+            ref={mapRef}
+            isDark={isDark}
+            geojson={geojson}
+            onLoad={onLoad}
+            aspectRatio={aspectRatio}
+          />
         </a>
       ) : (
         <div className="overflow-hidden rounded-xl">
-          <MapInner ref={mapRef} isDark={isDark} geojson={geojson} onLoad={onLoad} />
+          <MapInner
+            ref={mapRef}
+            isDark={isDark}
+            geojson={geojson}
+            onLoad={onLoad}
+            aspectRatio={aspectRatio}
+          />
         </div>
       )}
     </div>
@@ -109,10 +128,11 @@ interface MapInnerProps {
   isDark: boolean;
   geojson: GeoJSON.Feature;
   onLoad: () => void;
+  aspectRatio: string;
 }
 
 const MapInner = forwardRef<MapRef, MapInnerProps>(function MapInner(
-  { isDark, geojson, onLoad },
+  { isDark, geojson, onLoad, aspectRatio },
   ref,
 ) {
   return (
@@ -120,7 +140,7 @@ const MapInner = forwardRef<MapRef, MapInnerProps>(function MapInner(
       ref={ref}
       mapboxAccessToken={MAPBOX_TOKEN}
       mapStyle={isDark ? DARK_STYLE : LIGHT_STYLE}
-      style={{ width: '100%', aspectRatio: '3/2' }}
+      style={{ width: '100%', aspectRatio }}
       interactive={true}
       scrollZoom={false}
       attributionControl={false}

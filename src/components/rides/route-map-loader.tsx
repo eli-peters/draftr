@@ -11,8 +11,21 @@ interface RouteMapLoaderProps {
   polylineStr: string;
   routeUrl?: string | null;
   routeName?: string | null;
+  aspectRatio?: string;
 }
 
-export function RouteMapLoader({ polylineStr, routeUrl, routeName }: RouteMapLoaderProps) {
-  return <RouteMap polylineStr={polylineStr} routeUrl={routeUrl} routeName={routeName} />;
+export function RouteMapLoader({
+  polylineStr,
+  routeUrl,
+  routeName,
+  aspectRatio,
+}: RouteMapLoaderProps) {
+  return (
+    <RouteMap
+      polylineStr={polylineStr}
+      routeUrl={routeUrl}
+      routeName={routeName}
+      aspectRatio={aspectRatio}
+    />
+  );
 }

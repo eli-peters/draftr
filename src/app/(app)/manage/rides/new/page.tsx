@@ -1,7 +1,12 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getUser } from '@/lib/supabase/server';
-import { getUserClubMembership, getPaceGroups, getRideById } from '@/lib/rides/queries';
+import {
+  getUserClubMembership,
+  getPaceGroups,
+  getRideById,
+  getMeetingLocations,
+} from '@/lib/rides/queries';
 import { getClubMembers } from '@/lib/manage/queries';
 import { getUserConnections } from '@/lib/integrations/queries';
 import { appContent } from '@/content/app';
@@ -32,7 +37,7 @@ export default async function CreateRidePage({
 
   const authUser = await getUser();
 
-  const [clubResult, paceGroups, sourceRide, templateData, connections, members] =
+  const [clubResult, paceGroups, sourceRide, templateData, connections, members, meetingLocations] =
     await Promise.all([
       supabase.from('clubs').select('settings').eq('id', membership.club_id).single(),
       getPaceGroups(membership.club_id),
@@ -47,6 +52,7 @@ export default async function CreateRidePage({
         : null,
       authUser ? getUserConnections(authUser.id) : [],
       getClubMembers(membership.club_id),
+      getMeetingLocations(membership.club_id),
     ]);
 
   const clubSettings = (clubResult.data?.settings ?? {}) as Record<string, string>;
@@ -102,7 +108,7 @@ export default async function CreateRidePage({
         (m.role === 'ride_leader' || m.role === 'admin') &&
         m.user_id !== authUser?.id,
     )
-    .map((m) => ({ user_id: m.user_id, name: m.full_name }));
+    .map((m) => ({ user_id: m.user_id, name: m.full_name, avatar_url: m.avatar_url }));
 
   return (
     <DashboardShell>
@@ -117,6 +123,7 @@ export default async function CreateRidePage({
         seasonEnd={clubSettings.season_end}
         connectedServices={connections.map((c) => c.service)}
         eligibleLeaders={eligibleLeaders}
+        meetingLocations={meetingLocations}
       />
     </DashboardShell>
   );

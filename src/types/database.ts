@@ -297,6 +297,8 @@ export interface ImportableRoute {
   source_url: string;
   source_type: 'route' | 'activity';
   polyline: string | null;
+  start_latitude?: number | null;
+  start_longitude?: number | null;
   created_at: string;
 }
 
@@ -317,6 +319,7 @@ export interface RideWithDetails extends Ride {
   /** First few confirmed signups for avatar display (ordered by signed_up_at). */
   signup_avatars: SignupAvatar[];
   creator: Pick<User, 'id' | 'full_name' | 'avatar_url'> | null;
+  co_leaders: { user_id: string; full_name: string; avatar_url: string | null }[];
   current_user_signup_status: 'confirmed' | 'waitlisted' | null;
   current_user_waitlist_position: number | null;
   weather: RideWeatherSnapshot | null;

@@ -353,6 +353,38 @@ export function RiderAvatarGroup({ avatars, totalCount, cancelled }: RiderAvatar
 }
 
 // ---------------------------------------------------------------------------
+// LeaderRow — creator + co-leader avatars above rider group
+// ---------------------------------------------------------------------------
+
+interface LeaderRowProps {
+  creator: { full_name: string; avatar_url: string | null } | null;
+  coLeaders: { full_name: string; avatar_url: string | null }[];
+}
+
+export function LeaderRow({ creator, coLeaders }: LeaderRowProps) {
+  if (!creator) return null;
+  const allLeaders = [creator, ...coLeaders];
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className={cn(BODY_SM, 'text-muted-foreground shrink-0')}>
+        {ridesContent.card.ledBy}
+      </span>
+      <div className="flex items-center gap-1.5 min-w-0">
+        {allLeaders.map((leader, i) => (
+          <div key={i} className="flex items-center gap-1.5 min-w-0">
+            <RiderAvatar avatarUrl={leader.avatar_url} name={leader.full_name} className="size-6" />
+            <span className={cn(BODY_SM, 'font-medium text-foreground truncate')}>
+              {leader.full_name}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // CardMetadataRow — inline data values with icons
 // ---------------------------------------------------------------------------
 

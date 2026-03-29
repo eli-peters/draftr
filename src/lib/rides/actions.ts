@@ -307,6 +307,12 @@ export async function createRide(data: CreateRideData) {
 
   const settings = (club?.settings ?? {}) as Record<string, string>;
 
+  // Validate start_time: must be on a 15-minute interval
+  const [, startMinutes] = data.start_time.split(':').map(Number);
+  if (isNaN(startMinutes) || startMinutes % 15 !== 0) {
+    return { error: errors.timeIntervalInvalid };
+  }
+
   // Validate ride_date: must not be in the past
   if (data.ride_date < todayDateString()) {
     return { error: errors.rideDateInPast };
@@ -524,6 +530,12 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
 
   if (existingRide?.status === RideStatus.CANCELLED) {
     return { error: ridesContent.detail.cancelledLocked };
+  }
+
+  // Validate start_time: must be on a 15-minute interval
+  const [, updateMinutes] = data.start_time.split(':').map(Number);
+  if (isNaN(updateMinutes) || updateMinutes % 15 !== 0) {
+    return { error: errors.timeIntervalInvalid };
   }
 
   const { error: rideError } = await supabase
@@ -1018,4 +1030,41 @@ export async function getLeaderRideConflicts(
   }
 
   return conflicts;
+}
+
+// ---------------------------------------------------------------------------
+// Meeting Locations
+// ---------------------------------------------------------------------------
+
+/**
+ * Save a new meeting location for the club.
+ */
+export async function saveMeetingLocation(
+  clubId: string,
+  location: {
+    name: string;
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+  },
+) {
+  const supabase = await createClient();
+  const user = await getUser();
+  if (!user) return { error: common.notAuthenticated };
+
+  const { data, error: insertError } = await supabase
+    .from('meeting_locations')
+    .insert({
+      club_id: clubId,
+      name: location.name,
+      address: location.address || null,
+      latitude: location.latitude ?? null,
+      longitude: location.longitude ?? null,
+      is_active: true,
+    })
+    .select('id')
+    .single();
+
+  if (insertError) return { error: insertError.message };
+  return { id: data?.id };
 }

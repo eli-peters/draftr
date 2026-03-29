@@ -24,17 +24,16 @@ export async function GET(request: Request) {
   }
 
   const parsed = parseRouteUrl(url);
-  if (!parsed) {
-    return NextResponse.json({ error: 'Unrecognized route URL' }, { status: 400 });
-  }
 
   try {
     let route: ImportableRoute | null = null;
 
-    if (parsed.service === 'strava') {
+    if (parsed?.service === 'strava') {
       route = await scrapeStrava(parsed.id, url);
-    } else {
+    } else if (parsed?.service === 'ridewithgps') {
       route = await scrapeRwgps(parsed.id, url, parsed.type as 'route' | 'trip');
+    } else {
+      route = await scrapeGeneric(url);
     }
 
     if (!route) {
@@ -141,6 +140,133 @@ async function scrapeRwgps(
     polyline: null,
     created_at: new Date().toISOString(),
   };
+}
+
+/**
+ * Generic scraper for any public route page (Komoot, Garmin, MapMyRide, etc).
+ * Tries JSON-LD structured data first, falls back to og:title and HTML scraping.
+ */
+async function scrapeGeneric(sourceUrl: string): Promise<ImportableRoute | null> {
+  const res = await fetch(sourceUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; Draftr/1.0)',
+      Accept: 'text/html',
+    },
+    signal: AbortSignal.timeout(8000),
+  });
+
+  if (!res.ok) return null;
+
+  const html = await res.text();
+
+  // Try JSON-LD structured data first (Komoot, AllTrails, etc.)
+  const jsonLd = extractJsonLd(html);
+
+  let name: string | null = null;
+  let description: string | null = null;
+  let distanceKm: number | null = null;
+  let elevationM: number | null = null;
+  let startLatitude: number | null = null;
+  let startLongitude: number | null = null;
+
+  if (jsonLd) {
+    name = (jsonLd.name as string) ?? null;
+    description = (jsonLd.description as string) ?? null;
+
+    // Parse distance from additionalProperty (e.g. "13.3 km")
+    const props = jsonLd.additionalProperty as { name?: string; value?: string }[] | undefined;
+    if (Array.isArray(props)) {
+      const distProp = props.find((p) => p.name === 'Distance');
+      if (distProp?.value) {
+        const match = distProp.value.match(/([\d.,]+)\s*(km|mi)/i);
+        if (match) {
+          const val = parseFloat(match[1].replace(',', ''));
+          distanceKm = match[2].toLowerCase() === 'mi' ? val * 1.60934 : val;
+        }
+      }
+      const elevProp = props.find((p) => p.name === 'Elevation' || p.name === 'Ascent');
+      if (elevProp?.value) {
+        const match = elevProp.value.match(/([\d.,]+)\s*(m|ft)/i);
+        if (match) {
+          const val = parseFloat(match[1].replace(',', ''));
+          elevationM = match[2].toLowerCase() === 'ft' ? Math.round(val * 0.3048) : Math.round(val);
+        }
+      }
+    }
+
+    // Extract start point from itinerary (first item with geo coordinates)
+    const itinerary = jsonLd.itinerary as
+      | { itemListElement?: { item?: { geo?: { latitude?: number; longitude?: number } } }[] }
+      | undefined;
+    if (itinerary?.itemListElement?.length) {
+      const firstGeo = itinerary.itemListElement[0]?.item?.geo;
+      if (firstGeo?.latitude && firstGeo?.longitude) {
+        startLatitude = firstGeo.latitude;
+        startLongitude = firstGeo.longitude;
+      }
+    }
+  }
+
+  // Fallback to HTML scraping for name
+  if (!name) {
+    const ogTitleMatch =
+      html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i) ??
+      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i);
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const rawName = ogTitleMatch?.[1] ?? titleMatch?.[1];
+    if (!rawName) return null;
+    name = decodeHtmlEntities(rawName.trim());
+  }
+
+  // Fallback to HTML scraping for distance/elevation
+  if (distanceKm === null) distanceKm = scrapeDistance(html);
+  if (elevationM === null) elevationM = scrapeElevation(html);
+
+  const urlHash = sourceUrl.replace(/[^a-zA-Z0-9]/g, '').slice(-12);
+
+  return {
+    id: `external:${urlHash}`,
+    service: 'strava', // placeholder — satisfies type constraint
+    name,
+    description,
+    distance_m: distanceKm ? Math.round(distanceKm * 1000) : 0,
+    elevation_m: elevationM ?? 0,
+    source_url: sourceUrl,
+    source_type: 'route',
+    polyline: null,
+    start_latitude: startLatitude,
+    start_longitude: startLongitude,
+    created_at: new Date().toISOString(),
+  };
+}
+
+/**
+ * Extract the most relevant JSON-LD block from HTML (Trip, ExerciseAction, or first with a name).
+ */
+function extractJsonLd(html: string): Record<string, unknown> | null {
+  const blocks = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/gi);
+  if (!blocks) return null;
+
+  let best: Record<string, unknown> | null = null;
+
+  for (const block of blocks) {
+    const jsonStr = block.replace(/<script[^>]*>/, '').replace(/<\/script>/, '');
+    try {
+      const parsed = JSON.parse(jsonStr);
+      const types = Array.isArray(parsed['@type']) ? parsed['@type'] : [parsed['@type']];
+      // Prefer Trip/ExerciseAction types (Komoot uses Trip)
+      if (types.some((t: string) => ['Trip', 'ExerciseAction', 'SportsEvent'].includes(t))) {
+        return parsed;
+      }
+      if (parsed.name && !best) {
+        best = parsed;
+      }
+    } catch {
+      // Invalid JSON-LD block
+    }
+  }
+
+  return best;
 }
 
 /**

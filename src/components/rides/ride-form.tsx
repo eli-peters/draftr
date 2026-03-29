@@ -11,10 +11,14 @@ import {
   ArrowSquareOut,
   LinkSimple,
   MapPin,
-  PencilSimple,
-  CaretDown,
   Check,
   Bicycle,
+  Path,
+  CalendarDots,
+  Faders,
+  PencilSimple,
+  Prohibit,
+  SpinnerGap,
 } from '@phosphor-icons/react/dist/ssr';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -23,9 +27,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { SectionHeading } from '@/components/ui/section-heading';
 import { Separator } from '@/components/ui/separator';
+import { Card } from '@/components/ui/card';
+import { RiderAvatar } from '@/components/ui/avatar';
+import { RouteMapLoader } from '@/components/rides/route-map-loader';
 import { RouteImportDrawer } from '@/components/rides/route-import-drawer';
+import { LocationPickerDrawer } from '@/components/rides/location-picker-drawer';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { todayDateString } from '@/config/formatting';
@@ -47,6 +54,33 @@ import type { IntegrationService, ImportableRoute } from '@/types/database';
 const { rides: ridesContent, common, manage: manageContent } = appContent;
 const form = ridesContent.form;
 const rc = manageContent.recurringRides;
+
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+
+function FormCardBanner({ label, icon: Icon }: { label: string; icon: React.ElementType }) {
+  return (
+    <div className="flex w-full items-center gap-2 px-5 py-2.5 border-b border-border">
+      <Icon weight="bold" className="size-3.5 shrink-0 text-foreground" />
+      <span className="font-sans text-xs font-semibold uppercase tracking-[0.06em] leading-4.25 whitespace-nowrap text-foreground">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function StaticLocationMap({ latitude, longitude }: { latitude: number; longitude: number }) {
+  if (!MAPBOX_TOKEN) return null;
+  const pin = `pin-s+DE0387(${longitude},${latitude})`;
+  const src = `https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/static/${pin}/${longitude},${latitude},14,0/600x200@2x?access_token=${MAPBOX_TOKEN}&logo=false&attribution=false`;
+  return (
+    <img
+      src={src}
+      alt=""
+      className="w-full rounded-xl object-cover"
+      style={{ aspectRatio: '3/1' }}
+    />
+  );
+}
 
 function OptionalTag() {
   return <span className="text-xs font-normal text-muted-foreground ml-1">{form.optional}</span>;
@@ -71,6 +105,14 @@ interface RideFormInitialData {
   start_longitude?: number | null;
 }
 
+export interface MeetingLocation {
+  id: string;
+  name: string;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+}
+
 interface RideFormProps {
   clubId: string;
   paceGroups: { id: string; name: string }[];
@@ -80,7 +122,8 @@ interface RideFormProps {
   seasonStart?: string;
   seasonEnd?: string;
   connectedServices?: IntegrationService[];
-  eligibleLeaders?: { user_id: string; name: string }[];
+  eligibleLeaders?: { user_id: string; name: string; avatar_url: string | null }[];
+  meetingLocations?: MeetingLocation[];
   returnTo?: string;
 }
 
@@ -94,6 +137,7 @@ export function RideForm({
   seasonEnd,
   connectedServices = [],
   eligibleLeaders = [],
+  meetingLocations = [],
   returnTo,
 }: RideFormProps) {
   const router = useRouter();
@@ -106,9 +150,9 @@ export function RideForm({
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isRecurring, setIsRecurring] = useState(false);
+  const [recurringEndType, setRecurringEndType] = useState<'never' | 'after' | 'on_date'>('never');
   const [selectedCoLeaders, setSelectedCoLeaders] = useState<string[]>([]);
   const [coLeaderConflicts, setCoLeaderConflicts] = useState<LeaderConflict[]>([]);
-  const [coLeadersOpen, setCoLeadersOpen] = useState(false);
   const [rideDate, setRideDate] = useState(initialData?.ride_date ?? '');
   const [isDropRide, setIsDropRide] = useState(initialData?.is_drop_ride ?? false);
   const [editScope, setEditScope] = useState<'this' | 'all'>('this');
@@ -138,8 +182,8 @@ export function RideForm({
   const [startLongitude, setStartLongitude] = useState<number | null>(
     initialData?.start_longitude ?? null,
   );
-  const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [isGeocodingLocation, setIsGeocodingLocation] = useState(false);
+  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
 
   // Paste URL input for non-connected leaders
   const pasteUrlRef = useRef<HTMLInputElement>(null);
@@ -168,13 +212,14 @@ export function RideForm({
     if (!isEdit) fetchConflicts(rideDate);
   }, [rideDate, isEdit, fetchConflicts]);
 
-  function clearRouteData() {
+  function clearRouteData(preserveUrl = false) {
     setImportedRouteName(null);
-    setRouteUrl('');
     setRouteName('');
     setRoutePolyline('');
     setDetectedService(null);
-    if (pasteUrlRef.current) pasteUrlRef.current.value = '';
+    if (!preserveUrl) {
+      setRouteUrl('');
+    }
     if (titleRef.current) titleRef.current.value = '';
     if (distanceRef.current) distanceRef.current.value = '';
     if (elevationRef.current) elevationRef.current.value = '';
@@ -198,17 +243,29 @@ export function RideForm({
     if (descriptionRef.current && !descriptionRef.current.value && route.description) {
       descriptionRef.current.value = route.description;
     }
+    // Auto-populate start location from polyline or explicit coordinates
+    const startCoords = route.polyline
+      ? (() => {
+          try {
+            return decodeStartPoint(route.polyline);
+          } catch {
+            return null;
+          }
+        })()
+      : route.start_latitude && route.start_longitude
+        ? { latitude: route.start_latitude, longitude: route.start_longitude }
+        : null;
+
     if (route.polyline) {
       setRoutePolyline(route.polyline);
+    }
 
-      // Auto-populate start location from polyline via reverse geocoding
+    if (startCoords) {
+      setStartLatitude(startCoords.latitude);
+      setStartLongitude(startCoords.longitude);
       setIsGeocodingLocation(true);
       try {
-        const start = decodeStartPoint(route.polyline);
-        setStartLatitude(start.latitude);
-        setStartLongitude(start.longitude);
-
-        const location = await reverseGeocode(start.latitude, start.longitude);
+        const location = await reverseGeocode(startCoords.latitude, startCoords.longitude);
         if (location) {
           setStartLocationName(location.name);
           setStartLocationAddress(location.address);
@@ -262,7 +319,27 @@ export function RideForm({
     // Always store the URL even if we can't fetch data from it
     setRouteUrl(url);
 
-    if (!parsed) return;
+    // Unrecognized service — try scraping public page for metadata
+    if (!parsed) {
+      setIsFetchingRoute(true);
+      try {
+        const res = await fetch(`${routes.scrapeRoute}?url=${encodeURIComponent(url)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.route) {
+            applyRouteData(data.route as ImportableRoute);
+            toast.success(appContent.rides.importRoute.imported);
+            return;
+          }
+        }
+      } catch {
+        // Scrape failed — store as link-only
+      } finally {
+        setIsFetchingRoute(false);
+      }
+      setImportedRouteName(form.routeLinkAdded);
+      return;
+    }
 
     // If the leader has a connected account for this service, fetch route data
     if (!connectedServices.includes(parsed.service)) {
@@ -399,343 +476,433 @@ export function RideForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8">
-      {/* Hidden inputs for route data managed via state */}
-      <input type="hidden" name="route_polyline" value={routePolyline} />
-
-      {/* ── Recurring series edit prompt (edit-only) ──────────────── */}
-      {isRecurringSeries && (
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3 mb-8">
-          <div className="flex items-center gap-2">
-            <ArrowsClockwise className="h-4 w-4 text-primary" />
-            <p className="text-sm font-medium text-foreground">
-              {ridesContent.edit.recurringPrompt}
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <Button
-              type="button"
-              size="sm"
-              variant={editScope === 'this' ? 'default' : 'outline'}
-              onClick={() => setEditScope('this')}
-            >
-              {ridesContent.edit.editThisOnly}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant={editScope === 'all' ? 'default' : 'outline'}
-              onClick={() => setEditScope('all')}
-            >
-              {ridesContent.edit.editAllFuture}
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Zone 0: Route ────────────────────────────────────────── */}
-      {importedRouteName ? (
-        !routePolyline && detectedService ? (
-          /* Link-only preview — show what riders will see + nudge to connect */
-          <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3 mb-8">
-            <div className="rounded-lg bg-surface-sunken flex flex-col items-center justify-center gap-1.5 py-6">
-              <MapTrifold weight="duotone" className="size-8 text-muted-foreground/40" />
-              <span className="text-xs text-muted-foreground/60">{form.linkOnlyPreviewLabel}</span>
-              <span className="flex items-center gap-1 text-xs font-medium text-info">
-                {form.linkOnlyViewRoute(serviceLabels[detectedService])}
-                <ArrowSquareOut className="size-3" />
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {form.linkOnlyHint(serviceLabels[detectedService])}
-            </p>
-            <div className="flex items-center justify-between">
-              <Link
-                href={routes.profileEdit}
-                className="text-xs font-medium text-info hover:underline"
-              >
-                {form.linkOnlyConnect(serviceLabels[detectedService])}
-              </Link>
-              <Button type="button" variant="ghost" size="sm" onClick={clearRouteData}>
-                {form.linkOnlyRemove}
-              </Button>
-            </div>
-          </div>
-        ) : (
-          /* Compact confirmation — route imported with data, or preview dismissed */
-          <div className="rounded-xl border border-border bg-muted/30 px-4 py-3 flex items-center justify-between mb-8">
-            <div className="flex items-center gap-2 min-w-0">
-              <CheckCircle className="size-4 shrink-0 text-primary" weight="fill" />
-              <p className="text-sm text-foreground truncate">
-                {form.importConfirmed(importedRouteName)}
+    <form onSubmit={handleSubmit} className="mt-6">
+      <fieldset disabled={isFetchingRoute} className="space-y-5">
+        {/* ── Recurring series edit prompt (edit-only) ──────────────── */}
+        {isRecurringSeries && (
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <ArrowsClockwise className="h-4 w-4 text-primary" />
+              <p className="text-sm font-medium text-foreground">
+                {ridesContent.edit.recurringPrompt}
               </p>
             </div>
-            {connectedServices.length > 0 ? (
-              <Button type="button" variant="ghost" size="sm" onClick={() => setImportOpen(true)}>
-                {form.importChange}
-              </Button>
-            ) : (
-              <Button type="button" variant="ghost" size="sm" onClick={clearRouteData}>
-                {form.importChange}
-              </Button>
-            )}
-          </div>
-        )
-      ) : connectedServices.length > 0 ? (
-        /* Connected — show import drawer CTA */
-        <div className="rounded-xl border-2 border-dashed border-border bg-muted/30 p-6 flex flex-col items-center gap-3 text-center mb-8">
-          <MapTrifold className="size-8 text-muted-foreground" />
-          <div>
-            <p className="text-sm font-medium text-foreground">{form.importHeading}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{form.importDescription}</p>
-          </div>
-          <Button type="button" variant="outline" size="sm" onClick={() => setImportOpen(true)}>
-            <MapTrifold className="mr-1.5 size-4" />
-            {appContent.rides.importRoute.button}
-          </Button>
-        </div>
-      ) : (
-        /* Not connected — connect prompt + paste URL */
-        <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3 mb-8">
-          <Link href={routes.profileEdit} className="flex items-center justify-between group">
-            <div className="flex items-center gap-2">
-              <MapTrifold className="size-4 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">{form.connectPrompt}</p>
-            </div>
-            <ArrowRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-          </Link>
-          <Separator />
-          <div className="space-y-2">
-            <Label htmlFor="paste_route_url" className="flex items-center gap-1.5">
-              <LinkSimple className="size-3.5 text-muted-foreground" />
-              {form.pasteRouteLink}
-            </Label>
-            <Input
-              ref={pasteUrlRef}
-              id="paste_route_url"
-              type="url"
-              placeholder={form.pasteRoutePlaceholder}
-              onBlur={handlePasteUrlBlur}
-            />
-            {isFetchingRoute && (
-              <p className="text-xs text-muted-foreground">{form.fetchingRoute}</p>
-            )}
-            {fetchRouteError && <p className="text-xs text-destructive">{fetchRouteError}</p>}
-          </div>
-        </div>
-      )}
-
-      {/* ── Zone 1: When ─────────────────────────────────────────── */}
-      <section>
-        <SectionHeading className="mb-4">{form.sectionWhen}</SectionHeading>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="ride_date">{form.date}</Label>
-            <Input
-              id="ride_date"
-              name="ride_date"
-              type="date"
-              required
-              defaultValue={initialData?.ride_date}
-              min={effectiveMin}
-              max={seasonEnd || undefined}
-              onChange={(e) => setRideDate(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              {seasonStart && seasonEnd
-                ? form.dateHelper(seasonStart, seasonEnd)
-                : form.dateHelperNoSeason}
-            </p>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="start_time">{form.startTime}</Label>
-            <Input
-              id="start_time"
-              name="start_time"
-              type="time"
-              step="900"
-              required
-              defaultValue={initialData?.start_time}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* ── Zone 2: Start Location ──────────────────────────────── */}
-      <section className="mt-8">
-        <SectionHeading className="mb-4">{form.sectionWhere}</SectionHeading>
-        {isGeocodingLocation ? (
-          <p className="text-sm text-muted-foreground">{form.startLocationFromRoute}</p>
-        ) : startLocationName && !isEditingLocation ? (
-          <div className="rounded-xl border border-border bg-muted/20 p-4 flex items-start justify-between gap-3">
-            <div className="flex items-start gap-2.5 min-w-0">
-              <MapPin className="size-4 shrink-0 mt-0.5 text-primary" weight="fill" />
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{startLocationName}</p>
-                {startLocationAddress && (
-                  <p className="text-xs text-muted-foreground truncate mt-0.5">
-                    {startLocationAddress}
-                  </p>
-                )}
-              </div>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="shrink-0"
-              onClick={() => setIsEditingLocation(true)}
-            >
-              <PencilSimple className="size-3.5 mr-1" />
-              {common.edit}
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {!routeUrl ? (
-              <p className="text-xs text-muted-foreground">{form.startLocationHint}</p>
-            ) : !routePolyline ? (
-              <p className="text-xs text-muted-foreground">{form.startLocationManualHint}</p>
-            ) : null}
-            <div className="space-y-2">
-              <Label htmlFor="start_location_name">{form.meetingLocation}</Label>
-              <Input
-                id="start_location_name"
-                value={startLocationName}
-                onChange={(e) => setStartLocationName(e.target.value)}
-                placeholder={form.selectLocation}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="start_location_address">
-                {form.locationAddress}
-                <OptionalTag />
-              </Label>
-              <Input
-                id="start_location_address"
-                value={startLocationAddress}
-                onChange={(e) => setStartLocationAddress(e.target.value)}
-                placeholder={form.addressPlaceholder}
-              />
-            </div>
-            {isEditingLocation && (
+            <div className="flex gap-3">
               <Button
                 type="button"
-                variant="outline"
                 size="sm"
-                onClick={() => setIsEditingLocation(false)}
+                variant={editScope === 'this' ? 'default' : 'outline'}
+                onClick={() => setEditScope('this')}
               >
-                {common.done}
+                {ridesContent.edit.editThisOnly}
               </Button>
-            )}
+              <Button
+                type="button"
+                size="sm"
+                variant={editScope === 'all' ? 'default' : 'outline'}
+                onClick={() => setEditScope('all')}
+              >
+                {ridesContent.edit.editAllFuture}
+              </Button>
+            </div>
           </div>
         )}
-      </section>
 
-      <Separator className="mt-8" />
+        {/* ── Card 1: Route (primary — prepopulates everything) ────── */}
+        <Card className="overflow-clip p-0">
+          <FormCardBanner label={form.sectionRoute} icon={Path} />
+          <div className="flex flex-col gap-4 px-6 pb-6 pt-3">
+            {/* Route import area */}
+            {importedRouteName ? (
+              !routePolyline && detectedService ? (
+                /* Link-only preview — show what riders will see + nudge to connect */
+                <div className="rounded-xl bg-surface-sunken p-4 space-y-3">
+                  <div className="rounded-lg bg-surface-page flex flex-col items-center justify-center gap-1.5 py-6">
+                    <MapTrifold weight="duotone" className="size-8 text-muted-foreground/40" />
+                    <span className="text-xs text-muted-foreground/60">
+                      {form.linkOnlyPreviewLabel}
+                    </span>
+                    <span className="flex items-center gap-1 text-xs font-medium text-info">
+                      {form.linkOnlyViewRoute(serviceLabels[detectedService])}
+                      <ArrowSquareOut className="size-3" />
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {form.linkOnlyHint(serviceLabels[detectedService])}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <Link
+                      href={routes.profileEdit}
+                      className="text-xs font-medium text-info hover:underline"
+                    >
+                      {form.linkOnlyConnect(serviceLabels[detectedService])}
+                    </Link>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => clearRouteData()}
+                    >
+                      {form.linkOnlyRemove}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                /* Route imported — show confirmation + map if polyline available */
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <MapTrifold className="size-5 shrink-0 text-primary" weight="duotone" />
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {form.importConfirmed(importedRouteName)}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={
+                        connectedServices.length > 0 && routePolyline
+                          ? () => setImportOpen(true)
+                          : () => clearRouteData(true)
+                      }
+                      className="shrink-0 rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
+                    >
+                      <PencilSimple className="size-5" />
+                    </Button>
+                  </div>
+                  {routePolyline && (
+                    <RouteMapLoader
+                      polylineStr={routePolyline}
+                      routeUrl={routeUrl || null}
+                      routeName={importedRouteName}
+                      aspectRatio="5/2"
+                    />
+                  )}
+                </div>
+              )
+            ) : connectedServices.length > 0 ? (
+              /* Connected — show import drawer CTA + paste URL fallback */
+              <div className="space-y-4">
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-6 flex flex-col items-center gap-3 text-center">
+                  <MapTrifold className="size-8 text-primary" weight="duotone" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{form.importHeading}</p>
+                    <p className="text-[0.8125rem] text-muted-foreground mt-0.5">
+                      {form.importDescription}
+                    </p>
+                  </div>
+                  <Button type="button" onClick={() => setImportOpen(true)}>
+                    <MapTrifold className="mr-1.5 size-4" />
+                    {appContent.rides.importRoute.button}
+                  </Button>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-px flex-1 bg-border" />
+                  <span className="text-xs text-muted-foreground">{form.orDivider}</span>
+                  <div className="h-px flex-1 bg-border" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="paste_route_url">{form.pasteRouteLink}</Label>
+                  <div className="flex gap-2 items-start">
+                    <div className="flex-1 space-y-1.5">
+                      <Input
+                        ref={pasteUrlRef}
+                        id="paste_route_url"
+                        type="url"
+                        defaultValue={routeUrl}
+                        placeholder={form.pasteRoutePlaceholder}
+                        disabled={isFetchingRoute}
+                      />
+                      {fetchRouteError && (
+                        <p className="text-xs text-destructive">{fetchRouteError}</p>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isFetchingRoute}
+                      onClick={handlePasteUrlBlur}
+                      className="shrink-0 h-12 gap-1.5"
+                    >
+                      {isFetchingRoute ? (
+                        <SpinnerGap className="size-4 animate-spin" />
+                      ) : (
+                        <>
+                          <LinkSimple className="size-4" />
+                          {form.addRouteButton}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Not connected — connect prompt + paste URL */
+              <div className="space-y-5">
+                <Link
+                  href={routes.profileEdit}
+                  className="flex items-center justify-between group rounded-xl border border-primary/20 bg-primary/5 px-4 py-3.5 hover:bg-primary/10 transition-colors"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <MapTrifold className="size-5 text-primary" weight="duotone" />
+                    <p className="text-sm font-medium text-foreground">{form.connectPrompt}</p>
+                  </div>
+                  <ArrowRight className="size-4 text-primary" />
+                </Link>
+                <div className="space-y-2">
+                  <Label htmlFor="paste_route_url">{form.pasteRouteLink}</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      ref={pasteUrlRef}
+                      id="paste_route_url"
+                      type="url"
+                      defaultValue={routeUrl}
+                      placeholder={form.pasteRoutePlaceholder}
+                      disabled={isFetchingRoute}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isFetchingRoute}
+                      onClick={handlePasteUrlBlur}
+                      className="shrink-0 h-12 gap-1.5"
+                    >
+                      {isFetchingRoute ? (
+                        <SpinnerGap className="size-4 animate-spin" />
+                      ) : (
+                        <>
+                          <LinkSimple className="size-4" />
+                          {form.addRouteButton}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  {fetchRouteError && <p className="text-xs text-destructive">{fetchRouteError}</p>}
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
 
-      {/* ── Zone 3: Ride Type ────────────────────────────────────── */}
-      <section className="mt-8">
-        <SectionHeading className="mb-4">{form.sectionRideType}</SectionHeading>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="pace_group_id">{form.paceGroup}</Label>
-            <Select
-              id="pace_group_id"
-              name="pace_group_id"
-              required
-              defaultValue={initialData?.pace_group_id}
-            >
-              <option value="" disabled>
-                {form.selectPace}
-              </option>
-              {paceGroups.map((pg) => (
-                <option key={pg.id} value={pg.id}>
-                  {pg.name}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="is_drop_ride">{form.isDropRide}</Label>
-            <Switch id="is_drop_ride" checked={isDropRide} onCheckedChange={setIsDropRide} />
-            <input type="hidden" name="is_drop_ride" value={isDropRide ? 'on' : ''} />
-          </div>
-        </div>
-      </section>
-
-      {/* ── Zone 4: Route Stats ──────────────────────────────────── */}
-      <section className="mt-8">
-        <SectionHeading className="mb-4">{form.sectionRouteStats}</SectionHeading>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="distance_km">
-              {form.distance}
-              <OptionalTag />
-            </Label>
-            <Input
-              ref={distanceRef}
-              id="distance_km"
-              name="distance_km"
-              type="number"
-              step="0.1"
-              min="0"
-              defaultValue={initialData?.distance_km}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="elevation_m">
-              {form.elevation}
-              <OptionalTag />
-            </Label>
-            <Input
-              ref={elevationRef}
-              id="elevation_m"
-              name="elevation_m"
-              type="number"
-              min="0"
-              defaultValue={initialData?.elevation_m}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="capacity">{form.capacity}</Label>
-            <Input
-              id="capacity"
-              name="capacity"
-              type="number"
-              min="1"
-              required
-              defaultValue={initialData?.capacity}
-            />
-          </div>
-        </div>
-        {/* Co-leader picker (create mode only) */}
-        {!isEdit && eligibleLeaders.length > 0 && (
-          <div className="mt-4 rounded-xl border border-border overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setCoLeadersOpen((o) => !o)}
-              aria-expanded={coLeadersOpen}
-              className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-muted/30 transition-colors"
-            >
-              <span className="text-sm font-medium text-foreground">
-                {form.coLeaders}
-                <span className="font-normal text-muted-foreground ml-1.5">
-                  {selectedCoLeaders.length > 0
-                    ? form.coLeadersCount(selectedCoLeaders.length)
-                    : form.coLeadersNoneSelected}
-                </span>
-              </span>
-              <CaretDown
-                className={`size-4 text-muted-foreground transition-transform ${coLeadersOpen ? 'rotate-180' : ''}`}
+        {/* ── Card 2: Basics ───────────────────────────────────────── */}
+        <Card className="overflow-clip p-0">
+          <FormCardBanner label={form.sectionBasics} icon={Bicycle} />
+          <div className="flex flex-col gap-4 px-6 pb-6 pt-5">
+            <div className="space-y-2">
+              <Label htmlFor="title">{form.title}</Label>
+              <Input
+                ref={titleRef}
+                id="title"
+                name="title"
+                required
+                defaultValue={initialData?.title}
               />
-            </button>
-            {coLeadersOpen && (
-              <div className="border-t border-border px-4 py-3">
-                <div className="flex flex-wrap gap-2">
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">
+                {form.description}
+                <OptionalTag />
+              </Label>
+              <Textarea
+                ref={descriptionRef}
+                id="description"
+                name="description"
+                rows={3}
+                defaultValue={initialData?.description}
+                placeholder={form.descriptionPlaceholder}
+              />
+              <p className="text-xs text-muted-foreground">{form.descriptionHelper}</p>
+            </div>
+            {/* Ride characteristics — 2×2 grid */}
+            <div className="rounded-xl bg-accent-secondary-subtle p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label htmlFor="distance_km" className="text-sm text-foreground">
+                    {form.distance}
+                  </Label>
+                  <Input
+                    ref={distanceRef}
+                    id="distance_km"
+                    name="distance_km"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    defaultValue={initialData?.distance_km}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="elevation_m" className="text-sm text-foreground">
+                    {form.elevation}
+                  </Label>
+                  <Input
+                    ref={elevationRef}
+                    id="elevation_m"
+                    name="elevation_m"
+                    type="number"
+                    min="0"
+                    defaultValue={initialData?.elevation_m}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="capacity" className="text-sm text-foreground">
+                    {form.capacity}
+                  </Label>
+                  <Input
+                    id="capacity"
+                    name="capacity"
+                    type="number"
+                    min="1"
+                    required
+                    defaultValue={initialData?.capacity}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="pace_group_id" className="text-sm text-foreground">
+                    {form.paceGroup}
+                  </Label>
+                  <Select
+                    id="pace_group_id"
+                    name="pace_group_id"
+                    required
+                    defaultValue={initialData?.pace_group_id}
+                  >
+                    <option value="" disabled>
+                      {form.selectPace}
+                    </option>
+                    {paceGroups.map((pg) => (
+                      <option key={pg.id} value={pg.id}>
+                        {pg.name}
+                      </option>
+                    ))}
+                  </Select>
+                  <div className="flex items-center justify-end gap-3 pt-2">
+                    <Label htmlFor="is_drop_ride" className="text-sm text-foreground">
+                      {form.isDropRide}
+                    </Label>
+                    <Switch
+                      id="is_drop_ride"
+                      checked={isDropRide}
+                      onCheckedChange={setIsDropRide}
+                    />
+                    <input type="hidden" name="is_drop_ride" value={isDropRide ? 'on' : ''} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* ── Card 3: When & Where ─────────────────────────────────── */}
+        <Card className="overflow-clip p-0">
+          <FormCardBanner label={form.sectionWhenWhere} icon={CalendarDots} />
+          <div className="flex flex-col gap-4 px-6 pb-6 pt-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="ride_date">{form.date}</Label>
+                <Input
+                  id="ride_date"
+                  name="ride_date"
+                  type="date"
+                  required
+                  defaultValue={initialData?.ride_date}
+                  min={effectiveMin}
+                  max={seasonEnd || undefined}
+                  onChange={(e) => setRideDate(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {seasonStart && seasonEnd
+                    ? form.dateHelper(seasonStart, seasonEnd)
+                    : form.dateHelperNoSeason}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="start_time">{form.startTime}</Label>
+                <Input
+                  id="start_time"
+                  name="start_time"
+                  type="time"
+                  step="900"
+                  required
+                  defaultValue={initialData?.start_time}
+                />
+              </div>
+            </div>
+
+            {/* Start Location */}
+            {isGeocodingLocation ? (
+              <p className="text-[0.8125rem] text-muted-foreground">
+                {form.startLocationFromRoute}
+              </p>
+            ) : startLocationName ? (
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2.5 min-w-0">
+                    <MapPin className="size-5 shrink-0 mt-0.5 text-primary" weight="duotone" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {startLocationName}
+                      </p>
+                      {startLocationAddress && (
+                        <p className="text-[0.8125rem] text-muted-foreground truncate mt-0.5">
+                          {startLocationAddress}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setLocationPickerOpen(true)}
+                    className="shrink-0 rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
+                  >
+                    <PencilSimple className="size-5" />
+                  </Button>
+                </div>
+                {startLatitude && startLongitude && (
+                  <a
+                    href={`https://maps.google.com/maps/search/?api=1&query=${encodeURIComponent(startLocationAddress || startLocationName)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <StaticLocationMap latitude={startLatitude} longitude={startLongitude} />
+                  </a>
+                )}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setLocationPickerOpen(true)}
+                className="w-full rounded-xl border-2 border-dashed border-border p-4 flex flex-col items-center gap-2 text-center hover:bg-muted/20 transition-colors"
+              >
+                <MapPin className="size-6 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  {routeUrl ? form.startLocationManualHint : form.startLocationHint}
+                </p>
+              </button>
+            )}
+          </div>
+        </Card>
+
+        {/* ── Card 4: Settings ─────────────────────────────────────── */}
+        <Card className="overflow-clip p-0">
+          <FormCardBanner label={form.sectionAdditional} icon={Faders} />
+          <div className="flex flex-col gap-4 px-6 pb-6 pt-5">
+            {/* Co-leader picker (create mode only) */}
+            {!isEdit && eligibleLeaders.length > 0 && (
+              <div className="space-y-3">
+                <Label>
+                  {form.coLeaders}
+                  <OptionalTag />
+                </Label>
+                <div className="flex flex-col gap-1">
                   {eligibleLeaders.map((leader) => {
                     const isSelected = selectedCoLeaders.includes(leader.user_id);
                     const conflict = coLeaderConflicts.find((c) => c.user_id === leader.user_id);
+                    const hasConflict = !!conflict;
                     return (
                       <button
                         key={leader.user_id}
@@ -747,178 +914,166 @@ export function RideForm({
                               : [...prev, leader.user_id],
                           )
                         }
-                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors ${
-                          isSelected
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted/50 text-foreground hover:bg-muted'
-                        }`}
+                        className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-accent/50 transition-colors"
                       >
-                        {isSelected && <Check className="size-3.5" weight="bold" />}
-                        {leader.name}
-                        {conflict && !isSelected && (
-                          <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
-                            <Bicycle className="size-3" />
-                          </span>
-                        )}
+                        <div className={`relative ${hasConflict ? 'grayscale' : ''}`}>
+                          <RiderAvatar
+                            avatarUrl={leader.avatar_url}
+                            name={leader.name}
+                            className={isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}
+                          />
+                          {isSelected && (
+                            <span className="absolute -bottom-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                              <Check className="size-2.5" weight="bold" />
+                            </span>
+                          )}
+                          {hasConflict && (
+                            <span className="absolute -bottom-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                              <Prohibit className="size-2.5" weight="bold" />
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0 text-left">
+                          <p
+                            className={`text-sm truncate ${isSelected ? 'font-medium text-foreground' : hasConflict ? 'text-muted-foreground' : 'text-foreground'}`}
+                          >
+                            {leader.name}
+                          </p>
+                          {hasConflict && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {form.coLeadersHasRide(conflict.ride_title)}
+                            </p>
+                          )}
+                        </div>
                       </button>
                     );
                   })}
                 </div>
-                {coLeaderConflicts.length > 0 && rideDate && (
-                  <div className="mt-3 space-y-1">
-                    {coLeaderConflicts.map((c) => {
-                      const leader = eligibleLeaders.find((l) => l.user_id === c.user_id);
-                      return (
-                        <p
-                          key={c.user_id}
-                          className="text-xs text-muted-foreground flex items-center gap-1"
+              </div>
+            )}
+
+            {/* Recurring schedule (create-only) */}
+            {!isEdit && (
+              <>
+                <Separator className="my-1" />
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="is_recurring" className="flex items-center gap-2 cursor-pointer">
+                    <ArrowsClockwise className="h-4 w-4 text-muted-foreground" />
+                    {ridesContent.recurring.toggle}
+                  </Label>
+                  <Switch
+                    id="is_recurring"
+                    checked={isRecurring}
+                    onCheckedChange={setIsRecurring}
+                  />
+                </div>
+                {isRecurring && (
+                  <div className="rounded-xl bg-accent-secondary-subtle p-4 space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label htmlFor="recurrence" className="text-sm text-foreground">
+                          {ridesContent.recurring.frequency}
+                        </Label>
+                        <Select id="recurrence" name="recurrence" defaultValue="weekly">
+                          <option value="weekly">{rc.recurrence.weekly}</option>
+                          <option value="biweekly">{rc.recurrence.biweekly}</option>
+                          <option value="monthly">{rc.recurrence.monthly}</option>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="recurring_end_type" className="text-sm text-foreground">
+                          {ridesContent.recurring.endCondition}
+                        </Label>
+                        <Select
+                          id="recurring_end_type"
+                          name="recurring_end_type"
+                          value={recurringEndType}
+                          onChange={(e) =>
+                            setRecurringEndType(e.target.value as 'never' | 'after' | 'on_date')
+                          }
                         >
-                          <Bicycle className="size-3 shrink-0" />
-                          {leader?.name}: {form.coLeadersHasRide(c.ride_title)}
-                        </p>
-                      );
-                    })}
+                          <option value="never">{ridesContent.recurring.endNever}</option>
+                          <option value="after">{ridesContent.recurring.endAfter}</option>
+                          <option value="on_date">{ridesContent.recurring.endOnDate}</option>
+                        </Select>
+                      </div>
+                    </div>
+                    {recurringEndType === 'after' && (
+                      <div className="space-y-1">
+                        <Label htmlFor="end_after" className="text-sm text-foreground">
+                          {ridesContent.recurring.occurrences}
+                        </Label>
+                        <Input
+                          id="end_after"
+                          name="end_after"
+                          type="number"
+                          min="1"
+                          max="52"
+                          defaultValue="10"
+                        />
+                      </div>
+                    )}
+                    {recurringEndType === 'on_date' && (
+                      <div className="space-y-1">
+                        <Label htmlFor="end_date" className="text-sm text-foreground">
+                          {ridesContent.recurring.endOnDate}
+                        </Label>
+                        <Input
+                          id="end_date"
+                          name="end_date"
+                          type="date"
+                          min={seasonStart || undefined}
+                          max={seasonEnd || undefined}
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
+              </>
             )}
           </div>
+        </Card>
+
+        {/* ── Actions ──────────────────────────────────────────────── */}
+        <div>
+          {error && <p className="text-sm text-destructive mb-4">{error}</p>}
+          <div className="flex gap-3">
+            <Button type="submit" disabled={isPending}>
+              {isPending ? common.loading : isEdit ? common.save : ridesContent.create.submitButton}
+            </Button>
+            <Button type="button" variant="outline" onClick={() => router.back()}>
+              {common.cancel}
+            </Button>
+          </div>
+        </div>
+
+        {/* Route import drawer — always rendered for connected services */}
+        {connectedServices.length > 0 && (
+          <RouteImportDrawer
+            open={importOpen}
+            onOpenChange={setImportOpen}
+            connectedServices={connectedServices}
+            onSelect={handleRouteImport}
+          />
         )}
-      </section>
 
-      <Separator className="mt-8" />
-
-      {/* ── Zone 5: Details ──────────────────────────────────────── */}
-      <section className="mt-8">
-        <SectionHeading className="mb-4">{form.sectionDetails}</SectionHeading>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">{form.title}</Label>
-            <Input
-              ref={titleRef}
-              id="title"
-              name="title"
-              required
-              defaultValue={initialData?.title}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="description">
-              {form.description}
-              <OptionalTag />
-            </Label>
-            <Textarea
-              ref={descriptionRef}
-              id="description"
-              name="description"
-              rows={3}
-              defaultValue={initialData?.description}
-              placeholder={form.descriptionPlaceholder}
-            />
-            <p className="text-xs text-muted-foreground">{form.descriptionHelper}</p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Zone 6: Schedule (create-only) ───────────────────────── */}
-      {!isEdit && (
-        <section className="mt-8">
-          <SectionHeading className="mb-4">{form.sectionSchedule}</SectionHeading>
-          <div className="rounded-xl border border-border p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="is_recurring" className="flex items-center gap-2 cursor-pointer">
-                <ArrowsClockwise className="h-4 w-4 text-muted-foreground" />
-                {ridesContent.recurring.toggle}
-              </Label>
-              <Switch id="is_recurring" checked={isRecurring} onCheckedChange={setIsRecurring} />
-            </div>
-            {isRecurring && (
-              <div className="space-y-4 pt-2">
-                <div className="space-y-2">
-                  <Label htmlFor="recurrence">{ridesContent.recurring.frequency}</Label>
-                  <Select id="recurrence" name="recurrence" defaultValue="weekly">
-                    <option value="weekly">{rc.recurrence.weekly}</option>
-                    <option value="biweekly">{rc.recurrence.biweekly}</option>
-                    <option value="monthly">{rc.recurrence.monthly}</option>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>{ridesContent.recurring.endCondition}</Label>
-                  <div className="space-y-3">
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="radio"
-                        name="recurring_end_type"
-                        value="never"
-                        defaultChecked
-                        className="h-4 w-4"
-                      />
-                      {ridesContent.recurring.endNever}
-                    </label>
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="radio"
-                        name="recurring_end_type"
-                        value="after"
-                        className="h-4 w-4"
-                      />
-                      {ridesContent.recurring.endAfter}
-                      <Input
-                        name="end_after"
-                        type="number"
-                        min="1"
-                        max="52"
-                        defaultValue="10"
-                        className="w-20 h-8"
-                      />
-                      {ridesContent.recurring.occurrences}
-                    </label>
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="radio"
-                        name="recurring_end_type"
-                        value="on_date"
-                        className="h-4 w-4"
-                      />
-                      {ridesContent.recurring.endOnDate}
-                      <Input
-                        name="end_date"
-                        type="date"
-                        className="w-auto h-8"
-                        min={seasonStart || undefined}
-                        max={seasonEnd || undefined}
-                      />
-                    </label>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* ── Zone 7: Actions ──────────────────────────────────────── */}
-      <div className="mt-8">
-        {error && <p className="text-sm text-destructive mb-4">{error}</p>}
-        <div className="flex gap-3">
-          <Button type="submit" disabled={isPending}>
-            {isPending ? common.loading : isEdit ? common.save : ridesContent.create.submitButton}
-          </Button>
-          <Button type="button" variant="outline" onClick={() => router.back()}>
-            {common.cancel}
-          </Button>
-        </div>
-      </div>
-
-      {/* Route import drawer — always rendered for connected services */}
-      {connectedServices.length > 0 && (
-        <RouteImportDrawer
-          open={importOpen}
-          onOpenChange={setImportOpen}
-          connectedServices={connectedServices}
-          onSelect={handleRouteImport}
+        {/* Location picker drawer */}
+        <LocationPickerDrawer
+          open={locationPickerOpen}
+          onOpenChange={setLocationPickerOpen}
+          meetingLocations={meetingLocations}
+          clubId={clubId}
+          onConfirm={(location) => {
+            setStartLocationName(location.name);
+            setStartLocationAddress(location.address ?? '');
+            setStartLatitude(location.latitude ?? null);
+            setStartLongitude(location.longitude ?? null);
+            setLocationPickerOpen(false);
+          }}
         />
-      )}
+      </fieldset>
+      {/* Hidden inputs outside fieldset so they're always submitted */}
+      <input type="hidden" name="route_polyline" value={routePolyline} />
     </form>
   );
 }

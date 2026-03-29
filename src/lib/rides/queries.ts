@@ -28,6 +28,12 @@ interface RawRideRow extends Ride {
         user: Pick<User, 'avatar_url' | 'full_name'>;
       }[]
     | null;
+  ride_leaders:
+    | {
+        user_id: string;
+        user: Pick<User, 'full_name' | 'avatar_url'>;
+      }[]
+    | null;
   ride_weather_snapshots: RideWeatherSnapshot | null;
 }
 
@@ -38,6 +44,7 @@ const RIDE_WITH_DETAILS_SELECT = `
   pace_group:pace_groups(*),
   creator:users!rides_created_by_fkey(id, full_name, avatar_url),
   ride_signups(status, user_id, waitlist_position, signed_up_at, user:users!inner(avatar_url, full_name)),
+  ride_leaders(user_id, user:users!ride_leaders_user_id_fkey(full_name, avatar_url)),
   ride_weather_snapshots(*)
 `;
 
@@ -76,6 +83,11 @@ function toRideWithDetails(ride: RawRideRow, currentUserId?: string): RideWithDe
             .sort((a, b) => new Date(a.signed_up_at).getTime() - new Date(b.signed_up_at).getTime())
             .findIndex((s) => s.user_id === currentUserId) + 1 || null
         : null,
+    co_leaders: (ride.ride_leaders ?? []).map((rl) => ({
+      user_id: rl.user_id,
+      full_name: rl.user.full_name,
+      avatar_url: rl.user.avatar_url,
+    })),
     // PostgREST returns object (not array) for 1-to-1 joins via UNIQUE constraint
     weather: ride.ride_weather_snapshots ?? null,
   };
@@ -427,7 +439,7 @@ export async function getMeetingLocations(clubId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from('meeting_locations')
-    .select('id, name')
+    .select('id, name, address, latitude, longitude')
     .eq('club_id', clubId)
     .eq('is_active', true)
     .order('name');

@@ -55,7 +55,7 @@ export function AppShell({
             <div className="overflow-hidden md:rounded-lg md:border md:border-border">{banner}</div>
           )}
 
-          <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col pb-20 md:pb-0">
+          <main className="mx-auto flex w-full min-w-0 max-w-3xl flex-1 flex-col pb-20 md:pb-0">
             <PageTransitionWrapper>{children}</PageTransitionWrapper>
           </main>
 

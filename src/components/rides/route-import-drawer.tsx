@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { MapTrifold, Path, Mountains, ArrowClockwise } from '@phosphor-icons/react/dist/ssr';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import {
   Drawer,
   DrawerContent,
@@ -35,10 +36,11 @@ export function RouteImportDrawer({
   onSelect,
 }: RouteImportDrawerProps) {
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   if (connectedServices.length === 0) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
+      <Drawer open={open} onOpenChange={onOpenChange} direction={isMobile ? 'bottom' : 'right'}>
         <DrawerContent>
           <DrawerHeader>
             <DrawerTitle>{content.heading}</DrawerTitle>
@@ -70,7 +72,7 @@ export function RouteImportDrawer({
   const defaultService = connectedServices[0];
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer open={open} onOpenChange={onOpenChange} direction={isMobile ? 'bottom' : 'right'}>
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>{content.heading}</DrawerTitle>

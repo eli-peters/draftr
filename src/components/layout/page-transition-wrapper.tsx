@@ -36,5 +36,5 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
     window.scrollTo(0, 0);
   }, [pathname]);
 
-  return <div className={animClass}>{children}</div>;
+  return <div className={`min-w-0 ${animClass}`}>{children}</div>;
 }

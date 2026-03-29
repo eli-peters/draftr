@@ -5,6 +5,7 @@ import {
   CardFooterSection,
   StateCardBanner,
   RiderAvatarGroup,
+  LeaderRow,
   getCardStateStyle,
   resolveCardState,
 } from '@/components/rides/ride-card-parts';
@@ -108,6 +109,13 @@ function RidesLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: bo
         locationName={ride.start_location_name ?? ride.meeting_location?.name ?? null}
         weather={ride.weather}
       />
+
+      {/* Leader row */}
+      {(ride.creator || ride.co_leaders.length > 0) && (
+        <div className="px-5 pb-2">
+          <LeaderRow creator={ride.creator} coLeaders={ride.co_leaders} />
+        </div>
+      )}
 
       {/* Footer section */}
       <CardFooterSection>
