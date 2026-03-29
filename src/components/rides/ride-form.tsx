@@ -15,7 +15,7 @@ import {
   Bicycle,
   Path,
   CalendarDots,
-  Faders,
+  GearSix,
   PencilSimple,
   Prohibit,
   SpinnerGap,
@@ -28,6 +28,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { DatePicker } from '@/components/ui/date-picker';
+import { TimePicker } from '@/components/ui/time-picker';
 import { Card } from '@/components/ui/card';
 import { RiderAvatar } from '@/components/ui/avatar';
 import { RouteMapLoader } from '@/components/rides/route-map-loader';
@@ -151,9 +153,11 @@ export function RideForm({
   const [error, setError] = useState<string | null>(null);
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurringEndType, setRecurringEndType] = useState<'never' | 'after' | 'on_date'>('never');
+  const [recurringEndDate, setRecurringEndDate] = useState('');
   const [selectedCoLeaders, setSelectedCoLeaders] = useState<string[]>([]);
   const [coLeaderConflicts, setCoLeaderConflicts] = useState<LeaderConflict[]>([]);
   const [rideDate, setRideDate] = useState(initialData?.ride_date ?? '');
+  const [startTime, setStartTime] = useState(initialData?.start_time?.slice(0, 5) ?? '');
   const [isDropRide, setIsDropRide] = useState(initialData?.is_drop_ride ?? false);
   const [editScope, setEditScope] = useState<'this' | 'all'>('this');
   const [importOpen, setImportOpen] = useState(false);
@@ -604,7 +608,7 @@ export function RideForm({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="paste_route_url">{form.pasteRouteLink}</Label>
-                  <div className="flex gap-2 items-start">
+                  <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-start">
                     <div className="flex-1 space-y-1.5">
                       <Input
                         ref={pasteUrlRef}
@@ -623,7 +627,7 @@ export function RideForm({
                       variant="outline"
                       disabled={isFetchingRoute}
                       onClick={handlePasteUrlBlur}
-                      className="shrink-0 h-12 gap-1.5"
+                      className="shrink-0 h-12 gap-1.5 w-full sm:w-auto"
                     >
                       {isFetchingRoute ? (
                         <SpinnerGap className="size-4 animate-spin" />
@@ -652,7 +656,7 @@ export function RideForm({
                 </Link>
                 <div className="space-y-2">
                   <Label htmlFor="paste_route_url">{form.pasteRouteLink}</Label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-start">
                     <Input
                       ref={pasteUrlRef}
                       id="paste_route_url"
@@ -667,7 +671,7 @@ export function RideForm({
                       variant="outline"
                       disabled={isFetchingRoute}
                       onClick={handlePasteUrlBlur}
-                      className="shrink-0 h-12 gap-1.5"
+                      className="shrink-0 h-12 gap-1.5 w-full sm:w-auto"
                     >
                       {isFetchingRoute ? (
                         <SpinnerGap className="size-4 animate-spin" />
@@ -801,31 +805,26 @@ export function RideForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="ride_date">{form.date}</Label>
-                <Input
+                <DatePicker
                   id="ride_date"
                   name="ride_date"
-                  type="date"
-                  required
-                  defaultValue={initialData?.ride_date}
+                  value={rideDate}
+                  onChange={setRideDate}
+                  placeholder={form.pickDate}
                   min={effectiveMin}
                   max={seasonEnd || undefined}
-                  onChange={(e) => setRideDate(e.target.value)}
+                  required
                 />
-                <p className="text-xs text-muted-foreground">
-                  {seasonStart && seasonEnd
-                    ? form.dateHelper(seasonStart, seasonEnd)
-                    : form.dateHelperNoSeason}
-                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="start_time">{form.startTime}</Label>
-                <Input
+                <TimePicker
                   id="start_time"
                   name="start_time"
-                  type="time"
-                  step="900"
+                  value={startTime}
+                  onChange={setStartTime}
+                  placeholder={form.pickTime}
                   required
-                  defaultValue={initialData?.start_time}
                 />
               </div>
             </div>
@@ -889,7 +888,7 @@ export function RideForm({
 
         {/* ── Card 4: Settings ─────────────────────────────────────── */}
         <Card className="overflow-clip p-0">
-          <FormCardBanner label={form.sectionAdditional} icon={Faders} />
+          <FormCardBanner label={form.sectionAdditional} icon={GearSix} />
           <div className="flex flex-col gap-4 px-6 pb-6 pt-5">
             {/* Co-leader picker (create mode only) */}
             {!isEdit && eligibleLeaders.length > 0 && (
@@ -907,6 +906,7 @@ export function RideForm({
                       <button
                         key={leader.user_id}
                         type="button"
+                        disabled={hasConflict}
                         onClick={() =>
                           setSelectedCoLeaders((prev) =>
                             isSelected
@@ -914,7 +914,7 @@ export function RideForm({
                               : [...prev, leader.user_id],
                           )
                         }
-                        className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-accent/50 transition-colors"
+                        className={`flex items-center gap-3 rounded-lg px-2 py-2 transition-colors ${hasConflict ? 'cursor-not-allowed opacity-50' : 'hover:bg-accent/50'}`}
                       >
                         <div className={`relative ${hasConflict ? 'grayscale' : ''}`}>
                           <RiderAvatar
@@ -941,7 +941,7 @@ export function RideForm({
                           </p>
                           {hasConflict && (
                             <p className="text-xs text-muted-foreground truncate">
-                              {form.coLeadersHasRide(conflict.ride_title)}
+                              {form.coLeadersUnavailable}
                             </p>
                           )}
                         </div>
@@ -1018,10 +1018,12 @@ export function RideForm({
                         <Label htmlFor="end_date" className="text-sm text-foreground">
                           {ridesContent.recurring.endOnDate}
                         </Label>
-                        <Input
+                        <DatePicker
                           id="end_date"
                           name="end_date"
-                          type="date"
+                          value={recurringEndDate}
+                          onChange={setRecurringEndDate}
+                          placeholder={form.pickDate}
                           min={seasonStart || undefined}
                           max={seasonEnd || undefined}
                         />

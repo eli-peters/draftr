@@ -3,8 +3,8 @@
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DatePicker } from '@/components/ui/date-picker';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { updateSeasonDates } from '@/lib/manage/actions';
@@ -43,16 +43,11 @@ export function SeasonDatesCard({ clubId, seasonStart, seasonEnd }: SeasonDatesC
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="season-start">{season.startLabel}</Label>
-          <Input
-            id="season-start"
-            type="date"
-            value={start}
-            onChange={(e) => setStart(e.target.value)}
-          />
+          <DatePicker id="season-start" value={start} onChange={setStart} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="season-end">{season.endLabel}</Label>
-          <Input id="season-end" type="date" value={end} onChange={(e) => setEnd(e.target.value)} />
+          <DatePicker id="season-end" value={end} onChange={setEnd} />
         </div>
       </div>
       <div className="mt-4 flex items-center gap-3">

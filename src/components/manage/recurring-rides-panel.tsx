@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
+import { DatePicker } from '@/components/ui/date-picker';
+import { TimePicker } from '@/components/ui/time-picker';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { SectionHeading } from '@/components/ui/section-heading';
@@ -68,6 +70,9 @@ export function RecurringRidesPanel({
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  const [rcStartTime, setRcStartTime] = useState('');
+  const [rcSeasonStart, setRcSeasonStart] = useState('');
+  const [rcSeasonEnd, setRcSeasonEnd] = useState('');
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -244,7 +249,14 @@ export function RecurringRidesPanel({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="rc-time">{form.startTime} *</Label>
-                  <Input id="rc-time" name="start_time" type="time" required />
+                  <TimePicker
+                    id="rc-time"
+                    name="start_time"
+                    value={rcStartTime}
+                    onChange={setRcStartTime}
+                    placeholder={form.pickTime}
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="rc-recurrence">{rc.recurrence.weekly} *</Label>
@@ -258,11 +270,23 @@ export function RecurringRidesPanel({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="rc-season-start">{rc.seasonStartLabel}</Label>
-                  <Input id="rc-season-start" name="season_start_date" type="date" />
+                  <DatePicker
+                    id="rc-season-start"
+                    name="season_start_date"
+                    value={rcSeasonStart}
+                    onChange={setRcSeasonStart}
+                    placeholder={form.pickDate}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="rc-season-end">{rc.seasonEndLabel}</Label>
-                  <Input id="rc-season-end" name="season_end_date" type="date" />
+                  <DatePicker
+                    id="rc-season-end"
+                    name="season_end_date"
+                    value={rcSeasonEnd}
+                    onChange={setRcSeasonEnd}
+                    placeholder={form.pickDate}
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">

@@ -6,6 +6,7 @@ import { PushPin, Trash, PencilSimple, Plus } from '@phosphor-icons/react/dist/s
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -264,11 +265,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
               </div>
               <div className="space-y-2">
                 <Label>{content.announcements.expiryLabel}</Label>
-                <Input
-                  type="date"
-                  value={expiresAt}
-                  onChange={(e) => setExpiresAt(e.target.value)}
-                />
+                <DatePicker value={expiresAt} onChange={setExpiresAt} />
                 <p className="text-xs text-muted-foreground">
                   {content.announcements.expiryDescription}
                 </p>
