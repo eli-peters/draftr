@@ -473,10 +473,8 @@ export async function createRide(data: CreateRideData) {
     }
   }
 
-  // Fetch weather for the new ride (fire-and-forget, don't block response)
-  syncWeatherForRide(ride.id).catch((err) => {
-    console.error('[weather] Failed to sync weather for new ride:', err);
-  });
+  // Fetch weather for the new ride (errors swallowed internally by syncWeatherForRide)
+  await syncWeatherForRide(ride.id);
 
   revalidatePath('/rides');
   revalidatePath('/manage');
@@ -580,10 +578,8 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
     }
   }
 
-  // Re-sync weather in case date/time/location changed (fire-and-forget)
-  syncWeatherForRide(rideId).catch((err) => {
-    console.error('[weather] Failed to sync weather for updated ride:', err);
-  });
+  // Re-sync weather in case date/time/location changed (errors swallowed internally)
+  await syncWeatherForRide(rideId);
 
   revalidatePath(`/rides/${rideId}`);
   revalidatePath('/rides');

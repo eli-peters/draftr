@@ -29,17 +29,25 @@ export async function POST(request: Request) {
 
   try {
     const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
-    // Current time as HH:MM:SS for comparing with ride start/end times
-    // Use deterministic formatting to avoid locale-dependent output
-    const torontoNow = new Date(now.toLocaleString('en-US', { timeZone: DEFAULT_TIMEZONE }));
+    // Use default timezone for date range query (good enough for single-tz MVP)
+    const localNow = new Date(now.toLocaleString('en-US', { timeZone: DEFAULT_TIMEZONE }));
+    const todayStr = [
+      localNow.getFullYear(),
+      (localNow.getMonth() + 1).toString().padStart(2, '0'),
+      localNow.getDate().toString().padStart(2, '0'),
+    ].join('-');
     const currentTimeStr = [
-      torontoNow.getHours().toString().padStart(2, '0'),
-      torontoNow.getMinutes().toString().padStart(2, '0'),
-      torontoNow.getSeconds().toString().padStart(2, '0'),
+      localNow.getHours().toString().padStart(2, '0'),
+      localNow.getMinutes().toString().padStart(2, '0'),
+      localNow.getSeconds().toString().padStart(2, '0'),
     ].join(':');
-    const maxDate = new Date(now);
-    maxDate.setDate(maxDate.getDate() + FORECAST_MAX_DAYS);
+    const maxLocalDate = new Date(localNow);
+    maxLocalDate.setDate(maxLocalDate.getDate() + FORECAST_MAX_DAYS);
+    const maxDateStr = [
+      maxLocalDate.getFullYear(),
+      (maxLocalDate.getMonth() + 1).toString().padStart(2, '0'),
+      maxLocalDate.getDate().toString().padStart(2, '0'),
+    ].join('-');
 
     // Fetch all upcoming rides (including today) with their start coordinates
     const { data: rides, error: ridesError } = await supabase
@@ -52,7 +60,7 @@ export async function POST(request: Request) {
       `,
       )
       .gte('ride_date', todayStr)
-      .lte('ride_date', maxDate.toISOString().split('T')[0])
+      .lte('ride_date', maxDateStr)
       .in('status', ['scheduled', 'weather_watch']);
 
     if (ridesError) {

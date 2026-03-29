@@ -6,6 +6,8 @@ import { appContent } from '@/content/app';
 import type { AnnouncementType, MemberRole, MemberStatus } from '@/types/database';
 import { parseLocalDate } from '@/config/formatting';
 import { estimateEndTime } from '@/lib/rides/estimate-duration';
+import { syncWeatherForRide } from '@/lib/weather/sync';
+import { FORECAST_MAX_DAYS } from '@/config/weather';
 
 const { common, errors } = appContent;
 
@@ -668,7 +670,7 @@ export async function generateRidesFromRecurring(templateId: string) {
   const { data: insertedRides, error: insertError } = await supabase
     .from('rides')
     .insert(rides)
-    .select('id');
+    .select('id, ride_date');
 
   if (insertError?.message) {
     console.error('Failed to insert recurring rides:', insertError.message);
@@ -687,6 +689,19 @@ export async function generateRidesFromRecurring(templateId: string) {
     const { error: signupError } = await supabase.from('ride_signups').insert(signups);
     if (signupError?.message) {
       console.error('Failed to auto-enroll creator in recurring rides:', signupError.message);
+    }
+  }
+
+  // Sync weather for rides within the forecast window
+  if (insertedRides && insertedRides.length > 0) {
+    const maxForecastDate = new Date();
+    maxForecastDate.setDate(maxForecastDate.getDate() + FORECAST_MAX_DAYS);
+    const maxDateStr = maxForecastDate.toISOString().split('T')[0];
+
+    for (const ride of insertedRides) {
+      if (ride.ride_date <= maxDateStr) {
+        await syncWeatherForRide(ride.id);
+      }
     }
   }
 
