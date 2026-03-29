@@ -65,7 +65,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${outfit.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
+      className={`overflow-x-hidden ${outfit.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: COLOR_MODE_SCRIPT }} />

@@ -287,6 +287,7 @@ export function LocationPickerDrawer({
                 }}
                 style={{ width: '100%', height: '100%' }}
                 mapStyle={isDark ? DARK_STYLE : LIGHT_STYLE}
+                attributionControl={false}
                 onClick={handleMapClick}
                 cursor="crosshair"
               >

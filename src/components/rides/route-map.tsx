@@ -89,7 +89,7 @@ export function RouteMap({
   }
 
   return (
-    <div className={cn('w-full overflow-hidden', className)}>
+    <div className={cn('w-full max-w-full overflow-hidden', className)}>
       {routeUrl ? (
         <a
           href={routeUrl}
@@ -141,7 +141,7 @@ const MapInner = forwardRef<MapRef, MapInnerProps>(function MapInner(
       ref={ref}
       mapboxAccessToken={MAPBOX_TOKEN}
       mapStyle={isDark ? DARK_STYLE : LIGHT_STYLE}
-      style={{ width: '100%', aspectRatio }}
+      style={{ width: '100%', height: 'auto', aspectRatio }}
       interactive={true}
       scrollZoom={false}
       attributionControl={false}

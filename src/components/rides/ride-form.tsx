@@ -481,7 +481,7 @@ export function RideForm({
 
   return (
     <form onSubmit={handleSubmit} className="mt-6">
-      <fieldset disabled={isFetchingRoute} className="space-y-5">
+      <fieldset disabled={isFetchingRoute} className="min-w-0 space-y-5">
         {/* ── Recurring series edit prompt (edit-only) ──────────────── */}
         {isRecurringSeries && (
           <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
@@ -513,9 +513,9 @@ export function RideForm({
         )}
 
         {/* ── Card 1: Route (primary — prepopulates everything) ────── */}
-        <Card className="overflow-clip p-0">
+        <Card className="overflow-hidden p-0">
           <FormCardBanner label={form.sectionRoute} icon={Path} />
-          <div className="flex flex-col gap-4 px-6 pb-6 pt-3">
+          <div className="flex flex-col gap-4 px-6 pb-6 pt-3 min-w-0">
             {/* Route import area */}
             {importedRouteName ? (
               !routePolyline && detectedService ? (
