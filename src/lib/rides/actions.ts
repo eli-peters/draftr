@@ -264,15 +264,20 @@ export interface CreateRideData {
   ride_date: string;
   start_time: string;
   end_time?: string;
-  meeting_location_id: string;
   pace_group_id: string;
   distance_km?: number;
   elevation_m?: number;
   capacity: number;
-  route_url?: string;
+  route_url: string;
   route_name?: string;
   route_polyline?: string;
   is_drop_ride: boolean;
+  start_location_name?: string;
+  start_location_address?: string;
+  start_latitude?: number;
+  start_longitude?: number;
+  // Co-leaders to assign at creation
+  co_leader_ids?: string[];
   // Recurring ride options
   recurring?: {
     recurrence: string;
@@ -327,7 +332,6 @@ export async function createRide(data: CreateRideData) {
         description: data.description || null,
         day_of_week: data.recurring.day_of_week,
         start_time: data.start_time,
-        meeting_location_id: data.meeting_location_id || null,
         pace_group_id: data.pace_group_id || null,
         default_distance_km: data.distance_km ?? null,
         default_capacity: data.capacity ?? null,
@@ -339,6 +343,10 @@ export async function createRide(data: CreateRideData) {
         generate_weeks_ahead: 12,
         end_after_occurrences: data.recurring.end_after_occurrences ?? null,
         end_date: data.recurring.end_date || null,
+        default_start_location_name: data.start_location_name || null,
+        default_start_location_address: data.start_location_address || null,
+        default_start_latitude: data.start_latitude ?? null,
+        default_start_longitude: data.start_longitude ?? null,
       })
       .select('id')
       .single();
@@ -371,17 +379,20 @@ export async function createRide(data: CreateRideData) {
       ride_date: data.ride_date,
       start_time: data.start_time,
       end_time: endTime,
-      meeting_location_id: data.meeting_location_id || null,
       pace_group_id: data.pace_group_id || null,
       distance_km: data.distance_km ?? null,
       elevation_m: data.elevation_m ?? null,
       capacity: data.capacity ?? null,
-      route_url: data.route_url || null,
+      route_url: data.route_url,
       route_name: data.route_name || null,
       route_polyline: data.route_polyline || null,
       is_drop_ride: data.is_drop_ride,
       status: 'scheduled',
       template_id: templateId,
+      start_location_name: data.start_location_name || null,
+      start_location_address: data.start_location_address || null,
+      start_latitude: data.start_latitude ?? null,
+      start_longitude: data.start_longitude ?? null,
     })
     .select('id')
     .single();
@@ -400,6 +411,29 @@ export async function createRide(data: CreateRideData) {
 
   if (signupError?.message) {
     console.error('Failed to auto-enroll ride creator:', signupError.message);
+  }
+
+  // Assign co-leaders and auto-enroll them as riders
+  const coLeaderIds = data.co_leader_ids?.filter((id) => id !== user.id) ?? [];
+  if (coLeaderIds.length > 0) {
+    const { error: clError } = await supabase
+      .from('ride_leaders')
+      .insert(coLeaderIds.map((uid) => ({ ride_id: ride.id, user_id: uid })));
+    if (clError?.message) {
+      console.error('Failed to assign co-leaders:', clError.message);
+    }
+
+    const { error: clSignupError } = await supabase.from('ride_signups').insert(
+      coLeaderIds.map((uid) => ({
+        ride_id: ride.id,
+        user_id: uid,
+        status: 'confirmed' as const,
+        signed_up_at: new Date().toISOString(),
+      })),
+    );
+    if (clSignupError?.message) {
+      console.error('Failed to auto-enroll co-leaders:', clSignupError.message);
+    }
   }
 
   // Generate future recurring ride instances
@@ -421,7 +455,7 @@ export async function createRide(data: CreateRideData) {
 
   if (clubMembers && clubMembers.length > 0) {
     const notifications = clubMembers
-      .filter((m) => m.user_id !== user.id)
+      .filter((m) => m.user_id !== user.id && !coLeaderIds.includes(m.user_id))
       .map((m) => ({
         user_id: m.user_id,
         type: 'ride_update',
@@ -456,15 +490,18 @@ export interface UpdateRideData {
   description?: string;
   ride_date: string;
   start_time: string;
-  meeting_location_id: string;
   pace_group_id: string;
   distance_km?: number;
   elevation_m?: number;
   capacity: number;
-  route_url?: string;
+  route_url: string;
   route_name?: string;
   route_polyline?: string;
   is_drop_ride: boolean;
+  start_location_name?: string;
+  start_location_address?: string;
+  start_latitude?: number;
+  start_longitude?: number;
 }
 
 /**
@@ -498,15 +535,18 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
       description: data.description || null,
       ride_date: data.ride_date,
       start_time: data.start_time,
-      meeting_location_id: data.meeting_location_id || null,
       pace_group_id: data.pace_group_id || null,
       distance_km: data.distance_km ?? null,
       elevation_m: data.elevation_m ?? null,
       capacity: data.capacity ?? null,
-      route_url: data.route_url || null,
+      route_url: data.route_url,
       route_name: data.route_name || null,
       route_polyline: data.route_polyline || null,
       is_drop_ride: data.is_drop_ride,
+      start_location_name: data.start_location_name || null,
+      start_location_address: data.start_location_address || null,
+      start_latitude: data.start_latitude ?? null,
+      start_longitude: data.start_longitude ?? null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', rideId);
@@ -589,12 +629,15 @@ export async function updateRecurringSeries(rideId: string, data: UpdateRideData
       title: data.title,
       description: data.description || null,
       start_time: data.start_time,
-      meeting_location_id: data.meeting_location_id || null,
       pace_group_id: data.pace_group_id || null,
       default_distance_km: data.distance_km ?? null,
       default_capacity: data.capacity ?? null,
       default_route_polyline: data.route_polyline || null,
       is_drop_ride: data.is_drop_ride,
+      default_start_location_name: data.start_location_name || null,
+      default_start_location_address: data.start_location_address || null,
+      default_start_latitude: data.start_latitude ?? null,
+      default_start_longitude: data.start_longitude ?? null,
     })
     .eq('id', templateId);
 
@@ -605,12 +648,15 @@ export async function updateRecurringSeries(rideId: string, data: UpdateRideData
       title: data.title,
       description: data.description || null,
       start_time: data.start_time,
-      meeting_location_id: data.meeting_location_id || null,
       pace_group_id: data.pace_group_id || null,
       distance_km: data.distance_km ?? null,
       capacity: data.capacity ?? null,
       route_polyline: data.route_polyline || null,
       is_drop_ride: data.is_drop_ride,
+      start_location_name: data.start_location_name || null,
+      start_location_address: data.start_location_address || null,
+      start_latitude: data.start_latitude ?? null,
+      start_longitude: data.start_longitude ?? null,
       updated_at: new Date().toISOString(),
     })
     .eq('template_id', templateId)
@@ -931,4 +977,49 @@ export async function removeCoLeader(rideId: string, userId: string) {
 
   revalidatePath('/');
   return { success: true };
+}
+
+// ---------------------------------------------------------------------------
+// Leader Availability
+// ---------------------------------------------------------------------------
+
+export interface LeaderConflict {
+  user_id: string;
+  ride_title: string;
+}
+
+/**
+ * Check which leaders have existing rides on a given date.
+ * Returns conflicts for leaders who are signed up for a ride that day.
+ */
+export async function getLeaderRideConflicts(
+  date: string,
+  userIds: string[],
+): Promise<LeaderConflict[]> {
+  if (!date || userIds.length === 0) return [];
+
+  const supabase = await createClient();
+  const user = await getUser();
+  if (!user) return [];
+
+  // Find rides on this date where any of the given users are signed up
+  const { data: signups } = await supabase
+    .from('ride_signups')
+    .select('user_id, ride:rides!inner(title, ride_date, status)')
+    .in('user_id', userIds)
+    .eq('ride.ride_date', date)
+    .neq('ride.status', 'cancelled')
+    .neq('status', 'cancelled');
+
+  const conflicts: LeaderConflict[] = [];
+  const seen = new Set<string>();
+
+  for (const row of signups ?? []) {
+    if (seen.has(row.user_id)) continue;
+    seen.add(row.user_id);
+    const ride = row.ride as unknown as { title: string };
+    conflicts.push({ user_id: row.user_id, ride_title: ride?.title ?? '' });
+  }
+
+  return conflicts;
 }

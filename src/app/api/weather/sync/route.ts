@@ -41,13 +41,13 @@ export async function POST(request: Request) {
     const maxDate = new Date(now);
     maxDate.setDate(maxDate.getDate() + FORECAST_MAX_DAYS);
 
-    // Fetch all upcoming rides (including today) with their meeting location coordinates
+    // Fetch all upcoming rides (including today) with their start coordinates
     const { data: rides, error: ridesError } = await supabase
       .from('rides')
       .select(
         `
         id, ride_date, start_time, end_time, status, weather_watch_auto, club_id,
-        meeting_location:meeting_locations(latitude, longitude),
+        start_latitude, start_longitude,
         club:clubs(timezone)
       `,
       )
@@ -72,16 +72,11 @@ export async function POST(request: Request) {
     const ruleCache = new Map<string, number>();
 
     for (const ride of rides) {
-      const location = ride.meeting_location as unknown as {
-        latitude: number | null;
-        longitude: number | null;
-      } | null;
+      // Skip rides without start coordinates
+      if (!ride.start_latitude || !ride.start_longitude) continue;
 
-      // Skip rides without location coordinates
-      if (!location?.latitude || !location?.longitude) continue;
-
-      const lat = location.latitude;
-      const lon = location.longitude;
+      const lat = Number(ride.start_latitude);
+      const lon = Number(ride.start_longitude);
       const club = ride.club as unknown as { timezone: string } | null;
       const timezone = club?.timezone ?? DEFAULT_TIMEZONE;
       const endTime = ride.end_time as string | null;

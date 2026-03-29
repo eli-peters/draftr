@@ -31,5 +31,10 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
   }, [pathname, direction, isMobile]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
   return <div className={animClass}>{children}</div>;
 }

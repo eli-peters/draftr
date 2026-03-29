@@ -87,17 +87,17 @@ export function RideDetailCard({
 
       {/* Card body */}
       <div className="flex flex-col gap-4 px-6 pb-6 pt-5">
-        {/* Meeting location */}
-        {ride.meeting_location && (
+        {/* Start location */}
+        {(ride.start_location_name ?? ride.meeting_location) && (
           <div className="flex items-start gap-2">
             <MapPin weight="duotone" className="mt-0.5 size-6 shrink-0 text-primary" />
             <div className="min-w-0">
               <p className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
-                {ride.meeting_location.name}
+                {ride.start_location_name ?? ride.meeting_location?.name}
               </p>
-              {ride.meeting_location.address && (
+              {(ride.start_location_address ?? ride.meeting_location?.address) && (
                 <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">
-                  {ride.meeting_location.address}
+                  {ride.start_location_address ?? ride.meeting_location?.address}
                 </p>
               )}
             </div>

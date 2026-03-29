@@ -173,6 +173,7 @@ export async function getClubRideTemplates(clubId: string) {
       `
       id, title, description, day_of_week, start_time, is_drop_ride, is_active, recurrence,
       default_distance_km, default_capacity, default_route_url, default_route_name,
+      default_start_location_name,
       season_start_date, season_end_date,
       meeting_location:meeting_locations(name),
       pace_group:pace_groups(name)
@@ -190,9 +191,10 @@ export async function getClubRideTemplates(clubId: string) {
   return (data ?? []).map((t) => {
     const location = t.meeting_location as unknown as { name: string } | null;
     const pace = t.pace_group as unknown as { name: string } | null;
+    const raw = t as Record<string, unknown>;
     return {
       ...t,
-      meeting_location_name: location?.name ?? null,
+      meeting_location_name: (raw.default_start_location_name as string) ?? location?.name ?? null,
       pace_group_name: pace?.name ?? null,
     };
   });

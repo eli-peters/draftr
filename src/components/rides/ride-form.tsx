@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -10,6 +10,11 @@ import {
   ArrowRight,
   ArrowSquareOut,
   LinkSimple,
+  MapPin,
+  PencilSimple,
+  CaretDown,
+  Check,
+  Bicycle,
 } from '@phosphor-icons/react/dist/ssr';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -30,9 +35,13 @@ import {
   createRide,
   updateRide,
   updateRecurringSeries,
+  getLeaderRideConflicts,
   type CreateRideData,
   type UpdateRideData,
+  type LeaderConflict,
 } from '@/lib/rides/actions';
+import { decodeStartPoint } from '@/lib/maps/decode-start-point';
+import { reverseGeocode } from '@/lib/maps/reverse-geocode';
 import type { IntegrationService, ImportableRoute } from '@/types/database';
 
 const { rides: ridesContent, common, manage: manageContent } = appContent;
@@ -48,7 +57,6 @@ interface RideFormInitialData {
   description: string;
   ride_date: string;
   start_time: string;
-  meeting_location_id: string;
   pace_group_id: string;
   distance_km: string;
   elevation_m: string;
@@ -57,11 +65,14 @@ interface RideFormInitialData {
   route_url: string;
   route_polyline: string;
   is_drop_ride: boolean;
+  start_location_name?: string;
+  start_location_address?: string;
+  start_latitude?: number | null;
+  start_longitude?: number | null;
 }
 
 interface RideFormProps {
   clubId: string;
-  meetingLocations: { id: string; name: string }[];
   paceGroups: { id: string; name: string }[];
   rideId?: string;
   templateId?: string;
@@ -69,12 +80,12 @@ interface RideFormProps {
   seasonStart?: string;
   seasonEnd?: string;
   connectedServices?: IntegrationService[];
+  eligibleLeaders?: { user_id: string; name: string }[];
   returnTo?: string;
 }
 
 export function RideForm({
   clubId,
-  meetingLocations,
   paceGroups,
   rideId,
   templateId,
@@ -82,6 +93,7 @@ export function RideForm({
   seasonStart,
   seasonEnd,
   connectedServices = [],
+  eligibleLeaders = [],
   returnTo,
 }: RideFormProps) {
   const router = useRouter();
@@ -94,6 +106,10 @@ export function RideForm({
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isRecurring, setIsRecurring] = useState(false);
+  const [selectedCoLeaders, setSelectedCoLeaders] = useState<string[]>([]);
+  const [coLeaderConflicts, setCoLeaderConflicts] = useState<LeaderConflict[]>([]);
+  const [coLeadersOpen, setCoLeadersOpen] = useState(false);
+  const [rideDate, setRideDate] = useState(initialData?.ride_date ?? '');
   const [isDropRide, setIsDropRide] = useState(initialData?.is_drop_ride ?? false);
   const [editScope, setEditScope] = useState<'this' | 'all'>('this');
   const [importOpen, setImportOpen] = useState(false);
@@ -109,6 +125,22 @@ export function RideForm({
   const [fetchRouteError, setFetchRouteError] = useState<string | null>(null);
   const [detectedService, setDetectedService] = useState<IntegrationService | null>(null);
 
+  // Start location — auto-populated from route polyline or manual entry
+  const [startLocationName, setStartLocationName] = useState(
+    initialData?.start_location_name ?? '',
+  );
+  const [startLocationAddress, setStartLocationAddress] = useState(
+    initialData?.start_location_address ?? '',
+  );
+  const [startLatitude, setStartLatitude] = useState<number | null>(
+    initialData?.start_latitude ?? null,
+  );
+  const [startLongitude, setStartLongitude] = useState<number | null>(
+    initialData?.start_longitude ?? null,
+  );
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const [isGeocodingLocation, setIsGeocodingLocation] = useState(false);
+
   // Paste URL input for non-connected leaders
   const pasteUrlRef = useRef<HTMLInputElement>(null);
 
@@ -118,7 +150,42 @@ export function RideForm({
   const elevationRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
-  function applyRouteData(route: ImportableRoute) {
+  // Fetch co-leader conflicts when date changes
+  const fetchConflicts = useCallback(
+    async (date: string) => {
+      if (!date || eligibleLeaders.length === 0) {
+        setCoLeaderConflicts([]);
+        return;
+      }
+      const ids = eligibleLeaders.map((l) => l.user_id);
+      const conflicts = await getLeaderRideConflicts(date, ids);
+      setCoLeaderConflicts(conflicts);
+    },
+    [eligibleLeaders],
+  );
+
+  useEffect(() => {
+    if (!isEdit) fetchConflicts(rideDate);
+  }, [rideDate, isEdit, fetchConflicts]);
+
+  function clearRouteData() {
+    setImportedRouteName(null);
+    setRouteUrl('');
+    setRouteName('');
+    setRoutePolyline('');
+    setDetectedService(null);
+    if (pasteUrlRef.current) pasteUrlRef.current.value = '';
+    if (titleRef.current) titleRef.current.value = '';
+    if (distanceRef.current) distanceRef.current.value = '';
+    if (elevationRef.current) elevationRef.current.value = '';
+    if (descriptionRef.current) descriptionRef.current.value = '';
+    setStartLocationName('');
+    setStartLocationAddress('');
+    setStartLatitude(null);
+    setStartLongitude(null);
+  }
+
+  async function applyRouteData(route: ImportableRoute) {
     if (titleRef.current && !titleRef.current.value) {
       titleRef.current.value = route.name;
     }
@@ -133,6 +200,24 @@ export function RideForm({
     }
     if (route.polyline) {
       setRoutePolyline(route.polyline);
+
+      // Auto-populate start location from polyline via reverse geocoding
+      setIsGeocodingLocation(true);
+      try {
+        const start = decodeStartPoint(route.polyline);
+        setStartLatitude(start.latitude);
+        setStartLongitude(start.longitude);
+
+        const location = await reverseGeocode(start.latitude, start.longitude);
+        if (location) {
+          setStartLocationName(location.name);
+          setStartLocationAddress(location.address);
+        }
+      } catch {
+        // Geocoding failed — leader can enter manually
+      } finally {
+        setIsGeocodingLocation(false);
+      }
     }
     setRouteUrl(route.source_url);
     setRouteName(route.name);
@@ -181,9 +266,27 @@ export function RideForm({
 
     // If the leader has a connected account for this service, fetch route data
     if (!connectedServices.includes(parsed.service)) {
-      // No connection — URL stored as link-only, show preview nudge
-      setImportedRouteName(form.routeLinkAdded);
+      // No connection — try scraping public page for metadata
       setDetectedService(parsed.service);
+      setIsFetchingRoute(true);
+      try {
+        const res = await fetch(`${routes.scrapeRoute}?url=${encodeURIComponent(url)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.route) {
+            applyRouteData(data.route as ImportableRoute);
+            toast.success(appContent.rides.importRoute.imported);
+            return;
+          }
+        }
+      } catch {
+        // Scrape failed — fall through to link-only
+      } finally {
+        setIsFetchingRoute(false);
+      }
+
+      // Fallback: URL stored as link-only, show preview nudge
+      setImportedRouteName(form.routeLinkAdded);
       return;
     }
 
@@ -219,18 +322,16 @@ export function RideForm({
     const title = fd.get('title') as string;
     const ride_date = fd.get('ride_date') as string;
     const start_time = fd.get('start_time') as string;
-    const meeting_location_id = fd.get('meeting_location_id') as string;
     const pace_group_id = fd.get('pace_group_id') as string;
     const capacity = fd.get('capacity') as string;
 
-    if (
-      !title ||
-      !ride_date ||
-      !start_time ||
-      !meeting_location_id ||
-      !pace_group_id ||
-      !capacity
-    ) {
+    if (!routeUrl) {
+      setError(form.routeRequired);
+      setIsPending(false);
+      return;
+    }
+
+    if (!title || !ride_date || !start_time || !pace_group_id || !capacity) {
       setError(form.required);
       setIsPending(false);
       return;
@@ -241,15 +342,18 @@ export function RideForm({
       description: (fd.get('description') as string) || undefined,
       ride_date,
       start_time,
-      meeting_location_id,
       pace_group_id,
       distance_km: fd.get('distance_km') ? Number(fd.get('distance_km')) : undefined,
       elevation_m: fd.get('elevation_m') ? Number(fd.get('elevation_m')) : undefined,
       capacity: Number(capacity),
-      route_url: routeUrl || undefined,
+      route_url: routeUrl,
       route_name: routeName || undefined,
       route_polyline: routePolyline || undefined,
       is_drop_ride: fd.get('is_drop_ride') === 'on',
+      start_location_name: startLocationName || undefined,
+      start_location_address: startLocationAddress || undefined,
+      start_latitude: startLatitude ?? undefined,
+      start_longitude: startLongitude ?? undefined,
     };
 
     let result: { error?: string; success?: boolean; rideId?: string };
@@ -277,6 +381,7 @@ export function RideForm({
         ...shared,
         club_id: clubId,
         recurring,
+        co_leader_ids: selectedCoLeaders.length > 0 ? selectedCoLeaders : undefined,
       } as CreateRideData);
     }
 
@@ -351,19 +456,7 @@ export function RideForm({
               >
                 {form.linkOnlyConnect(serviceLabels[detectedService])}
               </Link>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setImportedRouteName(null);
-                  setRouteUrl('');
-                  setRouteName('');
-                  setRoutePolyline('');
-                  setDetectedService(null);
-                  if (pasteUrlRef.current) pasteUrlRef.current.value = '';
-                }}
-              >
+              <Button type="button" variant="ghost" size="sm" onClick={clearRouteData}>
                 {form.linkOnlyRemove}
               </Button>
             </div>
@@ -382,18 +475,7 @@ export function RideForm({
                 {form.importChange}
               </Button>
             ) : (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setImportedRouteName(null);
-                  setRouteUrl('');
-                  setRouteName('');
-                  setRoutePolyline('');
-                  setDetectedService(null);
-                }}
-              >
+              <Button type="button" variant="ghost" size="sm" onClick={clearRouteData}>
                 {form.importChange}
               </Button>
             )}
@@ -457,6 +539,7 @@ export function RideForm({
               defaultValue={initialData?.ride_date}
               min={effectiveMin}
               max={seasonEnd || undefined}
+              onChange={(e) => setRideDate(e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
               {seasonStart && seasonEnd
@@ -478,27 +561,75 @@ export function RideForm({
         </div>
       </section>
 
-      {/* ── Zone 2: Where ────────────────────────────────────────── */}
+      {/* ── Zone 2: Start Location ──────────────────────────────── */}
       <section className="mt-8">
         <SectionHeading className="mb-4">{form.sectionWhere}</SectionHeading>
-        <div className="space-y-2">
-          <Label htmlFor="meeting_location_id">{form.meetingLocation}</Label>
-          <Select
-            id="meeting_location_id"
-            name="meeting_location_id"
-            required
-            defaultValue={initialData?.meeting_location_id}
-          >
-            <option value="" disabled>
-              {form.selectLocation}
-            </option>
-            {meetingLocations.map((loc) => (
-              <option key={loc.id} value={loc.id}>
-                {loc.name}
-              </option>
-            ))}
-          </Select>
-        </div>
+        {isGeocodingLocation ? (
+          <p className="text-sm text-muted-foreground">{form.startLocationFromRoute}</p>
+        ) : startLocationName && !isEditingLocation ? (
+          <div className="rounded-xl border border-border bg-muted/20 p-4 flex items-start justify-between gap-3">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <MapPin className="size-4 shrink-0 mt-0.5 text-primary" weight="fill" />
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{startLocationName}</p>
+                {startLocationAddress && (
+                  <p className="text-xs text-muted-foreground truncate mt-0.5">
+                    {startLocationAddress}
+                  </p>
+                )}
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="shrink-0"
+              onClick={() => setIsEditingLocation(true)}
+            >
+              <PencilSimple className="size-3.5 mr-1" />
+              {common.edit}
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {!routeUrl ? (
+              <p className="text-xs text-muted-foreground">{form.startLocationHint}</p>
+            ) : !routePolyline ? (
+              <p className="text-xs text-muted-foreground">{form.startLocationManualHint}</p>
+            ) : null}
+            <div className="space-y-2">
+              <Label htmlFor="start_location_name">{form.meetingLocation}</Label>
+              <Input
+                id="start_location_name"
+                value={startLocationName}
+                onChange={(e) => setStartLocationName(e.target.value)}
+                placeholder={form.selectLocation}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="start_location_address">
+                {form.locationAddress}
+                <OptionalTag />
+              </Label>
+              <Input
+                id="start_location_address"
+                value={startLocationAddress}
+                onChange={(e) => setStartLocationAddress(e.target.value)}
+                placeholder={form.addressPlaceholder}
+              />
+            </div>
+            {isEditingLocation && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditingLocation(false)}
+              >
+                {common.done}
+              </Button>
+            )}
+          </div>
+        )}
       </section>
 
       <Separator className="mt-8" />
@@ -578,6 +709,80 @@ export function RideForm({
             />
           </div>
         </div>
+        {/* Co-leader picker (create mode only) */}
+        {!isEdit && eligibleLeaders.length > 0 && (
+          <div className="mt-4 rounded-xl border border-border overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setCoLeadersOpen((o) => !o)}
+              className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-muted/30 transition-colors"
+            >
+              <span className="text-sm font-medium text-foreground">
+                {form.coLeaders}
+                <span className="font-normal text-muted-foreground ml-1.5">
+                  {selectedCoLeaders.length > 0
+                    ? form.coLeadersCount(selectedCoLeaders.length)
+                    : form.coLeadersNoneSelected}
+                </span>
+              </span>
+              <CaretDown
+                className={`size-4 text-muted-foreground transition-transform ${coLeadersOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+            {coLeadersOpen && (
+              <div className="border-t border-border px-4 py-3">
+                <div className="flex flex-wrap gap-2">
+                  {eligibleLeaders.map((leader) => {
+                    const isSelected = selectedCoLeaders.includes(leader.user_id);
+                    const conflict = coLeaderConflicts.find((c) => c.user_id === leader.user_id);
+                    return (
+                      <button
+                        key={leader.user_id}
+                        type="button"
+                        onClick={() =>
+                          setSelectedCoLeaders((prev) =>
+                            isSelected
+                              ? prev.filter((id) => id !== leader.user_id)
+                              : [...prev, leader.user_id],
+                          )
+                        }
+                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors ${
+                          isSelected
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted/50 text-foreground hover:bg-muted'
+                        }`}
+                      >
+                        {isSelected && <Check className="size-3.5" weight="bold" />}
+                        {leader.name}
+                        {conflict && !isSelected && (
+                          <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+                            <Bicycle className="size-3" />
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                {coLeaderConflicts.length > 0 && rideDate && (
+                  <div className="mt-3 space-y-1">
+                    {coLeaderConflicts.map((c) => {
+                      const leader = eligibleLeaders.find((l) => l.user_id === c.user_id);
+                      return (
+                        <p
+                          key={c.user_id}
+                          className="text-xs text-muted-foreground flex items-center gap-1"
+                        >
+                          <Bicycle className="size-3 shrink-0" />
+                          {leader?.name}: {form.coLeadersHasRide(c.ride_title)}
+                        </p>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       <Separator className="mt-8" />

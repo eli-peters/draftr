@@ -174,6 +174,7 @@ export async function getUserNextSignup(userId: string, clubId: string) {
       id, status,
       ride:rides!inner(
         id, title, ride_date, start_time, end_time, status, capacity, distance_km, elevation_m,
+        start_location_name,
         meeting_location:meeting_locations(name),
         pace_group:pace_groups(name, sort_order),
         ride_signups(count),
@@ -202,6 +203,7 @@ export async function getUserNextSignup(userId: string, clubId: string) {
     capacity: number | null;
     distance_km: number | null;
     elevation_m: number | null;
+    start_location_name: string | null;
     meeting_location: { name: string } | null;
     pace_group: { name: string; sort_order: number } | null;
     ride_signups: { count: number }[];
@@ -214,7 +216,7 @@ export async function getUserNextSignup(userId: string, clubId: string) {
     ride_date: ride.ride_date,
     start_time: ride.start_time,
     end_time: ride.end_time,
-    meeting_location_name: ride.meeting_location?.name ?? null,
+    meeting_location_name: ride.start_location_name ?? ride.meeting_location?.name ?? null,
     pace_group_name: ride.pace_group?.name ?? null,
     pace_group_sort_order: ride.pace_group?.sort_order ?? null,
     distance_km: ride.distance_km,
@@ -237,6 +239,7 @@ export async function getLeaderNextLedRide(userId: string, clubId: string) {
     .select(
       `
       id, title, ride_date, start_time, end_time, capacity, distance_km, elevation_m,
+      start_location_name,
       meeting_location:meeting_locations(name),
       pace_group:pace_groups(name, sort_order),
       ride_signups(count),
@@ -268,7 +271,7 @@ export async function getLeaderNextLedRide(userId: string, clubId: string) {
     ride_date: data.ride_date,
     start_time: data.start_time,
     end_time: raw.end_time as string | null,
-    meeting_location_name: location?.name ?? null,
+    meeting_location_name: (raw.start_location_name as string) ?? location?.name ?? null,
     pace_group_name: pace?.name ?? null,
     pace_group_sort_order: pace?.sort_order ?? null,
     distance_km: raw.distance_km as number | null,
@@ -294,6 +297,7 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string) 
       ride:rides!inner(
         id, title, ride_date, start_time, end_time, status,
         distance_km, elevation_m,
+        start_location_name,
         meeting_location:meeting_locations(name),
         pace_group:pace_groups(name, sort_order)
       )
@@ -318,6 +322,7 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string) 
     end_time: string | null;
     distance_km: number | null;
     elevation_m: number | null;
+    start_location_name: string | null;
     meeting_location: { name: string } | null;
     pace_group: { name: string; sort_order: number } | null;
   };
@@ -338,7 +343,7 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string) 
     end_time: ride.end_time,
     distance_km: ride.distance_km,
     elevation_m: ride.elevation_m,
-    meeting_location_name: ride.meeting_location?.name ?? null,
+    meeting_location_name: ride.start_location_name ?? ride.meeting_location?.name ?? null,
     pace_group_name: ride.pace_group?.name ?? null,
     pace_group_sort_order: ride.pace_group?.sort_order ?? null,
     waitlist_position: count ?? 1,
@@ -466,6 +471,7 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
     .select(
       `
       id, title, ride_date, start_time, status, capacity, template_id, distance_km,
+      start_location_name,
       meeting_location:meeting_locations(name),
       pace_group:pace_groups(id, name, sort_order),
       creator:users!rides_created_by_fkey(full_name),
@@ -507,7 +513,8 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
       capacity: ride.capacity as number | null,
       distance_km: (ride as Record<string, unknown>).distance_km as number | null,
       template_id: (ride as Record<string, unknown>).template_id as string | null,
-      meeting_location_name: location?.name ?? null,
+      meeting_location_name:
+        ((ride as Record<string, unknown>).start_location_name as string) ?? location?.name ?? null,
       pace_group_id: pace?.id ?? null,
       pace_group_name: pace?.name ?? null,
       pace_group_sort_order: pace?.sort_order ?? null,
@@ -611,6 +618,7 @@ export async function getUserRideSignups(
       id, status, signed_up_at, waitlist_position,
       ride:rides!inner(
         id, title, ride_date, start_time, end_time, distance_km, elevation_m, capacity,
+        start_location_name, start_location_address, start_latitude, start_longitude,
         meeting_location:meeting_locations(name, address, latitude, longitude),
         pace_group:pace_groups(name, sort_order),
         ride_signups(count),
@@ -677,6 +685,10 @@ export async function getUserRideSignups(
       distance_km: number | null;
       elevation_m: number | null;
       capacity: number | null;
+      start_location_name: string | null;
+      start_location_address: string | null;
+      start_latitude: number | null;
+      start_longitude: number | null;
       meeting_location: {
         name: string;
         address: string | null;
@@ -696,10 +708,11 @@ export async function getUserRideSignups(
       end_time: ride.end_time ?? null,
       pace_group_name: ride.pace_group?.name ?? null,
       pace_group_sort_order: ride.pace_group?.sort_order ?? null,
-      meeting_location_name: ride.meeting_location?.name ?? null,
-      meeting_location_address: ride.meeting_location?.address ?? null,
-      meeting_location_latitude: ride.meeting_location?.latitude ?? null,
-      meeting_location_longitude: ride.meeting_location?.longitude ?? null,
+      meeting_location_name: ride.start_location_name ?? ride.meeting_location?.name ?? null,
+      meeting_location_address:
+        ride.start_location_address ?? ride.meeting_location?.address ?? null,
+      meeting_location_latitude: ride.start_latitude ?? ride.meeting_location?.latitude ?? null,
+      meeting_location_longitude: ride.start_longitude ?? ride.meeting_location?.longitude ?? null,
       distance_km: ride.distance_km,
       elevation_m: ride.elevation_m ?? null,
       signup_count: ride.ride_signups?.[0]?.count ?? 0,

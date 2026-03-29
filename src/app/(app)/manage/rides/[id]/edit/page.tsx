@@ -6,7 +6,6 @@ import { SectionHeading } from '@/components/ui/section-heading';
 import {
   getUserClubMembership,
   getRideById,
-  getMeetingLocations,
   getPaceGroups,
   getRideSignups,
   getRideCoLeaders,
@@ -46,16 +45,14 @@ export default async function EditRidePage({
 
   const userId = membership.user_id;
 
-  const [ride, meetingLocations, paceGroups, signups, members, connections, coLeaders] =
-    await Promise.all([
-      getRideById(id),
-      getMeetingLocations(membership.club_id),
-      getPaceGroups(membership.club_id),
-      getRideSignups(id),
-      getClubMembers(membership.club_id),
-      getUserConnections(userId),
-      getRideCoLeaders(id),
-    ]);
+  const [ride, paceGroups, signups, members, connections, coLeaders] = await Promise.all([
+    getRideById(id),
+    getPaceGroups(membership.club_id),
+    getRideSignups(id),
+    getClubMembers(membership.club_id),
+    getUserConnections(userId),
+    getRideCoLeaders(id),
+  ]);
 
   if (!ride) notFound();
 
@@ -116,7 +113,6 @@ export default async function EditRidePage({
 
       <RideForm
         clubId={membership.club_id}
-        meetingLocations={meetingLocations}
         paceGroups={paceGroups}
         rideId={id}
         templateId={ride.template_id ?? undefined}
@@ -125,7 +121,6 @@ export default async function EditRidePage({
           description: ride.description ?? '',
           ride_date: ride.ride_date,
           start_time: ride.start_time?.slice(0, 5) ?? '',
-          meeting_location_id: ride.meeting_location_id ?? '',
           pace_group_id: ride.pace_group_id ?? '',
           distance_km: ride.distance_km != null ? String(ride.distance_km) : '',
           elevation_m: ride.elevation_m != null ? String(ride.elevation_m) : '',
@@ -134,6 +129,10 @@ export default async function EditRidePage({
           route_url: ride.route_url ?? '',
           route_polyline: ride.route_polyline ?? '',
           is_drop_ride: ride.is_drop_ride ?? false,
+          start_location_name: ride.start_location_name ?? '',
+          start_location_address: ride.start_location_address ?? '',
+          start_latitude: ride.start_latitude,
+          start_longitude: ride.start_longitude,
         }}
         connectedServices={connections.map((c) => c.service)}
         returnTo={returnTo}

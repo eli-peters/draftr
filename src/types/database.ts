@@ -97,7 +97,7 @@ export interface Ride {
   distance_km: number | null;
   elevation_m: number | null;
   capacity: number | null;
-  route_url: string | null;
+  route_url: string;
   route_name: string | null;
   route_polyline: string | null;
   is_drop_ride: boolean;
@@ -105,6 +105,10 @@ export interface Ride {
   cancellation_reason: string | null;
   weather_watch_auto: boolean;
   template_id: string | null;
+  start_location_name: string | null;
+  start_location_address: string | null;
+  start_latitude: number | null;
+  start_longitude: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -227,6 +231,10 @@ export interface RideTemplate {
   generate_weeks_ahead: number;
   end_after_occurrences: number | null;
   end_date: string | null;
+  default_start_location_name: string | null;
+  default_start_location_address: string | null;
+  default_start_latitude: number | null;
+  default_start_longitude: number | null;
   created_at: string;
 }
 

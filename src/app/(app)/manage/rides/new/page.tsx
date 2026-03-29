@@ -1,15 +1,12 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getUser } from '@/lib/supabase/server';
-import {
-  getUserClubMembership,
-  getMeetingLocations,
-  getPaceGroups,
-  getRideById,
-} from '@/lib/rides/queries';
+import { getUserClubMembership, getPaceGroups, getRideById } from '@/lib/rides/queries';
+import { getClubMembers } from '@/lib/manage/queries';
 import { getUserConnections } from '@/lib/integrations/queries';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
+import { MemberStatus } from '@/config/statuses';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { RideForm } from '@/components/rides/ride-form';
 import type { UserRole } from '@/config/navigation';
@@ -35,10 +32,9 @@ export default async function CreateRidePage({
 
   const authUser = await getUser();
 
-  const [clubResult, meetingLocations, paceGroups, sourceRide, templateData, connections] =
+  const [clubResult, paceGroups, sourceRide, templateData, connections, members] =
     await Promise.all([
       supabase.from('clubs').select('settings').eq('id', membership.club_id).single(),
-      getMeetingLocations(membership.club_id),
       getPaceGroups(membership.club_id),
       duplicateId ? getRideById(duplicateId) : null,
       templateId
@@ -50,6 +46,7 @@ export default async function CreateRidePage({
             .then((r) => r.data)
         : null,
       authUser ? getUserConnections(authUser.id) : [],
+      getClubMembers(membership.club_id),
     ]);
 
   const clubSettings = (clubResult.data?.settings ?? {}) as Record<string, string>;
@@ -62,7 +59,6 @@ export default async function CreateRidePage({
       description: sourceRide.description ?? '',
       ride_date: '',
       start_time: sourceRide.start_time?.slice(0, 5) ?? '',
-      meeting_location_id: sourceRide.meeting_location_id ?? '',
       pace_group_id: sourceRide.pace_group_id ?? '',
       distance_km: sourceRide.distance_km != null ? String(sourceRide.distance_km) : '',
       elevation_m: sourceRide.elevation_m != null ? String(sourceRide.elevation_m) : '',
@@ -71,6 +67,10 @@ export default async function CreateRidePage({
       route_url: sourceRide.route_url ?? '',
       route_polyline: sourceRide.route_polyline ?? '',
       is_drop_ride: sourceRide.is_drop_ride ?? false,
+      start_location_name: sourceRide.start_location_name ?? '',
+      start_location_address: sourceRide.start_location_address ?? '',
+      start_latitude: sourceRide.start_latitude,
+      start_longitude: sourceRide.start_longitude,
     };
   } else if (templateData) {
     initialData = {
@@ -78,7 +78,6 @@ export default async function CreateRidePage({
       description: templateData.description ?? '',
       ride_date: '',
       start_time: templateData.start_time?.slice(0, 5) ?? '',
-      meeting_location_id: templateData.meeting_location_id ?? '',
       pace_group_id: templateData.pace_group_id ?? '',
       distance_km:
         templateData.default_distance_km != null ? String(templateData.default_distance_km) : '',
@@ -88,8 +87,22 @@ export default async function CreateRidePage({
       route_url: templateData.default_route_url ?? '',
       route_polyline: templateData.default_route_polyline ?? '',
       is_drop_ride: templateData.is_drop_ride ?? false,
+      start_location_name: templateData.default_start_location_name ?? '',
+      start_location_address: templateData.default_start_location_address ?? '',
+      start_latitude: templateData.default_start_latitude,
+      start_longitude: templateData.default_start_longitude,
     };
   }
+
+  // Eligible co-leaders: active members with ride_leader or admin role, excluding current user
+  const eligibleLeaders = members
+    .filter(
+      (m) =>
+        m.status === MemberStatus.ACTIVE &&
+        (m.role === 'ride_leader' || m.role === 'admin') &&
+        m.user_id !== authUser?.id,
+    )
+    .map((m) => ({ user_id: m.user_id, name: m.full_name }));
 
   return (
     <DashboardShell>
@@ -98,12 +111,12 @@ export default async function CreateRidePage({
       </h1>
       <RideForm
         clubId={membership.club_id}
-        meetingLocations={meetingLocations}
         paceGroups={paceGroups}
         initialData={initialData}
         seasonStart={clubSettings.season_start}
         seasonEnd={clubSettings.season_end}
         connectedServices={connections.map((c) => c.service)}
+        eligibleLeaders={eligibleLeaders}
       />
     </DashboardShell>
   );

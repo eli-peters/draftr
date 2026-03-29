@@ -78,7 +78,7 @@ function HomeLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boo
       distanceKm={ride.distance_km}
       elevationM={ride.elevation_m}
       durationDisplay={formatDuration(ride.start_time, ride.end_time)}
-      locationName={ride.meeting_location?.name ?? null}
+      locationName={ride.start_location_name ?? ride.meeting_location?.name ?? null}
       weather={ride.weather}
     />
   );
@@ -108,7 +108,7 @@ function RidesLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: bo
         distanceKm={ride.distance_km}
         elevationM={ride.elevation_m}
         durationDisplay={formatDuration(ride.start_time, ride.end_time)}
-        locationName={ride.meeting_location?.name ?? null}
+        locationName={ride.start_location_name ?? ride.meeting_location?.name ?? null}
         weather={ride.weather}
       />
 

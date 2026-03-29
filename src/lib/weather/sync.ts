@@ -21,7 +21,7 @@ export async function syncWeatherForRide(rideId: string): Promise<void> {
       .select(
         `
         id, ride_date, start_time, status, weather_watch_auto, club_id,
-        meeting_location:meeting_locations(latitude, longitude),
+        start_latitude, start_longitude,
         club:clubs(timezone)
       `,
       )
@@ -33,19 +33,14 @@ export async function syncWeatherForRide(rideId: string): Promise<void> {
       return;
     }
 
-    const location = ride.meeting_location as unknown as {
-      latitude: number | null;
-      longitude: number | null;
-    } | null;
-
-    if (!location?.latitude || !location?.longitude) return;
+    if (!ride.start_latitude || !ride.start_longitude) return;
 
     const club = ride.club as unknown as { timezone: string } | null;
     const timezone = club?.timezone ?? DEFAULT_TIMEZONE;
 
     const forecast = await fetchForecastForRide(
-      location.latitude,
-      location.longitude,
+      ride.start_latitude,
+      ride.start_longitude,
       ride.ride_date,
       ride.start_time,
       timezone,

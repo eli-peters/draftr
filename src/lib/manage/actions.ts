@@ -646,13 +646,19 @@ export async function generateRidesFromRecurring(templateId: string) {
     ride_date: date,
     start_time: template.start_time,
     end_time: endTime,
-    meeting_location_id: template.meeting_location_id,
     pace_group_id: template.pace_group_id,
     distance_km: template.default_distance_km,
     capacity: template.default_capacity,
     is_drop_ride: template.is_drop_ride,
     status: 'scheduled',
     template_id: template.id,
+    route_url: template.default_route_url,
+    route_polyline: template.default_route_polyline,
+    route_name: template.default_route_name,
+    start_location_name: template.default_start_location_name,
+    start_location_address: template.default_start_location_address,
+    start_latitude: template.default_start_latitude,
+    start_longitude: template.default_start_longitude,
   }));
 
   const { data: insertedRides, error: insertError } = await supabase
