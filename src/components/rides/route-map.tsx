@@ -5,6 +5,7 @@ import Map, { Source, Layer, type MapRef } from 'react-map-gl/mapbox';
 import polyline from '@mapbox/polyline';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { integrations } from '@/config/integrations';
+import { cn } from '@/lib/utils';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
@@ -88,7 +89,7 @@ export function RouteMap({
   }
 
   return (
-    <div className={className}>
+    <div className={cn('w-full overflow-hidden', className)}>
       {routeUrl ? (
         <a
           href={routeUrl}
