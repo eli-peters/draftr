@@ -388,7 +388,7 @@ export async function deletePaceTier(tierId: string) {
       .order('sort_order');
 
     if (remaining) {
-      await Promise.all(
+      const results = await Promise.all(
         remaining.map((pg, i) =>
           supabase
             .from('pace_groups')
@@ -396,6 +396,8 @@ export async function deletePaceTier(tierId: string) {
             .eq('id', pg.id),
         ),
       );
+      const failed = results.find((r) => r.error);
+      if (failed?.error) return { error: failed.error.message };
     }
   }
 
@@ -409,7 +411,7 @@ export async function reorderPaceTiers(clubId: string, orderedIds: string[]) {
   const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
-  await Promise.all(
+  const results = await Promise.all(
     orderedIds.map((id, i) =>
       supabase
         .from('pace_groups')
@@ -418,6 +420,8 @@ export async function reorderPaceTiers(clubId: string, orderedIds: string[]) {
         .eq('club_id', clubId),
     ),
   );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) return { error: failed.error.message };
 
   revalidatePath('/manage');
   return { success: true };

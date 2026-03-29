@@ -21,6 +21,22 @@
  *
  * Components NEVER use primitives directly. Use semantic tokens or shadcn
  * bridge tokens via Tailwind classes.
+ *
+ * Why some tokens live here instead of the JSON pipeline:
+ * -------------------------------------------------------
+ * The build script (scripts/build-tokens.ts) can only resolve simple Figma
+ * alias references like {color.primary.500} → var(--color-primary-500).
+ * Tokens that need CSS functions (color-mix, calc) or non-color values
+ * (radii, shadows, durations, opacities) must be authored directly in CSS.
+ *
+ * Hand-maintained sections below:
+ *  - @theme block: Registers all tokens as Tailwind utilities
+ *  - shadcn bridge: Maps semantic → shadcn names (--primary, --muted, etc.)
+ *  - Component tokens: Input, tabs, toast, destructive focus (use color-mix)
+ *  - Card borders: Status-coloured card outlines (simple primitive aliases
+ *    with manual light/dark swap — could move to semantics.json in future)
+ *  - Layout: Drawer sizes, overlay opacity, radius, shadows, motion
+ *  - External brands: Third-party service colours (Strava, RWGPS)
  */
 
 @theme inline {
@@ -49,11 +65,6 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
   --color-overlay: var(--overlay);
   --color-overlay-heavy: var(--overlay-heavy);
 
@@ -291,13 +302,6 @@
   --tabs-trigger-active-text: var(--text-on-primary);
   --destructive-focus-bg: color-mix(in srgb, var(--action-danger-default) 10%, transparent);
 
-  /* ── Charts ── */
-  --chart-1: var(--color-primary-500);
-  --chart-2: var(--color-error-500);
-  --chart-3: var(--color-secondary-500);
-  --chart-4: var(--color-neutral-400);
-  --chart-5: var(--color-info-500);
-
   /* ── Toast — opaque feedback backgrounds ── */
   --toast-success-bg: var(--feedback-success-bg);
   --toast-warning-bg: var(--feedback-warning-bg);
@@ -346,13 +350,6 @@
   --tabs-trigger-active-border: transparent;
   --tabs-trigger-active-text: var(--text-on-primary);
   --destructive-focus-bg: color-mix(in srgb, var(--action-danger-default) 20%, transparent);
-
-  /* ── Charts ── */
-  --chart-1: var(--color-primary-400);
-  --chart-2: var(--color-error-400);
-  --chart-3: var(--color-secondary-400);
-  --chart-4: var(--color-neutral-500);
-  --chart-5: var(--color-info-400);
 
   /* ── Layout ── */
   --overlay: color-mix(in srgb, var(--color-neutral-0) 5%, transparent);

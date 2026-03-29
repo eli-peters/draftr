@@ -8,6 +8,7 @@ import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { SectionHeading } from '@/components/ui/section-heading';
+import { toast } from 'sonner';
 import { addComment, editComment, deleteComment } from '@/lib/rides/actions';
 import { appContent } from '@/content/app';
 import { getInitials } from '@/lib/utils';
@@ -85,7 +86,8 @@ function CommentRow({
   function handleDelete() {
     if (!confirm(content.deleteConfirm)) return;
     startTransition(async () => {
-      await deleteComment(comment.id);
+      const result = await deleteComment(comment.id);
+      if (!result.success) toast.error(content.deleteFailed);
     });
   }
 

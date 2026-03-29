@@ -331,6 +331,7 @@ export const appContent = {
       cancelEdit: 'Cancel',
       delete: 'Delete',
       deleteConfirm: 'Delete this comment?',
+      deleteFailed: 'Failed to delete comment.',
       edited: '(edited)',
       charLimit: (current: number, max: number) => `${current}/${max}`,
       noComments: 'No comments yet. Be the first!',
@@ -683,14 +684,6 @@ export const appContent = {
       snowShowers: 'Snow Showers',
       thunderstorm: 'Thunderstorm',
       unknown: 'Unknown',
-    },
-  },
-
-  dev: {
-    toolbar: {
-      title: 'Dev Tools',
-      syncWeather: 'Sync Weather',
-      weatherSyncFailed: 'Weather sync failed',
     },
   },
 

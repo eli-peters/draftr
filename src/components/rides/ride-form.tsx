@@ -715,6 +715,7 @@ export function RideForm({
             <button
               type="button"
               onClick={() => setCoLeadersOpen((o) => !o)}
+              aria-expanded={coLeadersOpen}
               className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-muted/30 transition-colors"
             >
               <span className="text-sm font-medium text-foreground">

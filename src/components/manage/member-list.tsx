@@ -152,30 +152,30 @@ export function MemberList({ members, clubId, currentUserId }: MemberListProps) 
         left={
           <div className="flex flex-wrap gap-1.5">
             {roleFilterOptions.map((opt) => (
-              <Badge
-                key={opt.value}
-                variant={roleFilter === opt.value ? 'default' : 'outline'}
-                size="lg"
-                className="cursor-pointer"
-                onClick={() => setRoleFilter(opt.value)}
-              >
-                {opt.label}
-              </Badge>
+              <button key={opt.value} type="button" onClick={() => setRoleFilter(opt.value)}>
+                <Badge
+                  variant={roleFilter === opt.value ? 'default' : 'outline'}
+                  size="lg"
+                  className="cursor-pointer"
+                >
+                  {opt.label}
+                </Badge>
+              </button>
             ))}
           </div>
         }
         right={
           <div className="flex gap-1.5 shrink-0">
             {sortOptions.map((opt) => (
-              <Badge
-                key={opt.value}
-                variant={sortBy === opt.value ? 'default' : 'outline'}
-                size="lg"
-                className="cursor-pointer"
-                onClick={() => setSortBy(opt.value)}
-              >
-                {opt.label}
-              </Badge>
+              <button key={opt.value} type="button" onClick={() => setSortBy(opt.value)}>
+                <Badge
+                  variant={sortBy === opt.value ? 'default' : 'outline'}
+                  size="lg"
+                  className="cursor-pointer"
+                >
+                  {opt.label}
+                </Badge>
+              </button>
             ))}
           </div>
         }
