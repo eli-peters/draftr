@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { format } from 'date-fns';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -39,7 +38,6 @@ interface ScheduleCardProps {
 
 export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
   const rideDate = parseLocalDate(ride.ride_date);
-  const relativeDay = getRelativeDay(rideDate, dateFormats.dayShort);
   const isCompleted = ride.signup_status === SignupStatus.COMPLETED;
   const isCancelled = ride.signup_status === SignupStatus.CANCELLED;
   const isWaitlisted = ride.signup_status === SignupStatus.WAITLISTED;
@@ -108,7 +106,7 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
       <Link href={routes.ride(ride.id)} className="block">
         <CardContentSection
           className="px-5 pt-4 pb-5"
-          date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
+          date={getRelativeDay(rideDate, dateFormats.dayShort, true)}
           time={formatTime(ride.start_time)}
           title={ride.title}
           paceGroupName={ride.pace_group_name}

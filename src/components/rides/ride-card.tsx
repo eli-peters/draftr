@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { format } from 'date-fns';
 import { Card } from '@/components/ui/card';
 import {
   CardContentSection,
@@ -64,12 +63,11 @@ export function RideCard({ ride, variant = 'rides' }: RideCardProps) {
 
 function HomeLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boolean }) {
   const rideDate = parseLocalDate(ride.ride_date);
-  const relativeDay = getRelativeDay(rideDate, dateFormats.dayShort);
 
   return (
     <CardContentSection
       className={cn('px-5 pt-5 pb-5', hasBanner && 'pt-4')}
-      date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
+      date={getRelativeDay(rideDate, dateFormats.dayShort, true)}
       time={formatTime(ride.start_time)}
       isRecurring={!!ride.template_id}
       title={ride.title}
@@ -90,7 +88,6 @@ function HomeLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boo
 
 function RidesLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boolean }) {
   const rideDate = parseLocalDate(ride.ride_date);
-  const relativeDay = getRelativeDay(rideDate, dateFormats.dayShort);
   const availability = getRideAvailability(ride, ride.signup_count);
 
   return (
@@ -98,7 +95,7 @@ function RidesLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: bo
       {/* Content section */}
       <CardContentSection
         className={cn('px-5 pt-5 pb-5', hasBanner && 'pt-4')}
-        date={`${relativeDay}, ${format(rideDate, dateFormats.monthDay)}`}
+        date={getRelativeDay(rideDate, dateFormats.dayShort, true)}
         time={formatTime(ride.start_time)}
         isRecurring={!!ride.template_id}
         title={ride.title}
