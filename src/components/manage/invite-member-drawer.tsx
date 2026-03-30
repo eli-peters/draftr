@@ -5,7 +5,13 @@ import { CheckCircle, EnvelopeSimple, Copy, Check } from '@phosphor-icons/react/
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { inviteMember } from '@/lib/auth/actions';
@@ -161,10 +167,25 @@ export function InviteMemberDrawer({ clubId }: InviteMemberDrawerProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor="invite-role">{inviteContent.roleLabel}</Label>
-                  <Select id="invite-role" name="role" defaultValue="rider">
-                    <option value="rider">{content.members.roles.rider}</option>
-                    <option value="ride_leader">{content.members.roles.ride_leader}</option>
-                    <option value="admin">{content.members.roles.admin}</option>
+                  <Select
+                    name="role"
+                    defaultValue="rider"
+                    items={{
+                      rider: content.members.roles.rider,
+                      ride_leader: content.members.roles.ride_leader,
+                      admin: content.members.roles.admin,
+                    }}
+                  >
+                    <SelectTrigger id="invite-role">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="rider">{content.members.roles.rider}</SelectItem>
+                      <SelectItem value="ride_leader">
+                        {content.members.roles.ride_leader}
+                      </SelectItem>
+                      <SelectItem value="admin">{content.members.roles.admin}</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
 

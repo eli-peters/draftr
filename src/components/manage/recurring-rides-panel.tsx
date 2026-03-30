@@ -5,7 +5,13 @@ import { Plus, Trash, Pause, Play, ArrowClockwise } from '@phosphor-icons/react/
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
 import { TimePicker } from '@/components/ui/time-picker';
 import { Badge } from '@/components/ui/badge';
@@ -238,13 +244,21 @@ export function RecurringRidesPanel({
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="rc-day">{rc.dayOfWeek[0].slice(0, 3)}... *</Label>
-                  <Select id="rc-day" name="day_of_week" required>
-                    <option value="">Day...</option>
-                    {rc.dayOfWeek.map((day, i) => (
-                      <option key={i} value={i}>
-                        {day}
-                      </option>
-                    ))}
+                  <Select
+                    name="day_of_week"
+                    required
+                    items={Object.fromEntries(rc.dayOfWeek.map((day, i) => [String(i), day]))}
+                  >
+                    <SelectTrigger id="rc-day">
+                      <SelectValue placeholder="Day..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {rc.dayOfWeek.map((day, i) => (
+                        <SelectItem key={i} value={String(i)}>
+                          {day}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
@@ -260,10 +274,24 @@ export function RecurringRidesPanel({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="rc-recurrence">{rc.recurrence.weekly} *</Label>
-                  <Select id="rc-recurrence" name="recurrence" required>
-                    <option value="weekly">{rc.recurrence.weekly}</option>
-                    <option value="biweekly">{rc.recurrence.biweekly}</option>
-                    <option value="monthly">{rc.recurrence.monthly}</option>
+                  <Select
+                    name="recurrence"
+                    required
+                    defaultValue="weekly"
+                    items={{
+                      weekly: rc.recurrence.weekly,
+                      biweekly: rc.recurrence.biweekly,
+                      monthly: rc.recurrence.monthly,
+                    }}
+                  >
+                    <SelectTrigger id="rc-recurrence">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="weekly">{rc.recurrence.weekly}</SelectItem>
+                      <SelectItem value="biweekly">{rc.recurrence.biweekly}</SelectItem>
+                      <SelectItem value="monthly">{rc.recurrence.monthly}</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
               </div>
@@ -292,24 +320,38 @@ export function RecurringRidesPanel({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="rc-location">{form.meetingLocation}</Label>
-                  <Select id="rc-location" name="meeting_location_id">
-                    <option value="">{form.selectLocation}</option>
-                    {meetingLocations.map((loc) => (
-                      <option key={loc.id} value={loc.id}>
-                        {loc.name}
-                      </option>
-                    ))}
+                  <Select
+                    name="meeting_location_id"
+                    items={Object.fromEntries(meetingLocations.map((loc) => [loc.id, loc.name]))}
+                  >
+                    <SelectTrigger id="rc-location">
+                      <SelectValue placeholder={form.selectLocation} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {meetingLocations.map((loc) => (
+                        <SelectItem key={loc.id} value={loc.id}>
+                          {loc.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="rc-pace">{form.paceGroup}</Label>
-                  <Select id="rc-pace" name="pace_group_id">
-                    <option value="">{form.selectPace}</option>
-                    {paceGroups.map((pg) => (
-                      <option key={pg.id} value={pg.id}>
-                        {pg.name}
-                      </option>
-                    ))}
+                  <Select
+                    name="pace_group_id"
+                    items={Object.fromEntries(paceGroups.map((pg) => [pg.id, pg.name]))}
+                  >
+                    <SelectTrigger id="rc-pace">
+                      <SelectValue placeholder={form.selectPace} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {paceGroups.map((pg) => (
+                        <SelectItem key={pg.id} value={pg.id}>
+                          {pg.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 </div>
               </div>

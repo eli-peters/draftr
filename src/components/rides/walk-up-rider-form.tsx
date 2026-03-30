@@ -2,7 +2,13 @@
 
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
 import { UserPlus } from '@phosphor-icons/react/dist/ssr';
 import { appContent } from '@/content/app';
 import { addWalkUpRider } from '@/lib/rides/actions';
@@ -50,13 +56,21 @@ export function WalkUpRiderForm({
   return (
     <div className="flex items-end gap-3">
       <div className="flex-1">
-        <Select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
-          <option value="">{ridesContent.edit.walkUpPlaceholder}</option>
-          {availableMembers.map((m) => (
-            <option key={m.user_id} value={m.user_id}>
-              {m.name}
-            </option>
-          ))}
+        <Select
+          value={selectedUserId}
+          onValueChange={setSelectedUserId}
+          items={Object.fromEntries(availableMembers.map((m) => [m.user_id, m.name]))}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder={ridesContent.edit.walkUpPlaceholder} />
+          </SelectTrigger>
+          <SelectContent>
+            {availableMembers.map((m) => (
+              <SelectItem key={m.user_id} value={m.user_id}>
+                {m.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
       </div>
       <Button

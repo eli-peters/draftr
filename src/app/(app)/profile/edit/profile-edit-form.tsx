@@ -8,7 +8,13 @@ import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { updateProfile, uploadAvatar, removeAvatar } from '@/lib/profile/actions';
@@ -153,16 +159,20 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
       <div className="space-y-2">
         <Label htmlFor="preferred_pace_group">{auth.setupProfile.paceLabel}</Label>
         <Select
-          id="preferred_pace_group"
           name="preferred_pace_group"
-          defaultValue={profile.preferred_pace_group}
+          defaultValue={profile.preferred_pace_group || undefined}
         >
-          <option value="">{auth.setupProfile.noPreference}</option>
-          {paceGroups.map((pg) => (
-            <option key={pg.id} value={pg.name}>
-              {pg.name}
-            </option>
-          ))}
+          <SelectTrigger id="preferred_pace_group">
+            <SelectValue placeholder={auth.setupProfile.noPreference} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">{auth.setupProfile.noPreference}</SelectItem>
+            {paceGroups.map((pg) => (
+              <SelectItem key={pg.id} value={pg.name}>
+                {pg.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
       </div>
 

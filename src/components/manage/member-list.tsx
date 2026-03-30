@@ -6,7 +6,13 @@ import { format } from 'date-fns';
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { SectionHeading } from '@/components/ui/section-heading';
@@ -298,15 +304,21 @@ function MemberRow({
 
           {!isInactive && !isPending && onRoleChange && !isSelf && (
             <Select
+              size="sm"
               value={member.role}
-              onChange={(e) => onRoleChange(member.user_id, e.target.value as MemberRole)}
-              selectSize="sm"
+              onValueChange={(v) => onRoleChange(member.user_id, v as MemberRole)}
+              items={Object.fromEntries(roleOptions.map((opt) => [opt.value, opt.label]))}
             >
-              {roleOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {roleOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           )}
 

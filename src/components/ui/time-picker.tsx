@@ -4,7 +4,6 @@ import { Clock } from '@phosphor-icons/react/dist/ssr';
 import { useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface TimePickerProps {
@@ -73,20 +72,15 @@ function TimePicker({
       {name && <input type="hidden" name={name} value={value ?? ''} />}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
-          render={
-            <Button
-              id={id}
-              variant="outline"
-              disabled={disabled}
-              className={cn(
-                'h-12 w-full justify-start border-input bg-surface-default text-left font-normal hover:bg-surface-default aria-expanded:bg-surface-default',
-                !value && 'text-muted-foreground',
-                className,
-              )}
-            />
-          }
+          id={id}
+          disabled={disabled}
+          className={cn(
+            'flex h-12 w-full items-center gap-2 rounded-lg border border-input bg-surface-default px-3 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+            !value && 'text-muted-foreground',
+            className,
+          )}
         >
-          <Clock className="size-4 text-muted-foreground" />
+          <Clock className="size-4 shrink-0 text-muted-foreground" />
           {value ? <span>{formatTimeDisplay(value)}</span> : <span>{placeholder}</span>}
         </PopoverTrigger>
         <PopoverContent className="w-(--anchor-width) gap-0 overflow-hidden p-1.5" align="start">

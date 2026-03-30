@@ -6,10 +6,7 @@ import Link from 'next/link';
 import {
   ArrowsClockwise,
   MapTrifold,
-  CheckCircle,
-  ArrowRight,
   ArrowSquareOut,
-  LinkSimple,
   MapPin,
   Check,
   Bicycle,
@@ -18,14 +15,19 @@ import {
   GearSix,
   PencilSimple,
   Prohibit,
-  SpinnerGap,
 } from '@phosphor-icons/react/dist/ssr';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -333,6 +335,7 @@ export function RideForm({
           if (data.route) {
             applyRouteData(data.route as ImportableRoute);
             toast.success(appContent.rides.importRoute.imported);
+            setImportOpen(false);
             return;
           }
         }
@@ -342,6 +345,7 @@ export function RideForm({
         setIsFetchingRoute(false);
       }
       setImportedRouteName(form.routeLinkAdded);
+      setImportOpen(false);
       return;
     }
 
@@ -357,6 +361,7 @@ export function RideForm({
           if (data.route) {
             applyRouteData(data.route as ImportableRoute);
             toast.success(appContent.rides.importRoute.imported);
+            setImportOpen(false);
             return;
           }
         }
@@ -368,6 +373,7 @@ export function RideForm({
 
       // Fallback: URL stored as link-only, show preview nudge
       setImportedRouteName(form.routeLinkAdded);
+      setImportOpen(false);
       return;
     }
 
@@ -385,6 +391,7 @@ export function RideForm({
       if (data.route) {
         applyRouteData(data.route as ImportableRoute);
         toast.success(appContent.rides.importRoute.imported);
+        setImportOpen(false);
       }
     } catch {
       setFetchRouteError(form.fetchRouteError);
@@ -585,106 +592,20 @@ export function RideForm({
                   )}
                 </div>
               )
-            ) : connectedServices.length > 0 ? (
-              /* Connected — show import drawer CTA + paste URL fallback */
-              <div className="space-y-4">
-                <div className="rounded-xl border border-primary/20 bg-primary/5 p-6 flex flex-col items-center gap-3 text-center">
-                  <MapTrifold className="size-8 text-primary" weight="duotone" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{form.importHeading}</p>
-                    <p className="text-[0.8125rem] text-muted-foreground mt-0.5">
-                      {form.importDescription}
-                    </p>
-                  </div>
-                  <Button type="button" onClick={() => setImportOpen(true)}>
-                    <MapTrifold className="mr-1.5 size-4" />
-                    {appContent.rides.importRoute.button}
-                  </Button>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-px flex-1 bg-border" />
-                  <span className="text-xs text-muted-foreground">{form.orDivider}</span>
-                  <div className="h-px flex-1 bg-border" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="paste_route_url">{form.pasteRouteLink}</Label>
-                  <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-start">
-                    <div className="flex-1 space-y-1.5">
-                      <Input
-                        ref={pasteUrlRef}
-                        id="paste_route_url"
-                        type="url"
-                        defaultValue={routeUrl}
-                        placeholder={form.pasteRoutePlaceholder}
-                        disabled={isFetchingRoute}
-                      />
-                      {fetchRouteError && (
-                        <p className="text-xs text-destructive">{fetchRouteError}</p>
-                      )}
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={isFetchingRoute}
-                      onClick={handlePasteUrlBlur}
-                      className="shrink-0 h-12 gap-1.5 w-full sm:w-auto"
-                    >
-                      {isFetchingRoute ? (
-                        <SpinnerGap className="size-4 animate-spin" />
-                      ) : (
-                        <>
-                          <LinkSimple className="size-4" />
-                          {form.addRouteButton}
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </div>
             ) : (
-              /* Not connected — connect prompt + paste URL */
-              <div className="space-y-5">
-                <Link
-                  href={routes.profileEdit}
-                  className="flex items-center justify-between group rounded-xl border border-primary/20 bg-primary/5 px-4 py-3.5 hover:bg-primary/10 transition-colors"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <MapTrifold className="size-5 text-primary" weight="duotone" />
-                    <p className="text-sm font-medium text-foreground">{form.connectPrompt}</p>
-                  </div>
-                  <ArrowRight className="size-4 text-primary" />
-                </Link>
-                <div className="space-y-2">
-                  <Label htmlFor="paste_route_url">{form.pasteRouteLink}</Label>
-                  <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-start">
-                    <Input
-                      ref={pasteUrlRef}
-                      id="paste_route_url"
-                      type="url"
-                      defaultValue={routeUrl}
-                      placeholder={form.pasteRoutePlaceholder}
-                      disabled={isFetchingRoute}
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={isFetchingRoute}
-                      onClick={handlePasteUrlBlur}
-                      className="shrink-0 h-12 gap-1.5 w-full sm:w-auto"
-                    >
-                      {isFetchingRoute ? (
-                        <SpinnerGap className="size-4 animate-spin" />
-                      ) : (
-                        <>
-                          <LinkSimple className="size-4" />
-                          {form.addRouteButton}
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                  {fetchRouteError && <p className="text-xs text-destructive">{fetchRouteError}</p>}
+              /* No route yet — single CTA to open the unified drawer */
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-6 flex flex-col items-center gap-3 text-center">
+                <MapTrifold className="size-8 text-primary" weight="duotone" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">{form.importHeading}</p>
+                  <p className="text-[0.8125rem] text-muted-foreground mt-1">
+                    {form.importDescription}
+                  </p>
                 </div>
+                <Button type="button" onClick={() => setImportOpen(true)}>
+                  <MapTrifold className="mr-2 size-4" />
+                  {appContent.rides.importRoute.button}
+                </Button>
               </div>
             )}
           </div>
@@ -767,19 +688,21 @@ export function RideForm({
                     {form.paceGroup}
                   </Label>
                   <Select
-                    id="pace_group_id"
                     name="pace_group_id"
                     required
-                    defaultValue={initialData?.pace_group_id}
+                    defaultValue={initialData?.pace_group_id ?? undefined}
+                    items={Object.fromEntries(paceGroups.map((pg) => [pg.id, pg.name]))}
                   >
-                    <option value="" disabled>
-                      {form.selectPace}
-                    </option>
-                    {paceGroups.map((pg) => (
-                      <option key={pg.id} value={pg.id}>
-                        {pg.name}
-                      </option>
-                    ))}
+                    <SelectTrigger id="pace_group_id">
+                      <SelectValue placeholder={form.selectPace} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {paceGroups.map((pg) => (
+                        <SelectItem key={pg.id} value={pg.id}>
+                          {pg.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                   <div className="flex items-center justify-end gap-3 pt-2">
                     <Label htmlFor="is_drop_ride" className="text-sm text-foreground">
@@ -974,10 +897,23 @@ export function RideForm({
                         <Label htmlFor="recurrence" className="text-sm text-foreground">
                           {ridesContent.recurring.frequency}
                         </Label>
-                        <Select id="recurrence" name="recurrence" defaultValue="weekly">
-                          <option value="weekly">{rc.recurrence.weekly}</option>
-                          <option value="biweekly">{rc.recurrence.biweekly}</option>
-                          <option value="monthly">{rc.recurrence.monthly}</option>
+                        <Select
+                          name="recurrence"
+                          defaultValue="weekly"
+                          items={{
+                            weekly: rc.recurrence.weekly,
+                            biweekly: rc.recurrence.biweekly,
+                            monthly: rc.recurrence.monthly,
+                          }}
+                        >
+                          <SelectTrigger id="recurrence">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="weekly">{rc.recurrence.weekly}</SelectItem>
+                            <SelectItem value="biweekly">{rc.recurrence.biweekly}</SelectItem>
+                            <SelectItem value="monthly">{rc.recurrence.monthly}</SelectItem>
+                          </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-1">
@@ -985,16 +921,27 @@ export function RideForm({
                           {ridesContent.recurring.endCondition}
                         </Label>
                         <Select
-                          id="recurring_end_type"
                           name="recurring_end_type"
                           value={recurringEndType}
-                          onChange={(e) =>
-                            setRecurringEndType(e.target.value as 'never' | 'after' | 'on_date')
+                          onValueChange={(v) =>
+                            setRecurringEndType(v as 'never' | 'after' | 'on_date')
                           }
+                          items={{
+                            never: ridesContent.recurring.endNever,
+                            after: ridesContent.recurring.endAfter,
+                            on_date: ridesContent.recurring.endOnDate,
+                          }}
                         >
-                          <option value="never">{ridesContent.recurring.endNever}</option>
-                          <option value="after">{ridesContent.recurring.endAfter}</option>
-                          <option value="on_date">{ridesContent.recurring.endOnDate}</option>
+                          <SelectTrigger id="recurring_end_type">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="never">{ridesContent.recurring.endNever}</SelectItem>
+                            <SelectItem value="after">{ridesContent.recurring.endAfter}</SelectItem>
+                            <SelectItem value="on_date">
+                              {ridesContent.recurring.endOnDate}
+                            </SelectItem>
+                          </SelectContent>
                         </Select>
                       </div>
                     </div>
@@ -1039,25 +986,31 @@ export function RideForm({
         {/* ── Actions ──────────────────────────────────────────────── */}
         <div>
           {error && <p className="text-sm text-destructive mb-4">{error}</p>}
-          <div className="flex gap-3">
-            <Button type="submit" disabled={isPending}>
-              {isPending ? common.loading : isEdit ? common.save : ridesContent.create.submitButton}
-            </Button>
-            <Button type="button" variant="outline" onClick={() => router.back()}>
+          <div className="flex flex-col-reverse items-center gap-3 md:flex-row md:justify-end">
+            <button
+              type="button"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => router.back()}
+            >
               {common.cancel}
+            </button>
+            <Button type="submit" disabled={isPending} className="w-full md:w-auto">
+              {isPending ? common.loading : isEdit ? common.save : ridesContent.create.submitButton}
             </Button>
           </div>
         </div>
 
-        {/* Route import drawer — always rendered for connected services */}
-        {connectedServices.length > 0 && (
-          <RouteImportDrawer
-            open={importOpen}
-            onOpenChange={setImportOpen}
-            connectedServices={connectedServices}
-            onSelect={handleRouteImport}
-          />
-        )}
+        {/* Route import drawer */}
+        <RouteImportDrawer
+          open={importOpen}
+          onOpenChange={setImportOpen}
+          connectedServices={connectedServices}
+          onSelect={handleRouteImport}
+          pasteUrlRef={pasteUrlRef}
+          isFetchingRoute={isFetchingRoute}
+          fetchRouteError={fetchRouteError}
+          onPasteUrl={handlePasteUrlBlur}
+        />
 
         {/* Location picker drawer */}
         <LocationPickerDrawer

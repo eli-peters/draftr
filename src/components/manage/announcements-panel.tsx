@@ -10,7 +10,13 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { ContentToolbar } from '@/components/layout/content-toolbar';
@@ -246,13 +252,21 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                 <Label>{content.announcements.typeLabel}</Label>
                 <Select
                   value={announcementType}
-                  onChange={(e) => setAnnouncementType(e.target.value as AnnouncementType)}
+                  onValueChange={(v) => setAnnouncementType(v as AnnouncementType)}
+                  items={Object.fromEntries(
+                    announcementTypes.map((t) => [t, content.announcements.typeOptions[t]]),
+                  )}
                 >
-                  {announcementTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {content.announcements.typeOptions[type]}
-                    </option>
-                  ))}
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {announcementTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {content.announcements.typeOptions[type]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
               <div className="flex items-center justify-between">

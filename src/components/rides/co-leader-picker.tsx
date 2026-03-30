@@ -4,7 +4,13 @@ import { useState, useTransition } from 'react';
 import { X, UserPlus } from '@phosphor-icons/react/dist/ssr';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { appContent } from '@/content/app';
 import { addCoLeader, removeCoLeader } from '@/lib/rides/actions';
@@ -81,13 +87,21 @@ export function CoLeaderPicker({ rideId, coLeaders, eligibleLeaders }: CoLeaderP
       {available.length > 0 && (
         <div className="flex items-end gap-3">
           <div className="flex-1">
-            <Select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
-              <option value="">{edit.coLeaderPlaceholder}</option>
-              {available.map((l) => (
-                <option key={l.user_id} value={l.user_id}>
-                  {l.name}
-                </option>
-              ))}
+            <Select
+              value={selectedUserId}
+              onValueChange={setSelectedUserId}
+              items={Object.fromEntries(available.map((l) => [l.user_id, l.name]))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={edit.coLeaderPlaceholder} />
+              </SelectTrigger>
+              <SelectContent>
+                {available.map((l) => (
+                  <SelectItem key={l.user_id} value={l.user_id}>
+                    {l.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           </div>
           <Button
