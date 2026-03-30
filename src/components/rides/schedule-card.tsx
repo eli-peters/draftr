@@ -30,13 +30,14 @@ type ScheduleAction = 'cancel-signup' | 'leave-waitlist';
 interface ScheduleCardProps {
   ride: UserRideSignup;
   onAction?: (action: ScheduleAction, rideId: string) => void;
+  timezone: string;
 }
 
 // ---------------------------------------------------------------------------
 // ScheduleCard
 // ---------------------------------------------------------------------------
 
-export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
+export function ScheduleCard({ ride, onAction, timezone }: ScheduleCardProps) {
   const rideDate = parseLocalDate(ride.ride_date);
   const isCompleted = ride.signup_status === SignupStatus.COMPLETED;
   const isCancelled = ride.signup_status === SignupStatus.CANCELLED;
@@ -52,9 +53,10 @@ export function ScheduleCard({ ride, onAction }: ScheduleCardProps) {
       capacity: ride.capacity,
     },
     ride.signup_count,
+    timezone,
   );
 
-  const lifecycle = getRideLifecycle(ride.ride_date, ride.start_time, ride.end_time);
+  const lifecycle = getRideLifecycle(ride.ride_date, ride.start_time, ride.end_time, timezone);
 
   // Resolve unified card state
   const cardState = resolveCardState({

@@ -32,9 +32,10 @@ type StatusFilter = 'upcoming' | 'past';
 interface MyScheduleSectionsProps {
   upcoming: UserRideSignup[];
   past: UserRideSignup[];
+  timezone: string;
 }
 
-export function MyScheduleSections({ upcoming, past }: MyScheduleSectionsProps) {
+export function MyScheduleSections({ upcoming, past, timezone }: MyScheduleSectionsProps) {
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('upcoming');
 
@@ -105,7 +106,7 @@ export function MyScheduleSections({ upcoming, past }: MyScheduleSectionsProps) 
       {visibleRides.length > 0 ? (
         <div className="flex flex-col gap-4">
           {visibleRides.map((ride) => (
-            <ScheduleCard key={ride.id} ride={ride} onAction={handleAction} />
+            <ScheduleCard key={ride.id} ride={ride} onAction={handleAction} timezone={timezone} />
           ))}
         </div>
       ) : (

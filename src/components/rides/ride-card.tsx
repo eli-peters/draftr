@@ -5,7 +5,6 @@ import {
   CardFooterSection,
   StateCardBanner,
   RiderAvatarGroup,
-  LeaderRow,
   getCardStateStyle,
   resolveCardState,
 } from '@/components/rides/ride-card-parts';
@@ -24,10 +23,11 @@ import type { RideWithDetails } from '@/types/database';
 interface RideCardProps {
   ride: RideWithDetails;
   variant?: 'home' | 'rides';
+  timezone: string;
 }
 
-export function RideCard({ ride, variant = 'rides' }: RideCardProps) {
-  const lifecycle = getRideLifecycle(ride.ride_date, ride.start_time, ride.end_time);
+export function RideCard({ ride, variant = 'rides', timezone }: RideCardProps) {
+  const lifecycle = getRideLifecycle(ride.ride_date, ride.start_time, ride.end_time, timezone);
   const cardState = resolveCardState({
     rideStatus: ride.status,
     signupStatus: ride.current_user_signup_status,
@@ -51,7 +51,7 @@ export function RideCard({ ride, variant = 'rides' }: RideCardProps) {
         {isHome ? (
           <HomeLayout ride={ride} hasBanner={!!stateStyle.bannerBg} />
         ) : (
-          <RidesLayout ride={ride} hasBanner={!!stateStyle.bannerBg} />
+          <RidesLayout ride={ride} hasBanner={!!stateStyle.bannerBg} timezone={timezone} />
         )}
       </Card>
     </Link>
@@ -87,9 +87,17 @@ function HomeLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boo
 // Rides Layout — rich / decision-making (two-section: content + footer)
 // ---------------------------------------------------------------------------
 
-function RidesLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boolean }) {
+function RidesLayout({
+  ride,
+  hasBanner,
+  timezone,
+}: {
+  ride: RideWithDetails;
+  hasBanner: boolean;
+  timezone: string;
+}) {
   const rideDate = parseLocalDate(ride.ride_date);
-  const availability = getRideAvailability(ride, ride.signup_count);
+  const availability = getRideAvailability(ride, ride.signup_count, timezone);
 
   return (
     <>
@@ -109,13 +117,6 @@ function RidesLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: bo
         locationName={ride.start_location_name ?? ride.meeting_location?.name ?? null}
         weather={ride.weather}
       />
-
-      {/* Leader row */}
-      {(ride.creator || ride.co_leaders.length > 0) && (
-        <div className="px-5 pb-2">
-          <LeaderRow creator={ride.creator} coLeaders={ride.co_leaders} />
-        </div>
-      )}
 
       {/* Footer section */}
       <CardFooterSection>

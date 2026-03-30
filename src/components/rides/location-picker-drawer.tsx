@@ -19,6 +19,7 @@ import { useIsMobile } from '@/hooks/use-is-mobile';
 import { reverseGeocode } from '@/lib/maps/reverse-geocode';
 import { saveMeetingLocation } from '@/lib/rides/actions';
 import { appContent } from '@/content/app';
+import { routes } from '@/config/routes';
 import type { MeetingLocation } from '@/components/rides/ride-form';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
@@ -102,7 +103,7 @@ export function LocationPickerDrawer({
 
     searchTimeoutRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/places/autocomplete?input=${encodeURIComponent(value)}`);
+        const res = await fetch(`${routes.placesAutocomplete}?input=${encodeURIComponent(value)}`);
         if (res.ok) {
           const data = await res.json();
           setPredictions(data.predictions ?? []);
@@ -120,7 +121,7 @@ export function LocationPickerDrawer({
 
     try {
       const res = await fetch(
-        `/api/places/details?placeId=${encodeURIComponent(prediction.placeId)}`,
+        `${routes.placesDetails}?placeId=${encodeURIComponent(prediction.placeId)}`,
       );
       if (res.ok) {
         const data = await res.json();

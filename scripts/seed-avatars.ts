@@ -1,7 +1,7 @@
 /**
  * One-off script: seed avatar photos for existing users.
- * Downloads portraits from randomuser.me and uploads them to the Supabase
- * avatars storage bucket via the admin (service-role) client.
+ * Downloads cycling-themed portraits from Pexels and uploads them to the
+ * Supabase avatars storage bucket via the admin (service-role) client.
  *
  * Usage: npx tsx scripts/seed-avatars.ts
  */
@@ -17,38 +17,42 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-// Map of user IDs to the randomuser.me portrait path they should get.
+/** Build a Pexels CDN URL for a given photo ID, cropped to 400×400. */
+function pexelsUrl(photoId: number): string {
+  return `https://images.pexels.com/photos/${photoId}/pexels-photo-${photoId}.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop`;
+}
+
+// Map of user IDs to Pexels photo IDs (cycling-themed portraits).
 // ~70% of users get a photo — the rest keep initials-only avatars.
-// Portrait paths: men/0-99, women/0-99
-const avatarAssignments: Record<string, string> = {
-  // Sarah Chen
-  'a0000001-0000-0000-0000-000000000001': 'women/44',
-  // Marcus Williams
-  'a0000001-0000-0000-0000-000000000002': 'men/32',
-  // Priya Sharma
-  'a0000001-0000-0000-0000-000000000003': 'women/68',
-  // David Kim
-  'a0000001-0000-0000-0000-000000000004': 'men/75',
-  // Emma Thompson
-  'a0000001-0000-0000-0000-000000000005': 'women/17',
-  // Omar Hassan
-  'a0000001-0000-0000-0000-000000000006': 'men/54',
-  // Jake Morrison
-  'a0000001-0000-0000-0000-000000000008': 'men/11',
-  // Aisha Patel
-  'a0000001-0000-0000-0000-000000000009': 'women/91',
-  // Nina Rodriguez
-  'a0000001-0000-0000-0000-000000000011': 'women/28',
-  // Maya Johnson
-  'a0000001-0000-0000-0000-000000000013': 'women/55',
-  // Ryan O'Brien
-  'a0000001-0000-0000-0000-000000000014': 'men/67',
-  // Ben Nguyen
-  'a0000001-0000-0000-0000-000000000016': 'men/41',
-  // Alex Turner (admin)
-  '5e00600f-7974-4051-93d9-470b6220ea30': 'men/22',
-  // James Chiu
-  '4b92398d-d430-4943-83de-101bcd90dec1': 'men/86',
+const avatarAssignments: Record<string, number> = {
+  // Sarah Chen — woman riding road bike
+  'a0000001-0000-0000-0000-000000000001': 17239253,
+  // Marcus Williams — man with helmet and sunglasses on bike
+  'a0000001-0000-0000-0000-000000000002': 19431254,
+  // Priya Sharma — woman posing on bicycle
+  'a0000001-0000-0000-0000-000000000003': 8975721,
+  // David Kim — closeup of athlete on bicycle
+  'a0000001-0000-0000-0000-000000000004': 20497860,
+  // Emma Thompson — woman riding bicycle (race)
+  'a0000001-0000-0000-0000-000000000005': 8056390,
+  // Omar Hassan — man with green helmet riding bicycle
+  'a0000001-0000-0000-0000-000000000006': 11049373,
+  // Jake Morrison — biker with helmet on
+  'a0000001-0000-0000-0000-000000000008': 5807803,
+  // Aisha Patel — person riding bicycle
+  'a0000001-0000-0000-0000-000000000009': 1504207,
+  // Nina Rodriguez — side view of person on road bike
+  'a0000001-0000-0000-0000-000000000011': 13799203,
+  // Maya Johnson — cyclist with helmet posing on bike
+  'a0000001-0000-0000-0000-000000000013': 15105014,
+  // Ryan O'Brien — man riding red bicycle at sunset
+  'a0000001-0000-0000-0000-000000000014': 7959927,
+  // Ben Nguyen — man riding bicycle (sport)
+  'a0000001-0000-0000-0000-000000000016': 12838,
+  // Alex Turner (admin) — biker wearing helmet
+  '5e00600f-7974-4051-93d9-470b6220ea30': 5836902,
+  // James Chiu — man riding bike in forest
+  '4b92398d-d430-4943-83de-101bcd90dec1': 12328608,
 };
 
 // Users WITHOUT photos (keep initials):
@@ -62,9 +66,9 @@ const avatarAssignments: Record<string, string> = {
 async function seedAvatars() {
   console.log(`Seeding avatars for ${Object.keys(avatarAssignments).length} users...\n`);
 
-  for (const [userId, portrait] of Object.entries(avatarAssignments)) {
-    const url = `https://randomuser.me/api/portraits/${portrait}.jpg`;
-    process.stdout.write(`  ${portrait}... `);
+  for (const [userId, photoId] of Object.entries(avatarAssignments)) {
+    const url = pexelsUrl(photoId);
+    process.stdout.write(`  pexels:${photoId}... `);
 
     try {
       const response = await fetch(url);

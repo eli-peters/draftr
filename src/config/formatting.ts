@@ -78,6 +78,9 @@ export function formatDuration(startTime: string, endTime: string | null): strin
   return `${h}${units.hours} ${m}${units.minutes}`;
 }
 
+/** Hex color for map pins (primary brand hue, without # prefix for Mapbox URLs). */
+export const MAP_PIN_HEX = 'DE0387';
+
 /** Get badge variant for a pace group by sort order (1–6). */
 export function getPaceBadgeVariant(sortOrder: number): BadgeVariant {
   const slot = Math.min(Math.max(sortOrder, 1), 6);

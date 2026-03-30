@@ -20,6 +20,7 @@ interface FilterableRideFeedProps {
   emptyTitle: string;
   emptyDescription: string;
   cardVariant?: 'home' | 'rides';
+  timezone: string;
 }
 
 export function FilterableRideFeed({
@@ -29,6 +30,7 @@ export function FilterableRideFeed({
   emptyTitle,
   emptyDescription,
   cardVariant = 'rides',
+  timezone,
 }: FilterableRideFeedProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -69,7 +71,7 @@ export function FilterableRideFeed({
       {filtered.length > 0 ? (
         <div className="flex flex-col gap-4">
           {filtered.map((ride) => (
-            <RideCard key={ride.id} ride={ride} variant={cardVariant} />
+            <RideCard key={ride.id} ride={ride} variant={cardVariant} timezone={timezone} />
           ))}
         </div>
       ) : (

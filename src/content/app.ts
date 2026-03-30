@@ -359,11 +359,28 @@ export const appContent = {
       heading: 'Pickup Points',
     },
     importRoute: {
-      button: 'Import Route',
-      heading: 'Import a Route',
-      description: 'Choose a route from your connected services to pre-fill ride details.',
+      button: 'Add Route',
+      heading: 'Add a Route',
       routesTab: 'Routes',
       activitiesTab: 'Activities',
+      modes: {
+        strava: {
+          heading: 'Strava',
+          connected: 'Browse your saved routes and recent rides.',
+          notConnected: 'Connect your Strava account to browse routes.',
+          connectButton: 'Connect Strava',
+        },
+        ridewithgps: {
+          heading: 'Ride with GPS',
+          connected: 'Browse your saved routes and recent trips.',
+          notConnected: 'Connect your Ride with GPS account to browse routes.',
+          connectButton: 'Connect Ride with GPS',
+        },
+        paste: {
+          heading: 'Paste a link',
+          description: 'Strava, Ride with GPS, Komoot, or any route URL.',
+        },
+      },
       noConnections: {
         title: 'No services connected',
         description: 'Connect Strava or Ride with GPS from your profile to import routes.',
@@ -383,6 +400,8 @@ export const appContent = {
       errorDisconnected: (name: string) =>
         `Your ${name} connection has expired. Please reconnect from your profile.`,
       imported: 'Route imported \u2014 adjust the details and save.',
+      searchPlaceholder: 'Search routes\u2026',
+      noSearchResults: 'No matching routes',
     },
   },
 

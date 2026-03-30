@@ -24,9 +24,10 @@ interface SignupEntry {
 interface SignupRosterProps {
   signups: SignupEntry[];
   createdBy?: string | null;
+  coLeaderIds?: string[];
 }
 
-export function SignupRoster({ signups, createdBy }: SignupRosterProps) {
+export function SignupRoster({ signups, createdBy, coLeaderIds = [] }: SignupRosterProps) {
   if (signups.length === 0) {
     return (
       <p className="text-sm text-muted-foreground py-4 text-center">
@@ -40,19 +41,23 @@ export function SignupRoster({ signups, createdBy }: SignupRosterProps) {
   );
   const waitlisted = signups.filter((s) => s.status === SignupStatus.WAITLISTED);
 
-  // Pin the ride leader to the top of the confirmed list
-  const sortedConfirmed = createdBy
-    ? [...confirmed].sort((a, b) => {
-        if (a.user_id === createdBy) return -1;
-        if (b.user_id === createdBy) return 1;
-        return 0;
-      })
-    : confirmed;
+  const leaderIds = new Set([...(createdBy ? [createdBy] : []), ...coLeaderIds]);
+
+  // Pin ride leaders to the top of the confirmed list (creator first)
+  const sortedConfirmed = [...confirmed].sort((a, b) => {
+    const aIsLeader = leaderIds.has(a.user_id);
+    const bIsLeader = leaderIds.has(b.user_id);
+    if (aIsLeader && !bIsLeader) return -1;
+    if (!aIsLeader && bIsLeader) return 1;
+    if (aIsLeader && bIsLeader && a.user_id === createdBy) return -1;
+    if (aIsLeader && bIsLeader && b.user_id === createdBy) return 1;
+    return 0;
+  });
 
   return (
     <div className="space-y-1">
       {sortedConfirmed.map((signup) => (
-        <SignupRow key={signup.id} signup={signup} isLeader={signup.user_id === createdBy} />
+        <SignupRow key={signup.id} signup={signup} isLeader={leaderIds.has(signup.user_id)} />
       ))}
       {waitlisted.length > 0 && (
         <>
@@ -60,7 +65,7 @@ export function SignupRoster({ signups, createdBy }: SignupRosterProps) {
             {ridesContent.roster.waitlisted}
           </SectionHeading>
           {waitlisted.map((signup) => (
-            <SignupRow key={signup.id} signup={signup} isLeader={signup.user_id === createdBy} />
+            <SignupRow key={signup.id} signup={signup} isLeader={leaderIds.has(signup.user_id)} />
           ))}
         </>
       )}

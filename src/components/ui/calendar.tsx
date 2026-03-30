@@ -80,7 +80,7 @@ function Calendar({
         week_number_header: cn('w-[--cell-size] select-none', defaultClassNames.week_number_header),
         week_number: cn('text-muted-foreground select-none text-xs', defaultClassNames.week_number),
         day: cn(
-          'group/day relative flex items-center justify-center select-none p-0',
+          'group/day relative size-[--cell-size] flex items-center justify-center select-none rounded-lg p-0 aria-selected:bg-primary aria-selected:text-primary-foreground',
           defaultClassNames.day,
         ),
         range_start: cn('bg-accent rounded-l-lg', defaultClassNames.range_start),
@@ -159,8 +159,7 @@ function CalendarDayButton({
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
-        'data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground size-[--cell-size] rounded-lg font-normal group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px]',
-        defaultClassNames.day,
+        'size-full rounded-lg font-normal group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px]',
         className,
       )}
       {...props}

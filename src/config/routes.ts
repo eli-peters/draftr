@@ -21,4 +21,6 @@ export const routes = {
   importRoutes: '/api/integrations/routes',
   importRouteById: (id: string) => `/api/integrations/routes/${id}`,
   scrapeRoute: '/api/integrations/routes/scrape',
+  placesAutocomplete: '/api/places/autocomplete',
+  placesDetails: '/api/places/details',
 } as const;

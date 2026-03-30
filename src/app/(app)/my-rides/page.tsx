@@ -3,6 +3,7 @@ import { getUserClubMembership, getUserRideSignups } from '@/lib/rides/queries';
 import { getRideLifecycle } from '@/lib/rides/lifecycle';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
+import type { Club } from '@/types/database';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { MyScheduleSections } from './my-schedule-sections';
@@ -13,6 +14,7 @@ export default async function MySchedulePage() {
   const membership = await getUserClubMembership();
   if (!membership) redirect(routes.signIn);
 
+  const timezone = (membership.club as unknown as Club).timezone;
   const userId = membership.user_id;
 
   const [upcomingRaw, pastRaw, waitlistedRaw] = await Promise.all([
@@ -23,7 +25,7 @@ export default async function MySchedulePage() {
 
   // Post-filter: rides past their end_time today should move to "past"
   const isCompleted = (r: { ride_date: string; start_time: string; end_time: string | null }) =>
-    getRideLifecycle(r.ride_date, r.start_time, r.end_time) === 'completed';
+    getRideLifecycle(r.ride_date, r.start_time, r.end_time, timezone) === 'completed';
 
   const upcoming = upcomingRaw.filter((r) => !isCompleted(r));
   const waitlisted = waitlistedRaw.filter((r) => !isCompleted(r));
@@ -45,7 +47,7 @@ export default async function MySchedulePage() {
   return (
     <DashboardShell>
       <PageHeader title={schedule.heading} />
-      <MyScheduleSections upcoming={upcomingAll} past={past} />
+      <MyScheduleSections upcoming={upcomingAll} past={past} timezone={timezone} />
     </DashboardShell>
   );
 }

@@ -83,6 +83,7 @@ interface ActionBarProps {
   ridesNeedingLeaderCount?: number;
   weatherWatchRide?: WeatherWatchRide | null;
   userRole?: UserRole;
+  timezone: string;
 }
 
 function ActionCard({
@@ -128,6 +129,7 @@ export function ActionBar({
   ridesNeedingLeaderCount = 0,
   weatherWatchRide,
   userRole,
+  timezone,
 }: ActionBarProps) {
   const isAdmin = userRole === 'admin';
 
@@ -150,6 +152,7 @@ export function ActionBar({
             nextSignup.ride_date,
             nextSignup.start_time,
             nextSignup.end_time,
+            timezone,
           );
           const isStartingSoon = lifecycle === 'about_to_start';
           const isInProgress = lifecycle === 'in_progress';
@@ -197,6 +200,7 @@ export function ActionBar({
             nextWaitlistedRide.ride_date,
             nextWaitlistedRide.start_time,
             nextWaitlistedRide.end_time,
+            timezone,
           );
           const waitlistClosed = wlLifecycle !== 'upcoming';
           return (
@@ -242,6 +246,7 @@ export function ActionBar({
             nextLedRide.ride_date,
             nextLedRide.start_time,
             nextLedRide.end_time,
+            timezone,
           );
           const ledIsLive = ledLifecycle === 'in_progress' || ledLifecycle === 'about_to_start';
           const ledLabel = ledIsLive

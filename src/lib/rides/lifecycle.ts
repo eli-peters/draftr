@@ -1,4 +1,4 @@
-import { parseISO } from 'date-fns';
+import { TZDate } from '@date-fns/tz';
 import { RideStatus } from '@/config/statuses';
 
 // ---------------------------------------------------------------------------
@@ -29,16 +29,17 @@ export function getRideLifecycle(
   rideDate: string,
   startTime: string,
   endTime: string | null,
+  timezone: string,
 ): RideLifecycle {
   const now = new Date();
 
-  // Combine date + time → local DateTime
-  const startDateTime = combineDateAndTime(rideDate, startTime);
+  // Combine date + time → timezone-aware DateTime
+  const startDateTime = combineDateAndTime(rideDate, startTime, timezone);
   const cutoffDateTime = new Date(startDateTime.getTime() - SIGNUP_CUTOFF_MINUTES * 60_000);
 
   // End time: use explicit end_time or fallback to start + DEFAULT_DURATION_HOURS
   const endDateTime = endTime
-    ? combineDateAndTime(rideDate, endTime)
+    ? combineDateAndTime(rideDate, endTime, timezone)
     : new Date(startDateTime.getTime() + DEFAULT_DURATION_HOURS * 3_600_000);
 
   if (now < cutoffDateTime) return 'upcoming';
@@ -76,8 +77,9 @@ export interface RideAvailability {
 export function getRideAvailability(
   ride: RideTimingFields,
   confirmedCount: number,
+  timezone: string,
 ): RideAvailability {
-  const lifecycle = getRideLifecycle(ride.ride_date, ride.start_time, ride.end_time);
+  const lifecycle = getRideLifecycle(ride.ride_date, ride.start_time, ride.end_time, timezone);
   const isCancelled = ride.status === RideStatus.CANCELLED;
   const isFull = ride.capacity != null && confirmedCount >= ride.capacity;
 
@@ -97,8 +99,8 @@ export function getRideAvailability(
  * Combine an ISO date string ("2026-03-25") with a time string ("09:00" or "09:00:00")
  * into a local Date object. Uses parseISO for correct local timezone handling.
  */
-function combineDateAndTime(dateStr: string, timeStr: string): Date {
+function combineDateAndTime(dateStr: string, timeStr: string, timezone: string): Date {
   // Ensure time has seconds
   const normalizedTime = timeStr.length === 5 ? `${timeStr}:00` : timeStr;
-  return parseISO(`${dateStr}T${normalizedTime}`);
+  return new TZDate(`${dateStr}T${normalizedTime}`, timezone);
 }

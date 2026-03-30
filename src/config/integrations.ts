@@ -61,6 +61,9 @@ export const serviceLabels: Record<IntegrationService, string> = Object.fromEntr
   Object.values(integrations).map((c) => [c.service, c.displayName]),
 ) as Record<IntegrationService, string>;
 
+/** All supported integration services (always shown in UI even if not connected) */
+export const knownServices: IntegrationService[] = ['strava', 'ridewithgps'];
+
 /** Refresh tokens this many seconds before actual expiry */
 export const TOKEN_REFRESH_BUFFER_SECONDS = 300;
 

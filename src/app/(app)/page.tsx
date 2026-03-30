@@ -26,6 +26,7 @@ import { CurrentWeather } from '@/components/weather/current-weather';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
 import type { UserRole } from '@/config/navigation';
+import type { Club } from '@/types/database';
 
 const { dashboard } = appContent;
 
@@ -33,6 +34,7 @@ export default async function HomePage() {
   const membership = await getUserClubMembership();
   if (!membership) redirect(routes.signIn);
 
+  const timezone = (membership.club as unknown as Club).timezone;
   const userRole = membership.role as UserRole;
   const isLeader = userRole === 'ride_leader' || userRole === 'admin';
   const isAdmin = userRole === 'admin';
@@ -72,7 +74,7 @@ export default async function HomePage() {
 
   // Filter out rides that have already completed (past their end_time today)
   const isNotCompleted = (r: { ride_date: string; start_time: string; end_time: string | null }) =>
-    getRideLifecycle(r.ride_date, r.start_time, r.end_time) !== 'completed';
+    getRideLifecycle(r.ride_date, r.start_time, r.end_time, timezone) !== 'completed';
 
   const activeRides = rides.filter(isNotCompleted);
 
@@ -110,6 +112,7 @@ export default async function HomePage() {
           pendingMemberCount={pendingMemberCount}
           ridesNeedingLeaderCount={ridesNeedingLeaderCount}
           userRole={userRole}
+          timezone={timezone}
         />
       </div>
 
@@ -124,6 +127,7 @@ export default async function HomePage() {
               emptyTitle={dashboard.myRides.emptyTitle}
               emptyDescription={dashboard.myRides.emptyDescription}
               cardVariant="home"
+              timezone={timezone}
             />
           </Suspense>
         </div>

@@ -42,7 +42,7 @@ function formatIso(date: Date): string {
 function DatePicker({
   value,
   onChange,
-  placeholder = 'Pick a date',
+  placeholder,
   min,
   max,
   name,

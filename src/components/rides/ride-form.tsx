@@ -39,7 +39,7 @@ import { RouteImportDrawer } from '@/components/rides/route-import-drawer';
 import { LocationPickerDrawer } from '@/components/rides/location-picker-drawer';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
-import { todayDateString } from '@/config/formatting';
+import { todayDateString, MAP_PIN_HEX } from '@/config/formatting';
 import { parseRouteUrl } from '@/lib/rides/parse-route-url';
 import { serviceLabels } from '@/config/integrations';
 import {
@@ -74,7 +74,7 @@ function FormCardBanner({ label, icon: Icon }: { label: string; icon: React.Elem
 
 function StaticLocationMap({ latitude, longitude }: { latitude: number; longitude: number }) {
   if (!MAPBOX_TOKEN) return null;
-  const pin = `pin-s+DE0387(${longitude},${latitude})`;
+  const pin = `pin-s+${MAP_PIN_HEX}(${longitude},${latitude})`;
   const src = `https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/static/${pin}/${longitude},${latitude},14,0/600x200@2x?access_token=${MAPBOX_TOKEN}&logo=false&attribution=false`;
   return (
     <img
@@ -88,6 +88,129 @@ function StaticLocationMap({ latitude, longitude }: { latitude: number; longitud
 
 function OptionalTag() {
   return <span className="text-xs font-normal text-muted-foreground ml-1">{form.optional}</span>;
+}
+
+// ---------------------------------------------------------------------------
+// Recurring schedule section (create-only)
+// ---------------------------------------------------------------------------
+
+interface RecurringScheduleSectionProps {
+  isRecurring: boolean;
+  onRecurringChange: (v: boolean) => void;
+  recurringEndType: 'never' | 'after' | 'on_date';
+  onEndTypeChange: (v: 'never' | 'after' | 'on_date') => void;
+  recurringEndDate: string;
+  onEndDateChange: (v: string) => void;
+  seasonStart?: string;
+  seasonEnd?: string;
+}
+
+function RecurringScheduleSection({
+  isRecurring,
+  onRecurringChange,
+  recurringEndType,
+  onEndTypeChange,
+  recurringEndDate,
+  onEndDateChange,
+  seasonStart,
+  seasonEnd,
+}: RecurringScheduleSectionProps) {
+  return (
+    <>
+      <Separator className="my-1" />
+      <div className="flex items-center justify-between">
+        <Label htmlFor="is_recurring" className="flex items-center gap-2 cursor-pointer">
+          <ArrowsClockwise className="h-4 w-4 text-muted-foreground" />
+          {ridesContent.recurring.toggle}
+        </Label>
+        <Switch id="is_recurring" checked={isRecurring} onCheckedChange={onRecurringChange} />
+      </div>
+      {isRecurring && (
+        <div className="rounded-xl bg-accent-secondary-subtle p-4 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <Label htmlFor="recurrence" className="text-sm text-foreground">
+                {ridesContent.recurring.frequency}
+              </Label>
+              <Select
+                name="recurrence"
+                defaultValue="weekly"
+                items={{
+                  weekly: rc.recurrence.weekly,
+                  biweekly: rc.recurrence.biweekly,
+                  monthly: rc.recurrence.monthly,
+                }}
+              >
+                <SelectTrigger id="recurrence">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="weekly">{rc.recurrence.weekly}</SelectItem>
+                  <SelectItem value="biweekly">{rc.recurrence.biweekly}</SelectItem>
+                  <SelectItem value="monthly">{rc.recurrence.monthly}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="recurring_end_type" className="text-sm text-foreground">
+                {ridesContent.recurring.endCondition}
+              </Label>
+              <Select
+                name="recurring_end_type"
+                value={recurringEndType}
+                onValueChange={(v) => onEndTypeChange(v as 'never' | 'after' | 'on_date')}
+                items={{
+                  never: ridesContent.recurring.endNever,
+                  after: ridesContent.recurring.endAfter,
+                  on_date: ridesContent.recurring.endOnDate,
+                }}
+              >
+                <SelectTrigger id="recurring_end_type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="never">{ridesContent.recurring.endNever}</SelectItem>
+                  <SelectItem value="after">{ridesContent.recurring.endAfter}</SelectItem>
+                  <SelectItem value="on_date">{ridesContent.recurring.endOnDate}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          {recurringEndType === 'after' && (
+            <div className="space-y-1">
+              <Label htmlFor="end_after" className="text-sm text-foreground">
+                {ridesContent.recurring.occurrences}
+              </Label>
+              <Input
+                id="end_after"
+                name="end_after"
+                type="number"
+                min="1"
+                max="52"
+                defaultValue="10"
+              />
+            </div>
+          )}
+          {recurringEndType === 'on_date' && (
+            <div className="space-y-1">
+              <Label htmlFor="end_date" className="text-sm text-foreground">
+                {ridesContent.recurring.endOnDate}
+              </Label>
+              <DatePicker
+                id="end_date"
+                name="end_date"
+                value={recurringEndDate}
+                onChange={onEndDateChange}
+                placeholder={form.pickDate}
+                min={seasonStart || undefined}
+                max={seasonEnd || undefined}
+              />
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
 }
 
 interface RideFormInitialData {
@@ -877,108 +1000,16 @@ export function RideForm({
 
             {/* Recurring schedule (create-only) */}
             {!isEdit && (
-              <>
-                <Separator className="my-1" />
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="is_recurring" className="flex items-center gap-2 cursor-pointer">
-                    <ArrowsClockwise className="h-4 w-4 text-muted-foreground" />
-                    {ridesContent.recurring.toggle}
-                  </Label>
-                  <Switch
-                    id="is_recurring"
-                    checked={isRecurring}
-                    onCheckedChange={setIsRecurring}
-                  />
-                </div>
-                {isRecurring && (
-                  <div className="rounded-xl bg-accent-secondary-subtle p-4 space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <Label htmlFor="recurrence" className="text-sm text-foreground">
-                          {ridesContent.recurring.frequency}
-                        </Label>
-                        <Select
-                          name="recurrence"
-                          defaultValue="weekly"
-                          items={{
-                            weekly: rc.recurrence.weekly,
-                            biweekly: rc.recurrence.biweekly,
-                            monthly: rc.recurrence.monthly,
-                          }}
-                        >
-                          <SelectTrigger id="recurrence">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="weekly">{rc.recurrence.weekly}</SelectItem>
-                            <SelectItem value="biweekly">{rc.recurrence.biweekly}</SelectItem>
-                            <SelectItem value="monthly">{rc.recurrence.monthly}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-1">
-                        <Label htmlFor="recurring_end_type" className="text-sm text-foreground">
-                          {ridesContent.recurring.endCondition}
-                        </Label>
-                        <Select
-                          name="recurring_end_type"
-                          value={recurringEndType}
-                          onValueChange={(v) =>
-                            setRecurringEndType(v as 'never' | 'after' | 'on_date')
-                          }
-                          items={{
-                            never: ridesContent.recurring.endNever,
-                            after: ridesContent.recurring.endAfter,
-                            on_date: ridesContent.recurring.endOnDate,
-                          }}
-                        >
-                          <SelectTrigger id="recurring_end_type">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="never">{ridesContent.recurring.endNever}</SelectItem>
-                            <SelectItem value="after">{ridesContent.recurring.endAfter}</SelectItem>
-                            <SelectItem value="on_date">
-                              {ridesContent.recurring.endOnDate}
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    {recurringEndType === 'after' && (
-                      <div className="space-y-1">
-                        <Label htmlFor="end_after" className="text-sm text-foreground">
-                          {ridesContent.recurring.occurrences}
-                        </Label>
-                        <Input
-                          id="end_after"
-                          name="end_after"
-                          type="number"
-                          min="1"
-                          max="52"
-                          defaultValue="10"
-                        />
-                      </div>
-                    )}
-                    {recurringEndType === 'on_date' && (
-                      <div className="space-y-1">
-                        <Label htmlFor="end_date" className="text-sm text-foreground">
-                          {ridesContent.recurring.endOnDate}
-                        </Label>
-                        <DatePicker
-                          id="end_date"
-                          name="end_date"
-                          value={recurringEndDate}
-                          onChange={setRecurringEndDate}
-                          placeholder={form.pickDate}
-                          min={seasonStart || undefined}
-                          max={seasonEnd || undefined}
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-              </>
+              <RecurringScheduleSection
+                isRecurring={isRecurring}
+                onRecurringChange={setIsRecurring}
+                recurringEndType={recurringEndType}
+                onEndTypeChange={setRecurringEndType}
+                recurringEndDate={recurringEndDate}
+                onEndDateChange={setRecurringEndDate}
+                seasonStart={seasonStart}
+                seasonEnd={seasonEnd}
+              />
             )}
           </div>
         </Card>

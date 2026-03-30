@@ -70,13 +70,18 @@ export async function signUpForRide(rideId: string) {
 
   const { data: ride } = await supabase
     .from('rides')
-    .select('id, title, capacity, status, created_by, ride_date, start_time, end_time')
+    .select(
+      'id, title, capacity, status, created_by, ride_date, start_time, end_time, club:clubs(timezone)',
+    )
     .eq('id', rideId)
     .single();
 
   if (!ride) {
     return { error: errors.rideNotFound };
   }
+
+  const timezone =
+    (ride.club as unknown as { timezone: string } | null)?.timezone ?? 'America/Toronto';
 
   // Count current confirmed signups
   const { count } = await supabase
@@ -95,7 +100,7 @@ export async function signUpForRide(rideId: string) {
     .eq('status', 'waitlisted');
 
   // Check availability — enforces cancelled check + timing cutoff
-  const availability = getRideAvailability(ride, currentCount);
+  const availability = getRideAvailability(ride, currentCount, timezone);
   if (!availability.canSignUp) {
     if (availability.isCancelled) return { error: errors.rideCancelled };
     return { error: errors.signupClosed };
@@ -173,12 +178,13 @@ export async function cancelSignUp(rideId: string) {
   // Fetch ride for timing gate
   const { data: ride } = await supabase
     .from('rides')
-    .select('ride_date, start_time, end_time, status, capacity')
+    .select('ride_date, start_time, end_time, status, capacity, club:clubs(timezone)')
     .eq('id', rideId)
     .single();
 
   if (ride) {
-    const availability = getRideAvailability(ride, 0);
+    const tz = (ride.club as unknown as { timezone: string } | null)?.timezone ?? 'America/Toronto';
+    const availability = getRideAvailability(ride, 0, tz);
     if (!availability.canCancel) {
       return { error: errors.cancellationClosed };
     }

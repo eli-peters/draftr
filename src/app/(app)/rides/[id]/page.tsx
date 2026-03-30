@@ -24,6 +24,7 @@ import { appContent } from '@/content/app';
 import { SignupStatus } from '@/config/statuses';
 import { routes } from '@/config/routes';
 import type { UserRole } from '@/config/navigation';
+import type { Club } from '@/types/database';
 
 const { detail } = appContent.rides;
 
@@ -53,7 +54,8 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const waitlistedCount = signups.filter((s) => s.status === SignupStatus.WAITLISTED).length;
 
   // Centralized availability — replaces manual isPast/isCancelled checks
-  const availability = getRideAvailability(ride, confirmedCount);
+  const timezone = (membership?.club as unknown as Club)?.timezone ?? 'America/Toronto';
+  const availability = getRideAvailability(ride, confirmedCount, timezone);
 
   const userRole = (membership?.role as UserRole) ?? 'rider';
   const isCreator = membership?.user_id === ride.created_by;
@@ -141,7 +143,11 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             {detail.ridersHeading(confirmedCount, waitlistedCount, ride.capacity)}
           </SectionHeading>
           <div className="mt-3 rounded-xl border border-border bg-card p-3">
-            <SignupRoster signups={signups} createdBy={ride.created_by} />
+            <SignupRoster
+              signups={signups}
+              createdBy={ride.created_by}
+              coLeaderIds={coLeaders.map((cl) => cl.user_id)}
+            />
           </div>
         </div>
       )}

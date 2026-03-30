@@ -46,7 +46,7 @@ function formatTimeDisplay(time: string): string {
 function TimePicker({
   value,
   onChange,
-  placeholder = 'Pick a time',
+  placeholder,
   step = 15,
   name,
   id,

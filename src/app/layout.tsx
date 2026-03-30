@@ -70,7 +70,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: COLOR_MODE_SCRIPT }} />
       </head>
-      <body className="overflow-x-hidden antialiased">
+      <body className="antialiased">
         <ThemeProvider>
           {children}
           <Toaster />
