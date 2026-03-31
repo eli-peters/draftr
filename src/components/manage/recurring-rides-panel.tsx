@@ -3,8 +3,8 @@
 import { useEffect, useState, useTransition } from 'react';
 import { Plus, Trash, Pause, Play, ArrowClockwise } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
+import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectTrigger,
@@ -232,25 +232,22 @@ export function RecurringRidesPanel({
               <DrawerTitle>{rc.create}</DrawerTitle>
             </DrawerHeader>
             <form onSubmit={handleSubmit} className="space-y-4 px-4">
-              <div className="space-y-2">
-                <Label htmlFor="rc-title">{form.title} *</Label>
-                <Input
-                  id="rc-title"
-                  name="title"
-                  required
-                  placeholder="e.g. Saturday Morning Social"
-                />
-              </div>
+              <FloatingField label={`${form.title} *`} htmlFor="rc-title">
+                <Input id="rc-title" name="title" required placeholder=" " />
+              </FloatingField>
               <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="rc-day">{rc.dayOfWeek[0].slice(0, 3)}... *</Label>
+                <FloatingField
+                  label={`${rc.dayOfWeek[0].slice(0, 3)}... *`}
+                  htmlFor="rc-day"
+                  hasValue={false}
+                >
                   <Select
                     name="day_of_week"
                     required
                     items={Object.fromEntries(rc.dayOfWeek.map((day, i) => [String(i), day]))}
                   >
                     <SelectTrigger id="rc-day">
-                      <SelectValue placeholder="Day..." />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {rc.dayOfWeek.map((day, i) => (
@@ -260,20 +257,25 @@ export function RecurringRidesPanel({
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="rc-time">{form.startTime} *</Label>
+                </FloatingField>
+                <FloatingField
+                  label={`${form.startTime} *`}
+                  htmlFor="rc-time"
+                  hasValue={!!rcStartTime}
+                >
                   <TimePicker
                     id="rc-time"
                     name="start_time"
                     value={rcStartTime}
                     onChange={setRcStartTime}
-                    placeholder={form.pickTime}
                     required
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="rc-recurrence">{rc.recurrence.weekly} *</Label>
+                </FloatingField>
+                <FloatingField
+                  label={`${rc.recurrence.weekly} *`}
+                  htmlFor="rc-recurrence"
+                  hasValue={true}
+                >
                   <Select
                     name="recurrence"
                     required
@@ -293,39 +295,42 @@ export function RecurringRidesPanel({
                       <SelectItem value="monthly">{rc.recurrence.monthly}</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </FloatingField>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="rc-season-start">{rc.seasonStartLabel}</Label>
+                <FloatingField
+                  label={rc.seasonStartLabel}
+                  htmlFor="rc-season-start"
+                  hasValue={!!rcSeasonStart}
+                >
                   <DatePicker
                     id="rc-season-start"
                     name="season_start_date"
                     value={rcSeasonStart}
                     onChange={setRcSeasonStart}
-                    placeholder={form.pickDate}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="rc-season-end">{rc.seasonEndLabel}</Label>
+                </FloatingField>
+                <FloatingField
+                  label={rc.seasonEndLabel}
+                  htmlFor="rc-season-end"
+                  hasValue={!!rcSeasonEnd}
+                >
                   <DatePicker
                     id="rc-season-end"
                     name="season_end_date"
                     value={rcSeasonEnd}
                     onChange={setRcSeasonEnd}
-                    placeholder={form.pickDate}
                   />
-                </div>
+                </FloatingField>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="rc-location">{form.meetingLocation}</Label>
+                <FloatingField label={form.meetingLocation} htmlFor="rc-location" hasValue={false}>
                   <Select
                     name="meeting_location_id"
                     items={Object.fromEntries(meetingLocations.map((loc) => [loc.id, loc.name]))}
                   >
                     <SelectTrigger id="rc-location">
-                      <SelectValue placeholder={form.selectLocation} />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {meetingLocations.map((loc) => (
@@ -335,15 +340,14 @@ export function RecurringRidesPanel({
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="rc-pace">{form.paceGroup}</Label>
+                </FloatingField>
+                <FloatingField label={form.paceGroup} htmlFor="rc-pace" hasValue={false}>
                   <Select
                     name="pace_group_id"
                     items={Object.fromEntries(paceGroups.map((pg) => [pg.id, pg.name]))}
                   >
                     <SelectTrigger id="rc-pace">
-                      <SelectValue placeholder={form.selectPace} />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {paceGroups.map((pg) => (
@@ -353,25 +357,29 @@ export function RecurringRidesPanel({
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
+                </FloatingField>
               </div>
               <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="rc-distance">{form.distance}</Label>
+                <FloatingField label={form.distance} htmlFor="rc-distance">
                   <Input
                     id="rc-distance"
                     name="default_distance_km"
                     type="number"
                     step="0.1"
                     min="0"
+                    placeholder=" "
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="rc-capacity">{form.capacity}</Label>
-                  <Input id="rc-capacity" name="default_capacity" type="number" min="1" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="rc-weeks">{rc.weeksAheadLabel}</Label>
+                </FloatingField>
+                <FloatingField label={form.capacity} htmlFor="rc-capacity">
+                  <Input
+                    id="rc-capacity"
+                    name="default_capacity"
+                    type="number"
+                    min="1"
+                    placeholder=" "
+                  />
+                </FloatingField>
+                <FloatingField label={rc.weeksAheadLabel} htmlFor="rc-weeks" hasValue={true}>
                   <Input
                     id="rc-weeks"
                     name="generate_weeks_ahead"
@@ -379,8 +387,9 @@ export function RecurringRidesPanel({
                     min="1"
                     max="12"
                     defaultValue="4"
+                    placeholder=" "
                   />
-                </div>
+                </FloatingField>
               </div>
               <DrawerFooter>
                 <Button type="submit">{rc.create}</Button>

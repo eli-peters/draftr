@@ -439,6 +439,146 @@
   animation: page-slide-in-from-left var(--duration-normal) var(--ease-out);
 }
 
+/*
+ * Floating field — Material Design-style floating label pattern
+ * =============================================================
+ * Two modes:
+ *  1. CSS-only (Input/Textarea): uses :has(:placeholder-shown) / :has(:focus)
+ *  2. JS-assisted (Select/DatePicker/TimePicker): uses [data-has-value] + :focus-within
+ *
+ * Border override: inputs inside .floating-field get bottom-border-only styling.
+ * Non-floating fields keep their existing full-border rounded style.
+ */
+
+/* ── Border override — bottom-only for all field types ── */
+.floating-field [data-slot='input'],
+.floating-field [data-slot='select-trigger'],
+.floating-field [data-slot='picker-trigger'] {
+  border: 0;
+  border-bottom: 1px solid var(--input);
+  border-radius: 0;
+  padding-top: 1.25rem;
+  background: transparent;
+}
+
+/*
+ * Textarea uses margin-top (not padding-top) to create space for the label.
+ * margin-top is OUTSIDE the textarea's scroll boundary, so content never
+ * scrolls behind the floating label.
+ */
+.floating-field [data-slot='textarea'] {
+  border: 0;
+  border-bottom: 1px solid var(--input);
+  border-radius: 0;
+  margin-top: 1.25rem;
+  padding-top: 0.5rem;
+  background: transparent;
+  resize: none;
+  overflow-y: auto;
+  field-sizing: content;
+  min-height: 2rem;
+  max-height: 12rem;
+}
+
+/* ── Focus — bottom border color + remove ring ── */
+.floating-field [data-slot='input']:focus-visible,
+.floating-field [data-slot='textarea']:focus-visible {
+  border-bottom-color: var(--ring);
+  box-shadow: none;
+  outline: none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+.floating-field:focus-within [data-slot='select-trigger'],
+.floating-field:focus-within [data-slot='picker-trigger'] {
+  border-bottom-color: var(--ring);
+  box-shadow: none;
+  outline: none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+/* ── Label — base (resting position) ── */
+.floating-field > label {
+  position: absolute;
+  left: 0.75rem;
+  /* Center label in the content area below padding-top, not the full box.
+     h-12 = 3rem, padding-top = 1.25rem → content center = 1.25 + (3 - 1.25)/2 = 2.125rem */
+  top: 2.125rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--muted-foreground);
+  font-size: 1rem;
+  line-height: 1;
+  font-weight: 400;
+  transition:
+    top var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    font-size var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+/* Match input's md:text-sm on larger screens */
+@media (min-width: 768px) {
+  .floating-field > label {
+    font-size: 0.875rem;
+  }
+}
+
+/* Textarea: label rests at the first line of the textarea content area */
+.floating-field:has([data-slot='textarea']) > label {
+  top: 1.75rem;
+  transform: translateY(0);
+}
+
+/* ── CSS-only mode: float on focus or filled ── */
+.floating-field:has([data-slot='input']:focus) > label,
+.floating-field:has([data-slot='input']:not(:placeholder-shown)) > label,
+.floating-field:has([data-slot='textarea']:focus) > label,
+.floating-field:has([data-slot='textarea']:not(:placeholder-shown)) > label {
+  top: 0.375rem;
+  transform: translateY(0);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Focus gets foreground color; filled-but-unfocused stays muted */
+.floating-field:has([data-slot='input']:focus) > label,
+.floating-field:has([data-slot='textarea']:focus) > label {
+  color: var(--foreground);
+}
+
+/* ── Select: float when a value is selected (Base UI removes data-placeholder) ── */
+.floating-field:has([data-slot='select-trigger']:not([data-placeholder])) > label {
+  top: 0.375rem;
+  transform: translateY(0);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ── JS-assisted mode: float on focus-within or data-has-value ── */
+.floating-field:focus-within[data-mode='js'] > label,
+.floating-field[data-has-value] > label {
+  top: 0.375rem;
+  transform: translateY(0);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.floating-field:focus-within[data-mode='js'] > label {
+  color: var(--foreground);
+}
+
+/* ── Icon offset: label shifts right when icon present ── */
+.floating-field[data-has-icon] > label {
+  left: 2.25rem;
+}
+
+/* ── Error state — bottom border turns invalid color ── */
+.floating-field:has([aria-invalid='true']) [data-slot='input'],
+.floating-field:has([aria-invalid='true']) [data-slot='textarea'] {
+  border-bottom-color: var(--input-border-invalid);
+}
+
 /* Reduced motion: disable transform/position animations, preserve opacity/color */
 @media (prefers-reduced-motion: reduce) {
   .page-transition-forward,

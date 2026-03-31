@@ -12,6 +12,7 @@ import {
   DrawerFooter,
 } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
+import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -312,18 +313,26 @@ export function LocationPickerDrawer({
           {/* Location details */}
           {name && (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="loc_name">{form.meetingLocation}</Label>
-                <Input id="loc_name" value={name} onChange={(e) => setName(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="loc_address">{form.locationAddress}</Label>
+              <FloatingField label={form.meetingLocation} htmlFor="loc_name" hasValue={!!name}>
+                <Input
+                  id="loc_name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder=" "
+                />
+              </FloatingField>
+              <FloatingField
+                label={form.locationAddress}
+                htmlFor="loc_address"
+                hasValue={!!address}
+              >
                 <Input
                   id="loc_address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
+                  placeholder=" "
                 />
-              </div>
+              </FloatingField>
               <div className="flex items-center justify-between">
                 <Label htmlFor="save_to_club" className="cursor-pointer">
                   {form.locationPickerSaveToggle}

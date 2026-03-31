@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { FloatingField } from '@/components/ui/floating-field';
 import { DatePicker } from '@/components/ui/date-picker';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
@@ -41,14 +41,12 @@ export function SeasonDatesCard({ clubId, seasonStart, seasonEnd }: SeasonDatesC
       </SectionHeading>
       <p className="text-sm text-muted-foreground mb-4">{season.description}</p>
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="season-start">{season.startLabel}</Label>
+        <FloatingField label={season.startLabel} htmlFor="season-start" hasValue={!!start}>
           <DatePicker id="season-start" value={start} onChange={setStart} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="season-end">{season.endLabel}</Label>
+        </FloatingField>
+        <FloatingField label={season.endLabel} htmlFor="season-end" hasValue={!!end}>
           <DatePicker id="season-end" value={end} onChange={setEnd} />
-        </div>
+        </FloatingField>
       </div>
       <div className="mt-4 flex items-center gap-3">
         <Button size="sm" onClick={handleSave} disabled={isPending}>

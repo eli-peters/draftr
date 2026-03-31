@@ -3,8 +3,8 @@
 import { useActionState } from 'react';
 import { setupProfile } from '@/lib/auth/actions';
 import { Button } from '@/components/ui/button';
+import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { appContent } from '@/content/app';
 
 const { setupProfile: content } = appContent.auth;
@@ -24,26 +24,27 @@ export function ProfileSetupForm({ userEmail }: ProfileSetupFormProps) {
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="email">{appContent.auth.signIn.emailLabel}</Label>
+      <FloatingField label={appContent.auth.signIn.emailLabel} htmlFor="email" hasValue={true}>
         <Input id="email" type="email" value={userEmail} disabled className="opacity-pending" />
-      </div>
+      </FloatingField>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="password">{content.passwordLabel}</Label>
+      <FloatingField label={content.passwordLabel} htmlFor="password">
         <Input
           id="password"
           name="password"
           type="password"
           required
           minLength={6}
-          placeholder={content.passwordPlaceholder}
+          placeholder=" "
           autoComplete="new-password"
         />
-      </div>
+      </FloatingField>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="full_name">{content.nameLabel}</Label>
+      <FloatingField
+        label={content.nameLabel}
+        htmlFor="full_name"
+        helperText={content.nameHelperText}
+      >
         <Input
           id="full_name"
           name="full_name"
@@ -52,14 +53,13 @@ export function ProfileSetupForm({ userEmail }: ProfileSetupFormProps) {
           pattern=".*\S+\s+\S+.*"
           title={content.nameValidationError}
           autoComplete="name"
+          placeholder=" "
         />
-        <p className="text-xs text-muted-foreground">{content.nameHelperText}</p>
-      </div>
+      </FloatingField>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="bio">{content.bioLabel}</Label>
-        <Input id="bio" name="bio" type="text" placeholder="Optional" />
-      </div>
+      <FloatingField label={content.bioLabel} htmlFor="bio">
+        <Input id="bio" name="bio" type="text" placeholder=" " />
+      </FloatingField>
 
       {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
 

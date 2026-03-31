@@ -3,8 +3,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { CheckCircle, EnvelopeSimple, Copy, Check } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
+import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectTrigger,
@@ -154,19 +154,15 @@ export function InviteMemberDrawer({ clubId }: InviteMemberDrawerProps) {
               </div>
             ) : (
               <form ref={formRef} onSubmit={handleSubmit} className="mt-6 space-y-6 px-4">
-                <div className="space-y-2">
-                  <Label htmlFor="invite-email">{inviteContent.emailLabel}</Label>
-                  <Input
-                    id="invite-email"
-                    name="email"
-                    type="email"
-                    required
-                    placeholder={inviteContent.emailPlaceholder}
-                  />
-                </div>
+                <FloatingField label={inviteContent.emailLabel} htmlFor="invite-email">
+                  <Input id="invite-email" name="email" type="email" required placeholder=" " />
+                </FloatingField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="invite-role">{inviteContent.roleLabel}</Label>
+                <FloatingField
+                  label={inviteContent.roleLabel}
+                  htmlFor="invite-role"
+                  hasValue={true}
+                >
                   <Select
                     name="role"
                     defaultValue="rider"
@@ -187,7 +183,7 @@ export function InviteMemberDrawer({ clubId }: InviteMemberDrawerProps) {
                       <SelectItem value="admin">{content.members.roles.admin}</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </FloatingField>
 
                 {error && <p className="text-sm text-destructive">{error}</p>}
 

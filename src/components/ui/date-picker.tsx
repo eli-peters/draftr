@@ -13,8 +13,6 @@ interface DatePickerProps {
   value?: string;
   /** Called with YYYY-MM-DD string */
   onChange?: (value: string) => void;
-  /** Placeholder when no date is selected */
-  placeholder?: string;
   /** Minimum selectable date in YYYY-MM-DD format */
   min?: string;
   /** Maximum selectable date in YYYY-MM-DD format */
@@ -42,7 +40,6 @@ function formatIso(date: Date): string {
 function DatePicker({
   value,
   onChange,
-  placeholder,
   min,
   max,
   name,
@@ -63,14 +60,15 @@ function DatePicker({
         <PopoverTrigger
           id={id}
           disabled={disabled}
+          data-slot="picker-trigger"
           className={cn(
-            'flex h-12 w-full items-center gap-2 rounded-lg border border-input bg-surface-default px-3 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+            'flex h-12 w-full items-center justify-between rounded-lg border border-input bg-surface-default px-3 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
             !value && 'text-muted-foreground',
             className,
           )}
         >
+          {selected ? <span>{format(selected, 'MMM d, yyyy')}</span> : <span />}
           <CalendarBlank className="size-4 shrink-0 text-muted-foreground" />
-          {selected ? <span>{format(selected, 'MMM d, yyyy')}</span> : <span>{placeholder}</span>}
         </PopoverTrigger>
         <PopoverContent className="w-(--anchor-width) gap-0 p-0" align="start">
           <Calendar

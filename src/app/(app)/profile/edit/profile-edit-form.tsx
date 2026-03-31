@@ -4,9 +4,9 @@ import { useRouter } from 'next/navigation';
 import { useState, useRef, useTransition } from 'react';
 import { Camera } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
+import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -145,25 +145,28 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
         {avatarError && <p className="mt-1 text-sm text-destructive">{avatarError}</p>}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="bio">{auth.setupProfile.bioLabel}</Label>
+      <FloatingField label={auth.setupProfile.bioLabel} htmlFor="bio" maxLength={300}>
         <Textarea
           id="bio"
           name="bio"
           defaultValue={profile.bio}
           rows={3}
-          placeholder={auth.setupProfile.bioPlaceholder}
+          placeholder=" "
+          maxLength={300}
         />
-      </div>
+      </FloatingField>
 
-      <div className="space-y-2">
-        <Label htmlFor="preferred_pace_group">{auth.setupProfile.paceLabel}</Label>
+      <FloatingField
+        label={auth.setupProfile.paceLabel}
+        htmlFor="preferred_pace_group"
+        hasValue={!!profile.preferred_pace_group}
+      >
         <Select
           name="preferred_pace_group"
           defaultValue={profile.preferred_pace_group || undefined}
         >
           <SelectTrigger id="preferred_pace_group">
-            <SelectValue placeholder={auth.setupProfile.noPreference} />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">{auth.setupProfile.noPreference}</SelectItem>
@@ -174,7 +177,7 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </FloatingField>
 
       {/* Emergency Contact */}
       <div className="space-y-4 rounded-xl border border-border p-4">
@@ -183,28 +186,28 @@ export function ProfileEditForm({ profile, paceGroups }: ProfileEditFormProps) {
           {profileContent.emergencyContact.visibilityNote}
         </p>
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="emergency_contact_name">
-              {profileContent.emergencyContact.nameLabel}
-            </Label>
+          <FloatingField
+            label={profileContent.emergencyContact.nameLabel}
+            htmlFor="emergency_contact_name"
+          >
             <Input
               id="emergency_contact_name"
               name="emergency_contact_name"
               defaultValue={profile.emergency_contact_name}
-              placeholder={profileContent.emergencyContact.namePlaceholder}
+              placeholder=" "
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="emergency_contact_phone">
-              {profileContent.emergencyContact.phoneLabel}
-            </Label>
+          </FloatingField>
+          <FloatingField
+            label={profileContent.emergencyContact.phoneLabel}
+            htmlFor="emergency_contact_phone"
+          >
             <PhoneInput
               id="emergency_contact_phone"
               name="emergency_contact_phone"
               defaultValue={profile.emergency_contact_phone}
-              placeholder={profileContent.emergencyContact.phoneInputPlaceholder}
+              placeholder=" "
             />
-          </div>
+          </FloatingField>
         </div>
       </div>
 

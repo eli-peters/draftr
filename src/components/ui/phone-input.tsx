@@ -4,9 +4,6 @@ import * as React from 'react';
 import { useState, useRef, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { stripToDigits, formatPhoneLive, toE164 } from '@/lib/phone';
-import { appContent } from '@/content/app';
-
-const { profile } = appContent;
 
 interface PhoneInputProps extends Omit<
   React.ComponentProps<'input'>,
@@ -33,8 +30,11 @@ export function PhoneInput({ defaultValue, name, className, ...props }: PhoneInp
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      // On backspace, delete the last digit regardless of cursor position in formatted string
       if (e.key === 'Backspace' && digits.length > 0) {
+        const input = e.currentTarget;
+        // If there's a text selection, let native behavior handle bulk delete via onChange
+        if (input.selectionStart !== input.selectionEnd) return;
+        // No selection — delete the last digit (handles format characters correctly)
         e.preventDefault();
         setDigits((prev) => prev.slice(0, -1));
       }
@@ -46,20 +46,17 @@ export function PhoneInput({ defaultValue, name, className, ...props }: PhoneInp
   const e164 = digits.length === 10 ? (toE164(digits) ?? '') : '';
 
   return (
-    <div className="flex">
-      <span className="inline-flex items-center rounded-l-lg border border-r-0 border-input bg-muted px-2.5 text-sm text-muted-foreground">
-        {profile.emergencyContact.phonePrefix}
-      </span>
+    <>
       <Input
         ref={inputRef}
         inputMode="tel"
         value={formatted}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        className={`rounded-l-none ${className ?? ''}`}
+        className={className}
         {...props}
       />
       <input type="hidden" name={name} value={e164 || (digits.length > 0 ? digits : '')} />
-    </div>
+    </>
   );
 }

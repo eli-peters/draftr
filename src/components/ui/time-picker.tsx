@@ -11,8 +11,6 @@ interface TimePickerProps {
   value?: string;
   /** Called with HH:mm string */
   onChange?: (value: string) => void;
-  /** Placeholder when no time is selected */
-  placeholder?: string;
   /** Interval in minutes between options (default: 15) */
   step?: number;
   /** HTML name attribute for hidden input (form submission) */
@@ -46,7 +44,6 @@ function formatTimeDisplay(time: string): string {
 function TimePicker({
   value,
   onChange,
-  placeholder,
   step = 15,
   name,
   id,
@@ -74,14 +71,15 @@ function TimePicker({
         <PopoverTrigger
           id={id}
           disabled={disabled}
+          data-slot="picker-trigger"
           className={cn(
-            'flex h-12 w-full items-center gap-2 rounded-lg border border-input bg-surface-default px-3 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+            'flex h-12 w-full items-center justify-between rounded-lg border border-input bg-surface-default px-3 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
             !value && 'text-muted-foreground',
             className,
           )}
         >
+          {value ? <span>{formatTimeDisplay(value)}</span> : <span />}
           <Clock className="size-4 shrink-0 text-muted-foreground" />
-          {value ? <span>{formatTimeDisplay(value)}</span> : <span>{placeholder}</span>}
         </PopoverTrigger>
         <PopoverContent className="w-(--anchor-width) gap-0 overflow-hidden p-1.5" align="start">
           <div ref={listRef} className="flex max-h-64 flex-col overflow-y-auto">

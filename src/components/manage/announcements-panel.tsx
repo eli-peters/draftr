@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { PushPin, Trash, PencilSimple, Plus } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
+import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -231,25 +232,38 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
               </DrawerTitle>
             </DrawerHeader>
             <div className="space-y-4 px-4">
-              <div className="space-y-2">
-                <Label>{content.announcements.titleLabel}</Label>
+              <FloatingField
+                label={content.announcements.titleLabel}
+                htmlFor="announcement-title"
+                hasValue={!!title}
+              >
                 <Input
+                  id="announcement-title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder={content.announcements.titlePlaceholder}
+                  placeholder=" "
                 />
-              </div>
-              <div className="space-y-2">
-                <Label>{content.announcements.bodyLabel}</Label>
+              </FloatingField>
+              <FloatingField
+                label={content.announcements.bodyLabel}
+                htmlFor="announcement-body"
+                hasValue={!!body}
+                maxLength={500}
+              >
                 <Textarea
+                  id="announcement-body"
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
-                  placeholder={content.announcements.bodyPlaceholder}
+                  placeholder=" "
                   rows={4}
+                  maxLength={500}
                 />
-              </div>
-              <div className="space-y-2">
-                <Label>{content.announcements.typeLabel}</Label>
+              </FloatingField>
+              <FloatingField
+                label={content.announcements.typeLabel}
+                htmlFor="announcement-type"
+                hasValue={true}
+              >
                 <Select
                   value={announcementType}
                   onValueChange={(v) => setAnnouncementType(v as AnnouncementType)}
@@ -257,7 +271,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                     announcementTypes.map((t) => [t, content.announcements.typeOptions[t]]),
                   )}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="announcement-type">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -268,7 +282,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </FloatingField>
               <div className="flex items-center justify-between">
                 <Label htmlFor="dismissible-toggle">{content.announcements.dismissibleLabel}</Label>
                 <Switch
@@ -277,13 +291,14 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                   onCheckedChange={setIsDismissible}
                 />
               </div>
-              <div className="space-y-2">
-                <Label>{content.announcements.expiryLabel}</Label>
-                <DatePicker value={expiresAt} onChange={setExpiresAt} />
-                <p className="text-xs text-muted-foreground">
-                  {content.announcements.expiryDescription}
-                </p>
-              </div>
+              <FloatingField
+                label={content.announcements.expiryLabel}
+                htmlFor="announcement-expiry"
+                hasValue={!!expiresAt}
+                helperText={content.announcements.expiryDescription}
+              >
+                <DatePicker id="announcement-expiry" value={expiresAt} onChange={setExpiresAt} />
+              </FloatingField>
             </div>
             <DrawerFooter>
               <Button onClick={handleSubmit} disabled={!title.trim() || !body.trim()}>

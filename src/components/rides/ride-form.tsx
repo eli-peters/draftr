@@ -18,6 +18,7 @@ import {
 } from '@phosphor-icons/react/dist/ssr';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -128,10 +129,11 @@ function RecurringScheduleSection({
       {isRecurring && (
         <div className="rounded-xl bg-accent-secondary-subtle p-4 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <Label htmlFor="recurrence" className="text-sm text-foreground">
-                {ridesContent.recurring.frequency}
-              </Label>
+            <FloatingField
+              label={ridesContent.recurring.frequency}
+              htmlFor="recurrence"
+              hasValue={true}
+            >
               <Select
                 name="recurrence"
                 defaultValue="weekly"
@@ -150,11 +152,12 @@ function RecurringScheduleSection({
                   <SelectItem value="monthly">{rc.recurrence.monthly}</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="recurring_end_type" className="text-sm text-foreground">
-                {ridesContent.recurring.endCondition}
-              </Label>
+            </FloatingField>
+            <FloatingField
+              label={ridesContent.recurring.endCondition}
+              htmlFor="recurring_end_type"
+              hasValue={true}
+            >
               <Select
                 name="recurring_end_type"
                 value={recurringEndType}
@@ -174,13 +177,14 @@ function RecurringScheduleSection({
                   <SelectItem value="on_date">{ridesContent.recurring.endOnDate}</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </FloatingField>
           </div>
           {recurringEndType === 'after' && (
-            <div className="space-y-1">
-              <Label htmlFor="end_after" className="text-sm text-foreground">
-                {ridesContent.recurring.occurrences}
-              </Label>
+            <FloatingField
+              label={ridesContent.recurring.occurrences}
+              htmlFor="end_after"
+              hasValue={true}
+            >
               <Input
                 id="end_after"
                 name="end_after"
@@ -188,24 +192,25 @@ function RecurringScheduleSection({
                 min="1"
                 max="52"
                 defaultValue="10"
+                placeholder=" "
               />
-            </div>
+            </FloatingField>
           )}
           {recurringEndType === 'on_date' && (
-            <div className="space-y-1">
-              <Label htmlFor="end_date" className="text-sm text-foreground">
-                {ridesContent.recurring.endOnDate}
-              </Label>
+            <FloatingField
+              label={ridesContent.recurring.endOnDate}
+              htmlFor="end_date"
+              hasValue={!!recurringEndDate}
+            >
               <DatePicker
                 id="end_date"
                 name="end_date"
                 value={recurringEndDate}
                 onChange={onEndDateChange}
-                placeholder={form.pickDate}
                 min={seasonStart || undefined}
                 max={seasonEnd || undefined}
               />
-            </div>
+            </FloatingField>
           )}
         </div>
       )}
@@ -738,38 +743,36 @@ export function RideForm({
         <Card className="overflow-clip p-0">
           <FormCardBanner label={form.sectionBasics} icon={Bicycle} />
           <div className="flex flex-col gap-4 px-6 pb-6 pt-5">
-            <div className="space-y-2">
-              <Label htmlFor="title">{form.title}</Label>
+            <FloatingField label={form.title} htmlFor="title">
               <Input
                 ref={titleRef}
                 id="title"
                 name="title"
                 required
                 defaultValue={initialData?.title}
+                placeholder=" "
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">
-                {form.description}
-                <OptionalTag />
-              </Label>
+            </FloatingField>
+            <FloatingField
+              label={`${form.description} ${form.optional}`}
+              htmlFor="description"
+              helperText={form.descriptionHelper}
+              maxLength={500}
+            >
               <Textarea
                 ref={descriptionRef}
                 id="description"
                 name="description"
                 rows={3}
                 defaultValue={initialData?.description}
-                placeholder={form.descriptionPlaceholder}
+                placeholder=" "
+                maxLength={500}
               />
-              <p className="text-xs text-muted-foreground">{form.descriptionHelper}</p>
-            </div>
+            </FloatingField>
             {/* Ride characteristics — 2×2 grid */}
             <div className="rounded-xl bg-accent-secondary-subtle p-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <Label htmlFor="distance_km" className="text-sm text-foreground">
-                    {form.distance}
-                  </Label>
+                <FloatingField label={form.distance} htmlFor="distance_km">
                   <Input
                     ref={distanceRef}
                     id="distance_km"
@@ -778,12 +781,10 @@ export function RideForm({
                     step="0.1"
                     min="0"
                     defaultValue={initialData?.distance_km}
+                    placeholder=" "
                   />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="elevation_m" className="text-sm text-foreground">
-                    {form.elevation}
-                  </Label>
+                </FloatingField>
+                <FloatingField label={form.elevation} htmlFor="elevation_m">
                   <Input
                     ref={elevationRef}
                     id="elevation_m"
@@ -791,12 +792,10 @@ export function RideForm({
                     type="number"
                     min="0"
                     defaultValue={initialData?.elevation_m}
+                    placeholder=" "
                   />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="capacity" className="text-sm text-foreground">
-                    {form.capacity}
-                  </Label>
+                </FloatingField>
+                <FloatingField label={form.capacity} htmlFor="capacity">
                   <Input
                     id="capacity"
                     name="capacity"
@@ -804,29 +803,33 @@ export function RideForm({
                     min="1"
                     required
                     defaultValue={initialData?.capacity}
+                    placeholder=" "
                   />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="pace_group_id" className="text-sm text-foreground">
-                    {form.paceGroup}
-                  </Label>
-                  <Select
-                    name="pace_group_id"
-                    required
-                    defaultValue={initialData?.pace_group_id ?? undefined}
-                    items={Object.fromEntries(paceGroups.map((pg) => [pg.id, pg.name]))}
+                </FloatingField>
+                <div>
+                  <FloatingField
+                    label={form.paceGroup}
+                    htmlFor="pace_group_id"
+                    hasValue={!!initialData?.pace_group_id}
                   >
-                    <SelectTrigger id="pace_group_id">
-                      <SelectValue placeholder={form.selectPace} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {paceGroups.map((pg) => (
-                        <SelectItem key={pg.id} value={pg.id}>
-                          {pg.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <Select
+                      name="pace_group_id"
+                      required
+                      defaultValue={initialData?.pace_group_id ?? undefined}
+                      items={Object.fromEntries(paceGroups.map((pg) => [pg.id, pg.name]))}
+                    >
+                      <SelectTrigger id="pace_group_id">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {paceGroups.map((pg) => (
+                          <SelectItem key={pg.id} value={pg.id}>
+                            {pg.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FloatingField>
                   <div className="flex items-center justify-end gap-3 pt-2">
                     <Label htmlFor="is_drop_ride" className="text-sm text-foreground">
                       {form.isDropRide}
@@ -849,30 +852,26 @@ export function RideForm({
           <FormCardBanner label={form.sectionWhenWhere} icon={CalendarDots} />
           <div className="flex flex-col gap-4 px-6 pb-6 pt-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="ride_date">{form.date}</Label>
+              <FloatingField label={form.date} htmlFor="ride_date" hasValue={!!rideDate}>
                 <DatePicker
                   id="ride_date"
                   name="ride_date"
                   value={rideDate}
                   onChange={setRideDate}
-                  placeholder={form.pickDate}
                   min={effectiveMin}
                   max={seasonEnd || undefined}
                   required
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="start_time">{form.startTime}</Label>
+              </FloatingField>
+              <FloatingField label={form.startTime} htmlFor="start_time" hasValue={!!startTime}>
                 <TimePicker
                   id="start_time"
                   name="start_time"
                   value={startTime}
                   onChange={setStartTime}
-                  placeholder={form.pickTime}
                   required
                 />
-              </div>
+              </FloatingField>
             </div>
 
             {/* Start Location */}

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { FloatingField } from '@/components/ui/floating-field';
 import { Textarea } from '@/components/ui/textarea';
 import { cancelRide } from '@/lib/rides/actions';
 import { appContent } from '@/content/app';
@@ -50,18 +50,21 @@ export function CancelRideButton({ rideId, rideTitle }: CancelRideButtonProps) {
       <p className="text-sm font-semibold text-destructive">
         {ridesContent.edit.cancelConfirm(rideTitle)}
       </p>
-      <div className="space-y-2">
-        <Label htmlFor="cancel-reason" className="text-sm">
-          {ridesContent.edit.cancelReasonLabel}
-        </Label>
+      <FloatingField
+        label={ridesContent.edit.cancelReasonLabel}
+        htmlFor="cancel-reason"
+        hasValue={!!reason}
+        maxLength={300}
+      >
         <Textarea
           id="cancel-reason"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           rows={2}
-          placeholder={ridesContent.edit.cancelReasonPlaceholder}
+          placeholder=" "
+          maxLength={300}
         />
-      </div>
+      </FloatingField>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="flex gap-3">
         <Button variant="destructive" onClick={handleCancel} disabled={isPending}>

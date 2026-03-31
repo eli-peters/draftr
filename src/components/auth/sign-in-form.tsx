@@ -3,8 +3,8 @@
 import { useActionState } from 'react';
 import { signIn } from '@/lib/auth/actions';
 import { Button } from '@/components/ui/button';
+import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { appContent } from '@/content/app';
 
 const { signIn: content } = appContent.auth;
@@ -20,28 +20,20 @@ export function SignInForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="email">{content.emailLabel}</Label>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
-          placeholder="you@example.com"
-        />
-      </div>
+      <FloatingField label={content.emailLabel} htmlFor="email">
+        <Input id="email" name="email" type="email" required autoComplete="email" placeholder=" " />
+      </FloatingField>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="password">{content.passwordLabel}</Label>
+      <FloatingField label={content.passwordLabel} htmlFor="password">
         <Input
           id="password"
           name="password"
           type="password"
           required
           autoComplete="current-password"
+          placeholder=" "
         />
-      </div>
+      </FloatingField>
 
       {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
 
