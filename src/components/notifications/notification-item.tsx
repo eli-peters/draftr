@@ -60,7 +60,7 @@ export function NotificationItem({ notification, compact }: NotificationItemProp
 
   return (
     <div
-      className={`flex gap-3 transition-all duration-200 ${
+      className={`flex gap-3 transition-opacity duration-200 ${
         compact ? 'px-3 py-2.5' : ''
       } ${notification.is_read ? 'opacity-muted' : ''}`}
     >

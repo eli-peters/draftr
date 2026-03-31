@@ -244,6 +244,11 @@
   --opacity-completed: 0.65;
   --opacity-subtle: 0.8;
 
+  /* Easing — stronger custom curves (override Tailwind defaults) */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
   /* Fonts */
   --font-display: var(--font-outfit);
   --font-sans: var(--font-dm-sans);
@@ -427,9 +432,26 @@
 }
 
 .page-transition-forward {
-  animation: page-slide-in-from-right var(--duration-normal) ease-out;
+  animation: page-slide-in-from-right var(--duration-normal) var(--ease-out);
 }
 
 .page-transition-back {
-  animation: page-slide-in-from-left var(--duration-normal) ease-out;
+  animation: page-slide-in-from-left var(--duration-normal) var(--ease-out);
+}
+
+/* Reduced motion: disable transform/position animations, preserve opacity/color */
+@media (prefers-reduced-motion: reduce) {
+  .page-transition-forward,
+  .page-transition-back {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
