@@ -148,7 +148,7 @@ export function getCardStateStyle(state: CardState): CardStateStyle {
 
 /**
  * Resolve the single card state from ride status, signup status, and lifecycle.
- * Priority: cancelled > weather_watch > in_progress > about_to_start > waitlisted > confirmed > completed > default
+ * Priority: cancelled > completed > weather_watch > in_progress > about_to_start > waitlisted > confirmed > default
  */
 export function resolveCardState({
   rideStatus,
@@ -159,8 +159,11 @@ export function resolveCardState({
   signupStatus?: string | null;
   lifecycle?: string | null;
 }): CardState {
-  // Ride-level status always wins
+  // Cancelled is always final
   if (rideStatus === RideStatus.CANCELLED) return 'cancelled';
+  // Completed lifecycle beats everything except cancelled — ride is over
+  if (lifecycle === 'completed') return 'completed';
+  // Weather watch still shows during upcoming/about_to_start/in_progress
   if (rideStatus === RideStatus.WEATHER_WATCH) return 'weather_watch';
   // Lifecycle urgency beats signup status
   if (lifecycle === 'in_progress') return 'in_progress';
@@ -168,8 +171,6 @@ export function resolveCardState({
   // User's signup status
   if (signupStatus === SignupStatus.WAITLISTED) return 'waitlisted';
   if (signupStatus === SignupStatus.CONFIRMED) return 'confirmed';
-  // Past rides
-  if (lifecycle === 'completed') return 'completed';
   return 'default';
 }
 
@@ -221,10 +222,15 @@ export function CardBanner({
 export function StateCardBanner({
   style,
   labelOverride,
+  state,
+  suppressStates,
 }: {
   style: CardStateStyle;
   labelOverride?: string;
+  state?: CardState;
+  suppressStates?: CardState[];
 }) {
+  if (state && suppressStates?.includes(state)) return null;
   if (!style.bannerBg || !style.bannerText || !style.bannerIcon || !style.bannerLabel) return null;
   return (
     <CardBanner

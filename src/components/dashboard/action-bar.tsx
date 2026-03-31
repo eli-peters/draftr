@@ -12,7 +12,7 @@ import {
 import { Card } from '@/components/ui/card';
 import { CardBanner, CardContentSection } from '@/components/rides/ride-card-parts';
 import { appContent } from '@/content/app';
-import { formatTime, formatDuration, parseLocalDate } from '@/config/formatting';
+import { formatTime, parseLocalDate } from '@/config/formatting';
 import { getRideLifecycle } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
 import { cn, getRelativeDay } from '@/lib/utils';
@@ -73,6 +73,24 @@ interface WeatherWatchRide {
   title: string;
   ride_date: string;
   start_time: string;
+  end_time: string | null;
+  distance_km: number | null;
+  meeting_location_name: string | null;
+  pace_group_name: string | null;
+  pace_group_sort_order: number | null;
+  weather: RideWeatherSnapshot | null;
+}
+
+interface NextAvailableRide {
+  id: string;
+  title: string;
+  ride_date: string;
+  start_time: string;
+  distance_km: number | null;
+  meeting_location_name: string | null;
+  pace_group_name: string | null;
+  pace_group_sort_order: number | null;
+  weather: RideWeatherSnapshot | null;
 }
 
 interface ActionBarProps {
@@ -82,6 +100,7 @@ interface ActionBarProps {
   pendingMemberCount?: number;
   ridesNeedingLeaderCount?: number;
   weatherWatchRide?: WeatherWatchRide | null;
+  nextAvailableRide?: NextAvailableRide | null;
   userRole?: UserRole;
   timezone: string;
 }
@@ -128,6 +147,7 @@ export function ActionBar({
   pendingMemberCount = 0,
   ridesNeedingLeaderCount = 0,
   weatherWatchRide,
+  nextAvailableRide,
   userRole,
   timezone,
 }: ActionBarProps) {
@@ -139,7 +159,8 @@ export function ActionBar({
     nextWaitlistedRide ||
     (isAdmin && pendingMemberCount > 0) ||
     (isAdmin && ridesNeedingLeaderCount > 0) ||
-    weatherWatchRide;
+    weatherWatchRide ||
+    nextAvailableRide;
 
   if (!hasItems) return null;
 
@@ -183,9 +204,6 @@ export function ActionBar({
                 title={nextSignup.title}
                 paceGroupName={nextSignup.pace_group_name}
                 paceGroupSortOrder={nextSignup.pace_group_sort_order}
-                distanceKm={nextSignup.distance_km}
-                elevationM={nextSignup.elevation_m}
-                durationDisplay={formatDuration(nextSignup.start_time, nextSignup.end_time)}
                 locationName={nextSignup.meeting_location_name}
                 weather={nextSignup.weather}
               />
@@ -227,12 +245,6 @@ export function ActionBar({
                 title={nextWaitlistedRide.title}
                 paceGroupName={nextWaitlistedRide.pace_group_name}
                 paceGroupSortOrder={nextWaitlistedRide.pace_group_sort_order}
-                distanceKm={nextWaitlistedRide.distance_km}
-                elevationM={nextWaitlistedRide.elevation_m}
-                durationDisplay={formatDuration(
-                  nextWaitlistedRide.start_time,
-                  nextWaitlistedRide.end_time,
-                )}
                 locationName={nextWaitlistedRide.meeting_location_name}
               />
             </ActionCard>
@@ -277,9 +289,6 @@ export function ActionBar({
                 title={nextLedRide.title}
                 paceGroupName={nextLedRide.pace_group_name}
                 paceGroupSortOrder={nextLedRide.pace_group_sort_order}
-                distanceKm={nextLedRide.distance_km}
-                elevationM={nextLedRide.elevation_m}
-                durationDisplay={formatDuration(nextLedRide.start_time, nextLedRide.end_time)}
                 locationName={nextLedRide.meeting_location_name}
                 weather={nextLedRide.weather}
               />
@@ -298,12 +307,16 @@ export function ActionBar({
           borderClass="border-card-border-warning"
           bannerBorderClass="border-card-border-warning"
         >
-          <h3 className="font-display text-lg font-semibold tracking-[-0.01em] text-foreground">
-            {weatherWatchRide.title}
-          </h3>
-          <p className="mt-1 text-sm text-warning">
-            {content.actionBar.weatherWatchDetail(weatherWatchRide.title)}
-          </p>
+          <CardContentSection
+            date={getRelativeDay(parseLocalDate(weatherWatchRide.ride_date))}
+            time={formatTime(weatherWatchRide.start_time)}
+            title={weatherWatchRide.title}
+            paceGroupName={weatherWatchRide.pace_group_name}
+            paceGroupSortOrder={weatherWatchRide.pace_group_sort_order}
+            distanceKm={weatherWatchRide.distance_km}
+            locationName={weatherWatchRide.meeting_location_name}
+            weather={weatherWatchRide.weather}
+          />
         </ActionCard>
       )}
 
@@ -334,6 +347,28 @@ export function ActionBar({
           <p className="text-sm text-muted-foreground">
             {content.actionBar.ridesNeedingLeaderCount(ridesNeedingLeaderCount)}
           </p>
+        </ActionCard>
+      )}
+
+      {/* Nudge: next available club ride (shown when rider has no signups) */}
+      {nextAvailableRide && (
+        <ActionCard
+          label={content.nudge.heading}
+          icon={CalendarDots}
+          href={routes.ride(nextAvailableRide.id)}
+          bgClass="bg-banner-muted-bg"
+          textClass="text-banner-muted-text"
+        >
+          <CardContentSection
+            date={getRelativeDay(parseLocalDate(nextAvailableRide.ride_date))}
+            time={formatTime(nextAvailableRide.start_time)}
+            title={nextAvailableRide.title}
+            paceGroupName={nextAvailableRide.pace_group_name}
+            paceGroupSortOrder={nextAvailableRide.pace_group_sort_order}
+            distanceKm={nextAvailableRide.distance_km}
+            locationName={nextAvailableRide.meeting_location_name}
+            weather={nextAvailableRide.weather}
+          />
         </ActionCard>
       )}
     </div>

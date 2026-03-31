@@ -1,16 +1,14 @@
-import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Bicycle } from '@phosphor-icons/react/dist/ssr';
 import {
-  getUpcomingRides,
   getUserClubMembership,
   getUserNextSignup,
   getLeaderNextLedRide,
   getUserNextWaitlistedRide,
   getRidesNeedingLeaderCount,
   getLeaderWeatherWatchRide,
-  getPaceGroups,
+  getNextAvailableRide,
 } from '@/lib/rides/queries';
 import { getRideLifecycle } from '@/lib/rides/lifecycle';
 import { getPendingMemberCount } from '@/lib/manage/queries';
@@ -20,9 +18,7 @@ import { routes } from '@/config/routes';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { GreetingSection } from '@/components/dashboard/greeting-section';
 import { ActionBar } from '@/components/dashboard/action-bar';
-import { FilterableRideFeed } from '@/components/rides/filterable-ride-feed';
 import { CurrentWeather } from '@/components/weather/current-weather';
-
 import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
 import type { UserRole } from '@/config/navigation';
@@ -51,7 +47,7 @@ export default async function HomePage() {
 
   const firstName = profile?.full_name?.split(' ')[0] ?? '';
 
-  // Fetch action bar data + ride feed + filter options in parallel
+  // Fetch action bar data + nudge in parallel
   const [
     nextSignup,
     nextLedRide,
@@ -59,8 +55,7 @@ export default async function HomePage() {
     weatherWatchRide,
     pendingMemberCount,
     ridesNeedingLeaderCount,
-    rides,
-    paceGroups,
+    nextAvailableRide,
   ] = await Promise.all([
     getUserNextSignup(userId, membership.club_id),
     isLeader ? getLeaderNextLedRide(userId, membership.club_id) : null,
@@ -68,24 +63,20 @@ export default async function HomePage() {
     isLeader ? getLeaderWeatherWatchRide(userId, membership.club_id) : null,
     isAdmin ? getPendingMemberCount(membership.club_id) : 0,
     isAdmin ? getRidesNeedingLeaderCount(membership.club_id) : 0,
-    getUpcomingRides(membership.club_id, userId),
-    getPaceGroups(membership.club_id),
+    getNextAvailableRide(membership.club_id),
   ]);
 
   // Filter out rides that have already completed (past their end_time today)
   const isNotCompleted = (r: { ride_date: string; start_time: string; end_time: string | null }) =>
     getRideLifecycle(r.ride_date, r.start_time, r.end_time, timezone) !== 'completed';
 
-  const activeRides = rides.filter(isNotCompleted);
-
-  // Home feed shows only rides this user is signed up or waitlisted for
-  const myRides = activeRides.filter((r) => r.current_user_signup_status != null);
-
   // Filter completed rides from action bar items
   const filteredNextSignup = nextSignup && isNotCompleted(nextSignup) ? nextSignup : null;
   const filteredNextLedRide = nextLedRide && isNotCompleted(nextLedRide) ? nextLedRide : null;
   const filteredNextWaitlistedRide =
     nextWaitlistedRide && isNotCompleted(nextWaitlistedRide) ? nextWaitlistedRide : null;
+  const filteredWeatherWatchRide =
+    weatherWatchRide && isNotCompleted(weatherWatchRide) ? weatherWatchRide : null;
 
   // Suppress nextLedRide if it refers to the same ride as nextSignup (avoid ActionBar duplication)
   const dedupedNextLedRide =
@@ -102,47 +93,42 @@ export default async function HomePage() {
         <CurrentWeather />
       </div>
 
+      {/* Empty state — rider has no upcoming signups */}
+      {!filteredNextSignup && !filteredNextWaitlistedRide && (
+        <EmptyState
+          title={nextAvailableRide ? dashboard.nudge.noSignupsTitle : dashboard.nudge.noRidesTitle}
+          description={
+            nextAvailableRide
+              ? dashboard.nudge.noSignupsDescription
+              : dashboard.nudge.noRidesDescription
+          }
+          icon={Bicycle}
+          className="mt-10"
+        >
+          {nextAvailableRide && (
+            <Link href={routes.rides} className="mt-4">
+              <Button size="sm">{dashboard.nudge.browseCta}</Button>
+            </Link>
+          )}
+        </EmptyState>
+      )}
+
       {/* Role-contextual action bar — only renders if there are items needing attention */}
       <div className="mt-8">
         <ActionBar
           nextSignup={filteredNextSignup}
           nextLedRide={dedupedNextLedRide}
           nextWaitlistedRide={filteredNextWaitlistedRide}
-          weatherWatchRide={weatherWatchRide}
+          weatherWatchRide={filteredWeatherWatchRide}
+          nextAvailableRide={
+            !filteredNextSignup && !filteredNextWaitlistedRide ? nextAvailableRide : null
+          }
           pendingMemberCount={pendingMemberCount}
           ridesNeedingLeaderCount={ridesNeedingLeaderCount}
           userRole={userRole}
           timezone={timezone}
         />
       </div>
-
-      {/* Ride feed — shows only this user's signed-up rides */}
-      {myRides.length > 0 ? (
-        <div className="mt-10">
-          <Suspense>
-            <FilterableRideFeed
-              rides={myRides}
-              paceGroups={paceGroups}
-              toolbarLabel={appContent.rides.toolbar.homeFeed(myRides.length)}
-              emptyTitle={dashboard.myRides.emptyTitle}
-              emptyDescription={dashboard.myRides.emptyDescription}
-              cardVariant="home"
-              timezone={timezone}
-            />
-          </Suspense>
-        </div>
-      ) : (
-        <EmptyState
-          title={dashboard.myRides.emptyTitle}
-          description={dashboard.myRides.emptyDescription}
-          icon={Bicycle}
-          className="mt-12"
-        >
-          <Link href={routes.rides} className="mt-4">
-            <Button size="sm">{dashboard.myRides.emptyCta}</Button>
-          </Link>
-        </EmptyState>
-      )}
     </DashboardShell>
   );
 }

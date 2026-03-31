@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { FloatingField } from '@/components/ui/floating-field';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { toast } from 'sonner';
 import { addComment, editComment, deleteComment } from '@/lib/rides/actions';
@@ -119,13 +120,21 @@ function CommentRow({
 
         {isEditing ? (
           <div className="mt-1.5 space-y-2">
-            <Textarea
-              value={editBody}
-              onChange={(e) => setEditBody(e.target.value)}
+            <FloatingField
+              label={content.label}
+              htmlFor={`edit-comment-${comment.id}`}
+              hasValue={!!editBody}
               maxLength={CHAR_LIMIT}
-              rows={2}
-              className="text-sm"
-            />
+            >
+              <Textarea
+                id={`edit-comment-${comment.id}`}
+                value={editBody}
+                onChange={(e) => setEditBody(e.target.value)}
+                placeholder=" "
+                maxLength={CHAR_LIMIT}
+                rows={2}
+              />
+            </FloatingField>
             <div className="flex items-center gap-2">
               <Button size="sm" onClick={handleSaveEdit} disabled={isPending || !editBody.trim()}>
                 {content.save}
@@ -140,9 +149,6 @@ function CommentRow({
               >
                 {content.cancelEdit}
               </Button>
-              <span className="text-xs text-muted-foreground ml-auto">
-                {content.charLimit(editBody.length, CHAR_LIMIT)}
-              </span>
             </div>
           </div>
         ) : (
@@ -188,18 +194,22 @@ function AddCommentForm({ rideId }: { rideId: string }) {
 
   return (
     <form onSubmit={handleSubmit} className="mt-4 space-y-2">
-      <Textarea
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        placeholder={content.placeholder}
+      <FloatingField
+        label={content.label}
+        htmlFor="add-comment"
+        hasValue={!!body}
         maxLength={CHAR_LIMIT}
-        rows={2}
-        className="text-sm"
-      />
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">
-          {content.charLimit(body.length, CHAR_LIMIT)}
-        </span>
+      >
+        <Textarea
+          id="add-comment"
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          placeholder=" "
+          maxLength={CHAR_LIMIT}
+          rows={2}
+        />
+      </FloatingField>
+      <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={isPending || !body.trim()}>
           {content.submit}
         </Button>

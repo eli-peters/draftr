@@ -9,11 +9,12 @@ import {
   StateCardBanner,
   getCardStateStyle,
   resolveCardState,
+  type CardState,
 } from '@/components/rides/ride-card-parts';
 import { appContent } from '@/content/app';
 import { cn, getRelativeDay } from '@/lib/utils';
 import { RideStatus, SignupStatus } from '@/config/statuses';
-import { dateFormats, formatTime, formatDuration, parseLocalDate } from '@/config/formatting';
+import { dateFormats, formatTime, parseLocalDate } from '@/config/formatting';
 import { getRideAvailability, getRideLifecycle } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
 import { buildDirectionsUrl } from '@/lib/maps/directions';
@@ -65,16 +66,15 @@ export function ScheduleCard({ ride, onAction, timezone }: ScheduleCardProps) {
     lifecycle,
   });
   const stateStyle = getCardStateStyle(cardState);
+  const scheduleSuppressed: CardState[] = ['confirmed'];
 
   // Banner label — use schedule-specific copy for status labels
+  // 'confirmed' is suppressed (card presence implies confirmation)
   let bannerLabel: string | undefined;
-  if (cardState === 'confirmed') bannerLabel = schedule.status.confirmed;
-  else if (cardState === 'waitlisted')
+  if (cardState === 'waitlisted')
     bannerLabel = schedule.status.waitlisted(ride.waitlist_position ?? 0);
   else if (cardState === 'completed') bannerLabel = schedule.status.completed;
   else if (cardState === 'cancelled') bannerLabel = schedule.status.cancelled;
-
-  const durationDisplay = formatDuration(ride.start_time, ride.end_time);
 
   const directionsUrl = buildDirectionsUrl({
     latitude: ride.meeting_location_latitude,
@@ -97,12 +97,17 @@ export function ScheduleCard({ ride, onAction, timezone }: ScheduleCardProps) {
     <Card
       className={cn(
         'overflow-clip p-0',
-        stateStyle.borderClass,
+        cardState === 'confirmed' ? 'border-border-default' : stateStyle.borderClass,
         isCompleted && 'opacity-completed',
       )}
     >
-      {/* Banner — always present, unified style */}
-      <StateCardBanner style={stateStyle} labelOverride={bannerLabel} />
+      {/* Banner — suppressed for confirmed (card presence implies it) */}
+      <StateCardBanner
+        style={stateStyle}
+        state={cardState}
+        suppressStates={scheduleSuppressed}
+        labelOverride={bannerLabel}
+      />
 
       {/* Content — tappable, links to ride detail */}
       <Link href={routes.ride(ride.id)} className="block">
@@ -114,8 +119,6 @@ export function ScheduleCard({ ride, onAction, timezone }: ScheduleCardProps) {
           paceGroupName={ride.pace_group_name}
           paceGroupSortOrder={ride.pace_group_sort_order}
           distanceKm={ride.distance_km}
-          elevationM={ride.elevation_m}
-          durationDisplay={durationDisplay}
           locationName={ride.meeting_location_name}
           weather={ride.weather}
         />

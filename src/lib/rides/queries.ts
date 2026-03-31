@@ -397,7 +397,11 @@ export async function getLeaderWeatherWatchRide(userId: string, clubId: string) 
     .from('rides')
     .select(
       `
-      id, title, ride_date, start_time
+      id, title, ride_date, start_time, end_time, distance_km,
+      start_location_name,
+      meeting_location:meeting_locations(name),
+      pace_group:pace_groups(name, sort_order),
+      ride_weather_snapshots(*)
     `,
     )
     .eq('club_id', clubId)
@@ -408,7 +412,70 @@ export async function getLeaderWeatherWatchRide(userId: string, clubId: string) 
     .limit(1)
     .maybeSingle();
 
-  return data;
+  if (!data) return null;
+
+  const meeting = data.meeting_location as unknown as { name: string } | null;
+  const pace = data.pace_group as unknown as { name: string; sort_order: number } | null;
+  const weather = data.ride_weather_snapshots as unknown as RideWeatherSnapshot | null;
+
+  return {
+    id: data.id,
+    title: data.title,
+    ride_date: data.ride_date,
+    start_time: data.start_time,
+    end_time: data.end_time,
+    distance_km: data.distance_km,
+    meeting_location_name: data.start_location_name ?? meeting?.name ?? null,
+    pace_group_name: pace?.name ?? null,
+    pace_group_sort_order: pace?.sort_order ?? null,
+    weather: weather ?? null,
+  };
+}
+
+/**
+ * Fetch the single next upcoming non-cancelled ride for a club.
+ * Lightweight query for the homepage nudge — minimal fields, no joins beyond pace group.
+ */
+export async function getNextAvailableRide(clubId: string) {
+  const supabase = await createClient();
+  const today = todayDateString();
+
+  const { data } = await supabase
+    .from('rides')
+    .select(
+      `
+      id, title, ride_date, start_time, distance_km,
+      start_location_name,
+      meeting_location:meeting_locations(name),
+      pace_group:pace_groups(name, sort_order),
+      ride_weather_snapshots(*)
+    `,
+    )
+    .eq('club_id', clubId)
+    .gte('ride_date', today)
+    .neq('status', 'cancelled')
+    .order('ride_date', { ascending: true })
+    .order('start_time', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (!data) return null;
+
+  const meeting = data.meeting_location as unknown as { name: string } | null;
+  const pace = data.pace_group as unknown as { name: string; sort_order: number } | null;
+  const weather = data.ride_weather_snapshots as unknown as RideWeatherSnapshot | null;
+
+  return {
+    id: data.id,
+    title: data.title,
+    ride_date: data.ride_date,
+    start_time: data.start_time,
+    distance_km: data.distance_km,
+    meeting_location_name: data.start_location_name ?? meeting?.name ?? null,
+    pace_group_name: pace?.name ?? null,
+    pace_group_sort_order: pace?.sort_order ?? null,
+    weather: weather ?? null,
+  };
 }
 
 /**

@@ -7,11 +7,12 @@ import {
   RiderAvatarGroup,
   getCardStateStyle,
   resolveCardState,
+  type CardState,
 } from '@/components/rides/ride-card-parts';
 import { CardSignupButton } from '@/components/rides/card-signup-button';
 import { appContent } from '@/content/app';
 import { cn, getRelativeDay } from '@/lib/utils';
-import { dateFormats, formatTime, formatDuration, parseLocalDate } from '@/config/formatting';
+import { dateFormats, formatTime, parseLocalDate } from '@/config/formatting';
 import { getRideAvailability, getRideLifecycle } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
 import type { RideWithDetails } from '@/types/database';
@@ -36,12 +37,21 @@ export function RideCard({ ride, variant = 'rides', timezone }: RideCardProps) {
   const stateStyle = getCardStateStyle(cardState);
 
   const isHome = variant === 'home';
+  const homeSuppressed: CardState[] = ['confirmed'];
+  const isBannerSuppressed = isHome && homeSuppressed.includes(cardState);
 
   return (
     <Link href={routes.ride(ride.id)} className="group block">
-      <Card className={cn('overflow-clip p-0', stateStyle.borderClass)}>
+      <Card
+        className={cn(
+          'overflow-clip p-0',
+          isBannerSuppressed ? 'border-border-default' : stateStyle.borderClass,
+        )}
+      >
         <StateCardBanner
           style={stateStyle}
+          state={cardState}
+          suppressStates={isHome ? homeSuppressed : undefined}
           labelOverride={
             cardState === 'waitlisted' && ride.current_user_waitlist_position
               ? appContent.schedule.status.waitlisted(ride.current_user_waitlist_position)
@@ -49,7 +59,7 @@ export function RideCard({ ride, variant = 'rides', timezone }: RideCardProps) {
           }
         />
         {isHome ? (
-          <HomeLayout ride={ride} hasBanner={!!stateStyle.bannerBg} />
+          <HomeLayout ride={ride} hasBanner={!!stateStyle.bannerBg && !isBannerSuppressed} />
         ) : (
           <RidesLayout ride={ride} hasBanner={!!stateStyle.bannerBg} timezone={timezone} />
         )}
@@ -74,9 +84,6 @@ function HomeLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boo
       title={ride.title}
       paceGroupName={ride.pace_group?.name ?? null}
       paceGroupSortOrder={ride.pace_group?.sort_order ?? null}
-      distanceKm={ride.distance_km}
-      elevationM={ride.elevation_m}
-      durationDisplay={formatDuration(ride.start_time, ride.end_time)}
       locationName={ride.start_location_name ?? ride.meeting_location?.name ?? null}
       weather={ride.weather}
     />
@@ -112,8 +119,6 @@ function RidesLayout({
         paceGroupName={ride.pace_group?.name ?? null}
         paceGroupSortOrder={ride.pace_group?.sort_order ?? null}
         distanceKm={ride.distance_km}
-        elevationM={ride.elevation_m}
-        durationDisplay={formatDuration(ride.start_time, ride.end_time)}
         locationName={ride.start_location_name ?? ride.meeting_location?.name ?? null}
         weather={ride.weather}
       />

@@ -93,14 +93,21 @@ export const appContent = {
       ridesNeedingLeaderCount: (count: number) =>
         `${count} ride${count === 1 ? '' : 's'} this week without a leader`,
       weatherWatch: 'Weather Watch',
-      weatherWatchDetail: (rideTitle: string) =>
-        `${rideTitle} may be affected by weather conditions`,
+      weatherWatchDetail: 'This ride may be affected by weather conditions',
     },
     feed: {
       heading: 'More upcoming rides for you',
     },
     announcementBanner: {
       dismiss: 'Dismiss',
+    },
+    nudge: {
+      heading: 'Next Club Ride',
+      browseCta: 'Browse Rides',
+      noSignupsTitle: 'No rides on your calendar',
+      noSignupsDescription: 'Browse upcoming rides and find one that fits your schedule.',
+      noRidesTitle: 'No rides scheduled yet',
+      noRidesDescription: 'Check back soon — ride leaders will post new rides here.',
     },
     // Legacy keys — used by dashboard components that may be repurposed later
     nextRide: 'Your Next Ride',
@@ -343,6 +350,7 @@ export const appContent = {
     },
     comments: {
       heading: 'Comments',
+      label: 'Add a comment',
       placeholder: 'Add a comment...',
       submit: 'Post',
       edit: 'Edit',
