@@ -91,6 +91,19 @@ export function getRideAvailability(
   return { lifecycle, isCancelled, canSignUp, canCancel, isFull, isPast };
 }
 
+/**
+ * Quick boolean check — has this ride passed its end time?
+ * Used by query helpers to filter out completed rides before returning results.
+ */
+export function isRideCompleted(
+  rideDate: string,
+  startTime: string,
+  endTime: string | null,
+  timezone: string,
+): boolean {
+  return getRideLifecycle(rideDate, startTime, endTime, timezone) === 'completed';
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------

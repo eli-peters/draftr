@@ -82,7 +82,10 @@ export function NotificationItem({ notification, compact }: NotificationItemProp
             {notification.title}
           </h3>
           {!notification.is_read && (
-            <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+            <span
+              aria-hidden="true"
+              className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-badge-notification-bg"
+            />
           )}
         </div>
         {!compact && notification.body && (

@@ -18,7 +18,7 @@ export default async function RidesPage() {
   const timezone = (membership.club as unknown as Club).timezone;
 
   const [allRides, paceGroups] = await Promise.all([
-    getUpcomingRides(membership.club_id, membership.user_id),
+    getUpcomingRides(membership.club_id, membership.user_id, timezone),
     getPaceGroups(membership.club_id),
   ]);
 

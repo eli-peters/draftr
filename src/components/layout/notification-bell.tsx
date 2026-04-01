@@ -10,6 +10,7 @@ import { NotificationItem } from '@/components/notifications/notification-item';
 import { markNotificationRead, markAllNotificationsRead } from '@/lib/notifications/actions';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
+import { formatBadgeCount } from '@/lib/utils';
 import type { Notification } from '@/components/notifications/notification-item';
 
 function getNotificationHref(notification: Notification): string | null {
@@ -46,12 +47,19 @@ export function NotificationBell({ notifications, unreadCount }: NotificationBel
     }
   }
 
+  const displayCount = formatBadgeCount(unreadCount);
+  const bellAriaLabel =
+    unreadCount > 0 ? header.notificationsBadge(displayCount) : notifContent.heading;
+
   const bellIcon = (
     <>
       <Bell weight={unreadCount > 0 ? 'fill' : 'duotone'} className="h-6 w-6" />
       {unreadCount > 0 && (
-        <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary-foreground px-1 text-micro font-bold text-primary tabular-nums ring-2 ring-primary">
-          {unreadCount}
+        <span
+          aria-hidden="true"
+          className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-badge-notification-bg px-0.5 text-micro font-bold text-badge-notification-text tabular-nums ring-1 ring-primary-foreground"
+        >
+          {displayCount}
         </span>
       )}
     </>
@@ -66,7 +74,7 @@ export function NotificationBell({ notifications, unreadCount }: NotificationBel
       <Link
         href={routes.notifications}
         className={`${bellClassName} md:hidden`}
-        aria-label={notifContent.heading}
+        aria-label={bellAriaLabel}
       >
         {bellIcon}
       </Link>
@@ -77,7 +85,7 @@ export function NotificationBell({ notifications, unreadCount }: NotificationBel
           <Popover>
             <PopoverTrigger
               className={`${bellClassName} cursor-pointer`}
-              aria-label={notifContent.heading}
+              aria-label={bellAriaLabel}
             >
               <div>{bellIcon}</div>
             </PopoverTrigger>

@@ -194,6 +194,8 @@
   --color-badge-role-new-text: var(--badge-role-new-text);
   --color-badge-count-bg: var(--badge-count-bg);
   --color-badge-count-text: var(--badge-count-text);
+  --color-badge-notification-bg: var(--badge-notification-bg);
+  --color-badge-notification-text: var(--badge-notification-text);
 
   /* Card border tokens → Tailwind (muted status borders for card outlines) */
   --color-card-border-success: var(--card-border-success);
@@ -594,4 +596,13 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Scrollbar-hide utility for horizontal scroll containers */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

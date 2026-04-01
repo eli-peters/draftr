@@ -1,3 +1,4 @@
+import { TZDate } from '@date-fns/tz';
 import type { BadgeVariant } from '@/components/ui/badge';
 
 /** Date format patterns used with date-fns format() */
@@ -37,9 +38,18 @@ export function parseLocalDate(dateStr: string): Date {
   return new Date(year, month - 1, day);
 }
 
-/** Get today's date as a local ISO string (YYYY-MM-DD) */
+/** Get today's date as a local ISO string (YYYY-MM-DD) — uses browser/server local time. */
 export function todayDateString(): string {
   const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/** Get today's date as YYYY-MM-DD in a specific IANA timezone. */
+export function todayInTimezone(timezone: string): string {
+  const now = new TZDate(new Date(), timezone);
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');

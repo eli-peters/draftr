@@ -21,7 +21,7 @@ import { reverseGeocode } from '@/lib/maps/reverse-geocode';
 import { saveMeetingLocation } from '@/lib/rides/actions';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
-import type { MeetingLocation } from '@/components/rides/ride-form';
+import type { MeetingLocation } from '@/types/rides';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 const LIGHT_STYLE = 'mapbox://styles/mapbox/outdoors-v12';

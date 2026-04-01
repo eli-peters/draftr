@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/layout/page-header';
-import { cn } from '@/lib/utils';
+import { cn, formatBadgeCount } from '@/lib/utils';
 import { NotificationItem } from '@/components/notifications/notification-item';
 import { markNotificationRead, markAllNotificationsRead } from '@/lib/notifications/actions';
+import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import type { Notification } from '@/components/notifications/notification-item';
 
@@ -34,6 +35,7 @@ export function NotificationsList({
   emptyDescription,
 }: NotificationsListProps) {
   const unreadCount = notifications.filter((n) => !n.is_read).length;
+  const displayCount = formatBadgeCount(unreadCount);
 
   async function handleMarkAllRead() {
     await markAllNotificationsRead();
@@ -49,8 +51,11 @@ export function NotificationsList({
         title={heading}
         badge={
           unreadCount > 0 ? (
-            <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-2 text-sm font-bold text-primary-foreground tabular-nums">
-              {unreadCount}
+            <span
+              aria-label={appContent.notifications.badge.ariaLabel(displayCount)}
+              className="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-2 text-sm font-bold text-primary-foreground tabular-nums"
+            >
+              {displayCount}
             </span>
           ) : undefined
         }

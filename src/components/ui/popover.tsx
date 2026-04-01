@@ -25,7 +25,7 @@ function PopoverContent({
   const containerRef = React.useRef<HTMLDivElement>(null);
   return (
     <>
-      <div ref={containerRef} style={{ position: 'fixed' }} />
+      <div ref={containerRef} style={{ position: 'fixed', zIndex: 60 }} />
       <PopoverPrimitive.Portal container={containerRef}>
         <PopoverPrimitive.Positioner
           align={align}

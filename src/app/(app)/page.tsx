@@ -10,7 +10,6 @@ import {
   getLeaderWeatherWatchRide,
   getNextAvailableRide,
 } from '@/lib/rides/queries';
-import { getRideLifecycle } from '@/lib/rides/lifecycle';
 import { getPendingMemberCount } from '@/lib/manage/queries';
 import { createClient } from '@/lib/supabase/server';
 import { appContent } from '@/content/app';
@@ -48,6 +47,7 @@ export default async function HomePage() {
   const firstName = profile?.full_name?.split(' ')[0] ?? '';
 
   // Fetch action bar data + nudge in parallel
+  // All "next" queries filter out completed same-day rides internally
   const [
     nextSignup,
     nextLedRide,
@@ -57,32 +57,24 @@ export default async function HomePage() {
     ridesNeedingLeaderCount,
     nextAvailableRide,
   ] = await Promise.all([
-    getUserNextSignup(userId, membership.club_id),
-    isLeader ? getLeaderNextLedRide(userId, membership.club_id) : null,
-    getUserNextWaitlistedRide(userId, membership.club_id),
-    isLeader ? getLeaderWeatherWatchRide(userId, membership.club_id) : null,
+    getUserNextSignup(userId, membership.club_id, timezone),
+    isLeader ? getLeaderNextLedRide(userId, membership.club_id, timezone) : null,
+    getUserNextWaitlistedRide(userId, membership.club_id, timezone),
+    isLeader ? getLeaderWeatherWatchRide(userId, membership.club_id, timezone) : null,
     isAdmin ? getPendingMemberCount(membership.club_id) : 0,
-    isAdmin ? getRidesNeedingLeaderCount(membership.club_id) : 0,
-    getNextAvailableRide(membership.club_id),
+    isAdmin ? getRidesNeedingLeaderCount(membership.club_id, timezone) : 0,
+    getNextAvailableRide(membership.club_id, timezone),
   ]);
 
-  // Filter out rides that have already completed (past their end_time today)
-  const isNotCompleted = (r: { ride_date: string; start_time: string; end_time: string | null }) =>
-    getRideLifecycle(r.ride_date, r.start_time, r.end_time, timezone) !== 'completed';
-
-  // Filter completed rides from action bar items
-  const filteredNextSignup = nextSignup && isNotCompleted(nextSignup) ? nextSignup : null;
-  const filteredNextLedRide = nextLedRide && isNotCompleted(nextLedRide) ? nextLedRide : null;
-  const filteredNextWaitlistedRide =
-    nextWaitlistedRide && isNotCompleted(nextWaitlistedRide) ? nextWaitlistedRide : null;
-  const filteredWeatherWatchRide =
-    weatherWatchRide && isNotCompleted(weatherWatchRide) ? weatherWatchRide : null;
-
-  // Suppress nextLedRide if it refers to the same ride as nextSignup (avoid ActionBar duplication)
+  // Dedup: suppress cards that refer to the same ride as another card
   const dedupedNextLedRide =
-    filteredNextLedRide && filteredNextSignup && filteredNextLedRide.id === filteredNextSignup.id
-      ? null
-      : filteredNextLedRide;
+    nextLedRide && nextSignup && nextLedRide.id === nextSignup.id ? null : nextLedRide;
+
+  const personalRideIds = new Set(
+    [nextSignup?.id, dedupedNextLedRide?.id, nextWaitlistedRide?.id].filter(Boolean),
+  );
+  const dedupedNextAvailableRide =
+    nextAvailableRide && personalRideIds.has(nextAvailableRide.id) ? null : nextAvailableRide;
 
   return (
     <DashboardShell>
@@ -94,7 +86,7 @@ export default async function HomePage() {
       </div>
 
       {/* Empty state — rider has no upcoming signups */}
-      {!filteredNextSignup && !filteredNextWaitlistedRide && (
+      {!nextSignup && !nextWaitlistedRide && (
         <EmptyState
           title={nextAvailableRide ? dashboard.nudge.noSignupsTitle : dashboard.nudge.noRidesTitle}
           description={
@@ -116,13 +108,11 @@ export default async function HomePage() {
       {/* Role-contextual action bar — only renders if there are items needing attention */}
       <div className="mt-8">
         <ActionBar
-          nextSignup={filteredNextSignup}
+          nextSignup={nextSignup}
           nextLedRide={dedupedNextLedRide}
-          nextWaitlistedRide={filteredNextWaitlistedRide}
-          weatherWatchRide={filteredWeatherWatchRide}
-          nextAvailableRide={
-            !filteredNextSignup && !filteredNextWaitlistedRide ? nextAvailableRide : null
-          }
+          nextWaitlistedRide={nextWaitlistedRide}
+          weatherWatchRide={weatherWatchRide}
+          nextAvailableRide={dedupedNextAvailableRide}
           pendingMemberCount={pendingMemberCount}
           ridesNeedingLeaderCount={ridesNeedingLeaderCount}
           userRole={userRole}

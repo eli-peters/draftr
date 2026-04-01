@@ -33,6 +33,7 @@ export const appContent = {
     profile: 'Profile',
     profileMenu: 'Profile menu',
     noNotifications: 'No new notifications',
+    notificationsBadge: (count: string) => `Notifications, ${count} unread`,
   },
 
   auth: {
@@ -271,6 +272,12 @@ export const appContent = {
       sectionDetails: 'Details',
       sectionSchedule: 'Schedule',
 
+      // Step-based headings (progressive disclosure)
+      stepRouteHeading: "Let's start with a route",
+      stepDetailsHeading: 'Now, tell us about the ride',
+      stepWhenWhereHeading: 'When and where does it start?',
+      stepAdditionalHeading: 'Any final details?',
+
       // Import quick-start
       importHeading: 'Start from a route',
       importDescription: 'Import from a connected service to pre-fill ride details.',
@@ -337,6 +344,7 @@ export const appContent = {
       locationPickerMapHint: 'Tap the map to place a pin',
       locationPickerNoSaved: 'No saved locations yet',
       selectPace: 'Select pace...',
+      serviceNotConnected: 'Not connected',
       optional: '(optional)',
       required: 'Title, date, start time, meeting location, pace group, and capacity are required.',
       descriptionPlaceholder: 'Brief description of the ride...',
@@ -533,6 +541,9 @@ export const appContent = {
   notifications: {
     heading: 'Notifications',
     markAllRead: 'Mark all read',
+    badge: {
+      ariaLabel: (count: string) => `${count} unread notifications`,
+    },
     emptyState: {
       title: 'All caught up',
       description: "You'll see ride updates and announcements here.",

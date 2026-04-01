@@ -24,6 +24,12 @@ export function getRelativeDay(
   return format(date, 'EEE, MMM d');
 }
 
+const BADGE_COUNT_CAP = 9;
+
+export function formatBadgeCount(count: number): string {
+  return count > BADGE_COUNT_CAP ? `${BADGE_COUNT_CAP}+` : `${count}`;
+}
+
 export function getInitials(name: string): string {
   return name
     .split(' ')

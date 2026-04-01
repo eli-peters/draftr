@@ -1,7 +1,8 @@
 import { cache } from 'react';
 import { createClient, getUser } from '@/lib/supabase/server';
 import { SignupStatus } from '@/config/statuses';
-import { todayDateString } from '@/config/formatting';
+import { todayDateString, todayInTimezone } from '@/config/formatting';
+import { isRideCompleted } from '@/lib/rides/lifecycle';
 import type {
   Ride,
   MeetingLocation,
@@ -99,9 +100,10 @@ function toRideWithDetails(ride: RawRideRow, currentUserId?: string): RideWithDe
 export async function getUpcomingRides(
   clubId: string,
   userId?: string,
+  timezone?: string,
 ): Promise<RideWithDetails[]> {
   const supabase = await createClient();
-  const today = todayDateString();
+  const today = timezone ? todayInTimezone(timezone) : todayDateString();
 
   const { data, error } = await supabase
     .from('rides')
@@ -175,10 +177,11 @@ export async function getUserSignupStatus(rideId: string) {
 /**
  * Fetch the user's next confirmed ride signup (for action bar).
  */
-export async function getUserNextSignup(userId: string, clubId: string) {
+export async function getUserNextSignup(userId: string, clubId: string, timezone: string) {
   const supabase = await createClient();
-  const today = todayDateString();
+  const today = todayInTimezone(timezone);
 
+  // Fetch a small batch so we can skip completed same-day rides
   const { data } = await supabase
     .from('ride_signups')
     .select(
@@ -200,13 +203,11 @@ export async function getUserNextSignup(userId: string, clubId: string) {
     .gte('ride.ride_date', today)
     .neq('ride.status', 'cancelled')
     .order('ride(ride_date)', { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    .limit(5);
 
-  if (!data?.ride) return null;
+  if (!data?.length) return null;
 
-  // Supabase returns the inner-joined ride as an object (not array) due to !inner
-  const ride = data.ride as unknown as {
+  type RideRow = {
     id: string;
     title: string;
     ride_date: string;
@@ -222,30 +223,39 @@ export async function getUserNextSignup(userId: string, clubId: string) {
     ride_weather_snapshots: RideWeatherSnapshot | null;
   };
 
-  return {
-    id: ride.id,
-    title: ride.title,
-    ride_date: ride.ride_date,
-    start_time: ride.start_time,
-    end_time: ride.end_time,
-    meeting_location_name: ride.start_location_name ?? ride.meeting_location?.name ?? null,
-    pace_group_name: ride.pace_group?.name ?? null,
-    pace_group_sort_order: ride.pace_group?.sort_order ?? null,
-    distance_km: ride.distance_km,
-    elevation_m: ride.elevation_m,
-    signup_count: ride.ride_signups?.[0]?.count ?? 0,
-    capacity: ride.capacity,
-    weather: ride.ride_weather_snapshots ?? null,
-  };
+  for (const row of data) {
+    if (!row.ride) continue;
+    const ride = row.ride as unknown as RideRow;
+    if (isRideCompleted(ride.ride_date, ride.start_time, ride.end_time, timezone)) continue;
+
+    return {
+      id: ride.id,
+      title: ride.title,
+      ride_date: ride.ride_date,
+      start_time: ride.start_time,
+      end_time: ride.end_time,
+      meeting_location_name: ride.start_location_name ?? ride.meeting_location?.name ?? null,
+      pace_group_name: ride.pace_group?.name ?? null,
+      pace_group_sort_order: ride.pace_group?.sort_order ?? null,
+      distance_km: ride.distance_km,
+      elevation_m: ride.elevation_m,
+      signup_count: ride.ride_signups?.[0]?.count ?? 0,
+      capacity: ride.capacity,
+      weather: ride.ride_weather_snapshots ?? null,
+    };
+  }
+
+  return null;
 }
 
 /**
  * Fetch the leader's next upcoming led ride (for action bar).
  */
-export async function getLeaderNextLedRide(userId: string, clubId: string) {
+export async function getLeaderNextLedRide(userId: string, clubId: string, timezone: string) {
   const supabase = await createClient();
-  const today = todayDateString();
+  const today = todayInTimezone(timezone);
 
+  // Fetch a small batch so we can skip completed same-day rides
   const { data } = await supabase
     .from('rides')
     .select(
@@ -264,43 +274,48 @@ export async function getLeaderNextLedRide(userId: string, clubId: string) {
     .neq('status', 'cancelled')
     .order('ride_date', { ascending: true })
     .order('start_time', { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    .limit(5);
 
-  if (!data) return null;
+  if (!data?.length) return null;
 
-  const location = data.meeting_location as unknown as { name: string } | null;
-  const pace = data.pace_group as unknown as { name: string; sort_order: number } | null;
-  const signups = data.ride_signups as unknown as { count: number }[];
-  const weatherSnapshot = (data as Record<string, unknown>)
-    .ride_weather_snapshots as RideWeatherSnapshot | null;
+  for (const row of data) {
+    const raw = row as Record<string, unknown>;
+    const endTime = raw.end_time as string | null;
+    if (isRideCompleted(row.ride_date, row.start_time, endTime, timezone)) continue;
 
-  const raw = data as Record<string, unknown>;
+    const location = row.meeting_location as unknown as { name: string } | null;
+    const pace = row.pace_group as unknown as { name: string; sort_order: number } | null;
+    const signups = row.ride_signups as unknown as { count: number }[];
+    const weatherSnapshot = raw.ride_weather_snapshots as RideWeatherSnapshot | null;
 
-  return {
-    id: data.id,
-    title: data.title,
-    ride_date: data.ride_date,
-    start_time: data.start_time,
-    end_time: raw.end_time as string | null,
-    meeting_location_name: (raw.start_location_name as string) ?? location?.name ?? null,
-    pace_group_name: pace?.name ?? null,
-    pace_group_sort_order: pace?.sort_order ?? null,
-    distance_km: raw.distance_km as number | null,
-    elevation_m: raw.elevation_m as number | null,
-    signup_count: signups?.[0]?.count ?? 0,
-    capacity: data.capacity as number | null,
-    weather: weatherSnapshot ?? null,
-  };
+    return {
+      id: row.id,
+      title: row.title,
+      ride_date: row.ride_date,
+      start_time: row.start_time,
+      end_time: endTime,
+      meeting_location_name: (raw.start_location_name as string) ?? location?.name ?? null,
+      pace_group_name: pace?.name ?? null,
+      pace_group_sort_order: pace?.sort_order ?? null,
+      distance_km: raw.distance_km as number | null,
+      elevation_m: raw.elevation_m as number | null,
+      signup_count: signups?.[0]?.count ?? 0,
+      capacity: row.capacity as number | null,
+      weather: weatherSnapshot ?? null,
+    };
+  }
+
+  return null;
 }
 
 /**
  * Fetch the user's next waitlisted ride (for action bar).
  */
-export async function getUserNextWaitlistedRide(userId: string, clubId: string) {
+export async function getUserNextWaitlistedRide(userId: string, clubId: string, timezone: string) {
   const supabase = await createClient();
-  const today = todayDateString();
+  const today = todayInTimezone(timezone);
 
+  // Fetch a small batch so we can skip completed same-day rides
   const { data } = await supabase
     .from('ride_signups')
     .select(
@@ -321,12 +336,11 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string) 
     .gte('ride.ride_date', today)
     .neq('ride.status', 'cancelled')
     .order('ride(ride_date)', { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    .limit(5);
 
-  if (!data?.ride) return null;
+  if (!data?.length) return null;
 
-  const ride = data.ride as unknown as {
+  type RideRow = {
     id: string;
     title: string;
     ride_date: string;
@@ -339,39 +353,45 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string) 
     pace_group: { name: string; sort_order: number } | null;
   };
 
-  // Derive waitlist position from signed_up_at order
-  const { count } = await supabase
-    .from('ride_signups')
-    .select('*', { count: 'exact', head: true })
-    .eq('ride_id', ride.id)
-    .eq('status', 'waitlisted')
-    .lte('signed_up_at', data.signed_up_at);
+  for (const row of data) {
+    if (!row.ride) continue;
+    const ride = row.ride as unknown as RideRow;
+    if (isRideCompleted(ride.ride_date, ride.start_time, ride.end_time, timezone)) continue;
 
-  return {
-    id: ride.id,
-    title: ride.title,
-    ride_date: ride.ride_date,
-    start_time: ride.start_time,
-    end_time: ride.end_time,
-    distance_km: ride.distance_km,
-    elevation_m: ride.elevation_m,
-    meeting_location_name: ride.start_location_name ?? ride.meeting_location?.name ?? null,
-    pace_group_name: ride.pace_group?.name ?? null,
-    pace_group_sort_order: ride.pace_group?.sort_order ?? null,
-    waitlist_position: count ?? 1,
-  };
+    // Derive waitlist position from signed_up_at order
+    const { count } = await supabase
+      .from('ride_signups')
+      .select('*', { count: 'exact', head: true })
+      .eq('ride_id', ride.id)
+      .eq('status', 'waitlisted')
+      .lte('signed_up_at', row.signed_up_at);
+
+    return {
+      id: ride.id,
+      title: ride.title,
+      ride_date: ride.ride_date,
+      start_time: ride.start_time,
+      end_time: ride.end_time,
+      distance_km: ride.distance_km,
+      elevation_m: ride.elevation_m,
+      meeting_location_name: ride.start_location_name ?? ride.meeting_location?.name ?? null,
+      pace_group_name: ride.pace_group?.name ?? null,
+      pace_group_sort_order: ride.pace_group?.sort_order ?? null,
+      waitlist_position: count ?? 1,
+    };
+  }
+
+  return null;
 }
 
 /**
  * Count rides this week without a leader (created_by IS NULL).
  */
-export async function getRidesNeedingLeaderCount(clubId: string) {
+export async function getRidesNeedingLeaderCount(clubId: string, timezone?: string) {
   const supabase = await createClient();
-  const today = new Date();
-  const weekFromNow = new Date(today);
+  const todayStr = timezone ? todayInTimezone(timezone) : new Date().toISOString().split('T')[0];
+  const weekFromNow = new Date(todayStr + 'T00:00:00');
   weekFromNow.setDate(weekFromNow.getDate() + 7);
-
-  const todayStr = today.toISOString().split('T')[0];
   const weekStr = weekFromNow.toISOString().split('T')[0];
 
   const { count } = await supabase
@@ -389,10 +409,11 @@ export async function getRidesNeedingLeaderCount(clubId: string) {
 /**
  * Get the leader's next led ride that's in weather_watch status (for action bar stub).
  */
-export async function getLeaderWeatherWatchRide(userId: string, clubId: string) {
+export async function getLeaderWeatherWatchRide(userId: string, clubId: string, timezone: string) {
   const supabase = await createClient();
-  const today = todayDateString();
+  const today = todayInTimezone(timezone);
 
+  // Fetch a small batch so we can skip completed same-day rides
   const { data } = await supabase
     .from('rides')
     .select(
@@ -409,42 +430,48 @@ export async function getLeaderWeatherWatchRide(userId: string, clubId: string) 
     .eq('status', 'weather_watch')
     .gte('ride_date', today)
     .order('ride_date', { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    .limit(5);
 
-  if (!data) return null;
+  if (!data?.length) return null;
 
-  const meeting = data.meeting_location as unknown as { name: string } | null;
-  const pace = data.pace_group as unknown as { name: string; sort_order: number } | null;
-  const weather = data.ride_weather_snapshots as unknown as RideWeatherSnapshot | null;
+  for (const row of data) {
+    if (isRideCompleted(row.ride_date, row.start_time, row.end_time, timezone)) continue;
 
-  return {
-    id: data.id,
-    title: data.title,
-    ride_date: data.ride_date,
-    start_time: data.start_time,
-    end_time: data.end_time,
-    distance_km: data.distance_km,
-    meeting_location_name: data.start_location_name ?? meeting?.name ?? null,
-    pace_group_name: pace?.name ?? null,
-    pace_group_sort_order: pace?.sort_order ?? null,
-    weather: weather ?? null,
-  };
+    const meeting = row.meeting_location as unknown as { name: string } | null;
+    const pace = row.pace_group as unknown as { name: string; sort_order: number } | null;
+    const weather = row.ride_weather_snapshots as unknown as RideWeatherSnapshot | null;
+
+    return {
+      id: row.id,
+      title: row.title,
+      ride_date: row.ride_date,
+      start_time: row.start_time,
+      end_time: row.end_time,
+      distance_km: row.distance_km,
+      meeting_location_name: row.start_location_name ?? meeting?.name ?? null,
+      pace_group_name: pace?.name ?? null,
+      pace_group_sort_order: pace?.sort_order ?? null,
+      weather: weather ?? null,
+    };
+  }
+
+  return null;
 }
 
 /**
  * Fetch the single next upcoming non-cancelled ride for a club.
  * Lightweight query for the homepage nudge — minimal fields, no joins beyond pace group.
  */
-export async function getNextAvailableRide(clubId: string) {
+export async function getNextAvailableRide(clubId: string, timezone: string) {
   const supabase = await createClient();
-  const today = todayDateString();
+  const today = todayInTimezone(timezone);
 
+  // Fetch a small batch so we can skip completed same-day rides
   const { data } = await supabase
     .from('rides')
     .select(
       `
-      id, title, ride_date, start_time, distance_km,
+      id, title, ride_date, start_time, end_time, distance_km,
       start_location_name,
       meeting_location:meeting_locations(name),
       pace_group:pace_groups(name, sort_order),
@@ -456,26 +483,32 @@ export async function getNextAvailableRide(clubId: string) {
     .neq('status', 'cancelled')
     .order('ride_date', { ascending: true })
     .order('start_time', { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    .limit(5);
 
-  if (!data) return null;
+  if (!data?.length) return null;
 
-  const meeting = data.meeting_location as unknown as { name: string } | null;
-  const pace = data.pace_group as unknown as { name: string; sort_order: number } | null;
-  const weather = data.ride_weather_snapshots as unknown as RideWeatherSnapshot | null;
+  for (const row of data) {
+    if (isRideCompleted(row.ride_date, row.start_time, row.end_time, timezone)) continue;
 
-  return {
-    id: data.id,
-    title: data.title,
-    ride_date: data.ride_date,
-    start_time: data.start_time,
-    distance_km: data.distance_km,
-    meeting_location_name: data.start_location_name ?? meeting?.name ?? null,
-    pace_group_name: pace?.name ?? null,
-    pace_group_sort_order: pace?.sort_order ?? null,
-    weather: weather ?? null,
-  };
+    const meeting = row.meeting_location as unknown as { name: string } | null;
+    const pace = row.pace_group as unknown as { name: string; sort_order: number } | null;
+    const weather = row.ride_weather_snapshots as unknown as RideWeatherSnapshot | null;
+
+    return {
+      id: row.id,
+      title: row.title,
+      ride_date: row.ride_date,
+      start_time: row.start_time,
+      end_time: row.end_time as string | null,
+      distance_km: row.distance_km,
+      meeting_location_name: row.start_location_name ?? meeting?.name ?? null,
+      pace_group_name: pace?.name ?? null,
+      pace_group_sort_order: pace?.sort_order ?? null,
+      weather: weather ?? null,
+    };
+  }
+
+  return null;
 }
 
 /**

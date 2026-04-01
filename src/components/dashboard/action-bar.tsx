@@ -86,6 +86,7 @@ interface NextAvailableRide {
   title: string;
   ride_date: string;
   start_time: string;
+  end_time: string | null;
   distance_km: number | null;
   meeting_location_name: string | null;
   pace_group_name: string | null;
@@ -204,6 +205,7 @@ export function ActionBar({
                 title={nextSignup.title}
                 paceGroupName={nextSignup.pace_group_name}
                 paceGroupSortOrder={nextSignup.pace_group_sort_order}
+                distanceKm={nextSignup.distance_km}
                 locationName={nextSignup.meeting_location_name}
                 weather={nextSignup.weather}
               />
@@ -245,6 +247,7 @@ export function ActionBar({
                 title={nextWaitlistedRide.title}
                 paceGroupName={nextWaitlistedRide.pace_group_name}
                 paceGroupSortOrder={nextWaitlistedRide.pace_group_sort_order}
+                distanceKm={nextWaitlistedRide.distance_km}
                 locationName={nextWaitlistedRide.meeting_location_name}
               />
             </ActionCard>
@@ -289,6 +292,7 @@ export function ActionBar({
                 title={nextLedRide.title}
                 paceGroupName={nextLedRide.pace_group_name}
                 paceGroupSortOrder={nextLedRide.pace_group_sort_order}
+                distanceKm={nextLedRide.distance_km}
                 locationName={nextLedRide.meeting_location_name}
                 weather={nextLedRide.weather}
               />
