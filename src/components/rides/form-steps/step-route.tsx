@@ -93,7 +93,7 @@ export function StepRoute({
               </p>
               <div className="flex items-center justify-between">
                 <Link
-                  href={routes.profileEdit}
+                  href={routes.profile}
                   className="text-xs font-medium text-info hover:underline"
                 >
                   {form.linkOnlyConnect(serviceLabels[detectedService])}
@@ -203,7 +203,7 @@ export function StepRoute({
                     <p className="text-sm text-muted-foreground">
                       {importContent.modes[expandedInline].notConnected}
                     </p>
-                    <Link href={routes.profileEdit}>
+                    <Link href={routes.profile}>
                       <Button type="button" variant="outline" size="sm">
                         {importContent.modes[expandedInline].connectButton}
                       </Button>

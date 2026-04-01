@@ -460,7 +460,6 @@ export const appContent = {
 
   profile: {
     heading: 'Profile',
-    editButton: 'Edit Profile',
     signOut: 'Sign Out',
     recentRides: 'Recent Rides',
     noRidesYet: 'No rides yet — sign up for your first one!',
@@ -751,6 +750,7 @@ export const appContent = {
     retry: 'Try again',
     cancel: 'Cancel',
     save: 'Save',
+    saved: 'Saved',
     edit: 'Edit',
     done: 'Done',
     back: 'Back',

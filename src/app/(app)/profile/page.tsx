@@ -1,22 +1,23 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { Bicycle, Path, CaretRight, FirstAidKit } from '@phosphor-icons/react/dist/ssr';
-import { getUser } from '@/lib/supabase/server';
+import { Path, CaretRight, SignOut } from '@phosphor-icons/react/dist/ssr';
+import { createClient, getUser } from '@/lib/supabase/server';
+import { signOut } from '@/lib/auth/actions';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { AppearanceSetting } from '@/components/settings/appearance-setting';
 import { IntegrationsSetting } from '@/components/settings/integrations-setting';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
-import { formatPhoneDisplay } from '@/lib/phone';
 import { routes } from '@/config/routes';
 import { getInitials } from '@/lib/utils';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { dateFormats, units } from '@/config/formatting';
 import { getUserProfile, getUserProfileStats, getUserRecentRides } from '@/lib/profile/queries';
 import { getUserConnections } from '@/lib/integrations/queries';
+import { ProfileAvatarEditor } from '@/components/profile/profile-avatar-editor';
+import { ProfileDetailsForm } from '@/components/profile/profile-details-form';
 
 const { profile: content } = appContent;
 
@@ -24,11 +25,14 @@ export default async function ProfilePage() {
   const authUser = await getUser();
   if (!authUser) redirect(routes.signIn);
 
-  const [profile, stats, recentRides, connections] = await Promise.all([
+  const supabase = await createClient();
+
+  const [profile, stats, recentRides, connections, { data: paceGroups }] = await Promise.all([
     getUserProfile(authUser.id),
     getUserProfileStats(authUser.id),
     getUserRecentRides(authUser.id),
     getUserConnections(authUser.id),
+    supabase.from('pace_groups').select('id, name').order('sort_order', { ascending: true }),
   ]);
 
   if (!profile) redirect(routes.signIn);
@@ -40,28 +44,22 @@ export default async function ProfilePage() {
 
   return (
     <DashboardShell>
-      {/* Hero: Centered avatar */}
+      {/* Hero: Avatar + identity */}
       <div className="flex flex-col items-center text-center">
-        <Avatar className="h-24 w-24 ring-2 ring-primary/20">
-          {profile.avatar_url && <AvatarImage src={profile.avatar_url} alt={profile.full_name} />}
-          <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
+        <ProfileAvatarEditor
+          avatarUrl={profile.avatar_url}
+          fullName={profile.full_name}
+          initials={initials}
+        />
         <h1 className="mt-4 text-2xl font-bold tracking-tight text-foreground">{displayName}</h1>
-        <p className="text-base text-muted-foreground">{profile.email}</p>
+        <p className="text-sm text-muted-foreground">{profile.email}</p>
         <Badge variant="default" className="mt-2">
           {content.roles[role] ?? role}
         </Badge>
-        <Link href={routes.profileEdit}>
-          <Button variant="outline" size="sm" className="mt-4">
-            {content.editButton}
-          </Button>
-        </Link>
       </div>
 
       {/* Stat Strip */}
-      <div className="mt-8 rounded-xl border border-border bg-card p-5">
+      <div className="mt-8 rounded-xl border border-border bg-card p-4">
         <div className="grid grid-cols-3 divide-x divide-border">
           <div className="flex flex-col items-center px-2">
             <span className="text-xl font-bold tabular-nums text-foreground">
@@ -88,56 +86,15 @@ export default async function ProfilePage() {
         </div>
       </div>
 
-      {/* About */}
+      {/* Editable profile details */}
       <div className="mt-8">
-        <SectionHeading>{content.sections.about}</SectionHeading>
-        {profile.bio ? (
-          <p className="mt-3 text-base text-foreground/75 leading-relaxed">{profile.bio}</p>
-        ) : (
-          <p className="mt-3 text-base text-muted-foreground italic">{content.noBio}</p>
-        )}
-      </div>
-
-      {/* Preferences */}
-      {profile.preferred_pace_group && (
-        <div className="mt-8">
-          <SectionHeading>{content.sections.preferences}</SectionHeading>
-          <div className="mt-3">
-            <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-5">
-              <Bicycle className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-sm text-muted-foreground">{content.sections.paceGroup}</p>
-                <p className="font-medium text-foreground text-base">
-                  {profile.preferred_pace_group}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Emergency Contact */}
-      <div className="mt-8">
-        <SectionHeading>{content.sections.emergencyContact}</SectionHeading>
-        {profile.emergency_contact_name ? (
-          <div className="mt-3 flex items-center gap-3 rounded-xl border border-border bg-card p-5">
-            <FirstAidKit className="h-5 w-5 text-destructive" />
-            <div>
-              <p className="font-medium text-foreground text-base">
-                {profile.emergency_contact_name}
-              </p>
-              {profile.emergency_contact_phone && (
-                <p className="text-sm text-muted-foreground">
-                  {formatPhoneDisplay(profile.emergency_contact_phone)}
-                </p>
-              )}
-            </div>
-          </div>
-        ) : (
-          <p className="mt-3 text-base text-muted-foreground italic">
-            {content.emergencyContact.noContact}
-          </p>
-        )}
+        <ProfileDetailsForm
+          bio={profile.bio ?? ''}
+          preferredPaceGroup={profile.preferred_pace_group ?? ''}
+          emergencyContactName={profile.emergency_contact_name ?? ''}
+          emergencyContactPhone={profile.emergency_contact_phone ?? ''}
+          paceGroups={paceGroups ?? []}
+        />
       </div>
 
       {/* Appearance */}
@@ -161,7 +118,7 @@ export default async function ProfilePage() {
           <div className="mt-3 space-y-2">
             {recentRides.map((ride) => (
               <Link key={ride.id} href={routes.ride(ride.id)} className="block group">
-                <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
+                <div className="flex items-center justify-between rounded-xl border border-border bg-card p-4">
                   <div className="min-w-0">
                     <p className="text-base font-medium text-foreground truncate">{ride.title}</p>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
@@ -181,6 +138,16 @@ export default async function ProfilePage() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Sign Out */}
+      <div className="mt-12 flex justify-center">
+        <form action={signOut}>
+          <Button variant="ghost" size="sm" className="text-muted-foreground">
+            <SignOut className="h-4 w-4" />
+            {content.signOut}
+          </Button>
+        </form>
       </div>
     </DashboardShell>
   );

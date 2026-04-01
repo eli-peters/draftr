@@ -13,7 +13,6 @@ export const routes = {
       : `/manage/rides/${id}/edit`,
   manageTab: (tab: string) => `/manage?tab=${tab}`,
   profile: '/profile',
-  profileEdit: '/profile/edit',
   publicProfile: (userId: string) => `/profile/${userId}`,
   notifications: '/notifications',
   stravaCallback: '/api/integrations/strava/callback',
