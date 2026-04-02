@@ -83,9 +83,6 @@ export const appContent = {
     actionBar: {
       yourNextRide: 'Your Next Ride',
       nextLedRide: 'Your Next Led Ride',
-      spotsLeft: (remaining: number) => `${remaining} spots left`,
-      signedUp: (count: number, capacity: number | null) =>
-        capacity != null ? `${count}/${capacity} signed up` : `${count} signed up`,
       waitlistClosed: 'No Spots Opened',
       pendingApprovals: 'Pending Approvals',
       pendingApprovalsCount: (count: number) =>
@@ -109,24 +106,6 @@ export const appContent = {
       noSignupsDescription: 'Browse upcoming rides and find one that fits your schedule.',
       noRidesTitle: 'No rides scheduled yet',
       noRidesDescription: 'Check back soon — ride leaders will post new rides here.',
-    },
-    // Legacy keys — used by dashboard components that may be repurposed later
-    nextRide: 'Your Next Ride',
-    viewRide: 'View Ride',
-    spotsLeft: (remaining: number) => `${remaining} spots left`,
-    leader: {
-      yourLeads: 'Your Upcoming Leads',
-      noLeads: "You're not leading any upcoming rides",
-      noLeadsDescription: 'Create a ride to get started.',
-      signups: (count: number) => `${count} signed up`,
-      createRide: 'Create Ride',
-    },
-    admin: {
-      clubOverview: 'Club Overview',
-      quickActions: 'Quick Actions',
-      createRide: 'Create Ride',
-      inviteMember: 'Invite Member',
-      viewMembers: 'View Members',
     },
   },
 
@@ -345,6 +324,8 @@ export const appContent = {
       locationPickerNoSaved: 'No saved locations yet',
       selectPace: 'Select pace...',
       serviceNotConnected: 'Not connected',
+      toggleOn: 'On',
+      toggleOff: 'Off',
       optional: '(optional)',
       required: 'Title, date, start time, meeting location, pace group, and capacity are required.',
       descriptionPlaceholder: 'Brief description of the ride...',
@@ -370,9 +351,6 @@ export const appContent = {
       edited: '(edited)',
       charLimit: (current: number, max: number) => `${current}/${max}`,
       noComments: 'No comments yet. Be the first!',
-    },
-    pickups: {
-      heading: 'Pickup Points',
     },
     importRoute: {
       button: 'Add Route',

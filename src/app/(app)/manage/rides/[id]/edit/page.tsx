@@ -2,6 +2,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Copy } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
+import { ContentCard } from '@/components/ui/content-card';
 import { SectionHeading } from '@/components/ui/section-heading';
 import {
   getUserClubMembership,
@@ -144,21 +145,25 @@ export default async function EditRidePage({
 
       {/* Co-leaders section */}
       <div className="mt-12">
-        <SectionHeading className="mb-4">{ridesContent.edit.coLeaders}</SectionHeading>
-        <CoLeaderPicker rideId={id} coLeaders={coLeaders} eligibleLeaders={eligibleLeaders} />
+        <SectionHeading>{ridesContent.edit.coLeaders}</SectionHeading>
+        <ContentCard className="mt-3">
+          <CoLeaderPicker rideId={id} coLeaders={coLeaders} eligibleLeaders={eligibleLeaders} />
+        </ContentCard>
       </div>
 
       {/* Signups section */}
       <div className="mt-12">
-        <SectionHeading className="mb-4">{ridesContent.edit.signups}</SectionHeading>
-        <SignupRoster signups={signups} createdBy={ride.created_by} />
-        <div className="mt-4">
-          <WalkUpRiderForm
-            rideId={id}
-            clubMembers={clubMembersForWalkUp}
-            existingSignupUserIds={existingSignupUserIds}
-          />
-        </div>
+        <SectionHeading>{ridesContent.edit.signups}</SectionHeading>
+        <ContentCard className="mt-3">
+          <SignupRoster signups={signups} createdBy={ride.created_by} />
+          <div className="mt-4">
+            <WalkUpRiderForm
+              rideId={id}
+              clubMembers={clubMembersForWalkUp}
+              existingSignupUserIds={existingSignupUserIds}
+            />
+          </div>
+        </ContentCard>
       </div>
 
       <div className="mt-12">

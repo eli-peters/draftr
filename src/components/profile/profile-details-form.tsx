@@ -15,6 +15,7 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { SectionHeading } from '@/components/ui/section-heading';
+import { ContentCard } from '@/components/ui/content-card';
 import { updateProfile } from '@/lib/profile/actions';
 import { appContent } from '@/content/app';
 
@@ -68,7 +69,7 @@ export function ProfileDetailsForm({
       {/* About */}
       <div>
         <SectionHeading>{content.sections.about}</SectionHeading>
-        <div className="mt-3">
+        <ContentCard padding="compact" className="mt-3">
           <FloatingField label={auth.setupProfile.bioLabel} htmlFor="bio" maxLength={300}>
             <Textarea
               id="bio"
@@ -79,13 +80,13 @@ export function ProfileDetailsForm({
               maxLength={300}
             />
           </FloatingField>
-        </div>
+        </ContentCard>
       </div>
 
       {/* Preferences */}
       <div>
         <SectionHeading>{content.sections.preferences}</SectionHeading>
-        <div className="mt-3">
+        <ContentCard padding="compact" className="mt-3">
           <FloatingField
             label={auth.setupProfile.paceLabel}
             htmlFor="preferred_pace_group"
@@ -105,13 +106,13 @@ export function ProfileDetailsForm({
               </SelectContent>
             </Select>
           </FloatingField>
-        </div>
+        </ContentCard>
       </div>
 
       {/* Emergency Contact */}
       <div>
         <SectionHeading>{content.sections.emergencyContact}</SectionHeading>
-        <div className="mt-3 space-y-4 rounded-xl border border-border p-4">
+        <ContentCard className="mt-3 space-y-4" padding="compact">
           <p className="text-xs text-muted-foreground">{content.emergencyContact.visibilityNote}</p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FloatingField
@@ -137,7 +138,7 @@ export function ProfileDetailsForm({
               />
             </FloatingField>
           </div>
-        </div>
+        </ContentCard>
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}

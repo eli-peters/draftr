@@ -11,9 +11,51 @@ import type {
   RideWithDetails,
   RideWeatherSnapshot,
   CommentWithUser,
-  RidePickupWithLocation,
   SignupAvatar,
 } from '@/types/database';
+
+// ---------------------------------------------------------------------------
+// Shared join-result types — used by action-bar queries to avoid double-casts
+// ---------------------------------------------------------------------------
+
+/** Join shape for meeting_location:meeting_locations(name) */
+type JoinedLocation = { name: string } | null;
+
+/** Join shape for pace_group:pace_groups(name, sort_order) */
+type JoinedPaceGroup = { name: string; sort_order: number } | null;
+
+/** Join shape for ride_signups(count) */
+type JoinedSignupCount = { count: number }[];
+
+/** Common ride row returned by action-bar queries with location/pace/weather joins. */
+interface ActionBarRideRow {
+  id: string;
+  title: string;
+  ride_date: string;
+  start_time: string;
+  end_time: string | null;
+  distance_km: number | null;
+  start_location_name: string | null;
+  meeting_location: JoinedLocation;
+  pace_group: JoinedPaceGroup;
+  ride_weather_snapshots: RideWeatherSnapshot | null;
+}
+
+/** Map a joined ride row to the flattened action-bar result shape. */
+function toActionBarResult(row: ActionBarRideRow) {
+  return {
+    id: row.id,
+    title: row.title,
+    ride_date: row.ride_date,
+    start_time: row.start_time,
+    end_time: row.end_time,
+    distance_km: row.distance_km,
+    meeting_location_name: row.start_location_name ?? row.meeting_location?.name ?? null,
+    pace_group_name: row.pace_group?.name ?? null,
+    pace_group_sort_order: row.pace_group?.sort_order ?? null,
+    weather: row.ride_weather_snapshots ?? null,
+  };
+}
 
 /** Shape returned by Supabase for the RIDE_WITH_DETAILS_SELECT join query. */
 interface RawRideRow extends Ride {
@@ -278,30 +320,20 @@ export async function getLeaderNextLedRide(userId: string, clubId: string, timez
 
   if (!data?.length) return null;
 
-  for (const row of data) {
-    const raw = row as Record<string, unknown>;
-    const endTime = raw.end_time as string | null;
-    if (isRideCompleted(row.ride_date, row.start_time, endTime, timezone)) continue;
+  type LedRideRow = ActionBarRideRow & {
+    elevation_m: number | null;
+    capacity: number | null;
+    ride_signups: JoinedSignupCount;
+  };
 
-    const location = row.meeting_location as unknown as { name: string } | null;
-    const pace = row.pace_group as unknown as { name: string; sort_order: number } | null;
-    const signups = row.ride_signups as unknown as { count: number }[];
-    const weatherSnapshot = raw.ride_weather_snapshots as RideWeatherSnapshot | null;
+  for (const row of data as unknown as LedRideRow[]) {
+    if (isRideCompleted(row.ride_date, row.start_time, row.end_time, timezone)) continue;
 
     return {
-      id: row.id,
-      title: row.title,
-      ride_date: row.ride_date,
-      start_time: row.start_time,
-      end_time: endTime,
-      meeting_location_name: (raw.start_location_name as string) ?? location?.name ?? null,
-      pace_group_name: pace?.name ?? null,
-      pace_group_sort_order: pace?.sort_order ?? null,
-      distance_km: raw.distance_km as number | null,
-      elevation_m: raw.elevation_m as number | null,
-      signup_count: signups?.[0]?.count ?? 0,
-      capacity: row.capacity as number | null,
-      weather: weatherSnapshot ?? null,
+      ...toActionBarResult(row),
+      elevation_m: row.elevation_m,
+      signup_count: row.ride_signups?.[0]?.count ?? 0,
+      capacity: row.capacity,
     };
   }
 
@@ -434,25 +466,9 @@ export async function getLeaderWeatherWatchRide(userId: string, clubId: string, 
 
   if (!data?.length) return null;
 
-  for (const row of data) {
+  for (const row of data as unknown as ActionBarRideRow[]) {
     if (isRideCompleted(row.ride_date, row.start_time, row.end_time, timezone)) continue;
-
-    const meeting = row.meeting_location as unknown as { name: string } | null;
-    const pace = row.pace_group as unknown as { name: string; sort_order: number } | null;
-    const weather = row.ride_weather_snapshots as unknown as RideWeatherSnapshot | null;
-
-    return {
-      id: row.id,
-      title: row.title,
-      ride_date: row.ride_date,
-      start_time: row.start_time,
-      end_time: row.end_time,
-      distance_km: row.distance_km,
-      meeting_location_name: row.start_location_name ?? meeting?.name ?? null,
-      pace_group_name: pace?.name ?? null,
-      pace_group_sort_order: pace?.sort_order ?? null,
-      weather: weather ?? null,
-    };
+    return toActionBarResult(row);
   }
 
   return null;
@@ -487,25 +503,9 @@ export async function getNextAvailableRide(clubId: string, timezone: string) {
 
   if (!data?.length) return null;
 
-  for (const row of data) {
+  for (const row of data as unknown as ActionBarRideRow[]) {
     if (isRideCompleted(row.ride_date, row.start_time, row.end_time, timezone)) continue;
-
-    const meeting = row.meeting_location as unknown as { name: string } | null;
-    const pace = row.pace_group as unknown as { name: string; sort_order: number } | null;
-    const weather = row.ride_weather_snapshots as unknown as RideWeatherSnapshot | null;
-
-    return {
-      id: row.id,
-      title: row.title,
-      ride_date: row.ride_date,
-      start_time: row.start_time,
-      end_time: row.end_time as string | null,
-      distance_km: row.distance_km,
-      meeting_location_name: row.start_location_name ?? meeting?.name ?? null,
-      pace_group_name: pace?.name ?? null,
-      pace_group_sort_order: pace?.sort_order ?? null,
-      weather: weather ?? null,
-    };
+    return toActionBarResult(row);
   }
 
   return null;
@@ -880,34 +880,6 @@ export async function getRideComments(rideId: string): Promise<CommentWithUser[]
       avatar_url: user.avatar_url,
     };
   });
-}
-
-/**
- * Fetch pickup locations for a ride, ordered by sort_order.
- */
-export async function getRidePickups(rideId: string): Promise<RidePickupWithLocation[]> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from('ride_pickups')
-    .select(
-      `
-      id, ride_id, location_id, pickup_time, notes, sort_order,
-      location:meeting_locations!inner(name, address)
-    `,
-    )
-    .eq('ride_id', rideId)
-    .order('sort_order', { ascending: true });
-
-  if (error?.message) {
-    console.error('Error fetching ride pickups:', error.message, error.code, error.details);
-    return [];
-  }
-
-  return (data ?? []).map((pickup) => ({
-    ...pickup,
-    location: pickup.location as unknown as { name: string; address: string | null },
-  })) as RidePickupWithLocation[];
 }
 
 // ---------------------------------------------------------------------------

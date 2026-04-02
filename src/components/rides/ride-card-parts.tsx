@@ -199,7 +199,7 @@ export function CardBanner({
       className={cn(
         'flex w-full items-center gap-2 overflow-clip px-5 py-2',
         bgClass,
-        borderClass && `border-b ${borderClass}`,
+        borderClass && `border-b-(length:--card-border-width) ${borderClass}`,
       )}
     >
       <Icon weight="bold" className={cn('size-3.5 shrink-0', textClass)} />
@@ -576,5 +576,14 @@ interface CardFooterSectionProps {
 }
 
 export function CardFooterSection({ children, className }: CardFooterSectionProps) {
-  return <div className={cn('bg-surface-page px-5 py-3.5', className)}>{children}</div>;
+  return (
+    <div
+      className={cn(
+        'bg-[color-mix(in_oklab,var(--surface-card-footer)_40%,transparent)] px-5 py-3.5',
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }

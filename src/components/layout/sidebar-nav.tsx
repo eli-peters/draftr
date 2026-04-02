@@ -19,7 +19,7 @@ export function SidebarNav({ items }: SidebarNavProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:sticky md:top-[calc(4rem+0.75rem)] md:flex md:h-[calc(100vh-4rem-1.5rem)] md:w-60 md:shrink-0 md:flex-col md:rounded-3xl md:border md:border-border md:bg-surface-default">
+    <aside className="hidden md:sticky md:top-[calc(4rem+0.75rem)] md:flex md:h-[calc(100vh-4rem-1.5rem)] md:w-60 md:shrink-0 md:flex-col md:rounded-(--card-radius-lg) md:border-(length:--card-border-width) md:border-border md:bg-surface-default md:shadow-(--card-shadow)">
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
         {items.map((item) => {
           const isActive =

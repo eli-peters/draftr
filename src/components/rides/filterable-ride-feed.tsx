@@ -69,7 +69,7 @@ export function FilterableRideFeed({
       />
 
       {filtered.length > 0 ? (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
           {filtered.map((ride) => (
             <RideCard key={ride.id} ride={ride} variant={cardVariant} timezone={timezone} />
           ))}

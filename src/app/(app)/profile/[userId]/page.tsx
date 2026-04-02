@@ -5,6 +5,7 @@ import { Bicycle, Path, CaretRight, FirstAidKit } from '@phosphor-icons/react/di
 import { createClient, getUser } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { ContentCard } from '@/components/ui/content-card';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
@@ -106,7 +107,7 @@ export default async function PublicProfilePage({
       </div>
 
       {/* Stat Strip */}
-      <div className="mt-8 rounded-xl border border-border bg-card p-5">
+      <ContentCard padding="spacious" className="mt-8">
         <div className="grid grid-cols-2 divide-x divide-border">
           <div className="flex flex-col items-center px-2">
             <span className="text-xl font-bold tabular-nums text-foreground">
@@ -123,13 +124,15 @@ export default async function PublicProfilePage({
             </p>
           </div>
         </div>
-      </div>
+      </ContentCard>
 
       {/* About */}
       {profile.bio && (
         <div className="mt-8">
           <SectionHeading>{content.sections.about}</SectionHeading>
-          <p className="mt-3 text-base text-foreground/75 leading-relaxed">{profile.bio}</p>
+          <ContentCard padding="spacious" className="mt-3">
+            <p className="text-base text-foreground/75 leading-relaxed">{profile.bio}</p>
+          </ContentCard>
         </div>
       )}
 
@@ -138,7 +141,7 @@ export default async function PublicProfilePage({
         <div className="mt-8">
           <SectionHeading>{content.sections.preferences}</SectionHeading>
           <div className="mt-3">
-            <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-5">
+            <ContentCard padding="spacious" className="flex items-center gap-3">
               <Bicycle className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">{content.sections.paceGroup}</p>
@@ -146,7 +149,7 @@ export default async function PublicProfilePage({
                   {profile.preferred_pace_group}
                 </p>
               </div>
-            </div>
+            </ContentCard>
           </div>
         </div>
       )}
@@ -155,27 +158,34 @@ export default async function PublicProfilePage({
       {isLeaderOrAbove && (
         <div className="mt-8">
           <SectionHeading>{content.sections.emergencyContact}</SectionHeading>
-          <p className="text-xs text-muted-foreground mt-1">
-            {content.publicProfile.emergencyContactNote}
-          </p>
           {profile.emergency_contact_name ? (
-            <div className="mt-3 flex items-center gap-3 rounded-xl border border-border bg-card p-5">
-              <FirstAidKit className="h-5 w-5 text-destructive" />
-              <div>
-                <p className="font-medium text-foreground text-base">
-                  {profile.emergency_contact_name}
-                </p>
-                {profile.emergency_contact_phone && (
-                  <p className="text-sm text-muted-foreground">
-                    {formatPhoneDisplay(profile.emergency_contact_phone)}
+            <ContentCard padding="spacious" className="mt-3">
+              <p className="text-xs text-muted-foreground mb-3">
+                {content.publicProfile.emergencyContactNote}
+              </p>
+              <div className="flex items-center gap-3">
+                <FirstAidKit className="h-5 w-5 text-destructive" />
+                <div>
+                  <p className="font-medium text-foreground text-base">
+                    {profile.emergency_contact_name}
                   </p>
-                )}
+                  {profile.emergency_contact_phone && (
+                    <p className="text-sm text-muted-foreground">
+                      {formatPhoneDisplay(profile.emergency_contact_phone)}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
+            </ContentCard>
           ) : (
-            <p className="mt-3 text-base text-muted-foreground italic">
-              {content.emergencyContact.noContact}
-            </p>
+            <ContentCard padding="spacious" className="mt-3">
+              <p className="text-xs text-muted-foreground mb-3">
+                {content.publicProfile.emergencyContactNote}
+              </p>
+              <p className="text-base text-muted-foreground italic">
+                {content.emergencyContact.noContact}
+              </p>
+            </ContentCard>
           )}
         </div>
       )}
@@ -187,7 +197,11 @@ export default async function PublicProfilePage({
           <div className="mt-3 space-y-2">
             {recentRides.map((ride) => (
               <Link key={ride.id} href={routes.ride(ride.id)} className="block group">
-                <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
+                <ContentCard
+                  interactive
+                  padding="compact"
+                  className="flex items-center justify-between"
+                >
                   <div className="min-w-0">
                     <p className="text-base font-medium text-foreground truncate">{ride.title}</p>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
@@ -202,7 +216,7 @@ export default async function PublicProfilePage({
                     </div>
                   </div>
                   <CaretRight className="h-4 w-4 text-muted-foreground/50" />
-                </div>
+                </ContentCard>
               </Link>
             ))}
           </div>

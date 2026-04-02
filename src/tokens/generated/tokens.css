@@ -118,6 +118,7 @@
   --surface-raised: var(--color-neutral-50);
   --surface-sunken: var(--color-neutral-100);
   --surface-overlay: var(--color-neutral-0-alpha-92);
+  --surface-card-footer: var(--color-info-50);
 
   /* text */
   --text-primary: var(--color-neutral-900);
@@ -267,6 +268,7 @@
   --surface-raised: var(--color-neutral-800);
   --surface-sunken: var(--color-neutral-975);
   --surface-overlay: var(--color-neutral-950-alpha-92);
+  --surface-card-footer: var(--color-info-950);
 
   /* text */
   --text-primary: var(--color-neutral-50);

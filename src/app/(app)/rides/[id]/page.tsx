@@ -7,18 +7,17 @@ import {
   getRideSignups,
   getUserClubMembership,
   getRideComments,
-  getRidePickups,
   getRideCoLeaders,
 } from '@/lib/rides/queries';
 import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { SignupButton } from '@/components/rides/signup-button';
 import { SignupRoster } from '@/components/rides/signup-roster';
 import { RideComments } from '@/components/rides/ride-comments';
-import { RidePickups } from '@/components/rides/ride-pickups';
 import { RideDetailCard } from '@/components/rides/ride-detail-card';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
+import { ContentCard } from '@/components/ui/content-card';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { SignupStatus } from '@/config/statuses';
@@ -34,13 +33,12 @@ interface RideDetailPageProps {
 
 export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const { id } = await params;
-  const [ride, signup, signups, membership, comments, pickups, coLeaders] = await Promise.all([
+  const [ride, signup, signups, membership, comments, coLeaders] = await Promise.all([
     getRideById(id),
     getUserSignupStatus(id),
     getRideSignups(id),
     getUserClubMembership(),
     getRideComments(id),
-    getRidePickups(id),
     getRideCoLeaders(id),
   ]);
   if (!ride) notFound();
@@ -142,20 +140,13 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           <SectionHeading>
             {detail.ridersHeading(confirmedCount, waitlistedCount, ride.capacity)}
           </SectionHeading>
-          <div className="mt-3 rounded-xl border border-border bg-card p-3">
+          <ContentCard padding="compact" className="mt-3">
             <SignupRoster
               signups={signups}
               createdBy={ride.created_by}
               coLeaderIds={coLeaders.map((cl) => cl.user_id)}
             />
-          </div>
-        </div>
-      )}
-
-      {/* Pickup points */}
-      {pickups.length > 0 && (
-        <div className="mt-8">
-          <RidePickups pickups={pickups} />
+          </ContentCard>
         </div>
       )}
 

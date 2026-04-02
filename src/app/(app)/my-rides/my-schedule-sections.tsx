@@ -104,7 +104,7 @@ export function MyScheduleSections({ upcoming, past, timezone }: MyScheduleSecti
       />
 
       {visibleRides.length > 0 ? (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
           {visibleRides.map((ride) => (
             <ScheduleCard key={ride.id} ride={ride} onAction={handleAction} timezone={timezone} />
           ))}

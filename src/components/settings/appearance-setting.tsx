@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Monitor, Sun, Moon } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
+import { ContentCard } from '@/components/ui/content-card';
 import { useTheme } from '@/components/theme-provider';
 import { appContent } from '@/content/app';
 import { SectionHeading } from '@/components/ui/section-heading';
@@ -32,24 +33,26 @@ export function AppearanceSetting() {
   return (
     <div>
       <SectionHeading>{content.heading}</SectionHeading>
-      <div className="mt-3 inline-flex rounded-lg bg-muted p-1">
-        {options.map(({ value, label, icon: Icon }) => (
-          <Button
-            key={value}
-            variant="ghost"
-            size="sm"
-            onClick={() => setColorMode(value)}
-            className={cn(
-              activeMode === value
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground',
-            )}
-          >
-            <Icon weight={activeMode === value ? 'fill' : undefined} className="h-4 w-4" />
-            {label}
-          </Button>
-        ))}
-      </div>
+      <ContentCard padding="compact" className="mt-3">
+        <div className="inline-flex rounded-lg bg-muted p-1">
+          {options.map(({ value, label, icon: Icon }) => (
+            <Button
+              key={value}
+              variant="ghost"
+              size="sm"
+              onClick={() => setColorMode(value)}
+              className={cn(
+                activeMode === value
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground',
+              )}
+            >
+              <Icon weight={activeMode === value ? 'fill' : undefined} className="h-4 w-4" />
+              {label}
+            </Button>
+          ))}
+        </div>
+      </ContentCard>
     </div>
   );
 }

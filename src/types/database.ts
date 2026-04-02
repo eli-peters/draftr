@@ -113,19 +113,6 @@ export interface Ride {
   updated_at: string;
 }
 
-export interface RidePickup {
-  id: string;
-  ride_id: string;
-  location_id: string;
-  pickup_time: string;
-  notes: string | null;
-  sort_order: number;
-}
-
-export interface RidePickupWithLocation extends RidePickup {
-  location: { name: string; address: string | null };
-}
-
 export interface CommentWithUser {
   id: string;
   ride_id: string;

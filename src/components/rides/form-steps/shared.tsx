@@ -4,19 +4,6 @@ import { appContent } from '@/content/app';
 const form = appContent.rides.form;
 
 // ---------------------------------------------------------------------------
-// StepHeader — centered icon + conversational heading inside a step card
-// ---------------------------------------------------------------------------
-
-export function StepHeader({ heading, icon: Icon }: { heading: string; icon: React.ElementType }) {
-  return (
-    <div className="flex flex-col items-center gap-1.5 pb-4 pt-1">
-      <Icon weight="duotone" className="size-6 text-primary" />
-      <h3 className="font-display text-base font-medium text-foreground text-center">{heading}</h3>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // PillToggle — full-width pill-shaped toggle row
 // ---------------------------------------------------------------------------
 
@@ -40,7 +27,7 @@ export function PillToggle({
       className="w-full bg-surface-page rounded-2xl px-4 py-3 flex items-center justify-between cursor-pointer transition-colors hover:bg-muted"
     >
       <span className="text-sm text-foreground">
-        {label}: <strong>{checked ? 'On' : 'Off'}</strong>
+        {label}: <strong>{checked ? form.toggleOn : form.toggleOff}</strong>
       </span>
       <Switch id={id} checked={checked} tabIndex={-1} className="pointer-events-none" />
     </button>

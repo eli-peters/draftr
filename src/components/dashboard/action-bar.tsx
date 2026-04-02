@@ -22,88 +22,79 @@ import type { RideWeatherSnapshot } from '@/types/database';
 
 const { dashboard: content } = appContent;
 
-interface NextSignup {
+/** Shared shape for action bar ride cards. */
+interface ActionBarRide {
   id: string;
   title: string;
   ride_date: string;
   start_time: string;
   end_time: string | null;
+  distance_km: number | null;
   meeting_location_name: string | null;
   pace_group_name: string | null;
   pace_group_sort_order: number | null;
-  distance_km: number | null;
+  weather?: RideWeatherSnapshot | null;
+}
+
+/** Ride with signup count + capacity (for your-next-ride / led-ride cards). */
+interface ActionBarRideWithSignups extends ActionBarRide {
   elevation_m: number | null;
   signup_count: number;
   capacity: number | null;
   weather: RideWeatherSnapshot | null;
 }
 
-interface NextLedRide {
-  id: string;
-  title: string;
-  ride_date: string;
-  start_time: string;
-  end_time: string | null;
-  meeting_location_name: string | null;
-  pace_group_name: string | null;
-  pace_group_sort_order: number | null;
-  distance_km: number | null;
+type NextWaitlistedRide = ActionBarRide & {
   elevation_m: number | null;
-  signup_count: number;
-  capacity: number | null;
-  weather: RideWeatherSnapshot | null;
-}
-
-interface NextWaitlistedRide {
-  id: string;
-  title: string;
-  ride_date: string;
-  start_time: string;
-  end_time: string | null;
-  distance_km: number | null;
-  elevation_m: number | null;
-  meeting_location_name: string | null;
-  pace_group_name: string | null;
-  pace_group_sort_order: number | null;
   waitlist_position: number;
-}
-
-interface WeatherWatchRide {
-  id: string;
-  title: string;
-  ride_date: string;
-  start_time: string;
-  end_time: string | null;
-  distance_km: number | null;
-  meeting_location_name: string | null;
-  pace_group_name: string | null;
-  pace_group_sort_order: number | null;
-  weather: RideWeatherSnapshot | null;
-}
-
-interface NextAvailableRide {
-  id: string;
-  title: string;
-  ride_date: string;
-  start_time: string;
-  end_time: string | null;
-  distance_km: number | null;
-  meeting_location_name: string | null;
-  pace_group_name: string | null;
-  pace_group_sort_order: number | null;
-  weather: RideWeatherSnapshot | null;
-}
+};
 
 interface ActionBarProps {
-  nextSignup: NextSignup | null;
-  nextLedRide: NextLedRide | null;
+  nextSignup: ActionBarRideWithSignups | null;
+  nextLedRide: ActionBarRideWithSignups | null;
   nextWaitlistedRide?: NextWaitlistedRide | null;
   pendingMemberCount?: number;
   ridesNeedingLeaderCount?: number;
-  weatherWatchRide?: WeatherWatchRide | null;
-  nextAvailableRide?: NextAvailableRide | null;
+  weatherWatchRide?: ActionBarRide | null;
+  nextAvailableRide?: ActionBarRide | null;
   userRole?: UserRole;
   timezone: string;
+}
+
+/**
+ * Resolve lifecycle state into banner label, icon, and color classes.
+ * Extracts the repeated ternary logic from each ride card block.
+ */
+function getLifecycleBannerProps(
+  ride: { ride_date: string; start_time: string; end_time: string | null },
+  timezone: string,
+  defaults: {
+    label: string;
+    icon: PhosphorIcon;
+    bgClass: string;
+    textClass: string;
+    borderClass: string;
+  },
+) {
+  const lifecycle = getRideLifecycle(ride.ride_date, ride.start_time, ride.end_time, timezone);
+  const isLive = lifecycle === 'in_progress' || lifecycle === 'about_to_start';
+
+  if (!isLive) return { ...defaults, isLive: false };
+
+  const label =
+    lifecycle === 'in_progress'
+      ? appContent.rides.status.inProgress
+      : appContent.rides.status.aboutToStart;
+  const icon = lifecycle === 'in_progress' ? Bicycle : ClockCountdown;
+
+  return {
+    label,
+    icon,
+    bgClass: 'bg-banner-soft-info-bg',
+    textClass: 'text-banner-soft-info-text',
+    borderClass: 'border-card-border-info',
+    isLive: true,
+  };
 }
 
 function ActionCard({
@@ -166,38 +157,26 @@ export function ActionBar({
   if (!hasItems) return null;
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-5">
       {/* Rider: your next confirmed ride */}
       {nextSignup &&
         (() => {
-          const lifecycle = getRideLifecycle(
-            nextSignup.ride_date,
-            nextSignup.start_time,
-            nextSignup.end_time,
-            timezone,
-          );
-          const isStartingSoon = lifecycle === 'about_to_start';
-          const isInProgress = lifecycle === 'in_progress';
-          const isLive = isStartingSoon || isInProgress;
-          const bannerLabel = isInProgress
-            ? appContent.rides.status.inProgress
-            : isStartingSoon
-              ? appContent.rides.status.aboutToStart
-              : content.actionBar.yourNextRide;
-          const bannerIcon = isInProgress
-            ? Bicycle
-            : isStartingSoon
-              ? ClockCountdown
-              : CalendarDots;
+          const banner = getLifecycleBannerProps(nextSignup, timezone, {
+            label: content.actionBar.yourNextRide,
+            icon: CalendarDots,
+            bgClass: 'bg-banner-soft-success-bg',
+            textClass: 'text-banner-soft-success-text',
+            borderClass: 'border-card-border-success',
+          });
           return (
             <ActionCard
-              label={bannerLabel}
-              icon={bannerIcon}
+              label={banner.label}
+              icon={banner.icon}
               href={routes.ride(nextSignup.id)}
-              bgClass={isLive ? 'bg-banner-soft-info-bg' : 'bg-banner-soft-success-bg'}
-              textClass={isLive ? 'text-banner-soft-info-text' : 'text-banner-soft-success-text'}
-              borderClass={isLive ? 'border-card-border-info' : 'border-card-border-success'}
-              bannerBorderClass={isLive ? 'border-card-border-info' : 'border-card-border-success'}
+              bgClass={banner.bgClass}
+              textClass={banner.textClass}
+              borderClass={banner.borderClass}
+              bannerBorderClass={banner.borderClass}
             >
               <CardContentSection
                 date={getRelativeDay(parseLocalDate(nextSignup.ride_date))}
@@ -216,20 +195,19 @@ export function ActionBar({
       {/* Rider: waitlisted ride */}
       {nextWaitlistedRide &&
         (() => {
-          const wlLifecycle = getRideLifecycle(
+          const lifecycle = getRideLifecycle(
             nextWaitlistedRide.ride_date,
             nextWaitlistedRide.start_time,
             nextWaitlistedRide.end_time,
             timezone,
           );
-          const waitlistClosed = wlLifecycle !== 'upcoming';
+          const waitlistClosed = lifecycle !== 'upcoming';
+          const label = waitlistClosed
+            ? content.actionBar.waitlistClosed
+            : appContent.schedule.status.waitlisted(nextWaitlistedRide.waitlist_position);
           return (
             <ActionCard
-              label={
-                waitlistClosed
-                  ? content.actionBar.waitlistClosed
-                  : appContent.schedule.status.waitlisted(nextWaitlistedRide.waitlist_position)
-              }
+              label={label}
               icon={Hourglass}
               href={routes.ride(nextWaitlistedRide.id)}
               bgClass={waitlistClosed ? 'bg-banner-muted-bg' : 'bg-banner-soft-warning-bg'}
@@ -257,34 +235,22 @@ export function ActionBar({
       {/* Leader: next led ride */}
       {nextLedRide &&
         (() => {
-          const ledLifecycle = getRideLifecycle(
-            nextLedRide.ride_date,
-            nextLedRide.start_time,
-            nextLedRide.end_time,
-            timezone,
-          );
-          const ledIsLive = ledLifecycle === 'in_progress' || ledLifecycle === 'about_to_start';
-          const ledLabel = ledIsLive
-            ? ledLifecycle === 'in_progress'
-              ? appContent.rides.status.inProgress
-              : appContent.rides.status.aboutToStart
-            : content.actionBar.nextLedRide;
-          const ledIcon = ledIsLive
-            ? ledLifecycle === 'in_progress'
-              ? Bicycle
-              : ClockCountdown
-            : FlagBanner;
+          const banner = getLifecycleBannerProps(nextLedRide, timezone, {
+            label: content.actionBar.nextLedRide,
+            icon: FlagBanner,
+            bgClass: 'bg-banner-soft-secondary-bg',
+            textClass: 'text-banner-soft-secondary-text',
+            borderClass: 'border-border-default',
+          });
           return (
             <ActionCard
-              label={ledLabel}
-              icon={ledIcon}
+              label={banner.label}
+              icon={banner.icon}
               href={routes.ride(nextLedRide.id)}
-              bgClass={ledIsLive ? 'bg-banner-soft-info-bg' : 'bg-banner-soft-secondary-bg'}
-              textClass={
-                ledIsLive ? 'text-banner-soft-info-text' : 'text-banner-soft-secondary-text'
-              }
-              borderClass={ledIsLive ? 'border-card-border-info' : 'border-border-default'}
-              bannerBorderClass={ledIsLive ? 'border-card-border-info' : 'border-border-default'}
+              bgClass={banner.bgClass}
+              textClass={banner.textClass}
+              borderClass={banner.borderClass}
+              bannerBorderClass={banner.borderClass}
             >
               <CardContentSection
                 date={getRelativeDay(parseLocalDate(nextLedRide.ride_date))}

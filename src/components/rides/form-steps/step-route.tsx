@@ -2,6 +2,7 @@
 
 import { useState, type RefObject } from 'react';
 import Link from 'next/link';
+import { ContentCard } from '@/components/ui/content-card';
 import {
   MapTrifold,
   ArrowSquareOut,
@@ -13,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { RouteMapLoader } from '@/components/rides/route-map-loader';
 import { RouteImportDrawer } from '@/components/rides/route-import-drawer';
 import { PasteUrlPanel } from '@/components/rides/route-import-inline';
-import { StepHeader } from './shared';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { knownServices, serviceIcons, serviceLabels, integrations } from '@/config/integrations';
@@ -71,163 +72,167 @@ export function StepRoute({
   };
 
   return (
-    <div className="rounded-xl border-0 bg-surface-default p-4">
-      <StepHeader heading={form.stepRouteHeading} icon={Path} />
-      <div className="flex flex-col gap-5 min-w-0">
-        {importedRouteName ? (
-          !routePolyline && detectedService ? (
-            /* Link-only preview */
-            <div className="rounded-xl bg-surface-sunken p-4 space-y-3">
-              <div className="rounded-lg bg-surface-page flex flex-col items-center justify-center gap-1.5 py-6">
-                <MapTrifold weight="duotone" className="size-8 text-muted-foreground/40" />
-                <span className="text-xs text-muted-foreground/60">
-                  {form.linkOnlyPreviewLabel}
-                </span>
-                <span className="flex items-center gap-1 text-xs font-medium text-info">
-                  {form.linkOnlyViewRoute(serviceLabels[detectedService])}
-                  <ArrowSquareOut className="size-3" />
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {form.linkOnlyHint(serviceLabels[detectedService])}
-              </p>
-              <div className="flex items-center justify-between">
-                <Link
-                  href={routes.profile}
-                  className="text-xs font-medium text-info hover:underline"
-                >
-                  {form.linkOnlyConnect(serviceLabels[detectedService])}
-                </Link>
-                <Button type="button" variant="ghost" size="sm" onClick={() => onClearRoute()}>
-                  {form.linkOnlyRemove}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            /* Route imported — confirmation + map */
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <MapTrifold className="size-5 shrink-0 text-primary" weight="duotone" />
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {form.importConfirmed(importedRouteName)}
-                  </p>
+    <div>
+      <SectionHeading as="h3" icon={Path}>
+        {form.sectionRoute}
+      </SectionHeading>
+      <ContentCard padding="default" className="mt-3">
+        <div className="flex flex-col gap-5 min-w-0">
+          {importedRouteName ? (
+            !routePolyline && detectedService ? (
+              /* Link-only preview */
+              <div className="rounded-xl bg-surface-sunken p-4 space-y-3">
+                <div className="rounded-lg bg-surface-page flex flex-col items-center justify-center gap-1.5 py-6">
+                  <MapTrifold weight="duotone" className="size-8 text-muted-foreground/40" />
+                  <span className="text-xs text-muted-foreground/60">
+                    {form.linkOnlyPreviewLabel}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs font-medium text-info">
+                    {form.linkOnlyViewRoute(serviceLabels[detectedService])}
+                    <ArrowSquareOut className="size-3" />
+                  </span>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onClearRoute(true)}
-                  className="shrink-0 rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
-                >
-                  <PencilSimple className="size-5" />
-                </Button>
-              </div>
-              {routePolyline && (
-                <RouteMapLoader
-                  polylineStr={routePolyline}
-                  routeUrl={routeUrl || null}
-                  routeName={importedRouteName}
-                  aspectRatio="5/2"
-                />
-              )}
-            </div>
-          )
-        ) : (
-          /* No route yet — service cards + inline paste / connect prompts */
-          <div className="space-y-3">
-            <p className="text-center text-[0.8125rem] text-muted-foreground">
-              {form.importDescription}
-            </p>
-
-            {/* Service cards */}
-            <div className="grid grid-cols-3 gap-3">
-              {knownServices.map((service) => {
-                const Icon = serviceIcons[service];
-                const brandColor = integrations[service].brandColor;
-                const isConnected = connectedServices.includes(service);
-                return (
-                  <button
-                    key={service}
-                    type="button"
-                    onClick={() => handleCardClick(service)}
-                    className={`flex flex-col items-center gap-2 rounded-xl p-4 transition-all active:scale-[0.97] ${
-                      isConnected
-                        ? 'bg-surface-page hover:bg-accent/50'
-                        : expandedInline === service
-                          ? 'border-2 border-dashed border-primary bg-transparent'
-                          : 'border-2 border-dashed border-border bg-transparent hover:bg-accent/30'
-                    }`}
+                <p className="text-xs text-muted-foreground">
+                  {form.linkOnlyHint(serviceLabels[detectedService])}
+                </p>
+                <div className="flex items-center justify-between">
+                  <Link
+                    href={routes.profile}
+                    className="text-xs font-medium text-info hover:underline"
                   >
-                    <Icon className="size-6" style={{ color: brandColor }} />
-                    <span className="text-xs font-medium text-foreground">
-                      {serviceLabels[service]}
-                    </span>
-                    {!isConnected && (
-                      <span className="text-[0.625rem] text-muted-foreground">
-                        {form.serviceNotConnected}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-              <button
-                type="button"
-                onClick={handlePasteClick}
-                className={`flex flex-col items-center gap-2 rounded-xl p-4 transition-all active:scale-[0.97] ${
-                  expandedInline === 'paste'
-                    ? 'ring-2 ring-primary bg-surface-page'
-                    : 'bg-surface-page hover:bg-accent/50'
-                }`}
-              >
-                <LinkSimple className="size-6 text-muted-foreground" />
-                <span className="text-xs font-medium text-foreground">
-                  {importContent.modes.paste.heading}
-                </span>
-              </button>
-            </div>
-
-            {/* Inline expansion: paste URL or disconnected service prompt */}
-            {expandedInline && (
-              <div className="animate-in fade-in-0 duration-200">
-                {expandedInline === 'paste' ? (
-                  <PasteUrlPanel
-                    pasteUrlRef={pasteUrlRef}
-                    isFetchingRoute={isFetchingRoute}
-                    fetchRouteError={fetchRouteError}
-                    onPasteUrl={onPasteUrl}
-                  />
-                ) : (
-                  /* Disconnected service — connect prompt */
-                  <div className="rounded-xl border-2 border-dashed border-border p-6 flex flex-col items-center gap-3 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      {importContent.modes[expandedInline].notConnected}
+                    {form.linkOnlyConnect(serviceLabels[detectedService])}
+                  </Link>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => onClearRoute()}>
+                    {form.linkOnlyRemove}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              /* Route imported — confirmation + map */
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <MapTrifold className="size-5 shrink-0 text-primary" weight="duotone" />
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {form.importConfirmed(importedRouteName)}
                     </p>
-                    <Link href={routes.profile}>
-                      <Button type="button" variant="outline" size="sm">
-                        {importContent.modes[expandedInline].connectButton}
-                      </Button>
-                    </Link>
                   </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onClearRoute(true)}
+                    className="shrink-0 rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
+                  >
+                    <PencilSimple className="size-5" />
+                  </Button>
+                </div>
+                {routePolyline && (
+                  <RouteMapLoader
+                    polylineStr={routePolyline}
+                    routeUrl={routeUrl || null}
+                    routeName={importedRouteName}
+                    aspectRatio="5/2"
+                  />
                 )}
               </div>
-            )}
-          </div>
-        )}
-      </div>
+            )
+          ) : (
+            /* No route yet — service cards + inline paste / connect prompts */
+            <div className="space-y-3">
+              <p className="text-center text-[0.8125rem] text-muted-foreground">
+                {form.importDescription}
+              </p>
 
-      {/* Single-service route drawer */}
-      {drawerService && (
-        <RouteImportDrawer
-          open={!!drawerService}
-          onOpenChange={(open) => {
-            if (!open) setDrawerService(null);
-          }}
-          service={drawerService}
-          connectedServices={connectedServices}
-          onSelect={onSelectRoute}
-        />
-      )}
+              {/* Service cards */}
+              <div className="grid grid-cols-3 gap-3">
+                {knownServices.map((service) => {
+                  const Icon = serviceIcons[service];
+                  const brandColor = integrations[service].brandColor;
+                  const isConnected = connectedServices.includes(service);
+                  return (
+                    <button
+                      key={service}
+                      type="button"
+                      onClick={() => handleCardClick(service)}
+                      className={`flex flex-col items-center gap-2 rounded-xl p-4 transition-all active:scale-[0.97] ${
+                        isConnected
+                          ? 'bg-surface-page hover:bg-accent/50'
+                          : expandedInline === service
+                            ? 'border-2 border-dashed border-primary bg-transparent'
+                            : 'border-2 border-dashed border-border bg-transparent hover:bg-accent/30'
+                      }`}
+                    >
+                      <Icon className="size-6" style={{ color: brandColor }} />
+                      <span className="text-xs font-medium text-foreground">
+                        {serviceLabels[service]}
+                      </span>
+                      {!isConnected && (
+                        <span className="text-[0.625rem] text-muted-foreground">
+                          {form.serviceNotConnected}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={handlePasteClick}
+                  className={`flex flex-col items-center gap-2 rounded-xl p-4 transition-all active:scale-[0.97] ${
+                    expandedInline === 'paste'
+                      ? 'ring-2 ring-primary bg-surface-page'
+                      : 'bg-surface-page hover:bg-accent/50'
+                  }`}
+                >
+                  <LinkSimple className="size-6 text-muted-foreground" />
+                  <span className="text-xs font-medium text-foreground">
+                    {importContent.modes.paste.heading}
+                  </span>
+                </button>
+              </div>
+
+              {/* Inline expansion: paste URL or disconnected service prompt */}
+              {expandedInline && (
+                <div className="animate-in fade-in-0 duration-200">
+                  {expandedInline === 'paste' ? (
+                    <PasteUrlPanel
+                      pasteUrlRef={pasteUrlRef}
+                      isFetchingRoute={isFetchingRoute}
+                      fetchRouteError={fetchRouteError}
+                      onPasteUrl={onPasteUrl}
+                    />
+                  ) : (
+                    /* Disconnected service — connect prompt */
+                    <div className="rounded-xl border-2 border-dashed border-border p-6 flex flex-col items-center gap-3 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        {importContent.modes[expandedInline].notConnected}
+                      </p>
+                      <Link href={routes.profile}>
+                        <Button type="button" variant="outline" size="sm">
+                          {importContent.modes[expandedInline].connectButton}
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Single-service route drawer */}
+        {drawerService && (
+          <RouteImportDrawer
+            open={!!drawerService}
+            onOpenChange={(open) => {
+              if (!open) setDrawerService(null);
+            }}
+            service={drawerService}
+            connectedServices={connectedServices}
+            onSelect={onSelectRoute}
+          />
+        )}
+      </ContentCard>
     </div>
   );
 }

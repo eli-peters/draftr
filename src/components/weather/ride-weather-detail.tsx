@@ -1,4 +1,5 @@
 import { Wind, Drop, CloudRain } from '@phosphor-icons/react/dist/ssr';
+import { ContentCard } from '@/components/ui/content-card';
 import { WeatherIcon } from '@/components/weather/weather-icon';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
@@ -41,7 +42,7 @@ export function RideWeatherDetail({ weather }: RideWeatherDetailProps) {
         </div>
       )}
 
-      <div className="mt-3 rounded-xl border border-border bg-card p-5">
+      <ContentCard padding="spacious" className="mt-3">
         <div className="flex items-center gap-3">
           <WeatherIcon
             weatherCode={weather.weather_code}
@@ -108,7 +109,7 @@ export function RideWeatherDetail({ weather }: RideWeatherDetailProps) {
             </div>
           )}
         </div>
-      </div>
+      </ContentCard>
     </div>
   );
 }

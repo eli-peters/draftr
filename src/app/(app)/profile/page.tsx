@@ -13,6 +13,7 @@ import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { getInitials } from '@/lib/utils';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
+import { ContentCard } from '@/components/ui/content-card';
 import { dateFormats, units } from '@/config/formatting';
 import { getUserProfile, getUserProfileStats, getUserRecentRides } from '@/lib/profile/queries';
 import { getUserConnections } from '@/lib/integrations/queries';
@@ -59,7 +60,7 @@ export default async function ProfilePage() {
       </div>
 
       {/* Stat Strip */}
-      <div className="mt-8 rounded-xl border border-border bg-card p-4">
+      <ContentCard className="mt-8" padding="compact">
         <div className="grid grid-cols-3 divide-x divide-border">
           <div className="flex flex-col items-center px-2">
             <span className="text-xl font-bold tabular-nums text-foreground">
@@ -84,7 +85,7 @@ export default async function ProfilePage() {
             </p>
           </div>
         </div>
-      </div>
+      </ContentCard>
 
       {/* Editable profile details */}
       <div className="mt-8">
@@ -118,7 +119,11 @@ export default async function ProfilePage() {
           <div className="mt-3 space-y-2">
             {recentRides.map((ride) => (
               <Link key={ride.id} href={routes.ride(ride.id)} className="block group">
-                <div className="flex items-center justify-between rounded-xl border border-border bg-card p-4">
+                <ContentCard
+                  interactive
+                  padding="compact"
+                  className="flex items-center justify-between"
+                >
                   <div className="min-w-0">
                     <p className="text-base font-medium text-foreground truncate">{ride.title}</p>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
@@ -133,7 +138,7 @@ export default async function ProfilePage() {
                     </div>
                   </div>
                   <CaretRight className="h-4 w-4 text-muted-foreground/50" />
-                </div>
+                </ContentCard>
               </Link>
             ))}
           </div>

@@ -65,6 +65,19 @@
           }
         }
       }
+    },
+    "card-footer": {
+      "$type": "color",
+      "$description": "Ride card footer strip (avatar row, actions)",
+      "$value": "{color.info.50}",
+      "$extensions": {
+        "com.figma": {
+          "modes": {
+            "Light": "{color.info.50}",
+            "Dark": "{color.info.950}"
+          }
+        }
+      }
     }
   },
   "text": {

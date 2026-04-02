@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { FloatingField } from '@/components/ui/floating-field';
 import { SectionHeading } from '@/components/ui/section-heading';
+import { ContentCard } from '@/components/ui/content-card';
 import { toast } from 'sonner';
 import { addComment, editComment, deleteComment } from '@/lib/rides/actions';
 import { appContent } from '@/content/app';
@@ -37,25 +38,26 @@ export function RideComments({
   return (
     <div>
       <SectionHeading>{content.heading}</SectionHeading>
+      <ContentCard className="mt-3">
+        {comments.length === 0 && (
+          <p className="text-sm text-muted-foreground">{content.noComments}</p>
+        )}
 
-      {comments.length === 0 && (
-        <p className="mt-3 text-sm text-muted-foreground">{content.noComments}</p>
-      )}
+        {comments.length > 0 && (
+          <div className="space-y-1">
+            {comments.map((comment) => (
+              <CommentRow
+                key={comment.id}
+                comment={comment}
+                currentUserId={currentUserId}
+                isAdmin={userRole === 'admin'}
+              />
+            ))}
+          </div>
+        )}
 
-      {comments.length > 0 && (
-        <div className="mt-3 space-y-1">
-          {comments.map((comment) => (
-            <CommentRow
-              key={comment.id}
-              comment={comment}
-              currentUserId={currentUserId}
-              isAdmin={userRole === 'admin'}
-            />
-          ))}
-        </div>
-      )}
-
-      {currentUserId && !isCancelled && <AddCommentForm rideId={rideId} />}
+        {currentUserId && !isCancelled && <AddCommentForm rideId={rideId} />}
+      </ContentCard>
     </div>
   );
 }

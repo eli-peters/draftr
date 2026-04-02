@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Wind } from '@phosphor-icons/react/dist/ssr';
+import { ContentCard } from '@/components/ui/content-card';
 import { WeatherIcon } from '@/components/weather/weather-icon';
 import { appContent } from '@/content/app';
 import {
@@ -55,13 +56,13 @@ export function CurrentWeather() {
 
   if (loading) {
     return (
-      <div className="flex h-[62px] items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
+      <ContentCard padding="none" className="flex h-15.5 items-center gap-3 px-4 py-3">
         <div className="size-8 animate-pulse rounded-full bg-muted" />
         <div className="flex flex-col gap-1.5">
           <div className="h-5 w-20 animate-pulse rounded bg-muted" />
           <div className="h-3 w-32 animate-pulse rounded bg-muted" />
         </div>
-      </div>
+      </ContentCard>
     );
   }
 
@@ -70,7 +71,7 @@ export function CurrentWeather() {
   const condition = getWeatherCondition(weather.weather_code);
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
+    <ContentCard padding="none" className="flex items-center gap-3 px-4 py-3">
       <WeatherIcon
         weatherCode={weather.weather_code}
         isDay={weather.is_day}
@@ -99,6 +100,6 @@ export function CurrentWeather() {
           )}
         </div>
       </div>
-    </div>
+    </ContentCard>
   );
 }
