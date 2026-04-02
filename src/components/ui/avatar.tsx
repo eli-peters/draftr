@@ -150,11 +150,11 @@ function RiderAvatarOverflow({ count, className }: RiderAvatarOverflowProps) {
     <div
       data-slot="rider-avatar"
       className={cn(
-        'relative flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-accent-secondary-subtle',
+        'relative flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted',
         className,
       )}
     >
-      <span className="text-xs font-medium text-accent-secondary-default">+{count}</span>
+      <span className="text-xs font-medium text-muted-foreground">+{count}</span>
     </div>
   );
 }

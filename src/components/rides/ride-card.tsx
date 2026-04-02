@@ -130,6 +130,7 @@ function RidesLayout({
             avatars={ride.signup_avatars}
             totalCount={ride.signup_count}
             cancelled={ride.status === 'cancelled'}
+            surface="color-mix(in oklab, var(--surface-card-footer) 40%, var(--surface-default))"
           />
           {availability.canSignUp && (
             <CardSignupButton

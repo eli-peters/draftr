@@ -12,6 +12,8 @@ import type {
   RideWeatherSnapshot,
   CommentWithUser,
   SignupAvatar,
+  ReactionType,
+  ReactionSummary,
 } from '@/types/database';
 
 // ---------------------------------------------------------------------------
@@ -24,8 +26,15 @@ type JoinedLocation = { name: string } | null;
 /** Join shape for pace_group:pace_groups(name, sort_order) */
 type JoinedPaceGroup = { name: string; sort_order: number } | null;
 
-/** Join shape for ride_signups(count) */
-type JoinedSignupCount = { count: number }[];
+/** Join shape for ride_signups(status) — used to count active signups in JS. */
+type JoinedSignupStatus = { status: string }[];
+
+/** Count signups that are confirmed or checked-in. */
+function countActiveSignups(signups: JoinedSignupStatus): number {
+  return signups.filter(
+    (s) => s.status === SignupStatus.CONFIRMED || s.status === SignupStatus.CHECKED_IN,
+  ).length;
+}
 
 /** Common ride row returned by action-bar queries with location/pace/weather joins. */
 interface ActionBarRideRow {
@@ -114,7 +123,6 @@ function toRideWithDetails(ride: RawRideRow, currentUserId?: string): RideWithDe
 
   return {
     ...ride,
-    tags: [],
     signup_count: confirmedSignups.length,
     signup_avatars: signupAvatars,
     creator: ride.creator ?? null,
@@ -234,7 +242,7 @@ export async function getUserNextSignup(userId: string, clubId: string, timezone
         start_location_name,
         meeting_location:meeting_locations(name),
         pace_group:pace_groups(name, sort_order),
-        ride_signups(count),
+        ride_signups(status),
         ride_weather_snapshots(*)
       )
     `,
@@ -261,7 +269,7 @@ export async function getUserNextSignup(userId: string, clubId: string, timezone
     start_location_name: string | null;
     meeting_location: { name: string } | null;
     pace_group: { name: string; sort_order: number } | null;
-    ride_signups: { count: number }[];
+    ride_signups: JoinedSignupStatus;
     ride_weather_snapshots: RideWeatherSnapshot | null;
   };
 
@@ -281,7 +289,7 @@ export async function getUserNextSignup(userId: string, clubId: string, timezone
       pace_group_sort_order: ride.pace_group?.sort_order ?? null,
       distance_km: ride.distance_km,
       elevation_m: ride.elevation_m,
-      signup_count: ride.ride_signups?.[0]?.count ?? 0,
+      signup_count: countActiveSignups(ride.ride_signups ?? []),
       capacity: ride.capacity,
       weather: ride.ride_weather_snapshots ?? null,
     };
@@ -306,7 +314,7 @@ export async function getLeaderNextLedRide(userId: string, clubId: string, timez
       start_location_name,
       meeting_location:meeting_locations(name),
       pace_group:pace_groups(name, sort_order),
-      ride_signups(count),
+      ride_signups(status),
       ride_weather_snapshots(*)
     `,
     )
@@ -323,7 +331,7 @@ export async function getLeaderNextLedRide(userId: string, clubId: string, timez
   type LedRideRow = ActionBarRideRow & {
     elevation_m: number | null;
     capacity: number | null;
-    ride_signups: JoinedSignupCount;
+    ride_signups: JoinedSignupStatus;
   };
 
   for (const row of data as unknown as LedRideRow[]) {
@@ -332,7 +340,7 @@ export async function getLeaderNextLedRide(userId: string, clubId: string, timez
     return {
       ...toActionBarResult(row),
       elevation_m: row.elevation_m,
-      signup_count: row.ride_signups?.[0]?.count ?? 0,
+      signup_count: countActiveSignups(row.ride_signups ?? []),
       capacity: row.capacity,
     };
   }
@@ -560,19 +568,6 @@ export async function getPaceGroups(clubId: string) {
 }
 
 /**
- * Fetch tags for a club (for ride creation form).
- */
-export async function getClubTags(clubId: string) {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from('tags')
-    .select('id, name')
-    .eq('club_id', clubId)
-    .order('sort_order');
-  return data ?? [];
-}
-
-/**
  * Fetch rides created by a leader (or all rides for admin) in a club.
  */
 export async function getLeaderRides(userId: string, clubId: string, isAdmin: boolean) {
@@ -587,7 +582,7 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
       meeting_location:meeting_locations(name),
       pace_group:pace_groups(id, name, sort_order),
       creator:users!rides_created_by_fkey(full_name),
-      ride_signups(count)
+      ride_signups(status)
     `,
     )
     .eq('club_id', clubId)
@@ -612,7 +607,7 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
       name: string;
       sort_order: number;
     } | null;
-    const signups = ride.ride_signups as unknown as { count: number }[];
+    const signups = ride.ride_signups as unknown as JoinedSignupStatus;
     const creator = ride.creator as unknown as {
       full_name: string;
     } | null;
@@ -630,8 +625,7 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
       pace_group_id: pace?.id ?? null,
       pace_group_name: pace?.name ?? null,
       pace_group_sort_order: pace?.sort_order ?? null,
-      tags: [],
-      signup_count: signups?.[0]?.count ?? 0,
+      signup_count: countActiveSignups(signups ?? []),
       created_by_name: creator?.full_name ?? null,
     };
   });
@@ -681,15 +675,6 @@ export async function getRideSignups(rideId: string) {
   });
 }
 
-/**
- * Fetch a ride's current tag IDs (for edit form pre-fill).
- */
-export async function getRideTagIds(rideId: string): Promise<string[]> {
-  const supabase = await createClient();
-  const { data } = await supabase.from('ride_tags').select('tag_id').eq('ride_id', rideId);
-  return (data ?? []).map((rt) => rt.tag_id);
-}
-
 export type UserRideSignup = {
   id: string;
   title: string;
@@ -733,7 +718,7 @@ export async function getUserRideSignups(
         start_location_name, start_location_address, start_latitude, start_longitude,
         meeting_location:meeting_locations(name, address, latitude, longitude),
         pace_group:pace_groups(name, sort_order),
-        ride_signups(count),
+        ride_signups(status),
         ride_weather_snapshots(*)
       )
     `,
@@ -808,7 +793,7 @@ export async function getUserRideSignups(
         longitude: number | null;
       } | null;
       pace_group: { name: string; sort_order: number } | null;
-      ride_signups: { count: number }[];
+      ride_signups: JoinedSignupStatus;
       ride_weather_snapshots: RideWeatherSnapshot | null;
     };
 
@@ -827,7 +812,7 @@ export async function getUserRideSignups(
       meeting_location_longitude: ride.start_longitude ?? ride.meeting_location?.longitude ?? null,
       distance_km: ride.distance_km,
       elevation_m: ride.elevation_m ?? null,
-      signup_count: ride.ride_signups?.[0]?.count ?? 0,
+      signup_count: countActiveSignups(ride.ride_signups ?? []),
       capacity: ride.capacity,
       signed_up_at: signup.signed_up_at,
       waitlist_position: positionMap.get(ride.id) ?? signup.waitlist_position,
@@ -880,6 +865,100 @@ export async function getRideComments(rideId: string): Promise<CommentWithUser[]
       avatar_url: user.avatar_url,
     };
   });
+}
+
+// ---------------------------------------------------------------------------
+// Reactions
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch reaction summaries for a ride, grouped by reaction type.
+ */
+export async function getRideReactions(rideId: string): Promise<ReactionSummary[]> {
+  const supabase = await createClient();
+  const user = await getUser();
+  const currentUserId = user?.id ?? null;
+
+  const { data, error } = await supabase
+    .from('ride_reactions')
+    .select('reaction, user_id, user:users!inner(full_name)')
+    .eq('ride_id', rideId);
+
+  if (error?.message) {
+    console.error('Error fetching ride reactions:', error.message);
+    return [];
+  }
+
+  return aggregateReactions(data ?? [], currentUserId);
+}
+
+/**
+ * Batch-fetch reaction summaries for multiple comments.
+ * Returns a Map keyed by comment_id.
+ */
+export async function getCommentReactions(
+  commentIds: string[],
+): Promise<Map<string, ReactionSummary[]>> {
+  const result = new Map<string, ReactionSummary[]>();
+  if (commentIds.length === 0) return result;
+
+  const supabase = await createClient();
+  const user = await getUser();
+  const currentUserId = user?.id ?? null;
+
+  const { data, error } = await supabase
+    .from('comment_reactions')
+    .select('comment_id, reaction, user_id, user:users!inner(full_name)')
+    .in('comment_id', commentIds);
+
+  if (error?.message) {
+    console.error('Error fetching comment reactions:', error.message);
+    return result;
+  }
+
+  // Group by comment_id first, then aggregate each group
+  const rows = data ?? [];
+  const byComment = new Map<string, typeof rows>();
+  for (const row of rows) {
+    const existing = byComment.get(row.comment_id) ?? [];
+    existing.push(row);
+    byComment.set(row.comment_id, existing);
+  }
+
+  for (const [commentId, rows] of byComment) {
+    result.set(commentId, aggregateReactions(rows, currentUserId));
+  }
+
+  return result;
+}
+
+/**
+ * Aggregate raw reaction rows into ReactionSummary array.
+ */
+function aggregateReactions(
+  rows: Array<{
+    reaction: string;
+    user_id: string;
+    user: unknown;
+  }>,
+  currentUserId: string | null,
+): ReactionSummary[] {
+  const map = new Map<ReactionType, { count: number; userNames: string[]; hasReacted: boolean }>();
+
+  for (const row of rows) {
+    const reaction = row.reaction as ReactionType;
+    const userName = (row.user as { full_name: string }).full_name;
+    const existing = map.get(reaction) ?? { count: 0, userNames: [], hasReacted: false };
+    existing.count++;
+    existing.userNames.push(userName);
+    if (row.user_id === currentUserId) existing.hasReacted = true;
+    map.set(reaction, existing);
+  }
+
+  return Array.from(map.entries()).map(([reaction, data]) => ({
+    reaction,
+    ...data,
+  }));
 }
 
 // ---------------------------------------------------------------------------

@@ -296,7 +296,7 @@ export interface CreateRideData {
 }
 
 /**
- * Create a new ride. Inserts ride + ride_tags.
+ * Create a new ride.
  */
 export async function createRide(data: CreateRideData) {
   const supabase = await createClient();
@@ -515,7 +515,7 @@ export interface UpdateRideData {
 }
 
 /**
- * Update an existing ride. Replaces ride_tags.
+ * Update an existing ride.
  */
 export async function updateRide(rideId: string, data: UpdateRideData) {
   const supabase = await createClient();
@@ -936,6 +936,79 @@ export async function deleteComment(commentId: string) {
 
   revalidatePath(`/rides/${permission.comment.ride_id}`);
   return { success: true };
+}
+
+// ---------------------------------------------------------------------------
+// Reactions
+// ---------------------------------------------------------------------------
+
+/**
+ * Toggle a reaction on a ride — adds if not present, removes if already reacted.
+ */
+export async function toggleRideReaction(rideId: string, reaction: string) {
+  const supabase = await createClient();
+  const user = await getUser();
+  if (!user) return { error: common.notAuthenticated };
+
+  // Check if the user already has this reaction
+  const { data: existing } = await supabase
+    .from('ride_reactions')
+    .select('id')
+    .eq('ride_id', rideId)
+    .eq('user_id', user.id)
+    .eq('reaction', reaction)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase.from('ride_reactions').delete().eq('id', existing.id);
+    if (error) return { error: error.message };
+  } else {
+    const { error } = await supabase
+      .from('ride_reactions')
+      .insert({ ride_id: rideId, user_id: user.id, reaction });
+    if (error) return { error: error.message };
+  }
+
+  revalidatePath(`/rides/${rideId}`);
+  return { success: true, added: !existing };
+}
+
+/**
+ * Toggle a reaction on a comment — adds if not present, removes if already reacted.
+ */
+export async function toggleCommentReaction(commentId: string, reaction: string) {
+  const supabase = await createClient();
+  const user = await getUser();
+  if (!user) return { error: common.notAuthenticated };
+
+  // Check if the user already has this reaction
+  const { data: existing } = await supabase
+    .from('comment_reactions')
+    .select('id')
+    .eq('comment_id', commentId)
+    .eq('user_id', user.id)
+    .eq('reaction', reaction)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase.from('comment_reactions').delete().eq('id', existing.id);
+    if (error) return { error: error.message };
+  } else {
+    const { error } = await supabase
+      .from('comment_reactions')
+      .insert({ comment_id: commentId, user_id: user.id, reaction });
+    if (error) return { error: error.message };
+  }
+
+  // Find the ride_id from the comment to revalidate the correct path
+  const { data: comment } = await supabase
+    .from('ride_comments')
+    .select('ride_id')
+    .eq('id', commentId)
+    .single();
+
+  if (comment) revalidatePath(`/rides/${comment.ride_id}`);
+  return { success: true, added: !existing };
 }
 
 // ---------------------------------------------------------------------------

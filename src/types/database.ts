@@ -124,15 +124,6 @@ export interface CommentWithUser {
   avatar_url: string | null;
 }
 
-export interface Tag {
-  id: string;
-  club_id: string;
-  name: string;
-  color: string | null;
-  is_archived: boolean;
-  sort_order: number;
-}
-
 export type SignupStatus = 'confirmed' | 'waitlisted' | 'cancelled' | 'checked_in';
 
 export interface RideSignup {
@@ -146,7 +137,7 @@ export interface RideSignup {
   cancelled_at: string | null;
 }
 
-export type ReactionType = 'thumbs_up' | 'fire' | 'suffering' | 'heart' | 'wind';
+export type ReactionType = 'thumbs_up' | 'fire' | 'heart' | 'laugh' | 'cycling';
 
 export interface RideReaction {
   id: string;
@@ -154,6 +145,21 @@ export interface RideReaction {
   user_id: string;
   reaction: ReactionType;
   created_at: string;
+}
+
+export interface CommentReaction {
+  id: string;
+  comment_id: string;
+  user_id: string;
+  reaction: ReactionType;
+  created_at: string;
+}
+
+export interface ReactionSummary {
+  reaction: ReactionType;
+  count: number;
+  userNames: string[];
+  hasReacted: boolean;
 }
 
 export interface RideComment {
@@ -301,7 +307,6 @@ export interface SignupAvatar {
 export interface RideWithDetails extends Ride {
   meeting_location: MeetingLocation | null;
   pace_group: PaceGroup | null;
-  tags: Tag[];
   signup_count: number;
   /** First few confirmed signups for avatar display (ordered by signed_up_at). */
   signup_avatars: SignupAvatar[];

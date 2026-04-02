@@ -334,9 +334,16 @@ interface RiderAvatarGroupProps {
   totalCount: number;
   /** When true, avatars render in grayscale (e.g. cancelled rides) */
   cancelled?: boolean;
+  /** CSS value for the ring colour between overlapping avatars. */
+  surface?: string;
 }
 
-export function RiderAvatarGroup({ avatars, totalCount, cancelled }: RiderAvatarGroupProps) {
+export function RiderAvatarGroup({
+  avatars,
+  totalCount,
+  cancelled,
+  surface,
+}: RiderAvatarGroupProps) {
   const visibleAvatars = avatars.slice(0, MAX_VISIBLE_AVATARS);
   const overflowCount = totalCount - visibleAvatars.length;
   const countNumber = `${totalCount}`;
@@ -344,7 +351,7 @@ export function RiderAvatarGroup({ avatars, totalCount, cancelled }: RiderAvatar
   return (
     <div className="flex items-center gap-3">
       {visibleAvatars.length > 0 && (
-        <RiderAvatarStack className={cn(cancelled && 'grayscale')}>
+        <RiderAvatarStack surface={surface} className={cn(cancelled && 'grayscale')}>
           {visibleAvatars.map((person, i) => (
             <RiderAvatar key={i} avatarUrl={person.avatar_url} name={person.full_name} />
           ))}

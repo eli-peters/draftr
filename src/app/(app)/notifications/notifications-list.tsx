@@ -81,7 +81,7 @@ export function NotificationsList({
           className="mt-12 flex-1"
         />
       ) : (
-        <div className="mt-8 flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
           {notifications.map((notification) => {
             const content = (
               <Card

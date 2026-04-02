@@ -15,12 +15,12 @@ export function PageHeader({
   subtitle,
   badge,
   actions,
-  centered = false,
+  centered = true,
   className,
 }: PageHeaderProps) {
   if (centered) {
     return (
-      <div className={cn('relative', className)}>
+      <div className={cn('relative mb-8', className)}>
         {actions && <div className="absolute top-0 right-0 flex items-center gap-1">{actions}</div>}
         <div className="text-center">
           <div className="inline-flex items-center gap-3">
@@ -36,7 +36,7 @@ export function PageHeader({
   }
 
   return (
-    <div className={cn('flex items-start justify-between gap-4', className)}>
+    <div className={cn('mb-6 flex items-start justify-between gap-4', className)}>
       <div className="min-w-0">
         <div className="flex min-w-0 items-center gap-3">
           <h1 className="line-clamp-2 text-3xl font-bold tracking-tight text-foreground">

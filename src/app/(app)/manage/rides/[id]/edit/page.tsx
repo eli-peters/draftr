@@ -15,6 +15,8 @@ import {
 import { getClubMembers } from '@/lib/manage/queries';
 import { getUserConnections } from '@/lib/integrations/queries';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContentToolbar } from '@/components/layout/content-toolbar';
 import { RideForm } from '@/components/rides/ride-form';
 import { CancelRideButton } from '@/components/rides/cancel-ride-button';
 import { SignupRoster } from '@/components/rides/signup-roster';
@@ -103,17 +105,17 @@ export default async function EditRidePage({
 
   return (
     <DashboardShell>
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          {ridesContent.edit.heading}
-        </h1>
-        <Link href={`${routes.manageNewRide}?duplicate=${id}`}>
-          <Button variant="outline" size="sm">
-            <Copy className="h-4 w-4 mr-1.5" />
-            {ridesContent.edit.duplicateRide}
-          </Button>
-        </Link>
-      </div>
+      <PageHeader title={ridesContent.edit.heading} />
+      <ContentToolbar
+        right={
+          <Link href={`${routes.manageNewRide}?duplicate=${id}`}>
+            <Button variant="outline" size="sm">
+              <Copy className="h-4 w-4 mr-1.5" />
+              {ridesContent.edit.duplicateRide}
+            </Button>
+          </Link>
+        }
+      />
 
       <RideForm
         clubId={membership.club_id}

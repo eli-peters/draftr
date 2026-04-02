@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { PageHeader } from '@/components/layout/page-header';
 import { appContent } from '@/content/app';
 
 const { dashboard } = appContent;
@@ -25,9 +26,5 @@ export function GreetingSection({ firstName }: GreetingSectionProps) {
     setGreeting(dashboard.greetingWithName(getGreeting(), firstName));
   }, [firstName]);
 
-  return (
-    <div>
-      <h1 className="text-3xl font-bold tracking-tight text-foreground">{greeting || '\u00A0'}</h1>
-    </div>
-  );
+  return <PageHeader title={greeting || '\u00A0'} />;
 }

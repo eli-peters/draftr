@@ -31,7 +31,7 @@ export default async function RidesPage() {
     <DashboardShell>
       <PageHeader title={ridesContent.feed.heading} />
 
-      <div className="mt-8">
+      <div>
         <Suspense>
           <FilterableRideFeed
             rides={rides}

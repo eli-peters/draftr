@@ -13,6 +13,7 @@ import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { MemberStatus } from '@/config/statuses';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
+import { PageHeader } from '@/components/layout/page-header';
 import { RideForm } from '@/components/rides/ride-form';
 import type { UserRole } from '@/config/navigation';
 
@@ -112,9 +113,7 @@ export default async function CreateRidePage({
 
   return (
     <DashboardShell>
-      <h1 className="text-3xl font-bold tracking-tight text-foreground">
-        {ridesContent.create.heading}
-      </h1>
+      <PageHeader title={ridesContent.create.heading} />
       <RideForm
         clubId={membership.club_id}
         paceGroups={paceGroups}

@@ -81,7 +81,7 @@ export default async function HomePage() {
       <GreetingSection firstName={firstName} />
 
       {/* Current weather widget — client component, uses browser geolocation */}
-      <div className="mt-4">
+      <div>
         <CurrentWeather />
       </div>
 

@@ -25,12 +25,20 @@ interface SignupRosterProps {
   signups: SignupEntry[];
   createdBy?: string | null;
   coLeaderIds?: string[];
+  currentUserId?: string | null;
+  onCancelSignup?: () => void;
 }
 
-export function SignupRoster({ signups, createdBy, coLeaderIds = [] }: SignupRosterProps) {
+export function SignupRoster({
+  signups,
+  createdBy,
+  coLeaderIds = [],
+  currentUserId,
+  onCancelSignup,
+}: SignupRosterProps) {
   if (signups.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground py-4 text-center">
+      <p className="py-4 text-center text-sm text-muted-foreground">
         {ridesContent.roster.noSignups}
       </p>
     );
@@ -57,15 +65,27 @@ export function SignupRoster({ signups, createdBy, coLeaderIds = [] }: SignupRos
   return (
     <div className="space-y-1">
       {sortedConfirmed.map((signup) => (
-        <SignupRow key={signup.id} signup={signup} isLeader={leaderIds.has(signup.user_id)} />
+        <SignupRow
+          key={signup.id}
+          signup={signup}
+          isLeader={leaderIds.has(signup.user_id)}
+          isSelf={signup.user_id === currentUserId}
+          onCancelSignup={onCancelSignup}
+        />
       ))}
       {waitlisted.length > 0 && (
         <>
-          <SectionHeading as="p" className="pt-3 pb-1">
+          <SectionHeading as="p" className="pb-1 pt-3">
             {ridesContent.roster.waitlisted}
           </SectionHeading>
           {waitlisted.map((signup) => (
-            <SignupRow key={signup.id} signup={signup} isLeader={leaderIds.has(signup.user_id)} />
+            <SignupRow
+              key={signup.id}
+              signup={signup}
+              isLeader={leaderIds.has(signup.user_id)}
+              isSelf={signup.user_id === currentUserId}
+              onCancelSignup={onCancelSignup}
+            />
           ))}
         </>
       )}
@@ -73,30 +93,42 @@ export function SignupRoster({ signups, createdBy, coLeaderIds = [] }: SignupRos
   );
 }
 
-function SignupRow({ signup, isLeader }: { signup: SignupEntry; isLeader?: boolean }) {
+function SignupRow({
+  signup,
+  isLeader,
+  isSelf,
+  onCancelSignup,
+}: {
+  signup: SignupEntry;
+  isLeader?: boolean;
+  isSelf?: boolean;
+  onCancelSignup?: () => void;
+}) {
   const initials = getInitials(signup.user_name);
 
   return (
-    <Link
-      href={routes.publicProfile(signup.user_id)}
-      className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-accent/50 transition-colors"
-    >
-      <Avatar className="h-8 w-8">
-        {signup.avatar_url && <AvatarImage src={signup.avatar_url} alt={signup.user_name} />}
-        <AvatarFallback
-          className={`text-xs font-medium ${getAvatarColourClasses(signup.user_name)}`}
-        >
-          {initials}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground truncate">{signup.user_name}</p>
-        {signup.signed_up_at && (
-          <p className="text-xs text-muted-foreground">
-            {ridesContent.roster.joined(formatDistanceToNow(new Date(signup.signed_up_at)))}
-          </p>
-        )}
-      </div>
+    <div className="flex items-center gap-3 rounded-lg px-2 py-2">
+      <Link
+        href={routes.publicProfile(signup.user_id)}
+        className="flex flex-1 items-center gap-3 transition-colors hover:opacity-80"
+      >
+        <Avatar className="h-8 w-8">
+          {signup.avatar_url && <AvatarImage src={signup.avatar_url} alt={signup.user_name} />}
+          <AvatarFallback
+            className={`text-xs font-medium ${getAvatarColourClasses(signup.user_name)}`}
+          >
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-foreground">{signup.user_name}</p>
+          {signup.signed_up_at && (
+            <p className="text-xs text-muted-foreground">
+              {ridesContent.roster.joined(formatDistanceToNow(new Date(signup.signed_up_at)))}
+            </p>
+          )}
+        </div>
+      </Link>
       {isLeader && (
         <Badge variant="default" className="text-xs">
           {ridesContent.roster.leader}
@@ -107,6 +139,14 @@ function SignupRow({ signup, isLeader }: { signup: SignupEntry; isLeader?: boole
           #{signup.waitlist_position}
         </Badge>
       )}
-    </Link>
+      {isSelf && onCancelSignup && (
+        <button
+          onClick={onCancelSignup}
+          className="text-xs text-muted-foreground transition-colors hover:text-destructive"
+        >
+          {ridesContent.detail.leaveRide}
+        </button>
+      )}
+    </div>
   );
 }

@@ -22,7 +22,6 @@ interface RideDetailCardProps {
   isSignedUp: boolean;
   signupStatus: string | null;
   waitlistPosition: number | null;
-  confirmedCount: number;
   lifecycle: RideLifecycle;
   weather: RideWeatherSnapshot | null;
 }
@@ -36,7 +35,6 @@ export function RideDetailCard({
   isSignedUp,
   signupStatus,
   waitlistPosition,
-  confirmedCount,
   lifecycle,
   weather,
 }: RideDetailCardProps) {
@@ -66,18 +64,6 @@ export function RideDetailCard({
   }
   if (ride.elevation_m != null) {
     statsItems.push({ label: detail.elevationLabel, value: `${ride.elevation_m}${units.m}` });
-  }
-  // Spots remaining / signed up
-  if (ride.capacity != null) {
-    statsItems.push({
-      label: detail.spotsRemainingLabel,
-      value: `${confirmedCount}/${ride.capacity}`,
-    });
-  } else {
-    statsItems.push({
-      label: detail.spotsRemainingLabel,
-      value: detail.signedUpCount(confirmedCount),
-    });
   }
 
   return (

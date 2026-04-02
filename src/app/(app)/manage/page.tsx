@@ -67,7 +67,7 @@ export default async function ManagePage({
   return (
     <DashboardShell>
       <PageHeader
-        title={content.heading}
+        title={isAdmin ? content.headingAdmin : content.headingLeader}
         actions={
           <Link href={routes.manageNewRide}>
             <Button size="sm">
@@ -80,7 +80,7 @@ export default async function ManagePage({
 
       {isAdmin && stats && (
         <StatsGrid
-          className="mt-8 grid-cols-3 sm:grid-cols-3"
+          className="mt-6 grid-cols-3 sm:grid-cols-3"
           stats={[
             { label: content.stats.totalRides, value: stats.totalRides, icon: Bicycle },
             { label: content.stats.activeMembers, value: stats.activeMembers, icon: UsersThree },

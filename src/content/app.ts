@@ -170,7 +170,6 @@ export const appContent = {
       cancelSignUp: 'Cancel Sign-Up',
       spotsRemaining: (remaining: number, total: number) => `${remaining}/${total} spots remaining`,
       spotsFilled: (confirmed: number, capacity: number) => `${confirmed}/${capacity} spots filled`,
-      signedUpCount: (count: number) => `${count} signed up`,
       waitlistedCount: (count: number) => `${count} waitlisted`,
       confirmedCount: (count: number) => `${count} confirmed`,
       dropRide: 'Drop ride',
@@ -180,12 +179,16 @@ export const appContent = {
       signedUp: "You're signed up!",
       cancelled: 'This ride has been cancelled',
       cancelledLocked: 'Cancelled rides cannot be edited.',
-      duplicateAsNew: 'Duplicate as New Ride',
       signupClosedContact: 'Contact the ride leader to join',
       waitlistClosed: 'Waitlist closed — no spots opened',
+      leaveRide: 'Leave',
+      cancelConfirmTitle: 'Cancel your sign-up?',
+      cancelConfirmDescription:
+        'Your spot will be released and the next person on the waitlist will be promoted.',
+      cancelConfirmAction: 'Cancel Sign-Up',
+      cancelConfirmKeep: 'Keep My Spot',
       distanceLabel: 'Distance',
       elevationLabel: 'Elevation',
-      spotsRemainingLabel: 'Riders',
       routeMapPlaceholder: 'Route map coming soon',
       ridersHeading: (confirmed: number, waitlisted: number, capacity: number | null) => {
         const parts: string[] = [];
@@ -311,7 +314,6 @@ export const appContent = {
       routeName: 'Route Name',
       routeLink: 'Route Link',
       isDropRide: 'Drop ride',
-      tags: 'Tags',
       description: 'Description',
       selectLocation: 'e.g. Evergreen Brick Works',
       addressPlaceholder: 'e.g. 550 Bayview Ave, Toronto',
@@ -339,8 +341,8 @@ export const appContent = {
     },
     comments: {
       heading: 'Comments',
-      label: 'Add a comment',
-      placeholder: 'Add a comment...',
+      placeholder: 'Write a comment...',
+      sendAriaLabel: 'Send comment',
       submit: 'Post',
       edit: 'Edit',
       save: 'Save',
@@ -349,8 +351,16 @@ export const appContent = {
       deleteConfirm: 'Delete this comment?',
       deleteFailed: 'Failed to delete comment.',
       edited: '(edited)',
-      charLimit: (current: number, max: number) => `${current}/${max}`,
       noComments: 'No comments yet. Be the first!',
+    },
+    reactions: {
+      addReaction: 'Add a reaction',
+      reactedBy: (names: string[]) => {
+        if (names.length === 0) return '';
+        if (names.length === 1) return names[0];
+        if (names.length === 2) return `${names[0]} and ${names[1]}`;
+        return `${names[0]}, ${names[1]}, and ${names.length - 2} more`;
+      },
     },
     importRoute: {
       button: 'Add Route',
@@ -537,7 +547,8 @@ export const appContent = {
   },
 
   manage: {
-    heading: 'Manage',
+    headingAdmin: 'Manage club',
+    headingLeader: 'Manage rides',
     sections: {
       rides: 'Rides',
       members: 'Members',

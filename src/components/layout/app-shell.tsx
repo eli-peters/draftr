@@ -52,7 +52,7 @@ export function AppShell({
 
         <div className="flex min-h-0 flex-1 flex-col overflow-x-hidden">
           {isHome && banner && (
-            <div className="overflow-hidden md:rounded-lg md:border md:border-border">{banner}</div>
+            <div className="overflow-hidden md:rounded-lg md:shadow-(--card-shadow)">{banner}</div>
           )}
 
           <main className="mx-auto flex w-full min-w-0 max-w-3xl flex-1 flex-col pb-20 md:pb-0">

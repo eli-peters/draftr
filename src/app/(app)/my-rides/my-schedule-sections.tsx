@@ -3,24 +3,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Bicycle, ClockCountdown, FunnelSimple } from '@phosphor-icons/react/dist/ssr';
+import { Bicycle, ClockCountdown } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
-import { SectionHeading } from '@/components/ui/section-heading';
-import { ContentToolbar } from '@/components/layout/content-toolbar';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScheduleCard } from '@/components/rides/schedule-card';
 import { cancelSignUp } from '@/lib/rides/actions';
-import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import type { UserRideSignup } from '@/lib/rides/queries';
@@ -40,7 +28,6 @@ export function MyScheduleSections({ upcoming, past, timezone }: MyScheduleSecti
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('upcoming');
 
   const visibleRides = statusFilter === 'upcoming' ? upcoming : past;
-  const hasStatusFilter = statusFilter !== 'upcoming';
 
   async function handleAction(action: string, rideId: string) {
     if (action === 'cancel-signup' || action === 'leave-waitlist') {
@@ -50,58 +37,19 @@ export function MyScheduleSections({ upcoming, past, timezone }: MyScheduleSecti
   }
 
   return (
-    <div className="mt-8">
-      <ContentToolbar
-        left={
-          <SectionHeading as="span">
-            {statusFilter === 'upcoming'
-              ? schedule.toolbar.upcoming(upcoming.length)
-              : schedule.toolbar.past(past.length)}
-          </SectionHeading>
-        }
-        right={
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    'relative rounded-full transition-transform active:scale-90',
-                    hasStatusFilter
-                      ? 'bg-primary text-primary-foreground hover:bg-action-primary-hover'
-                      : 'text-muted-foreground hover:text-primary hover:bg-action-primary-subtle-bg',
-                  )}
-                  aria-label={schedule.statusFilter.label}
-                >
-                  <FunnelSimple className="size-5" />
-                  {hasStatusFilter && (
-                    <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-primary-foreground ring-2 ring-background" />
-                  )}
-                </Button>
-              }
-            />
-            <DropdownMenuContent align="end">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>{schedule.statusFilter.label}</DropdownMenuLabel>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup
-                value={statusFilter}
-                onValueChange={(v: string) => setStatusFilter(v as StatusFilter)}
-              >
-                <DropdownMenuRadioItem value="upcoming">
-                  {schedule.statusFilter.upcoming}
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="past">
-                  {schedule.statusFilter.past}
-                </DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        }
-        className="mb-4"
-      />
+    <div>
+      <Tabs
+        value={statusFilter}
+        onValueChange={(value) => setStatusFilter(value as StatusFilter)}
+        className="mb-6"
+      >
+        <div className="flex justify-center">
+          <TabsList>
+            <TabsTrigger value="upcoming">{schedule.statusFilter.upcoming}</TabsTrigger>
+            <TabsTrigger value="past">{schedule.statusFilter.past}</TabsTrigger>
+          </TabsList>
+        </div>
+      </Tabs>
 
       {visibleRides.length > 0 ? (
         <div className="flex flex-col gap-5">

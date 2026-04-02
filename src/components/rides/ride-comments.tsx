@@ -1,28 +1,30 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { PaperPlaneTilt } from '@phosphor-icons/react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { FloatingField } from '@/components/ui/floating-field';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { ContentCard } from '@/components/ui/content-card';
 import { toast } from 'sonner';
-import { addComment, editComment, deleteComment } from '@/lib/rides/actions';
+import { addComment, editComment, deleteComment, toggleCommentReaction } from '@/lib/rides/actions';
+import { ReactionPills } from '@/components/rides/reaction-pills';
 import { appContent } from '@/content/app';
 import { getInitials } from '@/lib/utils';
 import { routes } from '@/config/routes';
-import type { CommentWithUser } from '@/types/database';
+import type { CommentWithUser, ReactionType, ReactionSummary } from '@/types/database';
 
 const content = appContent.rides.comments;
 const CHAR_LIMIT = 500;
+const MAX_ROWS = 4;
 
 interface RideCommentsProps {
   rideId: string;
   comments: CommentWithUser[];
+  commentReactions: Map<string, ReactionSummary[]>;
   currentUserId: string | null;
   userRole: string;
   isCancelled: boolean;
@@ -31,6 +33,7 @@ interface RideCommentsProps {
 export function RideComments({
   rideId,
   comments,
+  commentReactions,
   currentUserId,
   userRole,
   isCancelled,
@@ -44,11 +47,12 @@ export function RideComments({
         )}
 
         {comments.length > 0 && (
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {comments.map((comment) => (
               <CommentRow
                 key={comment.id}
                 comment={comment}
+                reactions={commentReactions.get(comment.id) ?? []}
                 currentUserId={currentUserId}
                 isAdmin={userRole === 'admin'}
               />
@@ -62,18 +66,26 @@ export function RideComments({
   );
 }
 
+function autoExpand(el: HTMLTextAreaElement) {
+  el.style.height = 'auto';
+  el.style.height = `${el.scrollHeight}px`;
+}
+
 function CommentRow({
   comment,
+  reactions,
   currentUserId,
   isAdmin,
 }: {
   comment: CommentWithUser;
+  reactions: ReactionSummary[];
   currentUserId: string | null;
   isAdmin: boolean;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editBody, setEditBody] = useState(comment.body);
   const [isPending, startTransition] = useTransition();
+  const editRef = useRef<HTMLTextAreaElement>(null);
 
   const isOwn = currentUserId === comment.user_id;
   const canModify = isOwn || isAdmin;
@@ -95,16 +107,16 @@ function CommentRow({
   }
 
   return (
-    <div className="flex gap-3 rounded-lg px-2 py-2.5">
-      <Avatar className="h-8 w-8 shrink-0">
+    <div className="flex gap-2 rounded-lg px-2 py-1.5">
+      <Avatar className="h-6 w-6 shrink-0">
         {comment.avatar_url && <AvatarImage src={comment.avatar_url} alt={comment.user_name} />}
         <AvatarFallback
-          className={`text-xs font-medium ${getAvatarColourClasses(comment.user_name)}`}
+          className={`text-[0.625rem] font-medium ${getAvatarColourClasses(comment.user_name)}`}
         >
           {getInitials(comment.user_name)}
         </AvatarFallback>
       </Avatar>
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
           <Link
             href={routes.publicProfile(comment.user_id)}
@@ -116,27 +128,23 @@ function CommentRow({
             {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
           </span>
           {wasEdited && (
-            <span className="text-xs text-muted-foreground italic">{content.edited}</span>
+            <span className="text-xs italic text-muted-foreground">{content.edited}</span>
           )}
         </div>
 
         {isEditing ? (
-          <div className="mt-1.5 space-y-2">
-            <FloatingField
-              label={content.label}
-              htmlFor={`edit-comment-${comment.id}`}
-              hasValue={!!editBody}
+          <div className="mt-1 space-y-1.5">
+            <textarea
+              ref={editRef}
+              value={editBody}
+              onChange={(e) => {
+                setEditBody(e.target.value);
+                autoExpand(e.currentTarget);
+              }}
               maxLength={CHAR_LIMIT}
-            >
-              <Textarea
-                id={`edit-comment-${comment.id}`}
-                value={editBody}
-                onChange={(e) => setEditBody(e.target.value)}
-                placeholder=" "
-                maxLength={CHAR_LIMIT}
-                rows={2}
-              />
-            </FloatingField>
+              rows={1}
+              className="w-full resize-none overflow-hidden rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary"
+            />
             <div className="flex items-center gap-2">
               <Button size="sm" onClick={handleSaveEdit} disabled={isPending || !editBody.trim()}>
                 {content.save}
@@ -154,15 +162,15 @@ function CommentRow({
             </div>
           </div>
         ) : (
-          <p className="mt-0.5 text-sm text-foreground/80 whitespace-pre-line">{comment.body}</p>
+          <p className="mt-0.5 whitespace-pre-line text-sm text-foreground/80">{comment.body}</p>
         )}
 
         {canModify && !isEditing && (
-          <div className="mt-1 flex gap-3">
+          <div className="mt-0.5 flex gap-3">
             {isOwn && (
               <button
                 onClick={() => setIsEditing(true)}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                className="text-[0.6875rem] text-muted-foreground transition-colors hover:text-foreground"
               >
                 {content.edit}
               </button>
@@ -170,12 +178,23 @@ function CommentRow({
             <button
               onClick={handleDelete}
               disabled={isPending}
-              className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+              className="text-[0.6875rem] text-muted-foreground transition-colors hover:text-destructive"
             >
               {content.delete}
             </button>
           </div>
         )}
+
+        {/* Comment reactions */}
+        <div className="mt-1">
+          <ReactionPills
+            reactions={reactions}
+            onToggle={async (reaction: ReactionType) => {
+              await toggleCommentReaction(comment.id, reaction);
+            }}
+            currentUserId={currentUserId}
+          />
+        </div>
       </div>
     </div>
   );
@@ -184,38 +203,54 @@ function CommentRow({
 function AddCommentForm({ rideId }: { rideId: string }) {
   const [body, setBody] = useState('');
   const [isPending, startTransition] = useTransition();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function handleSubmit() {
     if (!body.trim()) return;
     startTransition(async () => {
       const result = await addComment(rideId, body);
-      if (result.success) setBody('');
+      if (result.success) {
+        setBody('');
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto';
+        }
+      }
     });
   }
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="mt-4 space-y-2">
-      <FloatingField
-        label={content.label}
-        htmlFor="add-comment"
-        hasValue={!!body}
+    <div className="mt-3 flex items-end gap-2">
+      <textarea
+        ref={textareaRef}
+        value={body}
+        onChange={(e) => {
+          setBody(e.target.value);
+          autoExpand(e.currentTarget);
+        }}
+        onKeyDown={handleKeyDown}
+        placeholder={content.placeholder}
         maxLength={CHAR_LIMIT}
+        rows={1}
+        style={{ maxHeight: `${MAX_ROWS * 1.5}rem` }}
+        className="flex-1 resize-none overflow-hidden rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
+      />
+      <Button
+        size="icon"
+        variant="ghost"
+        className="mb-0.5 shrink-0 rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
+        disabled={isPending || !body.trim()}
+        onClick={handleSubmit}
+        aria-label={content.sendAriaLabel}
       >
-        <Textarea
-          id="add-comment"
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder=" "
-          maxLength={CHAR_LIMIT}
-          rows={2}
-        />
-      </FloatingField>
-      <div className="flex justify-end">
-        <Button type="submit" size="sm" disabled={isPending || !body.trim()}>
-          {content.submit}
-        </Button>
-      </div>
-    </form>
+        <PaperPlaneTilt className="size-5" />
+      </Button>
+    </div>
   );
 }

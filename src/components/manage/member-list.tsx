@@ -15,10 +15,10 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { FilterChip, FilterChipGroup } from '@/components/ui/filter-chip';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarColourClasses } from '@/lib/avatar-colours';
-import { ContentToolbar } from '@/components/layout/content-toolbar';
 import { appContent } from '@/content/app';
 import { cn, getInitials } from '@/lib/utils';
 import { routes } from '@/config/routes';
@@ -154,39 +154,29 @@ export function MemberList({ members, clubId, currentUserId }: MemberListProps) 
         />
       </div>
 
-      <ContentToolbar
-        left={
-          <div className="flex flex-wrap gap-1.5">
-            {roleFilterOptions.map((opt) => (
-              <button key={opt.value} type="button" onClick={() => setRoleFilter(opt.value)}>
-                <Badge
-                  variant={roleFilter === opt.value ? 'default' : 'outline'}
-                  size="lg"
-                  className="cursor-pointer"
-                >
-                  {opt.label}
-                </Badge>
-              </button>
-            ))}
-          </div>
-        }
-        right={
-          <div className="flex gap-1.5 shrink-0">
-            {sortOptions.map((opt) => (
-              <button key={opt.value} type="button" onClick={() => setSortBy(opt.value)}>
-                <Badge
-                  variant={sortBy === opt.value ? 'default' : 'outline'}
-                  size="lg"
-                  className="cursor-pointer"
-                >
-                  {opt.label}
-                </Badge>
-              </button>
-            ))}
-          </div>
-        }
-        className="mb-4"
-      />
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <FilterChipGroup
+          value={[roleFilter]}
+          onValueChange={(values: string[]) => {
+            if (values.length > 0) setRoleFilter(values[0] as RoleFilter);
+          }}
+        >
+          {roleFilterOptions.map((opt) => (
+            <FilterChip key={opt.value} value={opt.value} label={opt.label} />
+          ))}
+        </FilterChipGroup>
+
+        <FilterChipGroup
+          value={[sortBy]}
+          onValueChange={(values: string[]) => {
+            if (values.length > 0) setSortBy(values[0] as SortOption);
+          }}
+        >
+          {sortOptions.map((opt) => (
+            <FilterChip key={opt.value} value={opt.value} label={opt.label} />
+          ))}
+        </FilterChipGroup>
+      </div>
 
       {/* Pending approvals */}
       {pending.length > 0 && (

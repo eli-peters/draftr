@@ -6,10 +6,8 @@ import { format } from 'date-fns';
 import { MapPin, Users, CloudRain, ArrowsClockwise } from '@phosphor-icons/react/dist/ssr';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { FilterChip, FilterChipGroup } from '@/components/ui/filter-chip';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ContentToolbar } from '@/components/layout/content-toolbar';
-import { SectionHeading } from '@/components/ui/section-heading';
-import { RideFilterBar } from '@/components/rides/ride-filter-bar';
 import { filterRides } from '@/lib/rides/sort';
 import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
@@ -262,25 +260,18 @@ export function ManageRidesPanel({
           <TabsTrigger value="cancelled">{content.rides.cancelled}</TabsTrigger>
         </TabsList>
 
-        <ContentToolbar
-          left={
-            <SectionHeading as="span">
-              {hasFilter
-                ? ridesContent.filter.filteredCount(visibleRides.length)
-                : content.rides.toolbar(visibleRides.length)}
-            </SectionHeading>
-          }
-          right={
-            paceGroups.length > 0 ? (
-              <RideFilterBar
-                paceGroups={paceGroups}
-                activePaceIds={activePaceIds}
-                onChangePace={setActivePaceIds}
-              />
-            ) : undefined
-          }
-          className="mt-3"
-        />
+        {paceGroups.length > 0 && (
+          <FilterChipGroup
+            multiple
+            value={activePaceIds}
+            onValueChange={setActivePaceIds}
+            className="mt-6"
+          >
+            {paceGroups.map((pg) => (
+              <FilterChip key={pg.id} value={pg.id} label={pg.name} />
+            ))}
+          </FilterChipGroup>
+        )}
 
         <TabsContent value="upcoming">
           <RideList rides={upcomingRides} emptyMessage={content.rides.noUpcomingRides} />

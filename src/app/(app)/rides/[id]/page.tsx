@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { Copy, PencilSimple } from '@phosphor-icons/react/dist/ssr';
+import { PencilSimple } from '@phosphor-icons/react/dist/ssr';
 import Link from 'next/link';
 import {
   getRideById,
@@ -8,12 +8,14 @@ import {
   getUserClubMembership,
   getRideComments,
   getRideCoLeaders,
+  getRideReactions,
+  getCommentReactions,
 } from '@/lib/rides/queries';
 import { getRideAvailability } from '@/lib/rides/lifecycle';
-import { SignupButton } from '@/components/rides/signup-button';
-import { SignupRoster } from '@/components/rides/signup-roster';
+import { RideSignupSection } from '@/components/rides/ride-signup-section';
 import { RideComments } from '@/components/rides/ride-comments';
 import { RideDetailCard } from '@/components/rides/ride-detail-card';
+import { RideReactionBar } from '@/components/rides/ride-reaction-bar';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -33,15 +35,20 @@ interface RideDetailPageProps {
 
 export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const { id } = await params;
-  const [ride, signup, signups, membership, comments, coLeaders] = await Promise.all([
-    getRideById(id),
-    getUserSignupStatus(id),
-    getRideSignups(id),
-    getUserClubMembership(),
-    getRideComments(id),
-    getRideCoLeaders(id),
-  ]);
+  const [ride, signup, signups, membership, comments, coLeaders, rideReactions] = await Promise.all(
+    [
+      getRideById(id),
+      getUserSignupStatus(id),
+      getRideSignups(id),
+      getUserClubMembership(),
+      getRideComments(id),
+      getRideCoLeaders(id),
+      getRideReactions(id),
+    ],
+  );
   if (!ride) notFound();
+
+  const commentReactions = await getCommentReactions(comments.map((c) => c.id));
 
   const isSignedUp =
     signup?.status === SignupStatus.CONFIRMED || signup?.status === SignupStatus.WAITLISTED;
@@ -69,29 +76,16 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       <PageHeader
         title={ride.title}
         actions={
-          hasEditRole ? (
-            <>
-              <Link href={`${routes.manageNewRide}?duplicate=${ride.id}`}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
-                >
-                  <Copy className="size-6" />
-                </Button>
-              </Link>
-              {canEdit && (
-                <Link href={routes.manageEditRide(ride.id, routes.ride(id))}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
-                  >
-                    <PencilSimple className="size-6" />
-                  </Button>
-                </Link>
-              )}
-            </>
+          canEdit ? (
+            <Link href={routes.manageEditRide(ride.id, routes.ride(id))}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
+              >
+                <PencilSimple className="size-6" />
+              </Button>
+            </Link>
           ) : undefined
         }
       />
@@ -102,27 +96,14 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         isSignedUp={isSignedUp}
         signupStatus={signup?.status ?? null}
         waitlistPosition={signup?.waitlist_position ?? null}
-        confirmedCount={confirmedCount}
         lifecycle={availability.lifecycle}
         weather={ride.weather}
       />
 
-      {/* Signup CTA — context-aware */}
-      {availability.canSignUp && !isSignedUp && (
-        <div className="mt-6">
-          <SignupButton
-            rideId={ride.id}
-            isSignedUp={false}
-            isCancelled={false}
-            isFull={availability.isFull}
-          />
-        </div>
-      )}
-      {availability.canCancel && isSignedUp && (
-        <div className="mt-6">
-          <SignupButton rideId={ride.id} isSignedUp isCancelled={false} />
-        </div>
-      )}
+      {/* Ride-level reactions */}
+      <div className="mt-4">
+        <RideReactionBar rideId={ride.id} reactions={rideReactions} currentUserId={currentUserId} />
+      </div>
 
       {/* Sign-ups closed message — shown when CTA is hidden and rider isn't signed up */}
       {!availability.canSignUp && !availability.isCancelled && !isSignedUp && (
@@ -134,20 +115,39 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         </div>
       )}
 
-      {/* Riders roster */}
+      {/* Riders roster + signup/cancel actions */}
       {signups.length > 0 && (
         <div className="mt-8">
           <SectionHeading>
             {detail.ridersHeading(confirmedCount, waitlistedCount, ride.capacity)}
           </SectionHeading>
           <ContentCard padding="compact" className="mt-3">
-            <SignupRoster
+            <RideSignupSection
+              rideId={ride.id}
               signups={signups}
               createdBy={ride.created_by}
               coLeaderIds={coLeaders.map((cl) => cl.user_id)}
+              currentUserId={currentUserId}
+              isSignedUp={isSignedUp}
+              canSignUp={availability.canSignUp}
+              canCancel={availability.canCancel}
+              isFull={availability.isFull}
             />
           </ContentCard>
         </div>
+      )}
+
+      {/* Floating signup bar for when roster is empty but signup is available */}
+      {signups.length === 0 && availability.canSignUp && !isSignedUp && (
+        <RideSignupSection
+          rideId={ride.id}
+          signups={[]}
+          currentUserId={currentUserId}
+          isSignedUp={false}
+          canSignUp
+          canCancel={false}
+          isFull={availability.isFull}
+        />
       )}
 
       {/* Comments */}
@@ -155,11 +155,16 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         <RideComments
           rideId={ride.id}
           comments={comments}
+          commentReactions={commentReactions}
           currentUserId={currentUserId}
           userRole={userRole}
           isCancelled={availability.isCancelled}
         />
       </div>
+
+      {/* Bottom spacer when floating signup bar is visible — prevents content from hiding behind it */}
+      {/* revisit CTA placement after context testing */}
+      {availability.canSignUp && !isSignedUp && <div className="h-24 md:h-20" />}
     </DashboardShell>
   );
 }

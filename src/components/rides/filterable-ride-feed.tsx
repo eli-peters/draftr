@@ -3,10 +3,8 @@
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Bicycle } from '@phosphor-icons/react/dist/ssr';
 import { EmptyState } from '@/components/ui/empty-state';
-import { SectionHeading } from '@/components/ui/section-heading';
-import { ContentToolbar } from '@/components/layout/content-toolbar';
+import { FilterChip, FilterChipGroup } from '@/components/ui/filter-chip';
 import { RideCard } from '@/components/rides/ride-card';
-import { RideFilterBar } from '@/components/rides/ride-filter-bar';
 import { filterRides } from '@/lib/rides/sort';
 import { appContent } from '@/content/app';
 import type { RideWithDetails } from '@/types/database';
@@ -50,23 +48,18 @@ export function FilterableRideFeed({
 
   return (
     <section>
-      <ContentToolbar
-        left={
-          <SectionHeading as="span">
-            {hasFilter ? ridesContent.filter.filteredCount(filtered.length) : toolbarLabel}
-          </SectionHeading>
-        }
-        right={
-          paceGroups.length > 0 ? (
-            <RideFilterBar
-              paceGroups={paceGroups}
-              activePaceIds={activePaceIds}
-              onChangePace={handleChangePace}
-            />
-          ) : undefined
-        }
-        className="mb-4"
-      />
+      {paceGroups.length > 0 && (
+        <FilterChipGroup
+          multiple
+          value={activePaceIds}
+          onValueChange={handleChangePace}
+          className="mb-6"
+        >
+          {paceGroups.map((pg) => (
+            <FilterChip key={pg.id} value={pg.id} label={pg.name} />
+          ))}
+        </FilterChipGroup>
+      )}
 
       {filtered.length > 0 ? (
         <div className="flex flex-col gap-5">
