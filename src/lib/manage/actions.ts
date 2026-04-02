@@ -474,7 +474,6 @@ export async function createRecurringRide(
     season_start_date?: string;
     season_end_date?: string;
     generate_weeks_ahead?: number;
-    meeting_location_id?: string;
     pace_group_id?: string;
     default_distance_km?: number;
     default_capacity?: number;
@@ -498,7 +497,6 @@ export async function createRecurringRide(
       season_start_date: data.season_start_date || null,
       season_end_date: data.season_end_date || null,
       generate_weeks_ahead: data.generate_weeks_ahead ?? 4,
-      meeting_location_id: data.meeting_location_id || null,
       pace_group_id: data.pace_group_id || null,
       default_distance_km: data.default_distance_km ?? null,
       default_capacity: data.default_capacity ?? null,

@@ -13,6 +13,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { FloatingField } from '@/components/ui/floating-field';
 import { EmptyState } from '@/components/ui/empty-state';
 import { RoutePolylineThumbnail } from '@/components/rides/route-polyline-thumbnail';
 import { appContent } from '@/content/app';
@@ -230,16 +231,21 @@ function RouteListFetcher({
     <div className="flex min-h-0 flex-1 flex-col gap-2">
       {/* Search */}
       {routesList.length > 5 && (
-        <div className="relative shrink-0">
-          <MagnifyingGlass className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <FloatingField
+          label={content.searchPlaceholder}
+          htmlFor="route-search"
+          hasValue={searchQuery.length > 0}
+          icon={MagnifyingGlass}
+          className="shrink-0"
+        >
           <Input
+            id="route-search"
             type="text"
-            placeholder={content.searchPlaceholder}
+            placeholder=" "
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
           />
-        </div>
+        </FloatingField>
       )}
 
       {/* Route list */}

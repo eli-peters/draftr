@@ -1,33 +1,17 @@
 import { redirect, notFound } from 'next/navigation';
-import Link from 'next/link';
-import { Copy } from '@phosphor-icons/react/dist/ssr';
-import { Button } from '@/components/ui/button';
-import { ContentCard } from '@/components/ui/content-card';
-import { SectionHeading } from '@/components/ui/section-heading';
 import {
   getUserClubMembership,
   getRideById,
   getPaceGroups,
   getRideSignups,
   getRideCoLeaders,
-  getMeetingLocations,
 } from '@/lib/rides/queries';
 import { getClubMembers } from '@/lib/manage/queries';
 import { getUserConnections } from '@/lib/integrations/queries';
-import { DashboardShell } from '@/components/dashboard/dashboard-shell';
-import { PageHeader } from '@/components/layout/page-header';
-import { ContentToolbar } from '@/components/layout/content-toolbar';
-import { RideForm } from '@/components/rides/ride-form';
-import { CancelRideButton } from '@/components/rides/cancel-ride-button';
-import { SignupRoster } from '@/components/rides/signup-roster';
-import { WalkUpRiderForm } from '@/components/rides/walk-up-rider-form';
-import { CoLeaderPicker } from '@/components/rides/co-leader-picker';
-import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { MemberStatus, RideStatus } from '@/config/statuses';
+import { RideFormPage } from '@/components/rides/ride-form-page';
 import type { UserRole } from '@/config/navigation';
-
-const { rides: ridesContent } = appContent;
 
 export default async function EditRidePage({
   params,
@@ -49,16 +33,14 @@ export default async function EditRidePage({
 
   const userId = membership.user_id;
 
-  const [ride, paceGroups, signups, members, connections, coLeaders, meetingLocations] =
-    await Promise.all([
-      getRideById(id),
-      getPaceGroups(membership.club_id),
-      getRideSignups(id),
-      getClubMembers(membership.club_id),
-      getUserConnections(userId),
-      getRideCoLeaders(id),
-      getMeetingLocations(membership.club_id),
-    ]);
+  const [ride, paceGroups, signups, members, connections, coLeaders] = await Promise.all([
+    getRideById(id),
+    getPaceGroups(membership.club_id),
+    getRideSignups(id),
+    getClubMembers(membership.club_id),
+    getUserConnections(userId),
+    getRideCoLeaders(id),
+  ]);
 
   if (!ride) notFound();
 
@@ -82,14 +64,6 @@ export default async function EditRidePage({
     redirect(routes.ride(id));
   }
 
-  const existingSignupUserIds = signups.map((s) => s.user_id);
-  const clubMembersForWalkUp = members
-    .filter((m) => m.status === MemberStatus.ACTIVE)
-    .map((m) => ({
-      user_id: m.user_id,
-      name: m.full_name,
-    }));
-
   // Eligible co-leaders: active members with ride_leader or admin role, excluding the ride creator
   const eligibleLeaders = members
     .filter(
@@ -98,79 +72,39 @@ export default async function EditRidePage({
         (m.role === 'ride_leader' || m.role === 'admin') &&
         m.user_id !== ride.created_by,
     )
-    .map((m) => ({
-      user_id: m.user_id,
-      name: m.full_name,
-    }));
+    .map((m) => ({ user_id: m.user_id, name: m.full_name, avatar_url: m.avatar_url }));
 
   return (
-    <DashboardShell>
-      <PageHeader title={ridesContent.edit.heading} />
-      <ContentToolbar
-        right={
-          <Link href={`${routes.manageNewRide}?duplicate=${id}`}>
-            <Button variant="outline" size="sm">
-              <Copy className="h-4 w-4 mr-1.5" />
-              {ridesContent.edit.duplicateRide}
-            </Button>
-          </Link>
-        }
-      />
-
-      <RideForm
-        clubId={membership.club_id}
-        paceGroups={paceGroups}
-        rideId={id}
-        templateId={ride.template_id ?? undefined}
-        initialData={{
-          title: ride.title,
-          description: ride.description ?? '',
-          ride_date: ride.ride_date,
-          start_time: ride.start_time?.slice(0, 5) ?? '',
-          pace_group_id: ride.pace_group_id ?? '',
-          distance_km: ride.distance_km != null ? String(ride.distance_km) : '',
-          elevation_m: ride.elevation_m != null ? String(ride.elevation_m) : '',
-          capacity: ride.capacity != null ? String(ride.capacity) : '',
-          route_name: ride.route_name ?? '',
-          route_url: ride.route_url ?? '',
-          route_polyline: ride.route_polyline ?? '',
-          is_drop_ride: ride.is_drop_ride ?? false,
-          start_location_name: ride.start_location_name ?? '',
-          start_location_address: ride.start_location_address ?? '',
-          start_latitude: ride.start_latitude,
-          start_longitude: ride.start_longitude,
-        }}
-        connectedServices={connections.map((c) => c.service)}
-        meetingLocations={meetingLocations}
-        returnTo={returnTo}
-      />
-
-      {/* Co-leaders section */}
-      <div className="mt-12">
-        <SectionHeading>{ridesContent.edit.coLeaders}</SectionHeading>
-        <ContentCard className="mt-3">
-          <CoLeaderPicker rideId={id} coLeaders={coLeaders} eligibleLeaders={eligibleLeaders} />
-        </ContentCard>
-      </div>
-
-      {/* Signups section */}
-      <div className="mt-12">
-        <SectionHeading>{ridesContent.edit.signups}</SectionHeading>
-        <ContentCard className="mt-3">
-          <SignupRoster signups={signups} createdBy={ride.created_by} />
-          <div className="mt-4">
-            <WalkUpRiderForm
-              rideId={id}
-              clubMembers={clubMembersForWalkUp}
-              existingSignupUserIds={existingSignupUserIds}
-            />
-          </div>
-        </ContentCard>
-      </div>
-
-      <div className="mt-12">
-        <CancelRideButton rideId={id} rideTitle={ride.title} />
-      </div>
-    </DashboardShell>
+    <RideFormPage
+      clubId={membership.club_id}
+      paceGroups={paceGroups}
+      rideId={id}
+      templateId={ride.template_id ?? undefined}
+      initialData={{
+        title: ride.title,
+        description: ride.description ?? '',
+        ride_date: ride.ride_date,
+        start_time: ride.start_time?.slice(0, 5) ?? '',
+        pace_group_id: ride.pace_group_id ?? '',
+        distance_km: ride.distance_km != null ? String(ride.distance_km) : '',
+        elevation_m: ride.elevation_m != null ? String(ride.elevation_m) : '',
+        capacity: ride.capacity != null ? String(ride.capacity) : '',
+        route_name: ride.route_name ?? '',
+        route_url: ride.route_url ?? '',
+        route_polyline: ride.route_polyline ?? '',
+        is_drop_ride: ride.is_drop_ride ?? false,
+        start_location_name: ride.start_location_name ?? '',
+        start_location_address: ride.start_location_address ?? '',
+        start_latitude: ride.start_latitude,
+        start_longitude: ride.start_longitude,
+      }}
+      connectedServices={connections.map((c) => c.service)}
+      eligibleLeaders={eligibleLeaders}
+      returnTo={returnTo}
+      rideTitle={ride.title}
+      initialCoLeaderIds={coLeaders.map((cl) => cl.user_id)}
+      signups={signups}
+      rideCreatedBy={ride.created_by}
+    />
   );
 }

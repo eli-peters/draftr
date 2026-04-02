@@ -5,6 +5,7 @@ import { useState, useTransition } from 'react';
 import { format } from 'date-fns';
 import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr';
 import { Input } from '@/components/ui/input';
+import { FloatingField } from '@/components/ui/floating-field';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -144,15 +145,20 @@ export function MemberList({ members, clubId, currentUserId }: MemberListProps) 
   return (
     <div className={isPending ? 'opacity-pending pointer-events-none' : ''}>
       {/* Search + Filter + Sort controls */}
-      <div className="relative mb-3">
-        <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <FloatingField
+        label={content.memberActions.searchPlaceholder}
+        htmlFor="member-search"
+        hasValue={search.length > 0}
+        icon={MagnifyingGlass}
+        className="mb-3"
+      >
         <Input
+          id="member-search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder={content.memberActions.searchPlaceholder}
-          className="pl-9"
+          placeholder=" "
         />
-      </div>
+      </FloatingField>
 
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <FilterChipGroup

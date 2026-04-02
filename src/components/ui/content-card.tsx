@@ -39,6 +39,14 @@ interface ContentCardProps extends React.ComponentProps<'div'> {
   variant?: ContentCardVariant;
   padding?: ContentCardPadding;
   interactive?: boolean;
+  /** Icon element rendered centered above the heading inside the card */
+  icon?: React.ReactNode;
+  /** Heading text rendered centered inside the card at top */
+  heading?: string;
+  /** Subtitle text rendered below the heading */
+  subtitle?: string;
+  /** Additional class names applied to the heading element */
+  headingClassName?: string;
 }
 
 function ContentCard({
@@ -46,6 +54,11 @@ function ContentCard({
   variant = 'outlined',
   padding = 'default',
   interactive = false,
+  icon,
+  heading,
+  subtitle,
+  headingClassName,
+  children,
   ...props
 }: ContentCardProps) {
   return (
@@ -64,7 +77,27 @@ function ContentCard({
         className,
       )}
       {...props}
-    />
+    >
+      {(icon || heading) && (
+        <div data-slot="content-card-hero" className={cn('text-center', children && 'mb-3')}>
+          {icon && <div className="mb-2 flex justify-center">{icon}</div>}
+          {heading && (
+            <h3
+              data-slot="content-card-heading"
+              className={cn('text-base font-semibold leading-snug', headingClassName)}
+            >
+              {heading}
+            </h3>
+          )}
+          {subtitle && (
+            <p data-slot="content-card-subtitle" className="mt-1 text-sm text-muted-foreground">
+              {subtitle}
+            </p>
+          )}
+        </div>
+      )}
+      {children}
+    </div>
   );
 }
 
@@ -76,7 +109,7 @@ function ContentCardTitle({ className, ...props }: React.ComponentProps<'h3'>) {
   return (
     <h3
       data-slot="content-card-title"
-      className={cn('text-base font-medium leading-snug', className)}
+      className={cn('text-base font-semibold leading-snug', className)}
       {...props}
     />
   );

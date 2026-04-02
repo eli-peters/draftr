@@ -11,7 +11,6 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { PillToggle } from './shared';
-import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 
 const form = appContent.rides.form;
@@ -25,6 +24,7 @@ interface StepDetailsProps {
   paceGroupId: string;
   isDropRide: boolean;
   paceGroups: { id: string; name: string }[];
+  fieldErrors?: Record<string, string>;
   onFieldChange: (field: string, value: string | boolean) => void;
 }
 
@@ -37,107 +37,114 @@ export function StepDetails({
   paceGroupId,
   isDropRide,
   paceGroups,
+  fieldErrors,
   onFieldChange,
 }: StepDetailsProps) {
   return (
-    <div>
-      <SectionHeading as="h3" icon={Bicycle}>
-        {form.sectionBasics}
-      </SectionHeading>
-      <ContentCard padding="default" className="mt-3">
-        <div className="flex flex-col gap-5">
-          <FloatingField label={form.title} htmlFor="title">
+    <ContentCard
+      padding="default"
+      heading={form.sectionBasics}
+      icon={<Bicycle weight="duotone" className="size-6 text-primary" />}
+    >
+      <div className="flex flex-col gap-5">
+        <FloatingField label={form.title} htmlFor="title" error={fieldErrors?.title}>
+          <Input
+            id="title"
+            name="title"
+            required
+            aria-invalid={!!fieldErrors?.title}
+            value={title}
+            onChange={(e) => onFieldChange('title', e.target.value)}
+            placeholder=" "
+          />
+        </FloatingField>
+        <FloatingField
+          label={`${form.description} ${form.optional}`}
+          htmlFor="description"
+          helperText={form.descriptionHelper}
+          maxLength={500}
+        >
+          <Textarea
+            id="description"
+            name="description"
+            rows={3}
+            value={description}
+            onChange={(e) => onFieldChange('description', e.target.value)}
+            placeholder=" "
+            maxLength={500}
+          />
+        </FloatingField>
+        {/* Ride characteristics — 2x2 grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FloatingField label={form.distance} htmlFor="distance_km">
             <Input
-              id="title"
-              name="title"
+              id="distance_km"
+              name="distance_km"
+              type="number"
+              step="0.1"
+              min="0"
+              value={distanceKm}
+              onChange={(e) => onFieldChange('distanceKm', e.target.value)}
+              placeholder=" "
+            />
+          </FloatingField>
+          <FloatingField label={form.elevation} htmlFor="elevation_m">
+            <Input
+              id="elevation_m"
+              name="elevation_m"
+              type="number"
+              min="0"
+              value={elevationM}
+              onChange={(e) => onFieldChange('elevationM', e.target.value)}
+              placeholder=" "
+            />
+          </FloatingField>
+          <FloatingField label={form.capacity} htmlFor="capacity" error={fieldErrors?.capacity}>
+            <Input
+              id="capacity"
+              name="capacity"
+              type="number"
+              min="1"
               required
-              value={title}
-              onChange={(e) => onFieldChange('title', e.target.value)}
+              aria-invalid={!!fieldErrors?.capacity}
+              value={capacity}
+              onChange={(e) => onFieldChange('capacity', e.target.value)}
               placeholder=" "
             />
           </FloatingField>
           <FloatingField
-            label={`${form.description} ${form.optional}`}
-            htmlFor="description"
-            helperText={form.descriptionHelper}
-            maxLength={500}
+            label={form.paceGroup}
+            htmlFor="pace_group_id"
+            hasValue={!!paceGroupId}
+            error={fieldErrors?.paceGroupId}
           >
-            <Textarea
-              id="description"
-              name="description"
-              rows={3}
-              value={description}
-              onChange={(e) => onFieldChange('description', e.target.value)}
-              placeholder=" "
-              maxLength={500}
-            />
+            <Select
+              name="pace_group_id"
+              required
+              value={paceGroupId}
+              onValueChange={(v) => onFieldChange('paceGroupId', v)}
+              items={Object.fromEntries(paceGroups.map((pg) => [pg.id, pg.name]))}
+            >
+              <SelectTrigger id="pace_group_id" aria-invalid={!!fieldErrors?.paceGroupId}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {paceGroups.map((pg) => (
+                  <SelectItem key={pg.id} value={pg.id}>
+                    {pg.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </FloatingField>
-          {/* Ride characteristics — 2x2 grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FloatingField label={form.distance} htmlFor="distance_km">
-              <Input
-                id="distance_km"
-                name="distance_km"
-                type="number"
-                step="0.1"
-                min="0"
-                value={distanceKm}
-                onChange={(e) => onFieldChange('distanceKm', e.target.value)}
-                placeholder=" "
-              />
-            </FloatingField>
-            <FloatingField label={form.elevation} htmlFor="elevation_m">
-              <Input
-                id="elevation_m"
-                name="elevation_m"
-                type="number"
-                min="0"
-                value={elevationM}
-                onChange={(e) => onFieldChange('elevationM', e.target.value)}
-                placeholder=" "
-              />
-            </FloatingField>
-            <FloatingField label={form.capacity} htmlFor="capacity">
-              <Input
-                id="capacity"
-                name="capacity"
-                type="number"
-                min="1"
-                required
-                value={capacity}
-                onChange={(e) => onFieldChange('capacity', e.target.value)}
-                placeholder=" "
-              />
-            </FloatingField>
-            <FloatingField label={form.paceGroup} htmlFor="pace_group_id" hasValue={!!paceGroupId}>
-              <Select
-                name="pace_group_id"
-                required
-                value={paceGroupId}
-                onValueChange={(v) => onFieldChange('paceGroupId', v)}
-                items={Object.fromEntries(paceGroups.map((pg) => [pg.id, pg.name]))}
-              >
-                <SelectTrigger id="pace_group_id">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {paceGroups.map((pg) => (
-                    <SelectItem key={pg.id} value={pg.id}>
-                      {pg.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FloatingField>
-          </div>
-          <PillToggle
-            id="is_drop_ride"
-            label={form.isDropRide}
-            checked={isDropRide}
-            onCheckedChange={(v) => onFieldChange('isDropRide', v)}
-          />
         </div>
-      </ContentCard>
-    </div>
+        <PillToggle
+          id="is_drop_ride"
+          label={form.isDropRide}
+          checked={isDropRide}
+          onCheckedChange={(v) => onFieldChange('isDropRide', v)}
+        />
+      </div>
+    </ContentCard>
   );
 }

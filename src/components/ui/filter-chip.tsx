@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 const filterChipVariants = cva(
   [
     'inline-flex items-center gap-1.5 shrink-0 rounded-full font-medium whitespace-nowrap select-none',
-    'border-transparent outline-none',
+    'border border-accent-primary-muted outline-none',
     'transition-[background-color,color,box-shadow,transform] duration-160 ease-out',
     'focus-visible:ring-3 focus-visible:ring-ring/50',
     'active:scale-[0.97]',
@@ -31,7 +31,7 @@ const filterChipVariants = cva(
           'bg-accent-primary-subtle text-text-primary',
           'hover:bg-accent-primary-muted hover:text-text-primary',
           // Pressed — shows X icon for deselect affordance
-          'data-[pressed]:bg-accent-primary-default data-[pressed]:text-text-on-primary',
+          'data-[pressed]:bg-accent-primary-default data-[pressed]:text-text-on-primary data-[pressed]:border-accent-primary-default',
           'data-[pressed]:hover:bg-action-primary-hover',
         ].join(' '),
         display: 'bg-accent-primary-subtle text-action-primary-subtle-text',

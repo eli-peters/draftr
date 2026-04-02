@@ -1,23 +1,13 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getUser } from '@/lib/supabase/server';
-import {
-  getUserClubMembership,
-  getPaceGroups,
-  getRideById,
-  getMeetingLocations,
-} from '@/lib/rides/queries';
+import { getUserClubMembership, getPaceGroups, getRideById } from '@/lib/rides/queries';
 import { getClubMembers } from '@/lib/manage/queries';
 import { getUserConnections } from '@/lib/integrations/queries';
-import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { MemberStatus } from '@/config/statuses';
-import { DashboardShell } from '@/components/dashboard/dashboard-shell';
-import { PageHeader } from '@/components/layout/page-header';
-import { RideForm } from '@/components/rides/ride-form';
+import { RideFormPage } from '@/components/rides/ride-form-page';
 import type { UserRole } from '@/config/navigation';
-
-const { rides: ridesContent } = appContent;
 
 export default async function CreateRidePage({
   searchParams,
@@ -35,10 +25,9 @@ export default async function CreateRidePage({
   const { duplicate: duplicateId, template: templateId } = await searchParams;
 
   const supabase = await createClient();
-
   const authUser = await getUser();
 
-  const [clubResult, paceGroups, sourceRide, templateData, connections, members, meetingLocations] =
+  const [clubResult, paceGroups, sourceRide, templateData, connections, members] =
     await Promise.all([
       supabase.from('clubs').select('settings').eq('id', membership.club_id).single(),
       getPaceGroups(membership.club_id),
@@ -53,7 +42,6 @@ export default async function CreateRidePage({
         : null,
       authUser ? getUserConnections(authUser.id) : [],
       getClubMembers(membership.club_id),
-      getMeetingLocations(membership.club_id),
     ]);
 
   const clubSettings = (clubResult.data?.settings ?? {}) as Record<string, string>;
@@ -112,18 +100,14 @@ export default async function CreateRidePage({
     .map((m) => ({ user_id: m.user_id, name: m.full_name, avatar_url: m.avatar_url }));
 
   return (
-    <DashboardShell>
-      <PageHeader title={ridesContent.create.heading} />
-      <RideForm
-        clubId={membership.club_id}
-        paceGroups={paceGroups}
-        initialData={initialData}
-        seasonStart={clubSettings.season_start}
-        seasonEnd={clubSettings.season_end}
-        connectedServices={connections.map((c) => c.service)}
-        eligibleLeaders={eligibleLeaders}
-        meetingLocations={meetingLocations}
-      />
-    </DashboardShell>
+    <RideFormPage
+      clubId={membership.club_id}
+      paceGroups={paceGroups}
+      initialData={initialData}
+      seasonStart={clubSettings.season_start}
+      seasonEnd={clubSettings.season_end}
+      connectedServices={connections.map((c) => c.service)}
+      eligibleLeaders={eligibleLeaders}
+    />
   );
 }

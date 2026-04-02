@@ -15,8 +15,7 @@ import {
 import { DatePicker } from '@/components/ui/date-picker';
 import { TimePicker } from '@/components/ui/time-picker';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { SectionHeading } from '@/components/ui/section-heading';
+import { ContentCard } from '@/components/ui/content-card';
 import {
   Drawer,
   DrawerContent,
@@ -58,14 +57,12 @@ interface RecurringRideData {
 interface RecurringRidesPanelProps {
   recurringRides: RecurringRideData[];
   clubId: string;
-  meetingLocations: { id: string; name: string }[];
   paceGroups: { id: string; name: string }[];
 }
 
 export function RecurringRidesPanel({
   recurringRides,
   clubId,
-  meetingLocations,
   paceGroups,
 }: RecurringRidesPanelProps) {
   const isMobile = useIsMobile();
@@ -101,7 +98,6 @@ export function RecurringRidesPanel({
         generate_weeks_ahead: fd.get('generate_weeks_ahead')
           ? Number(fd.get('generate_weeks_ahead'))
           : undefined,
-        meeting_location_id: (fd.get('meeting_location_id') as string) || undefined,
         pace_group_id: (fd.get('pace_group_id') as string) || undefined,
         default_distance_km: fd.get('default_distance_km')
           ? Number(fd.get('default_distance_km'))
@@ -138,26 +134,32 @@ export function RecurringRidesPanel({
 
   return (
     <div className={isPending ? 'opacity-pending pointer-events-none' : ''}>
-      <div className="flex items-center justify-between mb-4">
-        <SectionHeading>{rc.heading}</SectionHeading>
-        <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-          <Plus className="h-4 w-4 mr-1.5" />
-          {rc.create}
-        </Button>
-      </div>
+      {/* TODO: consider admin-specific visual treatment */}
+      <ContentCard heading={rc.heading}>
+        <div className="flex items-center justify-end mb-3">
+          <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+            <Plus className="h-4 w-4 mr-1.5" />
+            {rc.create}
+          </Button>
+        </div>
 
-      {message && <p className="text-sm text-success mb-4">{message}</p>}
+        {message && <p className="text-sm text-success mb-4">{message}</p>}
 
-      {recurringRides.length === 0 ? (
-        <p className="text-base text-muted-foreground">{rc.noRecurring}</p>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {recurringRides.map((r) => (
-            <Card key={r.id} className={cn('p-5', !r.is_active && 'opacity-muted')}>
-              <div className="flex items-start justify-between gap-3">
+        {recurringRides.length === 0 ? (
+          <p className="text-base text-muted-foreground">{rc.noRecurring}</p>
+        ) : (
+          <div className="divide-y divide-border">
+            {recurringRides.map((r) => (
+              <div
+                key={r.id}
+                className={cn(
+                  'flex items-start justify-between gap-3 py-4 first:pt-0 last:pb-0',
+                  !r.is_active && 'opacity-muted',
+                )}
+              >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-foreground">{r.title}</h3>
+                    <h3 className="text-base font-semibold text-foreground">{r.title}</h3>
                     {!r.is_active && (
                       <Badge variant="warning" className="text-xs">
                         {rc.paused}
@@ -173,9 +175,6 @@ export function RecurringRidesPanel({
                       </Badge>
                     )}
                     {r.pace_group_name && <span className="truncate">{r.pace_group_name}</span>}
-                    {r.meeting_location_name && (
-                      <span className="truncate">{r.meeting_location_name}</span>
-                    )}
                   </div>
                   {(r.season_start_date || r.season_end_date) && (
                     <p className="mt-1 text-xs text-muted-foreground/70">
@@ -214,10 +213,10 @@ export function RecurringRidesPanel({
                   </Button>
                 </div>
               </div>
-            </Card>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </ContentCard>
 
       {mounted && (
         <Drawer open={open} onOpenChange={setOpen} direction={isMobile ? 'bottom' : 'right'}>
@@ -324,23 +323,6 @@ export function RecurringRidesPanel({
                 </FloatingField>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <FloatingField label={form.meetingLocation} htmlFor="rc-location" hasValue={false}>
-                  <Select
-                    name="meeting_location_id"
-                    items={Object.fromEntries(meetingLocations.map((loc) => [loc.id, loc.name]))}
-                  >
-                    <SelectTrigger id="rc-location">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {meetingLocations.map((loc) => (
-                        <SelectItem key={loc.id} value={loc.id}>
-                          {loc.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FloatingField>
                 <FloatingField label={form.paceGroup} htmlFor="rc-pace" hasValue={false}>
                   <Select
                     name="pace_group_id"

@@ -16,10 +16,9 @@ import {
 } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import { ContentCard } from '@/components/ui/content-card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { getPaceBadgeVariant } from '@/config/formatting';
 import {
@@ -224,12 +223,7 @@ export function PaceTiersCard({ clubId, initialTiers }: PaceTiersCardProps) {
   }
 
   return (
-    <Card className="mt-4 p-5">
-      <SectionHeading as="h3" className="mb-1">
-        {content.heading}
-      </SectionHeading>
-      <p className="mb-4 text-sm text-muted-foreground">{content.description}</p>
-
+    <ContentCard className="mt-4" heading={content.heading} subtitle={content.description}>
       <div className="space-y-2">
         {tiers.map((tier, index) => {
           const badgeVariant = getPaceBadgeVariant(index + 1);
@@ -369,7 +363,7 @@ export function PaceTiersCard({ clubId, initialTiers }: PaceTiersCardProps) {
           {content.add}
         </Button>
       )}
-    </Card>
+    </ContentCard>
   );
 }
 

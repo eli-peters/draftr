@@ -10,8 +10,8 @@ const SelectSizeContext = React.createContext<'default' | 'sm'>('default');
 
 const triggerVariants = {
   default:
-    'flex h-12 w-full items-center justify-between rounded-lg border border-input bg-surface-default px-3 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 data-[placeholder]:text-muted-foreground',
-  sm: 'flex h-8 w-full items-center justify-between rounded-lg border border-input bg-surface-default px-2 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 data-[placeholder]:text-muted-foreground',
+    'flex h-12 w-full items-center justify-between rounded-none border-0 border-b border-input bg-transparent px-3 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-0 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 data-[placeholder]:text-muted-foreground aria-invalid:border-destructive',
+  sm: 'flex h-8 w-full items-center justify-between rounded-none border-0 border-b border-input bg-transparent px-2 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-0 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 data-[placeholder]:text-muted-foreground aria-invalid:border-destructive',
 };
 
 function Select({

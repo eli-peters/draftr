@@ -230,9 +230,6 @@ export const appContent = {
       confirmCancel: 'Yes, Cancel Ride',
       keepRide: 'Keep Ride',
       signups: 'Signups',
-      addWalkUp: 'Add Walk-Up Rider',
-      walkUpPlaceholder: 'Select a member...',
-      walkUpAdded: 'Rider added successfully',
       coLeaders: 'Co-Leaders',
       addCoLeader: 'Add',
       coLeaderPlaceholder: 'Select a leader...',
@@ -301,6 +298,7 @@ export const appContent = {
       startLocationHint: 'Import a route to auto-detect the start location',
       startLocationManualHint:
         'Connect your account to auto-fill the start location, or enter it manually below',
+      startLocationUnavailable: 'Starting location unavailable',
       scrapingRoute: 'Fetching route details\u2026',
       routeRequired: 'A route link is required to create a ride',
       paceGroup: 'Pace Group',
@@ -330,6 +328,7 @@ export const appContent = {
       toggleOff: 'Off',
       optional: '(optional)',
       required: 'Title, date, start time, meeting location, pace group, and capacity are required.',
+      fieldRequired: 'Required',
       descriptionPlaceholder: 'Brief description of the ride...',
       descriptionHelper: 'A few words help riders know what to expect.',
     },
@@ -738,6 +737,7 @@ export const appContent = {
     errorDescription: 'An unexpected error occurred. Please try again.',
     retry: 'Try again',
     cancel: 'Cancel',
+    discard: 'Discard',
     save: 'Save',
     saved: 'Saved',
     edit: 'Edit',
@@ -773,10 +773,6 @@ export const appContent = {
   notificationMessages: {
     signupConfirmed: {
       title: (rideTitle: string) => `You're signed up for ${rideTitle}`,
-    },
-    walkUpAdded: {
-      title: (rideTitle: string) => `You've been signed up for ${rideTitle}`,
-      body: 'A ride leader added you to this ride.',
     },
     waitlistPromoted: {
       title: (rideTitle: string) => `You're in! Spot opened for ${rideTitle}`,

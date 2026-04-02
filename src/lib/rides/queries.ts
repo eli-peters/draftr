@@ -5,7 +5,6 @@ import { todayDateString, todayInTimezone } from '@/config/formatting';
 import { isRideCompleted } from '@/lib/rides/lifecycle';
 import type {
   Ride,
-  MeetingLocation,
   PaceGroup,
   User,
   RideWithDetails,
@@ -19,9 +18,6 @@ import type {
 // ---------------------------------------------------------------------------
 // Shared join-result types — used by action-bar queries to avoid double-casts
 // ---------------------------------------------------------------------------
-
-/** Join shape for meeting_location:meeting_locations(name) */
-type JoinedLocation = { name: string } | null;
 
 /** Join shape for pace_group:pace_groups(name, sort_order) */
 type JoinedPaceGroup = { name: string; sort_order: number } | null;
@@ -45,7 +41,6 @@ interface ActionBarRideRow {
   end_time: string | null;
   distance_km: number | null;
   start_location_name: string | null;
-  meeting_location: JoinedLocation;
   pace_group: JoinedPaceGroup;
   ride_weather_snapshots: RideWeatherSnapshot | null;
 }
@@ -59,7 +54,7 @@ function toActionBarResult(row: ActionBarRideRow) {
     start_time: row.start_time,
     end_time: row.end_time,
     distance_km: row.distance_km,
-    meeting_location_name: row.start_location_name ?? row.meeting_location?.name ?? null,
+    meeting_location_name: row.start_location_name ?? null,
     pace_group_name: row.pace_group?.name ?? null,
     pace_group_sort_order: row.pace_group?.sort_order ?? null,
     weather: row.ride_weather_snapshots ?? null,
@@ -68,7 +63,6 @@ function toActionBarResult(row: ActionBarRideRow) {
 
 /** Shape returned by Supabase for the RIDE_WITH_DETAILS_SELECT join query. */
 interface RawRideRow extends Ride {
-  meeting_location: MeetingLocation | null;
   pace_group: PaceGroup | null;
   creator: Pick<User, 'id' | 'full_name' | 'avatar_url'> | null;
   ride_signups:
@@ -92,7 +86,6 @@ interface RawRideRow extends Ride {
 /** Select string shared by queries that return RideWithDetails. */
 const RIDE_WITH_DETAILS_SELECT = `
   *,
-  meeting_location:meeting_locations(*),
   pace_group:pace_groups(*),
   creator:users!rides_created_by_fkey(id, full_name, avatar_url),
   ride_signups(status, user_id, waitlist_position, signed_up_at, user:users!inner(avatar_url, full_name)),
@@ -240,7 +233,6 @@ export async function getUserNextSignup(userId: string, clubId: string, timezone
       ride:rides!inner(
         id, title, ride_date, start_time, end_time, status, capacity, distance_km, elevation_m,
         start_location_name,
-        meeting_location:meeting_locations(name),
         pace_group:pace_groups(name, sort_order),
         ride_signups(status),
         ride_weather_snapshots(*)
@@ -267,7 +259,6 @@ export async function getUserNextSignup(userId: string, clubId: string, timezone
     distance_km: number | null;
     elevation_m: number | null;
     start_location_name: string | null;
-    meeting_location: { name: string } | null;
     pace_group: { name: string; sort_order: number } | null;
     ride_signups: JoinedSignupStatus;
     ride_weather_snapshots: RideWeatherSnapshot | null;
@@ -284,7 +275,7 @@ export async function getUserNextSignup(userId: string, clubId: string, timezone
       ride_date: ride.ride_date,
       start_time: ride.start_time,
       end_time: ride.end_time,
-      meeting_location_name: ride.start_location_name ?? ride.meeting_location?.name ?? null,
+      meeting_location_name: ride.start_location_name ?? null,
       pace_group_name: ride.pace_group?.name ?? null,
       pace_group_sort_order: ride.pace_group?.sort_order ?? null,
       distance_km: ride.distance_km,
@@ -312,7 +303,6 @@ export async function getLeaderNextLedRide(userId: string, clubId: string, timez
       `
       id, title, ride_date, start_time, end_time, capacity, distance_km, elevation_m,
       start_location_name,
-      meeting_location:meeting_locations(name),
       pace_group:pace_groups(name, sort_order),
       ride_signups(status),
       ride_weather_snapshots(*)
@@ -365,7 +355,6 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string, 
         id, title, ride_date, start_time, end_time, status,
         distance_km, elevation_m,
         start_location_name,
-        meeting_location:meeting_locations(name),
         pace_group:pace_groups(name, sort_order)
       )
     `,
@@ -389,7 +378,6 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string, 
     distance_km: number | null;
     elevation_m: number | null;
     start_location_name: string | null;
-    meeting_location: { name: string } | null;
     pace_group: { name: string; sort_order: number } | null;
   };
 
@@ -414,7 +402,7 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string, 
       end_time: ride.end_time,
       distance_km: ride.distance_km,
       elevation_m: ride.elevation_m,
-      meeting_location_name: ride.start_location_name ?? ride.meeting_location?.name ?? null,
+      meeting_location_name: ride.start_location_name ?? null,
       pace_group_name: ride.pace_group?.name ?? null,
       pace_group_sort_order: ride.pace_group?.sort_order ?? null,
       waitlist_position: count ?? 1,
@@ -460,7 +448,6 @@ export async function getLeaderWeatherWatchRide(userId: string, clubId: string, 
       `
       id, title, ride_date, start_time, end_time, distance_km,
       start_location_name,
-      meeting_location:meeting_locations(name),
       pace_group:pace_groups(name, sort_order),
       ride_weather_snapshots(*)
     `,
@@ -497,7 +484,6 @@ export async function getNextAvailableRide(clubId: string, timezone: string) {
       `
       id, title, ride_date, start_time, end_time, distance_km,
       start_location_name,
-      meeting_location:meeting_locations(name),
       pace_group:pace_groups(name, sort_order),
       ride_weather_snapshots(*)
     `,
@@ -541,20 +527,6 @@ export const getUserClubMembership = cache(async () => {
 });
 
 /**
- * Fetch meeting locations for a club (for ride creation form).
- */
-export async function getMeetingLocations(clubId: string) {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from('meeting_locations')
-    .select('id, name, address, latitude, longitude')
-    .eq('club_id', clubId)
-    .eq('is_active', true)
-    .order('name');
-  return data ?? [];
-}
-
-/**
  * Fetch pace groups for a club (for ride creation form).
  */
 export async function getPaceGroups(clubId: string) {
@@ -579,7 +551,6 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
       `
       id, title, ride_date, start_time, status, capacity, template_id, distance_km,
       start_location_name,
-      meeting_location:meeting_locations(name),
       pace_group:pace_groups(id, name, sort_order),
       creator:users!rides_created_by_fkey(full_name),
       ride_signups(status)
@@ -601,7 +572,6 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
   }
 
   return (data ?? []).map((ride) => {
-    const location = ride.meeting_location as unknown as { name: string } | null;
     const pace = ride.pace_group as unknown as {
       id: string;
       name: string;
@@ -621,7 +591,7 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
       distance_km: (ride as Record<string, unknown>).distance_km as number | null,
       template_id: (ride as Record<string, unknown>).template_id as string | null,
       meeting_location_name:
-        ((ride as Record<string, unknown>).start_location_name as string) ?? location?.name ?? null,
+        ((ride as Record<string, unknown>).start_location_name as string) ?? null,
       pace_group_id: pace?.id ?? null,
       pace_group_name: pace?.name ?? null,
       pace_group_sort_order: pace?.sort_order ?? null,
@@ -716,7 +686,6 @@ export async function getUserRideSignups(
       ride:rides!inner(
         id, title, ride_date, start_time, end_time, distance_km, elevation_m, capacity,
         start_location_name, start_location_address, start_latitude, start_longitude,
-        meeting_location:meeting_locations(name, address, latitude, longitude),
         pace_group:pace_groups(name, sort_order),
         ride_signups(status),
         ride_weather_snapshots(*)
@@ -786,12 +755,6 @@ export async function getUserRideSignups(
       start_location_address: string | null;
       start_latitude: number | null;
       start_longitude: number | null;
-      meeting_location: {
-        name: string;
-        address: string | null;
-        latitude: number | null;
-        longitude: number | null;
-      } | null;
       pace_group: { name: string; sort_order: number } | null;
       ride_signups: JoinedSignupStatus;
       ride_weather_snapshots: RideWeatherSnapshot | null;
@@ -805,11 +768,10 @@ export async function getUserRideSignups(
       end_time: ride.end_time ?? null,
       pace_group_name: ride.pace_group?.name ?? null,
       pace_group_sort_order: ride.pace_group?.sort_order ?? null,
-      meeting_location_name: ride.start_location_name ?? ride.meeting_location?.name ?? null,
-      meeting_location_address:
-        ride.start_location_address ?? ride.meeting_location?.address ?? null,
-      meeting_location_latitude: ride.start_latitude ?? ride.meeting_location?.latitude ?? null,
-      meeting_location_longitude: ride.start_longitude ?? ride.meeting_location?.longitude ?? null,
+      meeting_location_name: ride.start_location_name ?? null,
+      meeting_location_address: ride.start_location_address ?? null,
+      meeting_location_latitude: ride.start_latitude ?? null,
+      meeting_location_longitude: ride.start_longitude ?? null,
       distance_km: ride.distance_km,
       elevation_m: ride.elevation_m ?? null,
       signup_count: countActiveSignups(ride.ride_signups ?? []),

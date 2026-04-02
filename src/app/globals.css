@@ -464,15 +464,11 @@
  * Non-floating fields keep their existing full-border rounded style.
  */
 
-/* ── Border override — bottom-only for all field types ── */
+/* ── Floating-field layout overrides (border/bg already flat in base components) ── */
 .floating-field [data-slot='input'],
 .floating-field [data-slot='select-trigger'],
 .floating-field [data-slot='picker-trigger'] {
-  border: 0;
-  border-bottom: 1px solid var(--input);
-  border-radius: 0;
   padding-top: 1.25rem;
-  background: transparent;
 }
 
 /*
@@ -481,34 +477,13 @@
  * scrolls behind the floating label.
  */
 .floating-field [data-slot='textarea'] {
-  border: 0;
-  border-bottom: 1px solid var(--input);
-  border-radius: 0;
   margin-top: 1.25rem;
   padding-top: 0.5rem;
-  background: transparent;
   resize: none;
   overflow-y: auto;
   field-sizing: content;
   min-height: 2rem;
   max-height: 12rem;
-}
-
-/* ── Focus — bottom border color + remove ring ── */
-.floating-field [data-slot='input']:focus-visible,
-.floating-field [data-slot='textarea']:focus-visible {
-  border-bottom-color: var(--ring);
-  box-shadow: none;
-  outline: none;
-  --tw-ring-shadow: 0 0 #0000;
-}
-
-.floating-field:focus-within [data-slot='select-trigger'],
-.floating-field:focus-within [data-slot='picker-trigger'] {
-  border-bottom-color: var(--ring);
-  box-shadow: none;
-  outline: none;
-  --tw-ring-shadow: 0 0 #0000;
 }
 
 /* ── Label — base (resting position) ── */

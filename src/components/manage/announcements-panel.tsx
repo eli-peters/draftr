@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import { ContentCard } from '@/components/ui/content-card';
 import {
   Select,
   SelectTrigger,
@@ -19,7 +19,6 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { SectionHeading } from '@/components/ui/section-heading';
 import { ContentToolbar } from '@/components/layout/content-toolbar';
 import {
   Drawer,
@@ -141,27 +140,31 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
 
   return (
     <div className={isPending ? 'opacity-pending pointer-events-none' : ''}>
-      <ContentToolbar
-        left={<SectionHeading>{content.announcements.heading}</SectionHeading>}
-        right={
-          <Button size="sm" variant="outline" onClick={handleNew}>
-            <Plus className="h-4 w-4 mr-1.5" />
-            {content.announcements.create}
-          </Button>
-        }
-        className="mb-4"
-      />
+      {/* TODO: card wrapper decision pending — Option A (wrapped) implemented, revisit if announcements need a more prominent/feed-like treatment */}
+      {/* TODO: consider admin-specific visual treatment */}
+      <ContentCard heading={content.announcements.heading}>
+        <ContentToolbar
+          right={
+            <Button size="sm" variant="outline" onClick={handleNew}>
+              <Plus className="h-4 w-4 mr-1.5" />
+              {content.announcements.create}
+            </Button>
+          }
+          className="mb-3"
+        />
 
-      {announcements.length === 0 ? (
-        <p className="text-base text-muted-foreground">{content.announcements.noAnnouncements}</p>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {announcements.map((a) => (
-            <Card key={a.id} className="p-5">
-              <div className="flex items-start justify-between gap-3">
+        {announcements.length === 0 ? (
+          <p className="text-base text-muted-foreground">{content.announcements.noAnnouncements}</p>
+        ) : (
+          <div className="divide-y divide-border">
+            {announcements.map((a) => (
+              <div
+                key={a.id}
+                className="flex items-start justify-between gap-3 py-4 first:pt-0 last:pb-0"
+              >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-foreground">{a.title}</h3>
+                    <h3 className="text-base font-semibold text-foreground">{a.title}</h3>
                     {a.is_pinned && (
                       <Badge variant="outline" className="text-xs">
                         {content.announcements.pinned}
@@ -212,10 +215,10 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                   </Button>
                 </div>
               </div>
-            </Card>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </ContentCard>
 
       {mounted && (
         <Drawer open={open} onOpenChange={setOpen} direction={isMobile ? 'bottom' : 'right'}>

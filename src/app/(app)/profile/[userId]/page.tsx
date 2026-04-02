@@ -6,7 +6,6 @@ import { createClient, getUser } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ContentCard } from '@/components/ui/content-card';
-import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { MemberStatus } from '@/config/statuses';
@@ -128,99 +127,88 @@ export default async function PublicProfilePage({
 
       {/* About */}
       {profile.bio && (
-        <div className="mt-8">
-          <SectionHeading>{content.sections.about}</SectionHeading>
-          <ContentCard padding="spacious" className="mt-3">
-            <p className="text-base text-foreground/75 leading-relaxed">{profile.bio}</p>
-          </ContentCard>
-        </div>
+        <ContentCard padding="spacious" className="mt-8" heading={content.sections.about}>
+          <p className="text-base text-foreground/75 leading-relaxed">{profile.bio}</p>
+        </ContentCard>
       )}
 
       {/* Preferences */}
       {profile.preferred_pace_group && (
-        <div className="mt-8">
-          <SectionHeading>{content.sections.preferences}</SectionHeading>
-          <div className="mt-3">
-            <ContentCard padding="spacious" className="flex items-center gap-3">
-              <Bicycle className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-sm text-muted-foreground">{content.sections.paceGroup}</p>
-                <p className="font-medium text-foreground text-base">
-                  {profile.preferred_pace_group}
-                </p>
-              </div>
-            </ContentCard>
+        <ContentCard
+          padding="spacious"
+          className="mt-8 flex items-center gap-3"
+          heading={content.sections.preferences}
+        >
+          <Bicycle className="h-5 w-5 text-primary" />
+          <div>
+            <p className="text-sm text-muted-foreground">{content.sections.paceGroup}</p>
+            <p className="font-medium text-foreground text-base">{profile.preferred_pace_group}</p>
           </div>
-        </div>
+        </ContentCard>
       )}
 
       {/* Emergency Contact — visible to ride leaders and admins */}
       {isLeaderOrAbove && (
-        <div className="mt-8">
-          <SectionHeading>{content.sections.emergencyContact}</SectionHeading>
+        <ContentCard
+          padding="spacious"
+          className="mt-8"
+          heading={content.sections.emergencyContact}
+        >
+          <p className="text-xs text-muted-foreground mb-3">
+            {content.publicProfile.emergencyContactNote}
+          </p>
           {profile.emergency_contact_name ? (
-            <ContentCard padding="spacious" className="mt-3">
-              <p className="text-xs text-muted-foreground mb-3">
-                {content.publicProfile.emergencyContactNote}
-              </p>
-              <div className="flex items-center gap-3">
-                <FirstAidKit className="h-5 w-5 text-destructive" />
-                <div>
-                  <p className="font-medium text-foreground text-base">
-                    {profile.emergency_contact_name}
+            <div className="flex items-center gap-3">
+              <FirstAidKit className="h-5 w-5 text-destructive" />
+              <div>
+                <p className="font-medium text-foreground text-base">
+                  {profile.emergency_contact_name}
+                </p>
+                {profile.emergency_contact_phone && (
+                  <p className="text-sm text-muted-foreground">
+                    {formatPhoneDisplay(profile.emergency_contact_phone)}
                   </p>
-                  {profile.emergency_contact_phone && (
-                    <p className="text-sm text-muted-foreground">
-                      {formatPhoneDisplay(profile.emergency_contact_phone)}
-                    </p>
-                  )}
-                </div>
+                )}
               </div>
-            </ContentCard>
+            </div>
           ) : (
-            <ContentCard padding="spacious" className="mt-3">
-              <p className="text-xs text-muted-foreground mb-3">
-                {content.publicProfile.emergencyContactNote}
-              </p>
-              <p className="text-base text-muted-foreground italic">
-                {content.emergencyContact.noContact}
-              </p>
-            </ContentCard>
+            <p className="text-base text-muted-foreground italic">
+              {content.emergencyContact.noContact}
+            </p>
           )}
-        </div>
+        </ContentCard>
       )}
 
       {/* Recent Rides */}
       {recentRides.length > 0 && (
-        <div className="mt-8">
-          <SectionHeading>{content.recentRides}</SectionHeading>
-          <div className="mt-3 space-y-2">
+        <ContentCard heading={content.recentRides} className="mt-8">
+          <div className="divide-y divide-border">
             {recentRides.map((ride) => (
-              <Link key={ride.id} href={routes.ride(ride.id)} className="block group">
-                <ContentCard
-                  interactive
-                  padding="compact"
-                  className="flex items-center justify-between"
-                >
-                  <div className="min-w-0">
-                    <p className="text-base font-medium text-foreground truncate">{ride.title}</p>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                      <span>{format(new Date(ride.ride_date), dateFormats.monthDay)}</span>
-                      {ride.distance_km != null && (
-                        <span className="flex items-center gap-1 text-info">
-                          <Path className="h-3.5 w-3.5" />
-                          {ride.distance_km}
-                          {units.km}
-                        </span>
-                      )}
-                    </div>
+              <Link
+                key={ride.id}
+                href={routes.ride(ride.id)}
+                className="flex items-center justify-between py-3 first:pt-0 last:pb-0 group"
+              >
+                <div className="min-w-0">
+                  <p className="text-base font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                    {ride.title}
+                  </p>
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                    <span>{format(new Date(ride.ride_date), dateFormats.monthDay)}</span>
+                    {ride.distance_km != null && (
+                      <span className="flex items-center gap-1 text-info">
+                        <Path className="h-3.5 w-3.5" />
+                        {ride.distance_km}
+                        {units.km}
+                      </span>
+                    )}
                   </div>
-                  <CaretRight className="h-4 w-4 text-muted-foreground/50" />
-                </ContentCard>
+                </div>
+                <CaretRight className="h-4 w-4 text-muted-foreground/50" />
               </Link>
             ))}
           </div>
-        </div>
+        </ContentCard>
       )}
     </DashboardShell>
   );

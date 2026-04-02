@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { LinkSimple, SignOut } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
-import { SectionHeading } from '@/components/ui/section-heading';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ContentCard } from '@/components/ui/content-card';
 import { appContent } from '@/content/app';
@@ -49,10 +48,8 @@ export function IntegrationsSetting({ connections }: IntegrationsSettingProps) {
   const services = Object.values(integrations);
 
   return (
-    <div>
-      <SectionHeading>{content.heading}</SectionHeading>
-      <p className="mt-1 text-sm text-muted-foreground">{content.description}</p>
-      <div className="mt-3 space-y-2">
+    <ContentCard heading={content.heading} subtitle={content.description}>
+      <div className="divide-y divide-border">
         {services.map((config) => {
           const connection = connections.find((c) => c.service === config.service);
           return (
@@ -66,7 +63,7 @@ export function IntegrationsSetting({ connections }: IntegrationsSettingProps) {
           );
         })}
       </div>
-    </div>
+    </ContentCard>
   );
 }
 
@@ -115,7 +112,7 @@ function ServiceRow({ service, displayName, brandColor, connection }: ServiceRow
 
   if (connection) {
     return (
-      <ContentCard padding="compact" className="flex items-center justify-between">
+      <div className="flex items-center justify-between py-3">
         <div className="flex items-center gap-3 min-w-0">
           <Avatar className="h-9 w-9">
             {connection.avatar_url && (
@@ -147,12 +144,12 @@ function ServiceRow({ service, displayName, brandColor, connection }: ServiceRow
           <SignOut className="h-4 w-4" />
           {isLoading ? content.disconnecting : content.disconnectButton}
         </Button>
-      </ContentCard>
+      </div>
     );
   }
 
   return (
-    <ContentCard padding="compact" className="flex items-center justify-between">
+    <div className="flex items-center justify-between py-3">
       <div className="flex items-center gap-3">
         <div
           className="flex h-9 w-9 items-center justify-center rounded-full text-white"
@@ -172,6 +169,6 @@ function ServiceRow({ service, displayName, brandColor, connection }: ServiceRow
         <LinkSimple className="h-4 w-4" />
         {isLoading ? content.connecting : content.connectButton(displayName)}
       </Button>
-    </ContentCard>
+    </div>
   );
 }

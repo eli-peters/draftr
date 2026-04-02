@@ -25,6 +25,8 @@ interface DatePickerProps {
   required?: boolean;
   /** Whether the field is disabled */
   disabled?: boolean;
+  /** Whether the field has a validation error */
+  'aria-invalid'?: boolean;
   className?: string;
 }
 
@@ -46,6 +48,7 @@ function DatePicker({
   id,
   required,
   disabled,
+  'aria-invalid': ariaInvalid,
   className,
 }: DatePickerProps) {
   const [open, setOpen] = useState(false);
@@ -60,9 +63,11 @@ function DatePicker({
         <PopoverTrigger
           id={id}
           disabled={disabled}
+          aria-invalid={ariaInvalid}
           data-slot="picker-trigger"
           className={cn(
-            'flex h-12 w-full items-center justify-between rounded-lg border border-input bg-surface-default px-3 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
+            'flex h-12 w-full items-center justify-between rounded-none border-0 border-b border-input bg-transparent px-3 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-0 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
+            ariaInvalid && 'border-destructive focus-visible:border-destructive',
             !value && 'text-muted-foreground',
             className,
           )}

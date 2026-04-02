@@ -2,10 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { ContentCard } from '@/components/ui/content-card';
 import { FloatingField } from '@/components/ui/floating-field';
 import { DatePicker } from '@/components/ui/date-picker';
-import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { updateSeasonDates } from '@/lib/manage/actions';
 
@@ -35,11 +34,7 @@ export function SeasonDatesCard({ clubId, seasonStart, seasonEnd }: SeasonDatesC
   }
 
   return (
-    <Card className="p-5">
-      <SectionHeading as="h3" className="mb-1">
-        {season.heading}
-      </SectionHeading>
-      <p className="text-sm text-muted-foreground mb-4">{season.description}</p>
+    <ContentCard heading={season.heading} subtitle={season.description}>
       <div className="grid grid-cols-2 gap-4">
         <FloatingField label={season.startLabel} htmlFor="season-start" hasValue={!!start}>
           <DatePicker id="season-start" value={start} onChange={setStart} />
@@ -54,6 +49,6 @@ export function SeasonDatesCard({ clubId, seasonStart, seasonEnd }: SeasonDatesC
         </Button>
         {message && <p className="text-sm text-success">{message}</p>}
       </div>
-    </Card>
+    </ContentCard>
   );
 }

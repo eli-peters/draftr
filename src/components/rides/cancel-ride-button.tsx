@@ -39,9 +39,13 @@ export function CancelRideButton({ rideId, rideTitle }: CancelRideButtonProps) {
 
   if (!showConfirm) {
     return (
-      <Button variant="destructive" className="w-full" onClick={() => setShowConfirm(true)}>
+      <button
+        type="button"
+        className="text-sm text-destructive transition-colors hover:text-destructive/80"
+        onClick={() => setShowConfirm(true)}
+      >
         {ridesContent.edit.cancelRide}
-      </Button>
+      </button>
     );
   }
 

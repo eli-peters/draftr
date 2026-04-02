@@ -1,11 +1,3 @@
-export interface MeetingLocation {
-  id: string;
-  name: string;
-  address: string | null;
-  latitude: number | null;
-  longitude: number | null;
-}
-
 export interface RideFormInitialData {
   title: string;
   description: string;

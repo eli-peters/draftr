@@ -8,6 +8,7 @@ import {
 } from '@/components/rides/ride-card-parts';
 import { RouteMapLoader } from '@/components/rides/route-map-loader';
 import { RouteMapPlaceholder } from '@/components/rides/route-map-placeholder';
+import { buildDirectionsUrl } from '@/lib/maps/directions';
 import { RideWeatherSummary } from '@/components/weather/ride-weather-summary';
 import { appContent } from '@/content/app';
 import { dateFormats, formatTime, separators, units, parseLocalDate } from '@/config/formatting';
@@ -74,21 +75,34 @@ export function RideDetailCard({
       {/* Card body */}
       <div className="flex flex-col gap-4 px-6 pb-6 pt-5">
         {/* Start location */}
-        {(ride.start_location_name ?? ride.meeting_location) && (
-          <div className="flex items-start gap-2">
-            <MapPin weight="duotone" className="mt-0.5 size-6 shrink-0 text-primary" />
-            <div className="min-w-0">
-              <p className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
-                {ride.start_location_name ?? ride.meeting_location?.name}
-              </p>
-              {(ride.start_location_address ?? ride.meeting_location?.address) && (
-                <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">
-                  {ride.start_location_address ?? ride.meeting_location?.address}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
+        {ride.start_location_name &&
+          (() => {
+            const directionsUrl = buildDirectionsUrl({
+              latitude: ride.start_latitude,
+              longitude: ride.start_longitude,
+              address: ride.start_location_address,
+              name: ride.start_location_name,
+            });
+            const Wrapper = directionsUrl ? 'a' : 'div';
+            const wrapperProps = directionsUrl
+              ? { href: directionsUrl, target: '_blank' as const, rel: 'noopener noreferrer' }
+              : {};
+            return (
+              <Wrapper {...wrapperProps} className="group flex items-start gap-2">
+                <MapPin weight="duotone" className="mt-0.5 size-6 shrink-0 text-primary" />
+                <div className="min-w-0">
+                  <p className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground decoration-primary/30 underline-offset-2 group-hover:underline">
+                    {ride.start_location_name}
+                  </p>
+                  {ride.start_location_address && (
+                    <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">
+                      {ride.start_location_address}
+                    </p>
+                  )}
+                </div>
+              </Wrapper>
+            );
+          })()}
 
         {/* Weather summary — part of the "should I ride?" decision */}
         <div className="-mt-1.5">

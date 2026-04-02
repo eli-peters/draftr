@@ -20,7 +20,6 @@ import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { ContentCard } from '@/components/ui/content-card';
-import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { SignupStatus } from '@/config/statuses';
 import { routes } from '@/config/routes';
@@ -117,24 +116,23 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
       {/* Riders roster + signup/cancel actions */}
       {signups.length > 0 && (
-        <div className="mt-8">
-          <SectionHeading>
-            {detail.ridersHeading(confirmedCount, waitlistedCount, ride.capacity)}
-          </SectionHeading>
-          <ContentCard padding="compact" className="mt-3">
-            <RideSignupSection
-              rideId={ride.id}
-              signups={signups}
-              createdBy={ride.created_by}
-              coLeaderIds={coLeaders.map((cl) => cl.user_id)}
-              currentUserId={currentUserId}
-              isSignedUp={isSignedUp}
-              canSignUp={availability.canSignUp}
-              canCancel={availability.canCancel}
-              isFull={availability.isFull}
-            />
-          </ContentCard>
-        </div>
+        <ContentCard
+          padding="compact"
+          className="mt-8"
+          heading={detail.ridersHeading(confirmedCount, waitlistedCount, ride.capacity)}
+        >
+          <RideSignupSection
+            rideId={ride.id}
+            signups={signups}
+            createdBy={ride.created_by}
+            coLeaderIds={coLeaders.map((cl) => cl.user_id)}
+            currentUserId={currentUserId}
+            isSignedUp={isSignedUp}
+            canSignUp={availability.canSignUp}
+            canCancel={availability.canCancel}
+            isFull={availability.isFull}
+          />
+        </ContentCard>
       )}
 
       {/* Floating signup bar for when roster is empty but signup is available */}

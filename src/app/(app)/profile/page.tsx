@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AppearanceSetting } from '@/components/settings/appearance-setting';
 import { IntegrationsSetting } from '@/components/settings/integrations-setting';
-import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { getInitials } from '@/lib/utils';
@@ -111,39 +110,38 @@ export default async function ProfilePage() {
       )}
 
       {/* Recent Rides */}
-      <div className="mt-8">
-        <SectionHeading>{content.recentRides}</SectionHeading>
+      <ContentCard heading={content.recentRides} className="mt-8">
         {recentRides.length === 0 ? (
-          <p className="mt-3 text-base text-muted-foreground">{content.noRidesYet}</p>
+          <p className="text-base text-muted-foreground">{content.noRidesYet}</p>
         ) : (
-          <div className="mt-3 space-y-2">
+          <div className="divide-y divide-border">
             {recentRides.map((ride) => (
-              <Link key={ride.id} href={routes.ride(ride.id)} className="block group">
-                <ContentCard
-                  interactive
-                  padding="compact"
-                  className="flex items-center justify-between"
-                >
-                  <div className="min-w-0">
-                    <p className="text-base font-medium text-foreground truncate">{ride.title}</p>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                      <span>{format(new Date(ride.ride_date), dateFormats.monthDay)}</span>
-                      {ride.distance_km != null && (
-                        <span className="flex items-center gap-1 text-info">
-                          <Path className="h-3.5 w-3.5" />
-                          {ride.distance_km}
-                          {units.km}
-                        </span>
-                      )}
-                    </div>
+              <Link
+                key={ride.id}
+                href={routes.ride(ride.id)}
+                className="flex items-center justify-between py-3 first:pt-0 last:pb-0 group"
+              >
+                <div className="min-w-0">
+                  <p className="text-base font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                    {ride.title}
+                  </p>
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                    <span>{format(new Date(ride.ride_date), dateFormats.monthDay)}</span>
+                    {ride.distance_km != null && (
+                      <span className="flex items-center gap-1 text-info">
+                        <Path className="h-3.5 w-3.5" />
+                        {ride.distance_km}
+                        {units.km}
+                      </span>
+                    )}
                   </div>
-                  <CaretRight className="h-4 w-4 text-muted-foreground/50" />
-                </ContentCard>
+                </div>
+                <CaretRight className="h-4 w-4 text-muted-foreground/50" />
               </Link>
             ))}
           </div>
         )}
-      </div>
+      </ContentCard>
 
       {/* Sign Out */}
       <div className="mt-12 flex justify-center">

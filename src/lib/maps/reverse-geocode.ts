@@ -27,17 +27,53 @@ export async function reverseGeocode(
       place_type: string[];
       text: string;
       place_name: string;
+      address?: string; // Street number (e.g., "156")
     }>;
 
     if (!features || features.length === 0) return null;
 
     // Prefer POI (business/landmark) over raw address
     const poi = features.find((f) => f.place_type.includes('poi'));
-    const address = features.find((f) => f.place_type.includes('address'));
-    const best = poi ?? address ?? features[0];
+    const addr = features.find((f) => f.place_type.includes('address'));
+    const best = poi ?? addr ?? features[0];
+
+    // If Mapbox found a POI, use it directly
+    if (poi) {
+      return {
+        name: poi.text,
+        address: best.place_name,
+        latitude,
+        longitude,
+      };
+    }
+
+    // No POI from Mapbox — try Google Places Nearby Search
+    try {
+      const nearbyRes = await fetch(
+        `/api/places/nearby?latitude=${latitude}&longitude=${longitude}`,
+      );
+      if (nearbyRes.ok) {
+        const place = await nearbyRes.json();
+        if (place.name) {
+          return {
+            name: place.name,
+            address: place.address || best.place_name,
+            latitude,
+            longitude,
+          };
+        }
+      }
+    } catch {
+      // Fall through to Mapbox address
+    }
+
+    // Build street address from number + street name (e.g., "156 Pape Avenue")
+    const streetName = addr
+      ? [addr.address, addr.text].filter(Boolean).join(' ')
+      : best.place_name.split(',')[0];
 
     return {
-      name: poi ? poi.text : best.place_name.split(',')[0],
+      name: streetName,
       address: best.place_name,
       latitude,
       longitude,

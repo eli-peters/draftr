@@ -54,18 +54,6 @@ export interface ClubMembership {
   joined_at: string;
 }
 
-export interface MeetingLocation {
-  id: string;
-  club_id: string;
-  name: string;
-  address: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  notes: string | null;
-  is_active: boolean;
-  created_at: string;
-}
-
 export interface PaceGroup {
   id: string;
   club_id: string;
@@ -92,7 +80,6 @@ export interface Ride {
   ride_date: string;
   start_time: string;
   end_time: string | null;
-  meeting_location_id: string | null;
   pace_group_id: string | null;
   distance_km: number | null;
   elevation_m: number | null;
@@ -208,7 +195,6 @@ export interface RideTemplate {
   description: string | null;
   day_of_week: number | null;
   start_time: string;
-  meeting_location_id: string | null;
   pace_group_id: string | null;
   default_distance_km: number | null;
   default_capacity: number | null;
@@ -305,7 +291,6 @@ export interface SignupAvatar {
 }
 
 export interface RideWithDetails extends Ride {
-  meeting_location: MeetingLocation | null;
   pace_group: PaceGroup | null;
   signup_count: number;
   /** First few confirmed signups for avatar display (ordered by signed_up_at). */

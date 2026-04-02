@@ -7,7 +7,8 @@ import { PaperPlaneTilt } from '@phosphor-icons/react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { Button } from '@/components/ui/button';
-import { SectionHeading } from '@/components/ui/section-heading';
+import { Textarea } from '@/components/ui/textarea';
+import { FloatingField } from '@/components/ui/floating-field';
 import { ContentCard } from '@/components/ui/content-card';
 import { toast } from 'sonner';
 import { addComment, editComment, deleteComment, toggleCommentReaction } from '@/lib/rides/actions';
@@ -39,30 +40,27 @@ export function RideComments({
   isCancelled,
 }: RideCommentsProps) {
   return (
-    <div>
-      <SectionHeading>{content.heading}</SectionHeading>
-      <ContentCard className="mt-3">
-        {comments.length === 0 && (
-          <p className="text-sm text-muted-foreground">{content.noComments}</p>
-        )}
+    <ContentCard heading={content.heading}>
+      {comments.length === 0 && (
+        <p className="text-sm text-muted-foreground">{content.noComments}</p>
+      )}
 
-        {comments.length > 0 && (
-          <div className="space-y-0.5">
-            {comments.map((comment) => (
-              <CommentRow
-                key={comment.id}
-                comment={comment}
-                reactions={commentReactions.get(comment.id) ?? []}
-                currentUserId={currentUserId}
-                isAdmin={userRole === 'admin'}
-              />
-            ))}
-          </div>
-        )}
+      {comments.length > 0 && (
+        <div className="space-y-0.5">
+          {comments.map((comment) => (
+            <CommentRow
+              key={comment.id}
+              comment={comment}
+              reactions={commentReactions.get(comment.id) ?? []}
+              currentUserId={currentUserId}
+              isAdmin={userRole === 'admin'}
+            />
+          ))}
+        </div>
+      )}
 
-        {currentUserId && !isCancelled && <AddCommentForm rideId={rideId} />}
-      </ContentCard>
-    </div>
+      {currentUserId && !isCancelled && <AddCommentForm rideId={rideId} />}
+    </ContentCard>
   );
 }
 
@@ -134,7 +132,7 @@ function CommentRow({
 
         {isEditing ? (
           <div className="mt-1 space-y-1.5">
-            <textarea
+            <Textarea
               ref={editRef}
               value={editBody}
               onChange={(e) => {
@@ -143,7 +141,7 @@ function CommentRow({
               }}
               maxLength={CHAR_LIMIT}
               rows={1}
-              className="w-full resize-none overflow-hidden rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary"
+              className="min-h-0 resize-none overflow-hidden py-2 text-sm"
             />
             <div className="flex items-center gap-2">
               <Button size="sm" onClick={handleSaveEdit} disabled={isPending || !editBody.trim()}>
@@ -227,20 +225,28 @@ function AddCommentForm({ rideId }: { rideId: string }) {
 
   return (
     <div className="mt-3 flex items-end gap-2">
-      <textarea
-        ref={textareaRef}
-        value={body}
-        onChange={(e) => {
-          setBody(e.target.value);
-          autoExpand(e.currentTarget);
-        }}
-        onKeyDown={handleKeyDown}
-        placeholder={content.placeholder}
-        maxLength={CHAR_LIMIT}
-        rows={1}
-        style={{ maxHeight: `${MAX_ROWS * 1.5}rem` }}
-        className="flex-1 resize-none overflow-hidden rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
-      />
+      <FloatingField
+        label={content.placeholder}
+        htmlFor="add-comment"
+        hasValue={body.length > 0}
+        className="flex-1"
+      >
+        <Textarea
+          id="add-comment"
+          ref={textareaRef}
+          value={body}
+          onChange={(e) => {
+            setBody(e.target.value);
+            autoExpand(e.currentTarget);
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder=" "
+          maxLength={CHAR_LIMIT}
+          rows={1}
+          style={{ maxHeight: `${MAX_ROWS * 1.5}rem` }}
+          className="text-sm"
+        />
+      </FloatingField>
       <Button
         size="icon"
         variant="ghost"

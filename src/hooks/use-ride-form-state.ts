@@ -63,12 +63,12 @@ export interface RideFormState {
   recurringEndDate: string;
 
   // UI
-  locationPickerOpen: boolean;
   editScope: 'this' | 'all';
 
   // Form
   isPending: boolean;
   error: string | null;
+  fieldErrors: Record<string, string>;
 }
 
 // ---------------------------------------------------------------------------
@@ -97,19 +97,11 @@ type RideFormAction =
       type: 'GEOCODING_COMPLETE';
       payload: { name: string; address: string } | null;
     }
-  | {
-      type: 'SET_LOCATION';
-      payload: {
-        name: string;
-        address: string;
-        latitude: number | null;
-        longitude: number | null;
-      };
-    }
   | { type: 'TOGGLE_CO_LEADER'; userId: string }
   | { type: 'SET_CO_LEADER_CONFLICTS'; conflicts: LeaderConflict[] }
   | { type: 'SET_PENDING'; value: boolean }
   | { type: 'SET_ERROR'; value: string | null }
+  | { type: 'SET_FIELD_ERRORS'; errors: Record<string, string> }
   | { type: 'SET_LINK_ONLY'; routeName: string; detectedService?: IntegrationService | null };
 
 // ---------------------------------------------------------------------------
@@ -118,8 +110,11 @@ type RideFormAction =
 
 function rideFormReducer(state: RideFormState, action: RideFormAction): RideFormState {
   switch (action.type) {
-    case 'SET_FIELD':
-      return { ...state, [action.field]: action.value };
+    case 'SET_FIELD': {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { [action.field]: _cleared, ...remainingErrors } = state.fieldErrors;
+      return { ...state, [action.field]: action.value, fieldErrors: remainingErrors };
+    }
 
     case 'APPLY_ROUTE_DATA': {
       const { payload } = action;
@@ -177,16 +172,6 @@ function rideFormReducer(state: RideFormState, action: RideFormAction): RideForm
           : {}),
       };
 
-    case 'SET_LOCATION':
-      return {
-        ...state,
-        startLocationName: action.payload.name,
-        startLocationAddress: action.payload.address,
-        startLatitude: action.payload.latitude,
-        startLongitude: action.payload.longitude,
-        locationPickerOpen: false,
-      };
-
     case 'TOGGLE_CO_LEADER': {
       const isSelected = state.selectedCoLeaders.includes(action.userId);
       return {
@@ -205,6 +190,9 @@ function rideFormReducer(state: RideFormState, action: RideFormAction): RideForm
 
     case 'SET_ERROR':
       return { ...state, error: action.value };
+
+    case 'SET_FIELD_ERRORS':
+      return { ...state, fieldErrors: action.errors };
 
     case 'SET_LINK_ONLY':
       return {
@@ -260,12 +248,12 @@ function buildInitialState(initialData?: RideFormInitialData): RideFormState {
     recurringEndDate: '',
 
     // UI
-    locationPickerOpen: false,
     editScope: 'this',
 
     // Form
     isPending: false,
     error: null,
+    fieldErrors: {},
   };
 }
 
@@ -280,6 +268,7 @@ interface UseRideFormStateOptions {
   clubId: string;
   connectedServices: IntegrationService[];
   eligibleLeaders: { user_id: string; name: string; avatar_url: string | null }[];
+  initialCoLeaderIds?: string[];
   returnTo?: string;
 }
 
@@ -290,6 +279,7 @@ export function useRideFormState({
   clubId,
   connectedServices,
   eligibleLeaders,
+  initialCoLeaderIds,
   returnTo,
 }: UseRideFormStateOptions) {
   const router = useRouter();
@@ -301,12 +291,14 @@ export function useRideFormState({
   // Paste URL ref stays as a ref (ephemeral drawer input)
   const pasteUrlRef = useRef<HTMLInputElement>(null);
 
-  // ── Step completion derivation ───────────────────────��──────────────────
-
-  const isRouteComplete = !!state.routeUrl;
-  const isDetailsComplete = !!state.title && !!state.capacity && !!state.paceGroupId;
-  const isWhenWhereComplete = !!state.rideDate && !!state.startTime;
-  const hasInitialData = !!initialData?.route_url;
+  // Pre-select co-leaders when editing
+  const didInitCoLeaders = useRef(false);
+  useEffect(() => {
+    if (initialCoLeaderIds?.length && !didInitCoLeaders.current) {
+      didInitCoLeaders.current = true;
+      dispatch({ type: 'SET_FIELD', field: 'selectedCoLeaders', value: initialCoLeaderIds });
+    }
+  }, [initialCoLeaderIds]);
 
   // ── Co-leader conflict fetching ─────────────────────────────────────────
 
@@ -491,21 +483,23 @@ export function useRideFormState({
     dispatch({ type: 'SET_PENDING', value: true });
     dispatch({ type: 'SET_ERROR', value: null });
 
-    if (!state.routeUrl) {
-      dispatch({ type: 'SET_ERROR', value: form.routeRequired });
-      dispatch({ type: 'SET_PENDING', value: false });
-      return;
-    }
+    const errors: Record<string, string> = {};
+    if (!state.routeUrl) errors.routeUrl = form.fieldRequired;
+    if (!state.title) errors.title = form.fieldRequired;
+    if (!state.rideDate) errors.rideDate = form.fieldRequired;
+    if (!state.startTime) errors.startTime = form.fieldRequired;
+    if (!state.paceGroupId) errors.paceGroupId = form.fieldRequired;
+    if (!state.capacity) errors.capacity = form.fieldRequired;
 
-    if (
-      !state.title ||
-      !state.rideDate ||
-      !state.startTime ||
-      !state.paceGroupId ||
-      !state.capacity
-    ) {
-      dispatch({ type: 'SET_ERROR', value: form.required });
+    if (Object.keys(errors).length > 0) {
+      dispatch({ type: 'SET_FIELD_ERRORS', errors });
       dispatch({ type: 'SET_PENDING', value: false });
+      // Scroll to first errored field
+      requestAnimationFrame(() => {
+        document
+          .querySelector('[aria-invalid="true"]')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
       return;
     }
 
@@ -531,9 +525,15 @@ export function useRideFormState({
     let result: { error?: string; success?: boolean; rideId?: string };
 
     if (isEdit && state.editScope === 'all' && isRecurringSeries) {
-      result = await updateRecurringSeries(rideId!, shared as UpdateRideData);
+      result = await updateRecurringSeries(rideId!, {
+        ...shared,
+        co_leader_ids: state.selectedCoLeaders,
+      } as UpdateRideData);
     } else if (isEdit) {
-      result = await updateRide(rideId!, shared as UpdateRideData);
+      result = await updateRide(rideId!, {
+        ...shared,
+        co_leader_ids: state.selectedCoLeaders,
+      } as UpdateRideData);
     } else {
       // Read recurring fields from FormData since they use native selects with defaultValue
       const fd = new FormData(e.currentTarget);
@@ -591,10 +591,6 @@ export function useRideFormState({
     // Derived
     isEdit,
     isRecurringSeries,
-    isRouteComplete,
-    isDetailsComplete,
-    isWhenWhereComplete,
-    hasInitialData,
 
     // Handlers
     handleRouteImport,

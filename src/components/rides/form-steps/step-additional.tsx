@@ -13,7 +13,6 @@ import {
 import { DatePicker } from '@/components/ui/date-picker';
 import { RiderAvatar } from '@/components/ui/avatar';
 import { PillToggle, OptionalTag } from './shared';
-import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import type { LeaderConflict } from '@/lib/rides/actions';
 
@@ -182,83 +181,82 @@ export function StepAdditional({
   seasonEnd,
 }: StepAdditionalProps) {
   return (
-    <div>
-      <SectionHeading as="h3" icon={GearSix}>
-        {form.sectionAdditional}
-      </SectionHeading>
-      <ContentCard padding="default" className="mt-3">
-        <div className="flex flex-col gap-5">
-          {/* Co-leader picker (create mode only) */}
-          {!isEdit && eligibleLeaders.length > 0 && (
-            <div className="space-y-3">
-              <Label>
-                {form.coLeaders}
-                <OptionalTag />
-              </Label>
-              <div className="flex flex-col gap-1">
-                {eligibleLeaders.map((leader) => {
-                  const isSelected = selectedCoLeaders.includes(leader.user_id);
-                  const conflict = coLeaderConflicts.find((c) => c.user_id === leader.user_id);
-                  const hasConflict = !!conflict;
-                  return (
-                    <button
-                      key={leader.user_id}
-                      type="button"
-                      disabled={hasConflict}
-                      onClick={() => onToggleCoLeader(leader.user_id)}
-                      className={`flex items-center gap-3 rounded-lg px-2 py-2 transition-colors ${hasConflict ? 'cursor-not-allowed opacity-50' : 'hover:bg-accent/50'}`}
-                    >
-                      <div className={`relative ${hasConflict ? 'grayscale' : ''}`}>
-                        <RiderAvatar
-                          avatarUrl={leader.avatar_url}
-                          name={leader.name}
-                          className={isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}
-                        />
-                        {isSelected && (
-                          <span className="absolute -bottom-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                            <Check className="size-2.5" weight="bold" />
-                          </span>
-                        )}
-                        {hasConflict && (
-                          <span className="absolute -bottom-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                            <Prohibit className="size-2.5" weight="bold" />
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0 text-left">
-                        <p
-                          className={`text-sm truncate ${isSelected ? 'font-medium text-foreground' : hasConflict ? 'text-muted-foreground' : 'text-foreground'}`}
-                        >
-                          {leader.name}
+    <ContentCard
+      padding="default"
+      heading={form.sectionAdditional}
+      icon={<GearSix weight="duotone" className="size-6 text-primary" />}
+    >
+      <div className="flex flex-col gap-5">
+        {/* Co-leader picker */}
+        {eligibleLeaders.length > 0 && (
+          <div className="space-y-3">
+            <Label>
+              {form.coLeaders}
+              <OptionalTag />
+            </Label>
+            <div className="flex flex-col gap-1">
+              {eligibleLeaders.map((leader) => {
+                const isSelected = selectedCoLeaders.includes(leader.user_id);
+                const conflict = coLeaderConflicts.find((c) => c.user_id === leader.user_id);
+                const hasConflict = !!conflict;
+                return (
+                  <button
+                    key={leader.user_id}
+                    type="button"
+                    disabled={hasConflict}
+                    onClick={() => onToggleCoLeader(leader.user_id)}
+                    className={`flex items-center gap-3 rounded-lg px-2 py-2 transition-colors ${hasConflict ? 'cursor-not-allowed opacity-50' : 'hover:bg-accent/50'}`}
+                  >
+                    <div className={`relative ${hasConflict ? 'grayscale' : ''}`}>
+                      <RiderAvatar
+                        avatarUrl={leader.avatar_url}
+                        name={leader.name}
+                        className={isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}
+                      />
+                      {isSelected && (
+                        <span className="absolute -bottom-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                          <Check className="size-2.5" weight="bold" />
+                        </span>
+                      )}
+                      {hasConflict && (
+                        <span className="absolute -bottom-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                          <Prohibit className="size-2.5" weight="bold" />
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0 text-left">
+                      <p
+                        className={`text-sm truncate ${isSelected ? 'font-medium text-foreground' : hasConflict ? 'text-muted-foreground' : 'text-foreground'}`}
+                      >
+                        {leader.name}
+                      </p>
+                      {hasConflict && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {form.coLeadersUnavailable}
                         </p>
-                        {hasConflict && (
-                          <p className="text-xs text-muted-foreground truncate">
-                            {form.coLeadersUnavailable}
-                          </p>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Recurring schedule (create-only) */}
-          {!isEdit && (
-            <RecurringScheduleSection
-              isRecurring={isRecurring}
-              onRecurringChange={onRecurringChange}
-              recurringEndType={recurringEndType}
-              onEndTypeChange={onEndTypeChange}
-              recurringEndDate={recurringEndDate}
-              onEndDateChange={onEndDateChange}
-              seasonStart={seasonStart}
-              seasonEnd={seasonEnd}
-            />
-          )}
-        </div>
-      </ContentCard>
-    </div>
+        {/* Recurring schedule (create-only) */}
+        {!isEdit && (
+          <RecurringScheduleSection
+            isRecurring={isRecurring}
+            onRecurringChange={onRecurringChange}
+            recurringEndType={recurringEndType}
+            onEndTypeChange={onEndTypeChange}
+            recurringEndDate={recurringEndDate}
+            onEndDateChange={onEndDateChange}
+            seasonStart={seasonStart}
+            seasonEnd={seasonEnd}
+          />
+        )}
+      </div>
+    </ContentCard>
   );
 }

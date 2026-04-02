@@ -14,7 +14,6 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
-import { SectionHeading } from '@/components/ui/section-heading';
 import { ContentCard } from '@/components/ui/content-card';
 import { updateProfile } from '@/lib/profile/actions';
 import { appContent } from '@/content/app';
@@ -67,79 +66,74 @@ export function ProfileDetailsForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* About */}
-      <div>
-        <SectionHeading>{content.sections.about}</SectionHeading>
-        <ContentCard padding="compact" className="mt-3">
-          <FloatingField label={auth.setupProfile.bioLabel} htmlFor="bio" maxLength={300}>
-            <Textarea
-              id="bio"
-              name="bio"
-              defaultValue={bio}
-              rows={3}
-              placeholder=" "
-              maxLength={300}
-            />
-          </FloatingField>
-        </ContentCard>
-      </div>
+      <ContentCard padding="compact" heading={content.sections.about}>
+        <FloatingField label={auth.setupProfile.bioLabel} htmlFor="bio" maxLength={300}>
+          <Textarea
+            id="bio"
+            name="bio"
+            defaultValue={bio}
+            rows={3}
+            placeholder=" "
+            maxLength={300}
+          />
+        </FloatingField>
+      </ContentCard>
 
       {/* Preferences */}
-      <div>
-        <SectionHeading>{content.sections.preferences}</SectionHeading>
-        <ContentCard padding="compact" className="mt-3">
-          <FloatingField
-            label={auth.setupProfile.paceLabel}
-            htmlFor="preferred_pace_group"
-            hasValue={!!preferredPaceGroup}
-          >
-            <Select name="preferred_pace_group" defaultValue={preferredPaceGroup || undefined}>
-              <SelectTrigger id="preferred_pace_group">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">{auth.setupProfile.noPreference}</SelectItem>
-                {paceGroups.map((pg) => (
-                  <SelectItem key={pg.id} value={pg.name}>
-                    {pg.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FloatingField>
-        </ContentCard>
-      </div>
+      <ContentCard padding="compact" heading={content.sections.preferences}>
+        <FloatingField
+          label={auth.setupProfile.paceLabel}
+          htmlFor="preferred_pace_group"
+          hasValue={!!preferredPaceGroup}
+        >
+          <Select name="preferred_pace_group" defaultValue={preferredPaceGroup || undefined}>
+            <SelectTrigger id="preferred_pace_group">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">{auth.setupProfile.noPreference}</SelectItem>
+              {paceGroups.map((pg) => (
+                <SelectItem key={pg.id} value={pg.name}>
+                  {pg.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FloatingField>
+      </ContentCard>
 
       {/* Emergency Contact */}
-      <div>
-        <SectionHeading>{content.sections.emergencyContact}</SectionHeading>
-        <ContentCard className="mt-3 space-y-4" padding="compact">
-          <p className="text-xs text-muted-foreground">{content.emergencyContact.visibilityNote}</p>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FloatingField
-              label={content.emergencyContact.nameLabel}
-              htmlFor="emergency_contact_name"
-            >
-              <Input
-                id="emergency_contact_name"
-                name="emergency_contact_name"
-                defaultValue={emergencyContactName}
-                placeholder=" "
-              />
-            </FloatingField>
-            <FloatingField
-              label={content.emergencyContact.phoneLabel}
-              htmlFor="emergency_contact_phone"
-            >
-              <PhoneInput
-                id="emergency_contact_phone"
-                name="emergency_contact_phone"
-                defaultValue={emergencyContactPhone}
-                placeholder=" "
-              />
-            </FloatingField>
-          </div>
-        </ContentCard>
-      </div>
+      <ContentCard
+        className="space-y-4"
+        padding="compact"
+        heading={content.sections.emergencyContact}
+      >
+        <p className="text-xs text-muted-foreground">{content.emergencyContact.visibilityNote}</p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <FloatingField
+            label={content.emergencyContact.nameLabel}
+            htmlFor="emergency_contact_name"
+          >
+            <Input
+              id="emergency_contact_name"
+              name="emergency_contact_name"
+              defaultValue={emergencyContactName}
+              placeholder=" "
+            />
+          </FloatingField>
+          <FloatingField
+            label={content.emergencyContact.phoneLabel}
+            htmlFor="emergency_contact_phone"
+          >
+            <PhoneInput
+              id="emergency_contact_phone"
+              name="emergency_contact_phone"
+              defaultValue={emergencyContactPhone}
+              placeholder=" "
+            />
+          </FloatingField>
+        </div>
+      </ContentCard>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 

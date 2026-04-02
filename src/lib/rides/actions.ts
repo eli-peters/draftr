@@ -512,6 +512,7 @@ export interface UpdateRideData {
   start_location_address?: string;
   start_latitude?: number;
   start_longitude?: number;
+  co_leader_ids?: string[];
 }
 
 /**
@@ -568,6 +569,20 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
     .eq('id', rideId);
 
   if (rideError) return { error: rideError.message };
+
+  // Sync co-leaders if provided
+  if (data.co_leader_ids !== undefined) {
+    // Remove all existing co-leaders
+    await supabase.from('ride_leaders').delete().eq('ride_id', rideId);
+
+    // Insert new co-leaders (excluding the current user)
+    const newCoLeaders = data.co_leader_ids.filter((id) => id !== user.id);
+    if (newCoLeaders.length > 0) {
+      await supabase
+        .from('ride_leaders')
+        .insert(newCoLeaders.map((uid) => ({ ride_id: rideId, user_id: uid })));
+    }
+  }
 
   // Notify signed-up riders about the update
   const { data: signups } = await supabase
@@ -680,75 +695,6 @@ export async function updateRecurringSeries(rideId: string, data: UpdateRideData
   revalidatePath('/rides');
   revalidatePath('/manage');
   revalidatePath('/');
-  return { success: true };
-}
-
-/**
- * Add a walk-up rider to a ride (leader/admin only).
- * Leaders can add but cannot remove — removal is admin-only.
- */
-export async function addWalkUpRider(rideId: string, riderUserId: string) {
-  const supabase = await createClient();
-  const user = await getUser();
-
-  if (!user) return { error: common.notAuthenticated };
-
-  const { data: ride } = await supabase
-    .from('rides')
-    .select('id, title, capacity, status')
-    .eq('id', rideId)
-    .single();
-
-  if (!ride) return { error: errors.rideNotFound };
-  if (ride.status === RideStatus.CANCELLED) return { error: errors.rideCancelled };
-
-  // Count current confirmed signups
-  const { count } = await supabase
-    .from('ride_signups')
-    .select('*', { count: 'exact', head: true })
-    .eq('ride_id', rideId)
-    .eq('status', 'confirmed');
-
-  const currentCount = count ?? 0;
-  const isFull = ride.capacity != null && currentCount >= ride.capacity;
-
-  // Count existing waitlisted riders to determine next position
-  const { count: waitlistedCount } = await supabase
-    .from('ride_signups')
-    .select('*', { count: 'exact', head: true })
-    .eq('ride_id', rideId)
-    .eq('status', 'waitlisted');
-
-  const { error } = await supabase.from('ride_signups').upsert(
-    {
-      ride_id: rideId,
-      user_id: riderUserId,
-      status: isFull ? 'waitlisted' : 'confirmed',
-      waitlist_position: isFull ? (waitlistedCount ?? 0) + 1 : null,
-      signed_up_at: new Date().toISOString(),
-      cancelled_at: null,
-    },
-    { onConflict: 'ride_id,user_id' },
-  );
-
-  if (error) return { error: error.message };
-
-  // Notify the rider
-  if (!isFull) {
-    await supabase.from('notifications').insert({
-      user_id: riderUserId,
-      type: 'signup_confirmed',
-      title: notif.walkUpAdded.title(ride.title),
-      body: notif.walkUpAdded.body,
-      ride_id: rideId,
-      channel: 'push',
-    });
-  }
-
-  revalidatePath(`/rides/${rideId}`);
-  revalidatePath(`/manage/rides/${rideId}/edit`);
-  revalidatePath('/rides');
-  revalidatePath('/manage');
   return { success: true };
 }
 
@@ -1112,38 +1058,3 @@ export async function getLeaderRideConflicts(
 }
 
 // ---------------------------------------------------------------------------
-// Meeting Locations
-// ---------------------------------------------------------------------------
-
-/**
- * Save a new meeting location for the club.
- */
-export async function saveMeetingLocation(
-  clubId: string,
-  location: {
-    name: string;
-    address?: string;
-    latitude?: number;
-    longitude?: number;
-  },
-) {
-  const supabase = await createClient();
-  const user = await getUser();
-  if (!user) return { error: common.notAuthenticated };
-
-  const { data, error: insertError } = await supabase
-    .from('meeting_locations')
-    .insert({
-      club_id: clubId,
-      name: location.name,
-      address: location.address || null,
-      latitude: location.latitude ?? null,
-      longitude: location.longitude ?? null,
-      is_active: true,
-    })
-    .select('id')
-    .single();
-
-  if (insertError) return { error: insertError.message };
-  return { id: data?.id };
-}

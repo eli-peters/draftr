@@ -84,7 +84,7 @@ function HomeLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boo
       title={ride.title}
       paceGroupName={ride.pace_group?.name ?? null}
       paceGroupSortOrder={ride.pace_group?.sort_order ?? null}
-      locationName={ride.start_location_name ?? ride.meeting_location?.name ?? null}
+      locationName={ride.start_location_name ?? null}
       weather={ride.weather}
     />
   );
@@ -119,7 +119,7 @@ function RidesLayout({
         paceGroupName={ride.pace_group?.name ?? null}
         paceGroupSortOrder={ride.pace_group?.sort_order ?? null}
         distanceKm={ride.distance_km}
-        locationName={ride.start_location_name ?? ride.meeting_location?.name ?? null}
+        locationName={ride.start_location_name ?? null}
         weather={ride.weather}
       />
 
