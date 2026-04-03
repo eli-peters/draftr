@@ -1,6 +1,5 @@
 'use client';
 
-import { CancelRideButton } from '@/components/rides/cancel-ride-button';
 import { RideFormActionBar } from '@/components/rides/ride-form-action-bar';
 import { todayDateString } from '@/config/formatting';
 import { useRideFormState } from '@/hooks/use-ride-form-state';
@@ -18,12 +17,7 @@ interface RideFormProps {
   connectedServices?: IntegrationService[];
   eligibleLeaders?: { user_id: string; name: string; avatar_url: string | null }[];
   initialCoLeaderIds?: string[];
-  rideTitle?: string;
   returnTo?: string;
-  /** Content rendered inside the Co-Leaders step in edit mode (e.g. signups roster) */
-  children?: React.ReactNode;
-  /** Number of confirmed signups for the edit-mode roster heading */
-  signupCount?: number;
 }
 
 export function RideForm({
@@ -36,10 +30,7 @@ export function RideForm({
   connectedServices = [],
   eligibleLeaders = [],
   initialCoLeaderIds,
-  rideTitle,
   returnTo,
-  children,
-  signupCount,
 }: RideFormProps) {
   const today = todayDateString();
   const effectiveMin = seasonStart && seasonStart > today ? seasonStart : today;
@@ -118,7 +109,6 @@ export function RideForm({
 
         {/* ── Step 3: Co-Leaders ────────────────────────────────────── */}
         <StepCoLeaders
-          isEdit={isEdit}
           eligibleLeaders={eligibleLeaders}
           selectedCoLeaders={state.selectedCoLeaders}
           coLeaderConflicts={state.coLeaderConflicts}
@@ -130,15 +120,7 @@ export function RideForm({
                 : [...state.selectedCoLeaders, userId],
             )
           }
-          signupCount={signupCount}
-        >
-          {children}
-        </StepCoLeaders>
-
-        {/* ── Cancel Ride (edit mode only) ─────────────────────────── */}
-        {isEdit && rideId && rideTitle && (
-          <CancelRideButton rideId={rideId} rideTitle={rideTitle} />
-        )}
+        />
 
         {/* ── Action Bar ──────────────────────────────────────────── */}
         <RideFormActionBar isEdit={isEdit} isPending={state.isPending} error={state.error} />

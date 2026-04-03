@@ -3,7 +3,6 @@ import {
   getUserClubMembership,
   getRideById,
   getPaceGroups,
-  getRideSignups,
   getRideCoLeaders,
 } from '@/lib/rides/queries';
 import { getClubMembers } from '@/lib/manage/queries';
@@ -33,10 +32,9 @@ export default async function EditRidePage({
 
   const userId = membership.user_id;
 
-  const [ride, paceGroups, signups, members, connections, coLeaders] = await Promise.all([
+  const [ride, paceGroups, members, connections, coLeaders] = await Promise.all([
     getRideById(id),
     getPaceGroups(membership.club_id),
-    getRideSignups(id),
     getClubMembers(membership.club_id),
     getUserConnections(userId),
     getRideCoLeaders(id),
@@ -100,10 +98,7 @@ export default async function EditRidePage({
       connectedServices={connections.map((c) => c.service)}
       eligibleLeaders={eligibleLeaders}
       returnTo={returnTo}
-      rideTitle={ride.title}
       initialCoLeaderIds={coLeaders.map((cl) => cl.user_id)}
-      signups={signups}
-      rideCreatedBy={ride.created_by}
     />
   );
 }

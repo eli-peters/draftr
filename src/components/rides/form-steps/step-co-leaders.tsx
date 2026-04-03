@@ -2,7 +2,6 @@
 
 import { UsersThree, Check } from '@phosphor-icons/react/dist/ssr';
 import { ContentCard } from '@/components/ui/content-card';
-import { SectionHeading } from '@/components/ui/section-heading';
 import { RiderAvatar } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
@@ -11,23 +10,17 @@ import type { LeaderConflict } from '@/lib/rides/actions';
 const form = appContent.rides.form;
 
 interface StepCoLeadersProps {
-  isEdit: boolean;
   eligibleLeaders: { user_id: string; name: string; avatar_url: string | null }[];
   selectedCoLeaders: string[];
   coLeaderConflicts: LeaderConflict[];
   onToggleCoLeader: (userId: string) => void;
-  signupCount?: number;
-  children?: React.ReactNode;
 }
 
 export function StepCoLeaders({
-  isEdit,
   eligibleLeaders,
   selectedCoLeaders,
   coLeaderConflicts,
   onToggleCoLeader,
-  signupCount,
-  children,
 }: StepCoLeadersProps) {
   const sortByFirstName = (a: { name: string }, b: { name: string }) =>
     a.name.localeCompare(b.name);
@@ -103,16 +96,6 @@ export function StepCoLeaders({
                 ))}
               </>
             )}
-          </div>
-        )}
-
-        {isEdit && children && (
-          <div className="space-y-3">
-            <SectionHeading as="p">
-              {appContent.rides.edit.signups}
-              {signupCount != null && ` — ${signupCount} confirmed`}
-            </SectionHeading>
-            {children}
           </div>
         )}
       </div>

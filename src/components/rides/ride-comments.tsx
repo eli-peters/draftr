@@ -224,13 +224,13 @@ function AddCommentForm({ rideId }: { rideId: string }) {
   }
 
   return (
-    <div className="mt-3 flex items-end gap-2">
-      <FloatingField
-        label={content.placeholder}
-        htmlFor="add-comment"
-        hasValue={body.length > 0}
-        className="flex-1"
-      >
+    <FloatingField
+      label={content.placeholder}
+      htmlFor="add-comment"
+      hasValue={body.length > 0}
+      className="mt-3"
+    >
+      <div className="relative border-b border-input transition-colors focus-within:border-ring">
         <Textarea
           id="add-comment"
           ref={textareaRef}
@@ -244,19 +244,19 @@ function AddCommentForm({ rideId }: { rideId: string }) {
           maxLength={CHAR_LIMIT}
           rows={1}
           style={{ maxHeight: `${MAX_ROWS * 1.5}rem` }}
-          className="text-sm"
+          className="w-full resize-none border-0 bg-transparent pr-10 text-sm shadow-none focus-visible:outline-none focus-visible:ring-0"
         />
-      </FloatingField>
-      <Button
-        size="icon"
-        variant="ghost"
-        className="mb-0.5 shrink-0 rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
-        disabled={isPending || !body.trim()}
-        onClick={handleSubmit}
-        aria-label={content.sendAriaLabel}
-      >
-        <PaperPlaneTilt className="size-5" />
-      </Button>
-    </div>
+        <Button
+          size="icon"
+          variant="ghost"
+          className="absolute bottom-0 right-0 shrink-0 rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
+          disabled={isPending || !body.trim()}
+          onClick={handleSubmit}
+          aria-label={content.sendAriaLabel}
+        >
+          <PaperPlaneTilt className="size-4" />
+        </Button>
+      </div>
+    </FloatingField>
   );
 }
