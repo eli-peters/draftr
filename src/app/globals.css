@@ -249,7 +249,7 @@
   /* ── Floating bar tokens ── */
   --bar-radius: 9999px;
   --bar-radius-desktop: var(--radius-2xl);
-  --bar-padding-x: 2rem;
+  --bar-padding-x: 0.8rem;
   --bar-padding-x-desktop: 2rem;
   --bar-padding-y: 1.5rem;
   --bar-padding-y-desktop: 1.5rem;
