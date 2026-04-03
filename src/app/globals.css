@@ -258,7 +258,7 @@
   --bar-bg-opacity: 70%;
   --bar-backdrop-blur: 12px;
   --bar-inset-x: 1rem;
-  --bar-inset-bottom: 0.25rem;
+  --bar-inset-bottom: 0rem;
   --bar-fade-height: 4rem;
 
   /* ── Fluid typography scale ──
