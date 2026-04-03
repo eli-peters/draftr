@@ -2,8 +2,6 @@
 
 import { useState, useTransition } from 'react';
 import { SignupRoster, type SignupEntry } from '@/components/rides/signup-roster';
-import { FloatingSignupBar } from '@/components/rides/floating-signup-bar';
-import { CancelSignupDrawer } from '@/components/rides/cancel-signup-drawer';
 import { removeRiderFromRide } from '@/lib/rides/actions';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,10 +24,6 @@ interface RideSignupSectionProps {
   createdBy?: string | null;
   coLeaderIds?: string[];
   currentUserId: string | null;
-  isSignedUp: boolean;
-  canSignUp: boolean;
-  canCancel: boolean;
-  isFull: boolean;
   canRemoveRiders?: boolean;
 }
 
@@ -39,13 +33,8 @@ export function RideSignupSection({
   createdBy,
   coLeaderIds,
   currentUserId,
-  isSignedUp,
-  canSignUp,
-  canCancel,
-  isFull,
   canRemoveRiders,
 }: RideSignupSectionProps) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [removeTarget, setRemoveTarget] = useState<{ userId: string; userName: string } | null>(
     null,
   );
@@ -71,20 +60,11 @@ export function RideSignupSection({
         createdBy={createdBy}
         coLeaderIds={coLeaderIds}
         currentUserId={currentUserId}
-        onCancelSignup={canCancel && isSignedUp ? () => setDrawerOpen(true) : undefined}
         canRemoveRiders={canRemoveRiders}
         onRemoveRider={
           canRemoveRiders ? (userId, userName) => setRemoveTarget({ userId, userName }) : undefined
         }
       />
-
-      {/* Floating signup bar — visible when not signed up */}
-      {canSignUp && !isSignedUp && <FloatingSignupBar rideId={rideId} isFull={isFull} />}
-
-      {/* Cancel confirmation drawer */}
-      {canCancel && isSignedUp && (
-        <CancelSignupDrawer rideId={rideId} open={drawerOpen} onOpenChange={setDrawerOpen} />
-      )}
 
       {/* Remove rider confirmation drawer */}
       <Drawer open={!!removeTarget} onOpenChange={(open) => !open && setRemoveTarget(null)}>

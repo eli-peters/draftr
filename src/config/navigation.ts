@@ -44,6 +44,12 @@ export const primaryNav: NavItem[] = [
   },
 ];
 
+/** Look up the display label for a parent route path (e.g. "/rides" → "Rides"). */
+export function getParentRouteLabel(parentPath: string): string {
+  const match = primaryNav.find((item) => item.href === parentPath);
+  return match?.label ?? appContent.nav.home;
+}
+
 /**
  * Filter nav items based on user role.
  * Riders see 4 tabs. Ride leaders and admins see 5 (includes Manage).

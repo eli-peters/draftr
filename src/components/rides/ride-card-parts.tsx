@@ -336,6 +336,8 @@ interface RiderAvatarGroupProps {
   cancelled?: boolean;
   /** CSS value for the ring colour between overlapping avatars. */
   surface?: string;
+  /** Override the default number of visible avatars before "+N" overflow. */
+  maxVisible?: number;
 }
 
 export function RiderAvatarGroup({
@@ -343,8 +345,9 @@ export function RiderAvatarGroup({
   totalCount,
   cancelled,
   surface,
+  maxVisible = MAX_VISIBLE_AVATARS,
 }: RiderAvatarGroupProps) {
-  const visibleAvatars = avatars.slice(0, MAX_VISIBLE_AVATARS);
+  const visibleAvatars = avatars.slice(0, maxVisible);
   const overflowCount = totalCount - visibleAvatars.length;
   const countNumber = `${totalCount}`;
 

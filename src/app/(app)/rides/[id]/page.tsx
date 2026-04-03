@@ -1,6 +1,4 @@
 import { notFound } from 'next/navigation';
-import { PencilSimple } from '@phosphor-icons/react/dist/ssr';
-import Link from 'next/link';
 import {
   getRideById,
   getUserSignupStatus,
@@ -12,15 +10,19 @@ import {
 } from '@/lib/rides/queries';
 import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { RideSignupSection } from '@/components/rides/ride-signup-section';
+import { RideActionBar } from '@/components/rides/ride-action-bar';
+import { RideActionStrip } from '@/components/rides/ride-action-strip';
 import { RideComments } from '@/components/rides/ride-comments';
 import { RideDetailCard } from '@/components/rides/ride-detail-card';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { Button } from '@/components/ui/button';
+
 import { ContentCard } from '@/components/ui/content-card';
 import { appContent } from '@/content/app';
 import { SignupStatus } from '@/config/statuses';
 import { routes } from '@/config/routes';
+import { computeRideActionState } from '@/lib/rides/action-bar-state';
+
 import type { UserRole } from '@/config/navigation';
 import type { Club } from '@/types/database';
 
@@ -60,32 +62,46 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const timezone = (membership?.club as unknown as Club)?.timezone ?? 'America/Toronto';
   const availability = getRideAvailability(ride, riderConfirmedCount, timezone);
 
+  // Avatar data for action bar — first 4 confirmed signups
+  const actionBarAvatars = confirmedSignups.slice(0, 4).map((s) => ({
+    avatar_url: s.avatar_url,
+    full_name: s.user_name,
+  }));
+
   const userRole = (membership?.role as UserRole) ?? 'rider';
   const isCreator = membership?.user_id === ride.created_by;
   const isCoLeader = coLeaders.some((cl) => cl.user_id === membership?.user_id);
   const hasEditRole =
     userRole === 'admin' || (userRole === 'ride_leader' && (isCreator || isCoLeader));
-  const canEdit = !availability.isPast && !availability.isCancelled && hasEditRole;
   const currentUserId = membership?.user_id ?? null;
+
+  const actionBarState = computeRideActionState({
+    isSignedUp: signup?.status === SignupStatus.CONFIRMED,
+    isOnWaitlist: signup?.status === SignupStatus.WAITLISTED,
+    waitlistPosition: signup?.waitlist_position ?? null,
+    isFull: availability.isFull,
+    isCancelled: availability.isCancelled,
+    isPast: availability.isPast,
+    canSignUp: availability.canSignUp,
+    canCancel: availability.canCancel,
+    confirmedCount: riderConfirmedCount,
+    capacity: ride.capacity,
+    isLeader: hasEditRole,
+    isSoleLeader: isCreator && coLeaders.length === 0,
+    totalSignups: signups.filter((s) => s.status !== 'cancelled').length,
+  });
 
   return (
     <DashboardShell>
-      {/* Header — title + edit/duplicate actions */}
-      <PageHeader
-        title={ride.title}
-        actions={
-          canEdit ? (
-            <Link href={routes.manageEditRide(ride.id, routes.ride(id))}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
-              >
-                <PencilSimple className="size-6" />
-              </Button>
-            </Link>
-          ) : undefined
-        }
+      {/* Header — title only (edit action lives in action bar) */}
+      <PageHeader title={ride.title} />
+
+      {/* Desktop action strip — sticky below header */}
+      <RideActionStrip
+        rideId={ride.id}
+        state={actionBarState}
+        avatars={actionBarAvatars}
+        totalCount={riderConfirmedCount}
       />
 
       {/* Main ride detail card */}
@@ -121,26 +137,9 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             createdBy={ride.created_by}
             coLeaderIds={coLeaders.map((cl) => cl.user_id)}
             currentUserId={currentUserId}
-            isSignedUp={isSignedUp}
-            canSignUp={availability.canSignUp}
-            canCancel={availability.canCancel}
-            isFull={availability.isFull}
             canRemoveRiders={userRole === 'admin'}
           />
         </ContentCard>
-      )}
-
-      {/* Floating signup bar for when roster is empty but signup is available */}
-      {signups.length === 0 && availability.canSignUp && !isSignedUp && (
-        <RideSignupSection
-          rideId={ride.id}
-          signups={[]}
-          currentUserId={currentUserId}
-          isSignedUp={false}
-          canSignUp
-          canCancel={false}
-          isFull={availability.isFull}
-        />
       )}
 
       {/* Comments */}
@@ -155,9 +154,16 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         />
       </div>
 
-      {/* Bottom spacer when floating signup bar is visible — prevents content from hiding behind it */}
-      {/* revisit CTA placement after context testing */}
-      {availability.canSignUp && !isSignedUp && <div className="h-24 md:h-20" />}
+      {/* Bottom spacer for action bar on mobile */}
+      <div className="h-24 md:h-0" />
+
+      {/* Mobile action bar — fixed to bottom */}
+      <RideActionBar
+        rideId={ride.id}
+        state={actionBarState}
+        avatars={actionBarAvatars}
+        totalCount={riderConfirmedCount}
+      />
     </DashboardShell>
   );
 }

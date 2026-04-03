@@ -246,6 +246,19 @@
   --card-padding: 1rem;
   --card-padding-md: 1.25rem;
 
+  /* ── Floating bar tokens ── */
+  --bar-radius: 9999px;
+  --bar-radius-desktop: var(--radius-2xl);
+  --bar-padding-x: 2rem;
+  --bar-padding-y: 1.5rem;
+  --bar-shadow: var(--shadow-md);
+  --bar-shadow-desktop: var(--shadow-xs);
+  --bar-bg-opacity: 80%;
+  --bar-backdrop-blur: 12px;
+  --bar-inset-x: 1rem;
+  --bar-inset-bottom: 0.75rem;
+  --bar-fade-height: 4rem;
+
   /* ── Fluid typography scale ──
    * Sizes scale smoothly between 375px (mobile floor) and 1280px (desktop
    * ceiling) via clamp(). The mobile value of every override exactly matches

@@ -183,10 +183,10 @@ export async function cancelSignUp(rideId: string) {
     return { error: common.notAuthenticated };
   }
 
-  // Fetch ride for timing gate
+  // Fetch ride for timing gate + creator check
   const { data: ride } = await supabase
     .from('rides')
-    .select('ride_date, start_time, end_time, status, capacity, club:clubs(timezone)')
+    .select('ride_date, start_time, end_time, status, capacity, created_by, club:clubs(timezone)')
     .eq('id', rideId)
     .single();
 
@@ -195,6 +195,19 @@ export async function cancelSignUp(rideId: string) {
     const availability = getRideAvailability(ride, 0, tz);
     if (!availability.canCancel) {
       return { error: errors.cancellationClosed };
+    }
+  }
+
+  // Sole leader guard — creators with no co-leaders cannot leave, only cancel the ride
+  const isCreator = ride?.created_by === user.id;
+  if (isCreator) {
+    const { count: coLeaderCount } = await supabase
+      .from('ride_leaders')
+      .select('id', { count: 'exact', head: true })
+      .eq('ride_id', rideId);
+
+    if ((coLeaderCount ?? 0) === 0) {
+      return { error: errors.soleLeaderCannotLeave };
     }
   }
 
@@ -219,6 +232,49 @@ export async function cancelSignUp(rideId: string) {
 
   if (error) {
     return { error: error.message };
+  }
+
+  // Creator leaving with co-leaders — promote first co-leader to primary creator
+  if (isCreator) {
+    const { data: firstCoLeader } = await supabase
+      .from('ride_leaders')
+      .select('user_id')
+      .eq('ride_id', rideId)
+      .order('added_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (firstCoLeader) {
+      const admin = createAdminClient();
+
+      // Transfer created_by to the promoted co-leader
+      await admin.from('rides').update({ created_by: firstCoLeader.user_id }).eq('id', rideId);
+
+      // Remove them from co-leaders table (they're now the creator)
+      await admin
+        .from('ride_leaders')
+        .delete()
+        .eq('ride_id', rideId)
+        .eq('user_id', firstCoLeader.user_id);
+
+      // Notify the promoted leader
+      const { data: rideInfo } = await supabase
+        .from('rides')
+        .select('title')
+        .eq('id', rideId)
+        .single();
+
+      if (rideInfo) {
+        await admin.from('notifications').insert({
+          user_id: firstCoLeader.user_id,
+          type: 'leader_promoted',
+          title: notif.leaderPromoted.title(rideInfo.title),
+          body: notif.leaderPromoted.body,
+          ride_id: rideId,
+          channel: 'push',
+        });
+      }
+    }
   }
 
   // Auto-promote first waitlisted rider if a confirmed spot opened up

@@ -26,7 +26,7 @@ interface SignupRosterProps {
   createdBy?: string | null;
   coLeaderIds?: string[];
   currentUserId?: string | null;
-  onCancelSignup?: () => void;
+
   canRemoveRiders?: boolean;
   onRemoveRider?: (userId: string, userName: string) => void;
 }
@@ -36,7 +36,7 @@ export function SignupRoster({
   createdBy,
   coLeaderIds = [],
   currentUserId,
-  onCancelSignup,
+
   canRemoveRiders,
   onRemoveRider,
 }: SignupRosterProps) {
@@ -73,8 +73,6 @@ export function SignupRoster({
           key={signup.id}
           signup={signup}
           isLeader={leaderIds.has(signup.user_id)}
-          isSelf={signup.user_id === currentUserId}
-          onCancelSignup={onCancelSignup}
           canRemove={
             canRemoveRiders && !leaderIds.has(signup.user_id) && signup.user_id !== currentUserId
           }
@@ -91,8 +89,6 @@ export function SignupRoster({
               key={signup.id}
               signup={signup}
               isLeader={leaderIds.has(signup.user_id)}
-              isSelf={signup.user_id === currentUserId}
-              onCancelSignup={onCancelSignup}
               canRemove={
                 canRemoveRiders &&
                 !leaderIds.has(signup.user_id) &&
@@ -110,15 +106,11 @@ export function SignupRoster({
 function SignupRow({
   signup,
   isLeader,
-  isSelf,
-  onCancelSignup,
   canRemove,
   onRemove,
 }: {
   signup: SignupEntry;
   isLeader?: boolean;
-  isSelf?: boolean;
-  onCancelSignup?: () => void;
   canRemove?: boolean;
   onRemove?: (userId: string, userName: string) => void;
 }) {
@@ -157,14 +149,7 @@ function SignupRow({
           #{signup.waitlist_position}
         </Badge>
       )}
-      {isSelf && onCancelSignup && (
-        <button
-          onClick={onCancelSignup}
-          className="text-xs text-muted-foreground transition-colors hover:text-destructive"
-        >
-          {ridesContent.detail.leaveRide}
-        </button>
-      )}
+
       {canRemove && onRemove && (
         <button
           onClick={() => onRemove(signup.user_id, signup.user_name)}

@@ -18,32 +18,33 @@ export function BottomNav({ items }: BottomNavProps) {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-surface-default/80 backdrop-blur-md pb-[env(safe-area-inset-bottom)] md:hidden">
-      <div className="flex items-center justify-around px-2">
-        {items.map((item) => {
-          const isActive =
-            item.href === '/'
-              ? pathname === '/'
-              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+    <div className="fixed left-(--bar-inset-x) right-(--bar-inset-x) bottom-[calc(var(--bar-inset-bottom)+env(safe-area-inset-bottom))] z-50 mx-auto max-w-lg md:hidden">
+      <nav className="rounded-(--bar-radius) border border-border/20 bg-surface-default/(--bar-bg-opacity) shadow-(--bar-shadow) backdrop-blur-(--bar-backdrop-blur)">
+        <div className="flex items-center justify-around px-(--bar-padding-x)">
+          {items.map((item) => {
+            const isActive =
+              item.href === '/'
+                ? pathname === '/'
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'relative flex flex-1 flex-col items-center gap-1 py-3 text-sm font-medium transition-colors',
-                isActive ? 'text-primary' : 'text-muted-foreground active:text-foreground',
-              )}
-            >
-              {isActive && (
-                <span className="absolute -top-px left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-primary" />
-              )}
-              <NavIcon name={item.icon} className="h-6 w-6" active={isActive} />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'relative flex flex-1 flex-col items-center gap-1 py-3 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'font-semibold text-primary'
+                    : 'text-muted-foreground active:text-foreground',
+                )}
+              >
+                <NavIcon name={item.icon} className="h-6 w-6" active={isActive} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
   );
 }

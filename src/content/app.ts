@@ -207,6 +207,31 @@ export const appContent = {
         return `Riders — ${parts.join(' · ')}`;
       },
     },
+    actionBar: {
+      joinRide: 'Join Ride',
+      leaveRide: 'Leave Ride',
+      joinWaitlist: 'Join Waitlist',
+      leaveWaitlist: 'Leave Waitlist',
+      rideFull: 'Ride full',
+      cancelled: 'Cancelled',
+      completed: 'Completed',
+      youreIn: "You're in",
+      waitlistPosition: (pos: number) => `Waitlist #${pos}`,
+      spotsOf: (confirmed: number, capacity: number | null) =>
+        capacity ? `${confirmed} of ${capacity} spots` : `${confirmed} signed up`,
+      youreInSpots: (confirmed: number, capacity: number | null) =>
+        capacity ? `You're in · ${confirmed} of ${capacity}` : `You're in · ${confirmed} signed up`,
+      confirmLeaveTitle: 'Leave this ride?',
+      confirmLeave: 'Confirm Leave',
+      confirmCancel: 'Cancel',
+      editRide: 'Edit',
+      cancelRide: 'Cancel Ride',
+      cancelReasonPlaceholder: 'Weather, insufficient signups, etc.',
+      cancelRideWarning: (count: number) =>
+        `This will notify ${count === 1 ? '1 rider' : `all ${count} riders`}`,
+      confirmCancelRide: 'Confirm Cancel',
+      leadingThisRide: "You're leading this ride",
+    },
     create: {
       heading: 'Create a Ride',
       submitButton: 'Publish Ride',
@@ -774,6 +799,8 @@ export const appContent = {
     rideCancelled: 'This ride has been cancelled',
     signupClosed: 'Sign-ups are closed for this ride',
     cancellationClosed: 'Cancellation is closed for this ride',
+    soleLeaderCannotLeave:
+      "You're the only leader of this ride. Cancel the ride instead, or add a co-leader first.",
     createRideFailed: 'Failed to create ride',
     rideDateInPast: 'Ride date cannot be in the past.',
     rideDateOutsideSeason: "Ride date must be within the club's active season.",
@@ -796,6 +823,10 @@ export const appContent = {
     waitlistPromoted: {
       title: (rideTitle: string) => `You're in! Spot opened for ${rideTitle}`,
       body: "A spot opened up and you've been promoted from the waitlist.",
+    },
+    leaderPromoted: {
+      title: (rideTitle: string) => `You're now the lead for ${rideTitle}`,
+      body: 'The previous leader left and you have been promoted to primary leader.',
     },
     waitlistJoined: {
       title: (rideTitle: string) => `Waitlist growing for ${rideTitle}`,

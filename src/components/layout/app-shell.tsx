@@ -2,12 +2,14 @@
 
 import { usePathname } from 'next/navigation';
 import type { NavItem } from '@/config/navigation';
-import { routes } from '@/config/routes';
+import { routes, isChildRoute } from '@/config/routes';
 import type { Notification } from '@/components/notifications/notification-item';
 import { BottomNav } from './bottom-nav';
 import { HeaderBar } from './header-bar';
 import { SidebarNav } from './sidebar-nav';
 import { PageTransitionWrapper } from './page-transition-wrapper';
+
+import { cn } from '@/lib/utils';
 
 interface AppShellUser {
   name: string;
@@ -35,6 +37,7 @@ export function AppShell({
 }: AppShellProps) {
   const pathname = usePathname();
   const isHome = pathname === routes.home;
+  const isChild = isChildRoute(pathname);
 
   return (
     <div className="flex min-h-screen flex-col md:bg-surface-page">
@@ -55,11 +58,17 @@ export function AppShell({
             <div className="overflow-hidden md:rounded-lg md:shadow-(--card-shadow)">{banner}</div>
           )}
 
-          <main className="mx-auto flex w-full min-w-0 max-w-3xl flex-1 flex-col pb-20 md:pb-0">
+          <main
+            className={cn(
+              'mx-auto flex w-full min-w-0 max-w-3xl flex-1 flex-col md:pb-0',
+              isChild ? 'pb-0' : 'pb-20',
+            )}
+          >
             <PageTransitionWrapper>{children}</PageTransitionWrapper>
           </main>
 
-          <BottomNav items={navItems} />
+          <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-(--bar-fade-height) bg-linear-to-t from-surface-page to-transparent md:hidden" />
+          {!isChild && <BottomNav items={navItems} />}
         </div>
       </div>
     </div>

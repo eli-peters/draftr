@@ -1,10 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { CaretLeft } from '@phosphor-icons/react';
 import { NotificationBell } from './notification-bell';
 import { AvatarMenu } from './avatar-menu';
 import { AppLogo } from './app-logo';
-import { routes } from '@/config/routes';
+import { routes, isChildRoute, getParentRoute } from '@/config/routes';
+import { getParentRouteLabel } from '@/config/navigation';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import type { Notification } from '@/components/notifications/notification-item';
 
 interface HeaderBarProps {
@@ -18,7 +22,8 @@ interface HeaderBarProps {
 
 /**
  * Sticky top header bar.
- * Team logo left, notification bell + avatar right.
+ * Parent pages: team logo left. Child pages (mobile): back arrow + parent page name.
+ * Notification bell + avatar always on the right.
  */
 export function HeaderBar({
   userName,
@@ -28,12 +33,30 @@ export function HeaderBar({
   notifications,
   unreadNotificationCount,
 }: HeaderBarProps) {
+  const pathname = usePathname();
+  const isMobile = useIsMobile();
+  const isChild = isChildRoute(pathname);
+  const showBackNav = isMobile && isChild;
+  const parentRoute = getParentRoute(pathname);
+  const parentLabel = getParentRouteLabel(parentRoute);
+
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between bg-primary px-5 md:px-8 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3">
-      {/* Left: team logo */}
-      <Link href={routes.home} className="flex items-center gap-2">
-        <AppLogo className="h-5 w-auto text-primary-foreground" />
-      </Link>
+      {/* Left: back arrow on child pages (mobile), logo on parent pages */}
+      {showBackNav ? (
+        <Link
+          href={parentRoute}
+          aria-label={`Navigate back to ${parentLabel}`}
+          className="flex min-w-0 items-center gap-1.5 text-primary-foreground"
+        >
+          <CaretLeft weight="bold" className="size-5 shrink-0" />
+          <span className="truncate text-sm font-medium">{parentLabel}</span>
+        </Link>
+      ) : (
+        <Link href={routes.home} className="flex items-center gap-2">
+          <AppLogo className="h-5 w-auto text-primary-foreground" />
+        </Link>
+      )}
 
       {/* Right: notification bell + avatar */}
       <div className="flex items-center gap-3">
