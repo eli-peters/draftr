@@ -80,7 +80,7 @@ export default async function HomePage() {
 
   return (
     <DashboardShell>
-      <GreetingSection firstName={firstName} className="mb-2 mt-0 md:mt-0 md:mb-10" />
+      <GreetingSection firstName={firstName} className="mb-8 mt-0 md:mt-0 md:mb-10" />
 
       {/* Current weather widget — client component, uses browser geolocation */}
       <div>
