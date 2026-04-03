@@ -113,7 +113,7 @@ function ReactionPicker({
         aria-label={content.addReaction}
         className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary hover:bg-action-primary-subtle-bg hover:text-primary"
       >
-        <Smiley className="size-4" weight="fill" />
+        <Smiley className="size-4 opacity-50" weight="fill" />
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-1.5">
         <div className="flex gap-1">
