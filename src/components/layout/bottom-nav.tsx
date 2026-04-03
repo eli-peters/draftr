@@ -18,7 +18,7 @@ export function BottomNav({ items }: BottomNavProps) {
   const pathname = usePathname();
 
   return (
-    <div className="fixed left-(--bar-inset-x) right-(--bar-inset-x) bottom-[calc(var(--bar-inset-bottom)+env(safe-area-inset-bottom))] z-50 mx-auto max-w-lg md:hidden">
+    <div className="fixed left-(--bar-inset-x) right-(--bar-inset-x) bottom-[max(var(--bar-inset-x),env(safe-area-inset-bottom,0px))] z-50 mx-auto max-w-lg md:hidden">
       <nav className="rounded-(--bar-radius) border border-border/20 bg-surface-default/(--bar-bg-opacity) shadow-(--bar-shadow) backdrop-blur-(--bar-backdrop-blur)">
         <div className="flex items-center justify-around px-(--bar-padding-x)">
           {items.map((item) => {
