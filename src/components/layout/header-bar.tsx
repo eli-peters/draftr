@@ -47,10 +47,9 @@ export function HeaderBar({
         <Link
           href={parentRoute}
           aria-label={`Navigate back to ${parentLabel}`}
-          className="flex min-w-0 items-center gap-1.5 text-primary-foreground"
+          className="flex items-center text-primary-foreground"
         >
-          <CaretLeft weight="bold" className="size-5 shrink-0" />
-          <span className="truncate text-sm font-medium">{parentLabel}</span>
+          <CaretLeft weight="bold" className="size-6" />
         </Link>
       ) : (
         <Link href={routes.home} className="flex items-center gap-2">
