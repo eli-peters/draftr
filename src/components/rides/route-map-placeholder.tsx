@@ -27,9 +27,7 @@ export function RouteMapPlaceholder({ routeUrl }: RouteMapPlaceholderProps) {
           <ArrowSquareOut className="size-3.5" />
         </span>
       ) : (
-        <span className="text-[0.8125rem] text-muted-foreground/60">
-          {detail.routeMapPlaceholder}
-        </span>
+        <span className="text-body-sm text-muted-foreground/60">{detail.routeMapPlaceholder}</span>
       )}
     </div>
   );

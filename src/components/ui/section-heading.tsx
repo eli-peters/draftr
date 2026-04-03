@@ -16,7 +16,7 @@ export function SectionHeading({
   return (
     <Tag
       className={cn(
-        'text-overline font-semibold uppercase tracking-wider text-muted-foreground',
+        'text-overline font-semibold uppercase tracking-[0.06em] text-muted-foreground',
         Icon && 'flex items-center gap-1.5',
         className,
       )}

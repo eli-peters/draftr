@@ -30,7 +30,7 @@ export function StatsGrid({ stats, className }: StatsGridProps) {
             value={stat.value}
             suffix={stat.suffix}
             decimals={stat.decimals}
-            className="text-4xl font-bold tabular-nums text-foreground"
+            className="font-mono text-4xl font-bold tabular-nums text-foreground"
           />
           <p className="text-sm font-medium text-muted-foreground mt-2">{stat.label}</p>
         </Card>

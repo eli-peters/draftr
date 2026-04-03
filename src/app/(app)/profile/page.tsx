@@ -62,7 +62,7 @@ export default async function ProfilePage() {
       <ContentCard className="mt-8" padding="compact">
         <div className="grid grid-cols-3 divide-x divide-border">
           <div className="flex flex-col items-center px-2">
-            <span className="text-xl font-bold tabular-nums text-foreground">
+            <span className="font-mono text-xl font-bold tabular-nums text-foreground">
               {stats.totalRides}
             </span>
             <p className="text-sm font-medium text-muted-foreground mt-1.5 text-center">
@@ -70,7 +70,7 @@ export default async function ProfilePage() {
             </p>
           </div>
           <div className="flex flex-col items-center px-2">
-            <span className="text-xl font-bold tabular-nums text-foreground">
+            <span className="font-mono text-xl font-bold tabular-nums text-foreground">
               {stats.ridesThisMonth}
             </span>
             <p className="text-sm font-medium text-muted-foreground mt-1.5 text-center">
@@ -78,7 +78,9 @@ export default async function ProfilePage() {
             </p>
           </div>
           <div className="flex flex-col items-center px-2">
-            <span className="text-xl font-bold tabular-nums text-foreground">{memberSince}</span>
+            <span className="font-mono text-xl font-bold tabular-nums text-foreground">
+              {memberSince}
+            </span>
             <p className="text-sm font-medium text-muted-foreground mt-1.5 text-center">
               {content.sections.memberSince}
             </p>

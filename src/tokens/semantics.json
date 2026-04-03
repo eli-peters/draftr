@@ -325,12 +325,12 @@
       "subtle-bg": {
         "$type": "color",
         "$description": "Secondary ghost button background, secondary badge tint",
-        "$value": "{color.secondary.50}",
+        "$value": "{color.secondary.100}",
         "$extensions": {
           "com.figma": {
             "modes": {
-              "Light": "{color.secondary.50}",
-              "Dark": "{color.secondary.500-alpha-12}"
+              "Light": "{color.secondary.100}",
+              "Dark": "{color.secondary.900}"
             }
           }
         }

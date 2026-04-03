@@ -41,7 +41,7 @@ export function MyScheduleSections({ upcoming, past, timezone }: MyScheduleSecti
       <Tabs
         value={statusFilter}
         onValueChange={(value) => setStatusFilter(value as StatusFilter)}
-        className="mb-6"
+        className="mt-2 mb-6 md:mt-0 md:mb-8"
       >
         <div className="flex justify-center">
           <TabsList>
@@ -52,7 +52,7 @@ export function MyScheduleSections({ upcoming, past, timezone }: MyScheduleSecti
       </Tabs>
 
       {visibleRides.length > 0 ? (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-6">
           {visibleRides.map((ride) => (
             <ScheduleCard key={ride.id} ride={ride} onAction={handleAction} timezone={timezone} />
           ))}

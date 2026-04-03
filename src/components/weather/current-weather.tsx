@@ -75,7 +75,7 @@ export function CurrentWeather() {
       <WeatherIcon
         weatherCode={weather.weather_code}
         isDay={weather.is_day}
-        className={cn('size-8', getConditionColorClass(weather.weather_code, weather.is_day))}
+        className={cn('size-10', getConditionColorClass(weather.weather_code, weather.is_day))}
       />
 
       <div className="flex flex-col">

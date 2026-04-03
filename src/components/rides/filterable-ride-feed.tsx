@@ -53,7 +53,7 @@ export function FilterableRideFeed({
           multiple
           value={activePaceIds}
           onValueChange={handleChangePace}
-          className="mb-6"
+          className="mt-2 mb-6 md:mt-0 md:mb-8"
         >
           {paceGroups.map((pg) => (
             <FilterChip key={pg.id} value={pg.id} label={pg.name} />
@@ -62,7 +62,7 @@ export function FilterableRideFeed({
       )}
 
       {filtered.length > 0 ? (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-6">
           {filtered.map((ride) => (
             <RideCard key={ride.id} ride={ride} variant={cardVariant} timezone={timezone} />
           ))}

@@ -45,7 +45,7 @@ function AvatarFallback({ className, ...props }: AvatarPrimitive.Fallback.Props)
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
-        'flex size-full items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground group-data-[size=sm]/avatar:text-[0.5625rem]',
+        'flex size-full items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground group-data-[size=sm]/avatar:text-micro',
         className,
       )}
       {...props}
@@ -87,7 +87,7 @@ function AvatarGroupCount({ className, ...props }: React.ComponentProps<'div'>) 
     <div
       data-slot="avatar-group-count"
       className={cn(
-        'relative flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm text-muted-foreground ring-2 ring-background group-has-data-[size=lg]/avatar-group:size-10 group-has-data-[size=sm]/avatar-group:size-6 [&>svg]:size-4 group-has-data-[size=lg]/avatar-group:[&>svg]:size-5 group-has-data-[size=sm]/avatar-group:[&>svg]:size-3',
+        'relative flex size-8 shrink-0 items-center justify-center rounded-full bg-action-secondary-subtle-bg text-sm text-action-secondary-subtle-text ring-2 ring-background group-has-data-[size=lg]/avatar-group:size-10 group-has-data-[size=sm]/avatar-group:size-6 [&>svg]:size-4 group-has-data-[size=lg]/avatar-group:[&>svg]:size-5 group-has-data-[size=sm]/avatar-group:[&>svg]:size-3',
         className,
       )}
       {...props}
@@ -150,11 +150,11 @@ function RiderAvatarOverflow({ count, className }: RiderAvatarOverflowProps) {
     <div
       data-slot="rider-avatar"
       className={cn(
-        'relative flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted',
+        'relative flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-action-secondary-subtle-bg',
         className,
       )}
     >
-      <span className="text-xs font-medium text-muted-foreground">+{count}</span>
+      <span className="text-xs font-medium text-action-secondary-subtle-text">+{count}</span>
     </div>
   );
 }

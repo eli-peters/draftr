@@ -23,7 +23,7 @@ export function RideWeatherSummary({ weather }: RideWeatherSummaryProps) {
   const popPercent = weather.pop != null ? Math.round(weather.pop * 100) : null;
 
   return (
-    <div className="mt-3 flex items-center gap-2">
+    <div className="mt-1 flex items-center gap-2">
       <WeatherIcon
         weatherCode={weather.weather_code}
         isDay={weather.is_day}
@@ -33,7 +33,7 @@ export function RideWeatherSummary({ weather }: RideWeatherSummaryProps) {
         {temp}
         {units.celsius}
       </span>
-      <span className="text-[0.8125rem] text-muted-foreground">
+      <span className="text-body-sm text-muted-foreground">
         {weatherContent.feelsLike(feelsLike)}
         {popPercent != null && (
           <>

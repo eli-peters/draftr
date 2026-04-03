@@ -473,11 +473,15 @@ export async function getLeaderWeatherWatchRide(userId: string, clubId: string, 
  * Fetch the single next upcoming non-cancelled ride for a club.
  * Lightweight query for the homepage nudge — minimal fields, no joins beyond pace group.
  */
-export async function getNextAvailableRide(clubId: string, timezone: string) {
+export async function getNextAvailableRide(
+  clubId: string,
+  timezone: string,
+  excludeIds: string[] = [],
+) {
   const supabase = await createClient();
   const today = todayInTimezone(timezone);
 
-  // Fetch a small batch so we can skip completed same-day rides
+  // Fetch a small batch so we can skip completed same-day rides + user's personal rides
   const { data } = await supabase
     .from('rides')
     .select(
@@ -497,8 +501,10 @@ export async function getNextAvailableRide(clubId: string, timezone: string) {
 
   if (!data?.length) return null;
 
+  const skipIds = new Set(excludeIds);
   for (const row of data as unknown as ActionBarRideRow[]) {
     if (isRideCompleted(row.ride_date, row.start_time, row.end_time, timezone)) continue;
+    if (skipIds.has(row.id)) continue;
     return toActionBarResult(row);
   }
 
