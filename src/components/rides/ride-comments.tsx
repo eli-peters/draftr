@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { addComment, editComment, deleteComment, toggleCommentReaction } from '@/lib/rides/actions';
 import { ReactionPills } from '@/components/rides/reaction-pills';
 import { appContent } from '@/content/app';
-import { getInitials } from '@/lib/utils';
+import { getInitial } from '@/lib/utils';
 import { routes } from '@/config/routes';
 import type { CommentWithUser, ReactionType, ReactionSummary } from '@/types/database';
 
@@ -111,7 +111,7 @@ function CommentRow({
         <AvatarFallback
           className={`text-caption-sm font-medium ${getAvatarColourClasses(comment.user_name)}`}
         >
-          {getInitials(comment.user_name)}
+          {getInitial(comment.user_name)}
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">

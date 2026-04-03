@@ -111,7 +111,7 @@ function ReactionPicker({
       <PopoverTrigger
         disabled={disabled}
         aria-label={content.addReaction}
-        className="inline-flex size-6 items-center justify-center rounded-full border border-dashed border-border text-muted-foreground transition-colors hover:border-primary/20 hover:bg-action-primary-subtle-bg/50 hover:text-primary"
+        className="inline-flex size-6 items-center justify-center rounded-full border border-dashed border-border text-muted-foreground transition-colors hover:border-primary hover:bg-action-primary-subtle-bg hover:text-primary"
       >
         <Plus className="size-3.5" weight="bold" />
       </PopoverTrigger>

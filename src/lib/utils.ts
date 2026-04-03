@@ -38,3 +38,7 @@ export function getInitials(name: string): string {
     .toUpperCase()
     .slice(0, 2);
 }
+
+export function getInitial(name: string): string {
+  return name.charAt(0).toUpperCase();
+}

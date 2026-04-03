@@ -124,7 +124,7 @@ export interface RideSignup {
   cancelled_at: string | null;
 }
 
-export type ReactionType = 'thumbs_up' | 'fire' | 'heart' | 'laugh' | 'cycling';
+export type ReactionType = 'thumbs_up' | 'fire' | 'heart' | 'laugh' | 'cycling' | 'tired';
 
 export interface RideReaction {
   id: string;
