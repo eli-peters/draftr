@@ -1,6 +1,5 @@
 'use client';
 
-import { ArrowsClockwise } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { CancelRideButton } from '@/components/rides/cancel-ride-button';
 import { appContent } from '@/content/app';
@@ -10,7 +9,7 @@ import {
   StepRoute,
   StepDetails,
   StepWhenWhere,
-  StepAdditional,
+  StepCoLeaders,
 } from '@/components/rides/form-steps';
 import type { IntegrationService } from '@/types/database';
 import type { RideFormInitialData } from '@/types/rides';
@@ -21,7 +20,6 @@ interface RideFormProps {
   clubId: string;
   paceGroups: { id: string; name: string }[];
   rideId?: string;
-  templateId?: string;
   initialData?: RideFormInitialData;
   seasonStart?: string;
   seasonEnd?: string;
@@ -30,15 +28,16 @@ interface RideFormProps {
   initialCoLeaderIds?: string[];
   rideTitle?: string;
   returnTo?: string;
-  /** Content rendered after form steps but before actions (e.g. signups roster on edit) */
+  /** Content rendered inside the Co-Leaders step in edit mode (e.g. signups roster) */
   children?: React.ReactNode;
+  /** Number of confirmed signups for the edit-mode roster heading */
+  signupCount?: number;
 }
 
 export function RideForm({
   clubId,
   paceGroups,
   rideId,
-  templateId,
   initialData,
   seasonStart,
   seasonEnd,
@@ -48,6 +47,7 @@ export function RideForm({
   rideTitle,
   returnTo,
   children,
+  signupCount,
 }: RideFormProps) {
   const today = todayDateString();
   const effectiveMin = seasonStart && seasonStart > today ? seasonStart : today;
@@ -57,7 +57,6 @@ export function RideForm({
     setField,
     pasteUrlRef,
     isEdit,
-    isRecurringSeries,
     handleRouteImport,
     handlePasteUrlBlur,
     handleSubmit,
@@ -65,7 +64,6 @@ export function RideForm({
   } = useRideFormState({
     initialData,
     rideId,
-    templateId,
     clubId,
     connectedServices,
     eligibleLeaders,
@@ -76,36 +74,6 @@ export function RideForm({
   return (
     <form onSubmit={handleSubmit}>
       <fieldset disabled={state.isFetchingRoute} className="min-w-0 space-y-5">
-        {/* ── Recurring series edit prompt (edit-only) ──────────────── */}
-        {isRecurringSeries && (
-          <div className="rounded-xl border border-primary/20 bg-action-primary-subtle-bg p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <ArrowsClockwise className="h-4 w-4 text-primary" />
-              <p className="text-sm font-medium text-foreground">
-                {ridesContent.edit.recurringPrompt}
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                size="sm"
-                variant={state.editScope === 'this' ? 'default' : 'outline'}
-                onClick={() => setField('editScope', 'this')}
-              >
-                {ridesContent.edit.editThisOnly}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant={state.editScope === 'all' ? 'default' : 'outline'}
-                onClick={() => setField('editScope', 'all')}
-              >
-                {ridesContent.edit.editAllFuture}
-              </Button>
-            </div>
-          </div>
-        )}
-
         {/* ── Step 1: Route ────────────────────────────────────────── */}
         <div>
           <StepRoute
@@ -121,6 +89,8 @@ export function RideForm({
             fetchRouteError={state.fetchRouteError}
             onPasteUrl={handlePasteUrlBlur}
             routeError={state.fieldErrors.routeUrl}
+            distanceKm={state.distanceKm}
+            elevationM={state.elevationM}
             startLocationName={state.startLocationName}
             startLocationAddress={state.startLocationAddress}
             startLatitude={state.startLatitude}
@@ -129,20 +99,23 @@ export function RideForm({
           />
         </div>
 
-        {/* ── Step 2: Details ──────────────────────────────────────── */}
+        {/* ── Step 2: Ride Details ─────────────────────────────────── */}
         <StepDetails
           title={state.title}
           description={state.description}
-          distanceKm={state.distanceKm}
-          elevationM={state.elevationM}
           capacity={state.capacity}
           paceGroupId={state.paceGroupId}
           isDropRide={state.isDropRide}
           paceGroups={paceGroups}
           fieldErrors={state.fieldErrors}
           onFieldChange={(field, value) => {
-            setField(field as keyof typeof state, value as never);
+            if (typeof value === 'boolean') {
+              setField(field as 'isDropRide', value);
+            } else {
+              setField(field as 'title' | 'description' | 'paceGroupId', value);
+            }
           }}
+          onCapacityChange={(v) => setField('capacity', v)}
         />
 
         {/* ── Step 3: When & Where ─────────────────────────────────── */}
@@ -156,8 +129,8 @@ export function RideForm({
           onTimeChange={(v) => setField('startTime', v)}
         />
 
-        {/* ── Step 4: Additional ───────────────────────────────────── */}
-        <StepAdditional
+        {/* ── Step 4: Co-Leaders ────────────────────────────────────── */}
+        <StepCoLeaders
           isEdit={isEdit}
           eligibleLeaders={eligibleLeaders}
           selectedCoLeaders={state.selectedCoLeaders}
@@ -170,18 +143,10 @@ export function RideForm({
                 : [...state.selectedCoLeaders, userId],
             )
           }
-          isRecurring={state.isRecurring}
-          onRecurringChange={(v) => setField('isRecurring', v)}
-          recurringEndType={state.recurringEndType}
-          onEndTypeChange={(v) => setField('recurringEndType', v)}
-          recurringEndDate={state.recurringEndDate}
-          onEndDateChange={(v) => setField('recurringEndDate', v)}
-          seasonStart={seasonStart}
-          seasonEnd={seasonEnd}
-        />
-
-        {/* ── Edit-only sections (signups, etc.) ─────────────────── */}
-        {children}
+          signupCount={signupCount}
+        >
+          {children}
+        </StepCoLeaders>
 
         {/* ── Actions ──────────────────────────────────────────────── */}
         <div>

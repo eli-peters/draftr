@@ -104,7 +104,7 @@ function RidesLayout({
   timezone: string;
 }) {
   const rideDate = parseLocalDate(ride.ride_date);
-  const availability = getRideAvailability(ride, ride.signup_count, timezone);
+  const availability = getRideAvailability(ride, ride.rider_count, timezone);
 
   return (
     <>

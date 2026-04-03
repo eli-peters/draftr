@@ -77,10 +77,10 @@ export function ScheduleCard({ ride, onAction, timezone }: ScheduleCardProps) {
   else if (cardState === 'cancelled') bannerLabel = schedule.status.cancelled;
 
   const directionsUrl = buildDirectionsUrl({
-    latitude: ride.meeting_location_latitude,
-    longitude: ride.meeting_location_longitude,
-    address: ride.meeting_location_address,
-    name: ride.meeting_location_name,
+    latitude: ride.start_location_latitude,
+    longitude: ride.start_location_longitude,
+    address: ride.start_location_address,
+    name: ride.start_location_name,
   });
 
   const statusKey = isCancelled
@@ -119,7 +119,7 @@ export function ScheduleCard({ ride, onAction, timezone }: ScheduleCardProps) {
           paceGroupName={ride.pace_group_name}
           paceGroupSortOrder={ride.pace_group_sort_order}
           distanceKm={ride.distance_km}
-          locationName={ride.meeting_location_name}
+          locationName={ride.start_location_name}
           weather={ride.weather}
         />
       </Link>

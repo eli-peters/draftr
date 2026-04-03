@@ -233,7 +233,7 @@
   --badge-role-new-text: var(--color-neutral-500);
   --badge-count-bg: var(--color-neutral-300);
   --badge-count-text: var(--color-neutral-900);
-  --badge-notification-bg: var(--color-error-600);
+  --badge-notification-bg: var(--color-neutral-950);
   --badge-notification-text: var(--color-neutral-0);
 
   /* avatar */
@@ -383,8 +383,8 @@
   --badge-role-new-text: var(--color-neutral-400);
   --badge-count-bg: var(--color-neutral-600);
   --badge-count-text: var(--color-neutral-50);
-  --badge-notification-bg: var(--color-error-400);
-  --badge-notification-text: var(--color-neutral-0);
+  --badge-notification-bg: var(--color-neutral-0);
+  --badge-notification-text: var(--color-neutral-950);
 
   /* avatar */
   --avatar-1-bg: var(--color-primary-950);

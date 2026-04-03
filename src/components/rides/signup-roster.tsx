@@ -11,7 +11,7 @@ import { routes } from '@/config/routes';
 
 const { rides: ridesContent } = appContent;
 
-interface SignupEntry {
+export interface SignupEntry {
   id: string;
   status: string;
   signed_up_at: string | null;
@@ -27,6 +27,8 @@ interface SignupRosterProps {
   coLeaderIds?: string[];
   currentUserId?: string | null;
   onCancelSignup?: () => void;
+  canRemoveRiders?: boolean;
+  onRemoveRider?: (userId: string, userName: string) => void;
 }
 
 export function SignupRoster({
@@ -35,6 +37,8 @@ export function SignupRoster({
   coLeaderIds = [],
   currentUserId,
   onCancelSignup,
+  canRemoveRiders,
+  onRemoveRider,
 }: SignupRosterProps) {
   if (signups.length === 0) {
     return (
@@ -71,6 +75,10 @@ export function SignupRoster({
           isLeader={leaderIds.has(signup.user_id)}
           isSelf={signup.user_id === currentUserId}
           onCancelSignup={onCancelSignup}
+          canRemove={
+            canRemoveRiders && !leaderIds.has(signup.user_id) && signup.user_id !== currentUserId
+          }
+          onRemove={onRemoveRider}
         />
       ))}
       {waitlisted.length > 0 && (
@@ -85,6 +93,12 @@ export function SignupRoster({
               isLeader={leaderIds.has(signup.user_id)}
               isSelf={signup.user_id === currentUserId}
               onCancelSignup={onCancelSignup}
+              canRemove={
+                canRemoveRiders &&
+                !leaderIds.has(signup.user_id) &&
+                signup.user_id !== currentUserId
+              }
+              onRemove={onRemoveRider}
             />
           ))}
         </>
@@ -98,11 +112,15 @@ function SignupRow({
   isLeader,
   isSelf,
   onCancelSignup,
+  canRemove,
+  onRemove,
 }: {
   signup: SignupEntry;
   isLeader?: boolean;
   isSelf?: boolean;
   onCancelSignup?: () => void;
+  canRemove?: boolean;
+  onRemove?: (userId: string, userName: string) => void;
 }) {
   const initials = getInitials(signup.user_name);
 
@@ -145,6 +163,14 @@ function SignupRow({
           className="text-xs text-muted-foreground transition-colors hover:text-destructive"
         >
           {ridesContent.detail.leaveRide}
+        </button>
+      )}
+      {canRemove && onRemove && (
+        <button
+          onClick={() => onRemove(signup.user_id, signup.user_name)}
+          className="text-xs text-muted-foreground transition-colors hover:text-destructive"
+        >
+          {ridesContent.roster.removeRider}
         </button>
       )}
     </div>

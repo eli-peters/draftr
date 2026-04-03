@@ -9,7 +9,9 @@ import {
   Megaphone,
   Info,
   Hourglass,
+  UserMinus,
 } from '@phosphor-icons/react/dist/ssr';
+import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
 
 export type NotificationType = keyof typeof appContent.notifications.types;
@@ -32,6 +34,7 @@ export const notificationIcons: Record<NotificationType, React.ElementType> = {
   waitlist_promoted: ArrowCircleUp,
   waitlist_joined: Hourglass,
   announcement: Megaphone,
+  rider_removed: UserMinus,
 };
 
 export const notificationStyles: Record<NotificationType, string> = {
@@ -42,6 +45,7 @@ export const notificationStyles: Record<NotificationType, string> = {
   waitlist_promoted: 'text-primary bg-primary/10',
   waitlist_joined: 'text-warning bg-warning/10',
   announcement: 'text-foreground bg-muted',
+  rider_removed: 'text-destructive bg-destructive/10',
 };
 
 interface NotificationItemProps {
@@ -60,9 +64,11 @@ export function NotificationItem({ notification, compact }: NotificationItemProp
 
   return (
     <div
-      className={`flex gap-3 transition-opacity duration-200 ${
-        compact ? 'px-3 py-2.5' : ''
-      } ${notification.is_read ? 'opacity-muted' : ''}`}
+      className={cn(
+        'flex gap-3 transition-opacity duration-200',
+        compact && 'px-3 py-2.5',
+        notification.is_read && 'opacity-muted',
+      )}
     >
       {/* Icon */}
       <div
@@ -75,9 +81,11 @@ export function NotificationItem({ notification, compact }: NotificationItemProp
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <h3
-            className={`${compact ? 'text-xs' : 'text-sm'} leading-tight ${
-              notification.is_read ? 'font-medium text-foreground' : 'font-semibold text-foreground'
-            }`}
+            className={cn(
+              'leading-tight text-foreground',
+              compact ? 'text-xs' : 'text-sm',
+              notification.is_read ? 'font-medium' : 'font-semibold',
+            )}
           >
             {notification.title}
           </h3>

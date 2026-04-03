@@ -79,7 +79,6 @@ export default async function EditRidePage({
       clubId={membership.club_id}
       paceGroups={paceGroups}
       rideId={id}
-      templateId={ride.template_id ?? undefined}
       initialData={{
         title: ride.title,
         description: ride.description ?? '',

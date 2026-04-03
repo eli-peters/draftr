@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
-import { MapPin, CalendarBlank, Clock, Path } from '@phosphor-icons/react/dist/ssr';
+import { CalendarBlank, Clock, Path } from '@phosphor-icons/react/dist/ssr';
+import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import {
   StateCardBanner,
@@ -8,10 +9,12 @@ import {
 } from '@/components/rides/ride-card-parts';
 import { RouteMapLoader } from '@/components/rides/route-map-loader';
 import { RouteMapPlaceholder } from '@/components/rides/route-map-placeholder';
+import { StartLocationDisplay } from '@/components/rides/start-location-display';
 import { RideWeatherSummary } from '@/components/weather/ride-weather-summary';
 import { buildDirectionsUrl } from '@/lib/maps/directions';
 import { appContent } from '@/content/app';
 import { dateFormats, formatTime, separators, units, parseLocalDate } from '@/config/formatting';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { cn } from '@/lib/utils';
 import type { RideLifecycle } from '@/lib/rides/lifecycle';
 import type { RideWithDetails, RideWeatherSnapshot } from '@/types/database';
@@ -75,34 +78,14 @@ export function RideDetailCard({
       {/* Card body */}
       <div className="flex flex-col gap-4 px-6 pb-6 pt-5">
         {/* Start location */}
-        {ride.start_location_name &&
-          (() => {
-            const directionsUrl = buildDirectionsUrl({
-              latitude: ride.start_latitude,
-              longitude: ride.start_longitude,
-              address: ride.start_location_address,
-              name: ride.start_location_name,
-            });
-            const Wrapper = directionsUrl ? 'a' : 'div';
-            const wrapperProps = directionsUrl
-              ? { href: directionsUrl, target: '_blank' as const, rel: 'noopener noreferrer' }
-              : {};
-            return (
-              <Wrapper {...wrapperProps} className="group flex items-start gap-2">
-                <MapPin weight="duotone" className="mt-0.5 size-6 shrink-0 text-primary" />
-                <div className="min-w-0">
-                  <p className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground decoration-primary/30 underline-offset-2 group-hover:underline">
-                    {ride.start_location_name}
-                  </p>
-                  {ride.start_location_address && (
-                    <p className="mt-0.5 text-body-sm text-muted-foreground">
-                      {ride.start_location_address}
-                    </p>
-                  )}
-                </div>
-              </Wrapper>
-            );
-          })()}
+        {ride.start_location_name && (
+          <StartLocationDisplay
+            name={ride.start_location_name}
+            address={ride.start_location_address ?? ''}
+            latitude={ride.start_latitude}
+            longitude={ride.start_longitude}
+          />
+        )}
 
         {/* Weather — forecast for ride date/time */}
         <RideWeatherSummary weather={weather} />
@@ -133,8 +116,14 @@ export function RideDetailCard({
                 {ride.pace_group.moving_pace_min && ride.pace_group.moving_pace_max
                   ? ` (${ride.pace_group.moving_pace_min}–${ride.pace_group.moving_pace_max}${units.kmh})`
                   : ''}
-                {` · ${ride.is_drop_ride ? detail.dropRide : detail.noDrop}`}
               </span>
+              <Badge
+                variant={ride.is_drop_ride ? 'destructive' : 'secondary'}
+                size="sm"
+                shape="pill"
+              >
+                {ride.is_drop_ride ? detail.dropRide : detail.noDrop}
+              </Badge>
             </div>
           )}
         </div>
@@ -144,6 +133,13 @@ export function RideDetailCard({
           <p className="whitespace-pre-line text-body-lg leading-relaxed text-muted-foreground">
             {ride.description}
           </p>
+        )}
+
+        {/* Route & Terrain section */}
+        {(statsItems.length > 0 || ride.route_polyline || ride.route_url) && (
+          <SectionHeading as="p" className="pb-0 pt-2">
+            {detail.sectionRouteTerrain}
+          </SectionHeading>
         )}
 
         {/* Stats box */}

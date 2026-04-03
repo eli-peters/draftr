@@ -30,7 +30,7 @@ interface ActionBarRide {
   start_time: string;
   end_time: string | null;
   distance_km: number | null;
-  meeting_location_name: string | null;
+  start_location_name: string | null;
   pace_group_name: string | null;
   pace_group_sort_order: number | null;
   weather?: RideWeatherSnapshot | null;
@@ -185,7 +185,7 @@ export function ActionBar({
                 paceGroupName={nextSignup.pace_group_name}
                 paceGroupSortOrder={nextSignup.pace_group_sort_order}
                 distanceKm={nextSignup.distance_km}
-                locationName={nextSignup.meeting_location_name}
+                locationName={nextSignup.start_location_name}
                 weather={nextSignup.weather}
               />
             </ActionCard>
@@ -226,7 +226,7 @@ export function ActionBar({
                 paceGroupName={nextWaitlistedRide.pace_group_name}
                 paceGroupSortOrder={nextWaitlistedRide.pace_group_sort_order}
                 distanceKm={nextWaitlistedRide.distance_km}
-                locationName={nextWaitlistedRide.meeting_location_name}
+                locationName={nextWaitlistedRide.start_location_name}
               />
             </ActionCard>
           );
@@ -259,7 +259,7 @@ export function ActionBar({
                 paceGroupName={nextLedRide.pace_group_name}
                 paceGroupSortOrder={nextLedRide.pace_group_sort_order}
                 distanceKm={nextLedRide.distance_km}
-                locationName={nextLedRide.meeting_location_name}
+                locationName={nextLedRide.start_location_name}
                 weather={nextLedRide.weather}
               />
             </ActionCard>
@@ -284,7 +284,7 @@ export function ActionBar({
             paceGroupName={weatherWatchRide.pace_group_name}
             paceGroupSortOrder={weatherWatchRide.pace_group_sort_order}
             distanceKm={weatherWatchRide.distance_km}
-            locationName={weatherWatchRide.meeting_location_name}
+            locationName={weatherWatchRide.start_location_name}
             weather={weatherWatchRide.weather}
           />
         </ActionCard>
@@ -336,7 +336,7 @@ export function ActionBar({
             paceGroupName={nextAvailableRide.pace_group_name}
             paceGroupSortOrder={nextAvailableRide.pace_group_sort_order}
             distanceKm={nextAvailableRide.distance_km}
-            locationName={nextAvailableRide.meeting_location_name}
+            locationName={nextAvailableRide.start_location_name}
             weather={nextAvailableRide.weather}
           />
         </ActionCard>

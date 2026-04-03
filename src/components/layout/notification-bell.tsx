@@ -53,11 +53,11 @@ export function NotificationBell({ notifications, unreadCount }: NotificationBel
 
   const bellIcon = (
     <>
-      <Bell weight={unreadCount > 0 ? 'fill' : 'duotone'} className="h-6 w-6" />
+      <Bell weight="duotone" className="h-7 w-7" />
       {unreadCount > 0 && (
         <span
           aria-hidden="true"
-          className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-badge-notification-bg px-0.5 text-micro font-bold text-badge-notification-text tabular-nums ring-1 ring-primary-foreground"
+          className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-badge-notification-bg px-0.5 text-micro font-bold text-badge-notification-text tabular-nums"
         >
           {displayCount}
         </span>

@@ -6,22 +6,23 @@ import { ContentCard } from '@/components/ui/content-card';
 import {
   MapTrifold,
   ArrowSquareOut,
-  PencilSimple,
+  Trash,
   Path,
   LinkSimple,
-  MapPin,
 } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { RouteMapLoader } from '@/components/rides/route-map-loader';
-import { buildDirectionsUrl } from '@/lib/maps/directions';
 import { RouteImportDrawer } from '@/components/rides/route-import-drawer';
 import { PasteUrlPanel } from '@/components/rides/route-import-inline';
+import { StartLocationDisplay } from '@/components/rides/start-location-display';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
+import { units } from '@/config/formatting';
 import { knownServices, serviceIcons, serviceLabels, integrations } from '@/config/integrations';
 import type { IntegrationService, ImportableRoute } from '@/types/database';
 
 const form = appContent.rides.form;
+const { detail } = appContent.rides;
 const importContent = appContent.rides.importRoute;
 
 interface StepRouteProps {
@@ -37,6 +38,8 @@ interface StepRouteProps {
   fetchRouteError: string | null;
   onPasteUrl: () => void;
   routeError?: string;
+  distanceKm: string;
+  elevationM: string;
   startLocationName: string;
   startLocationAddress: string;
   startLatitude: number | null;
@@ -57,6 +60,8 @@ export function StepRoute({
   fetchRouteError,
   onPasteUrl,
   routeError,
+  distanceKm,
+  elevationM,
   startLocationName,
   startLocationAddress,
   startLatitude,
@@ -142,10 +147,10 @@ export function StepRoute({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  onClick={() => onClearRoute(true)}
-                  className="shrink-0 rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
+                  onClick={() => onClearRoute()}
+                  className="shrink-0 rounded-full text-muted-foreground transition-transform hover:bg-destructive/10 hover:text-destructive active:scale-90"
                 >
-                  <PencilSimple className="size-5" />
+                  <Trash className="size-5" />
                 </Button>
               </div>
               {routePolyline && (
@@ -155,6 +160,30 @@ export function StepRoute({
                   routeName={importedRouteName}
                   aspectRatio="5/2"
                 />
+              )}
+              {(distanceKm || elevationM) && (
+                <div className="rounded-xl bg-accent-secondary-subtle p-4">
+                  <div className="flex gap-6">
+                    {distanceKm && (
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm text-foreground">{detail.distanceLabel}</span>
+                        <span className="font-mono text-base font-medium text-foreground">
+                          {distanceKm}
+                          {units.km}
+                        </span>
+                      </div>
+                    )}
+                    {elevationM && (
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm text-foreground">{detail.elevationLabel}</span>
+                        <span className="font-mono text-base font-medium text-foreground">
+                          {elevationM}
+                          {units.m}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
               <StartLocationDisplay
                 name={startLocationName}
@@ -268,58 +297,4 @@ export function StepRoute({
       )}
     </ContentCard>
   );
-}
-
-// ---------------------------------------------------------------------------
-// Start location display — read-only, derived from route
-// ---------------------------------------------------------------------------
-
-function StartLocationDisplay({
-  name,
-  address,
-  latitude,
-  longitude,
-  isGeocoding,
-  hasRoute,
-}: {
-  name: string;
-  address: string;
-  latitude: number | null;
-  longitude: number | null;
-  isGeocoding: boolean;
-  hasRoute: boolean;
-}) {
-  if (isGeocoding) {
-    return <p className="text-body-sm text-muted-foreground">{form.startLocationFromRoute}</p>;
-  }
-
-  if (name) {
-    const directionsUrl = buildDirectionsUrl({ latitude, longitude, address, name });
-    const Wrapper = directionsUrl ? 'a' : 'div';
-    const wrapperProps = directionsUrl
-      ? { href: directionsUrl, target: '_blank' as const, rel: 'noopener noreferrer' }
-      : {};
-    return (
-      <Wrapper {...wrapperProps} className="group flex items-start gap-2">
-        <MapPin weight="duotone" className="mt-0.5 size-6 shrink-0 text-primary" />
-        <div className="min-w-0">
-          <p className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground decoration-primary/30 underline-offset-2 group-hover:underline">
-            {name}
-          </p>
-          {address && <p className="mt-0.5 text-body-sm text-muted-foreground">{address}</p>}
-        </div>
-      </Wrapper>
-    );
-  }
-
-  if (hasRoute) {
-    return (
-      <div className="flex items-start gap-2">
-        <MapPin weight="duotone" className="mt-0.5 size-6 shrink-0 text-muted-foreground/50" />
-        <p className="text-sm text-muted-foreground">{form.startLocationUnavailable}</p>
-      </div>
-    );
-  }
-
-  return null;
 }

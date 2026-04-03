@@ -83,14 +83,22 @@ export async function signUpForRide(rideId: string) {
   const timezone =
     (ride.club as unknown as { timezone: string } | null)?.timezone ?? 'America/Toronto';
 
-  // Count current confirmed signups
-  const { count } = await supabase
+  // Fetch leader user IDs (creator + co-leaders) — leaders don't count against capacity
+  const { data: leaderRows } = await supabase
+    .from('ride_leaders')
+    .select('user_id')
+    .eq('ride_id', rideId);
+  const leaderIds = [ride.created_by, ...(leaderRows ?? []).map((r) => r.user_id)];
+
+  // Count confirmed signups EXCLUDING leaders for capacity math
+  const { data: confirmedSignups } = await supabase
     .from('ride_signups')
-    .select('*', { count: 'exact', head: true })
+    .select('user_id')
     .eq('ride_id', rideId)
     .eq('status', 'confirmed');
 
-  const currentCount = count ?? 0;
+  const leaderIdSet = new Set(leaderIds);
+  const riderCount = (confirmedSignups ?? []).filter((s) => !leaderIdSet.has(s.user_id)).length;
 
   // Count existing waitlisted riders to determine next position
   const { count: waitlistedCount } = await supabase
@@ -99,8 +107,8 @@ export async function signUpForRide(rideId: string) {
     .eq('ride_id', rideId)
     .eq('status', 'waitlisted');
 
-  // Check availability — enforces cancelled check + timing cutoff
-  const availability = getRideAvailability(ride, currentCount, timezone);
+  // Check availability — uses non-leader count for capacity check
+  const availability = getRideAvailability(ride, riderCount, timezone);
   if (!availability.canSignUp) {
     if (availability.isCancelled) return { error: errors.rideCancelled };
     return { error: errors.signupClosed };
@@ -253,6 +261,118 @@ export async function cancelSignUp(rideId: string) {
         }
       }
     }
+  }
+
+  revalidatePath(`/rides/${rideId}`);
+  revalidatePath('/rides');
+  revalidatePath('/my-rides');
+  revalidatePath('/notifications');
+  revalidatePath('/');
+  return { success: true };
+}
+
+/**
+ * Admin action: remove a rider from a ride.
+ * Auto-promotes the next waitlisted rider and notifies the removed rider.
+ */
+export async function removeRiderFromRide(rideId: string, targetUserId: string) {
+  const supabase = await createClient();
+  const user = await getUser();
+
+  if (!user) return { error: common.notAuthenticated };
+
+  const permissionError = await checkRideEditPermission(supabase, user.id, rideId);
+  if (permissionError) return { error: permissionError };
+
+  // Fetch ride info and verify the target is not a ride leader
+  const { data: rideInfo } = await supabase
+    .from('rides')
+    .select('created_by, title')
+    .eq('id', rideId)
+    .single();
+
+  if (rideInfo?.created_by === targetUserId) {
+    return { error: errors.notAuthorized };
+  }
+
+  const { data: isTargetLeader } = await supabase
+    .from('ride_leaders')
+    .select('id')
+    .eq('ride_id', rideId)
+    .eq('user_id', targetUserId)
+    .maybeSingle();
+
+  if (isTargetLeader) {
+    return { error: errors.notAuthorized };
+  }
+
+  // Check if the target user was confirmed (a spot may open up)
+  const { data: currentSignup } = await supabase
+    .from('ride_signups')
+    .select('status')
+    .eq('ride_id', rideId)
+    .eq('user_id', targetUserId)
+    .single();
+
+  if (!currentSignup) {
+    return { error: errors.rideNotFound };
+  }
+
+  const wasConfirmed = currentSignup.status === 'confirmed';
+
+  const { error } = await supabase
+    .from('ride_signups')
+    .update({
+      status: 'cancelled',
+      cancelled_at: new Date().toISOString(),
+    })
+    .eq('ride_id', rideId)
+    .eq('user_id', targetUserId);
+
+  if (error) return { error: error.message };
+
+  // Auto-promote first waitlisted rider if a confirmed spot opened up
+  if (wasConfirmed) {
+    const { data: nextWaitlisted } = await supabase
+      .from('ride_signups')
+      .select('id, user_id')
+      .eq('ride_id', rideId)
+      .eq('status', 'waitlisted')
+      .order('signed_up_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (nextWaitlisted) {
+      await supabase
+        .from('ride_signups')
+        .update({ status: 'confirmed', waitlist_position: null })
+        .eq('id', nextWaitlisted.id);
+
+      if (rideInfo) {
+        const admin = createAdminClient();
+        await admin.from('notifications').insert({
+          user_id: nextWaitlisted.user_id,
+          type: 'waitlist_promoted',
+          title: notif.waitlistPromoted.title(rideInfo.title),
+          body: notif.waitlistPromoted.body,
+          ride_id: rideId,
+          channel: 'push',
+        });
+      }
+    }
+  }
+
+  // Notify the removed rider
+  if (rideInfo) {
+    const admin = createAdminClient();
+    await admin.from('notifications').insert({
+      user_id: targetUserId,
+      type: 'rider_removed',
+      title: notif.riderRemoved.title(rideInfo.title),
+      body: notif.riderRemoved.body,
+      ride_id: rideId,
+      channel: 'push',
+    });
   }
 
   revalidatePath(`/rides/${rideId}`);
@@ -983,6 +1103,17 @@ export async function addCoLeader(rideId: string, userId: string) {
     return { error: error.message };
   }
 
+  // Auto-enroll co-leader as confirmed rider
+  await supabase.from('ride_signups').upsert(
+    {
+      ride_id: rideId,
+      user_id: userId,
+      status: 'confirmed',
+      signed_up_at: new Date().toISOString(),
+    },
+    { onConflict: 'ride_id,user_id' },
+  );
+
   revalidatePath('/');
   return { success: true };
 }
@@ -1007,6 +1138,13 @@ export async function removeCoLeader(rideId: string, userId: string) {
     .eq('user_id', userId);
 
   if (error) return { error: error.message };
+
+  // Remove co-leader's signup
+  await supabase
+    .from('ride_signups')
+    .update({ status: 'cancelled', cancelled_at: new Date().toISOString() })
+    .eq('ride_id', rideId)
+    .eq('user_id', userId);
 
   revalidatePath('/');
   return { success: true };
