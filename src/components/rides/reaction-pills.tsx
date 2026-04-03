@@ -1,7 +1,7 @@
 'use client';
 
 import { useOptimistic, useTransition } from 'react';
-import { Plus, Smiley } from '@phosphor-icons/react';
+import { Smiley } from '@phosphor-icons/react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { REACTION_CONFIG, REACTION_ORDER } from '@/config/reactions';
 import { appContent } from '@/content/app';
@@ -111,15 +111,9 @@ function ReactionPicker({
       <PopoverTrigger
         disabled={disabled}
         aria-label={content.addReaction}
-        className="inline-flex h-7 items-center justify-center rounded-full border border-border px-3 text-muted-foreground transition-colors hover:border-primary hover:bg-action-primary-subtle-bg hover:text-primary"
+        className="inline-flex h-7 items-center justify-center rounded-full border border-dashed border-border px-3 text-muted-foreground transition-colors hover:border-primary hover:bg-action-primary-subtle-bg hover:text-primary"
       >
-        <span className="relative">
-          <Smiley className="size-4 opacity-50" weight="fill" />
-          <Plus
-            className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-background"
-            weight="bold"
-          />
-        </span>
+        <Smiley className="size-4 opacity-50" weight="regular" />
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-1.5">
         <div className="flex gap-1">
