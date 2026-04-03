@@ -148,7 +148,7 @@ export default async function ProfilePage() {
       {/* Sign Out */}
       <div className="mt-12 flex justify-center">
         <form action={signOut}>
-          <Button variant="ghost" size="sm" className="text-muted-foreground">
+          <Button type="submit" variant="ghost" size="sm" className="text-muted-foreground">
             <SignOut className="h-4 w-4" />
             {content.signOut}
           </Button>
