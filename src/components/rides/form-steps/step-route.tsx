@@ -169,7 +169,7 @@ export function StepRoute({
         ) : (
           /* No route yet — service cards + inline paste / connect prompts */
           <div className="space-y-3">
-            <p className="text-center text-[0.8125rem] text-muted-foreground">
+            <p className="text-center text-body-sm text-muted-foreground">
               {form.importDescription}
             </p>
 
@@ -197,7 +197,7 @@ export function StepRoute({
                       {serviceLabels[service]}
                     </span>
                     {!isConnected && (
-                      <span className="text-[0.625rem] text-muted-foreground">
+                      <span className="text-caption-sm text-muted-foreground">
                         {form.serviceNotConnected}
                       </span>
                     )}
@@ -290,7 +290,7 @@ function StartLocationDisplay({
   hasRoute: boolean;
 }) {
   if (isGeocoding) {
-    return <p className="text-[0.8125rem] text-muted-foreground">{form.startLocationFromRoute}</p>;
+    return <p className="text-body-sm text-muted-foreground">{form.startLocationFromRoute}</p>;
   }
 
   if (name) {
@@ -306,7 +306,7 @@ function StartLocationDisplay({
           <p className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground decoration-primary/30 underline-offset-2 group-hover:underline">
             {name}
           </p>
-          {address && <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">{address}</p>}
+          {address && <p className="mt-0.5 text-body-sm text-muted-foreground">{address}</p>}
         </div>
       </Wrapper>
     );

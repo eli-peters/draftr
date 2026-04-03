@@ -74,7 +74,7 @@ export function RideForm({
   });
 
   return (
-    <form onSubmit={handleSubmit} className="mt-6">
+    <form onSubmit={handleSubmit}>
       <fieldset disabled={state.isFetchingRoute} className="min-w-0 space-y-5">
         {/* ── Recurring series edit prompt (edit-only) ──────────────── */}
         {isRecurringSeries && (

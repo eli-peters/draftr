@@ -252,7 +252,7 @@ export function ManageRidesPanel({
   const visibleRides = ridesByTab[activeTab] ?? upcomingRides;
 
   return (
-    <div className="mt-4">
+    <div className="mt-2 md:mt-4">
       <Tabs defaultValue="upcoming" onValueChange={setActiveTab}>
         <TabsList className="w-full">
           <TabsTrigger value="upcoming">{content.rides.upcoming}</TabsTrigger>

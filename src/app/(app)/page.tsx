@@ -46,7 +46,7 @@ export default async function HomePage() {
 
   const firstName = profile?.full_name?.split(' ')[0] ?? '';
 
-  // Fetch action bar data + nudge in parallel
+  // Fetch personal rides + admin counts in parallel
   // All "next" queries filter out completed same-day rides internally
   const [
     nextSignup,
@@ -55,7 +55,6 @@ export default async function HomePage() {
     weatherWatchRide,
     pendingMemberCount,
     ridesNeedingLeaderCount,
-    nextAvailableRide,
   ] = await Promise.all([
     getUserNextSignup(userId, membership.club_id, timezone),
     isLeader ? getLeaderNextLedRide(userId, membership.club_id, timezone) : null,
@@ -63,22 +62,25 @@ export default async function HomePage() {
     isLeader ? getLeaderWeatherWatchRide(userId, membership.club_id, timezone) : null,
     isAdmin ? getPendingMemberCount(membership.club_id) : 0,
     isAdmin ? getRidesNeedingLeaderCount(membership.club_id, timezone) : 0,
-    getNextAvailableRide(membership.club_id, timezone),
   ]);
 
   // Dedup: suppress cards that refer to the same ride as another card
   const dedupedNextLedRide =
     nextLedRide && nextSignup && nextLedRide.id === nextSignup.id ? null : nextLedRide;
 
-  const personalRideIds = new Set(
-    [nextSignup?.id, dedupedNextLedRide?.id, nextWaitlistedRide?.id].filter(Boolean),
+  // Next club ride excludes rides the user already has cards for
+  const personalRideIds = [nextSignup?.id, dedupedNextLedRide?.id, nextWaitlistedRide?.id].filter(
+    (id): id is string => Boolean(id),
   );
-  const dedupedNextAvailableRide =
-    nextAvailableRide && personalRideIds.has(nextAvailableRide.id) ? null : nextAvailableRide;
+  const nextAvailableRide = await getNextAvailableRide(
+    membership.club_id,
+    timezone,
+    personalRideIds,
+  );
 
   return (
     <DashboardShell>
-      <GreetingSection firstName={firstName} />
+      <GreetingSection firstName={firstName} className="mb-2 mt-0 md:mt-0 md:mb-10" />
 
       {/* Current weather widget — client component, uses browser geolocation */}
       <div>
@@ -112,7 +114,7 @@ export default async function HomePage() {
           nextLedRide={dedupedNextLedRide}
           nextWaitlistedRide={nextWaitlistedRide}
           weatherWatchRide={weatherWatchRide}
-          nextAvailableRide={dedupedNextAvailableRide}
+          nextAvailableRide={nextAvailableRide}
           pendingMemberCount={pendingMemberCount}
           ridesNeedingLeaderCount={ridesNeedingLeaderCount}
           userRole={userRole}

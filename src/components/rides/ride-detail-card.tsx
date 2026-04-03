@@ -8,8 +8,8 @@ import {
 } from '@/components/rides/ride-card-parts';
 import { RouteMapLoader } from '@/components/rides/route-map-loader';
 import { RouteMapPlaceholder } from '@/components/rides/route-map-placeholder';
-import { buildDirectionsUrl } from '@/lib/maps/directions';
 import { RideWeatherSummary } from '@/components/weather/ride-weather-summary';
+import { buildDirectionsUrl } from '@/lib/maps/directions';
 import { appContent } from '@/content/app';
 import { dateFormats, formatTime, separators, units, parseLocalDate } from '@/config/formatting';
 import { cn } from '@/lib/utils';
@@ -95,7 +95,7 @@ export function RideDetailCard({
                     {ride.start_location_name}
                   </p>
                   {ride.start_location_address && (
-                    <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">
+                    <p className="mt-0.5 text-body-sm text-muted-foreground">
                       {ride.start_location_address}
                     </p>
                   )}
@@ -104,10 +104,8 @@ export function RideDetailCard({
             );
           })()}
 
-        {/* Weather summary — part of the "should I ride?" decision */}
-        <div className="-mt-1.5">
-          <RideWeatherSummary weather={weather} />
-        </div>
+        {/* Weather — forecast for ride date/time */}
+        <RideWeatherSummary weather={weather} />
 
         {/* Metadata rows */}
         <div className="space-y-1">
@@ -143,7 +141,7 @@ export function RideDetailCard({
 
         {/* Description — full text, reads as prose after the metadata */}
         {ride.description && (
-          <p className="whitespace-pre-line text-[0.9375rem] leading-relaxed text-muted-foreground">
+          <p className="whitespace-pre-line text-body-lg leading-relaxed text-muted-foreground">
             {ride.description}
           </p>
         )}
@@ -158,7 +156,7 @@ export function RideDetailCard({
               {statsItems.map((item) => (
                 <div key={item.label} className="flex flex-col items-start">
                   <span className="text-sm text-foreground">{item.label}</span>
-                  <span className="font-mono text-base font-medium text-foreground">
+                  <span className="font-mono text-base font-medium tabular-nums text-foreground">
                     {item.value}
                   </span>
                 </div>

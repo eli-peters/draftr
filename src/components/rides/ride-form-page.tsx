@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { ContentCard } from '@/components/ui/content-card';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { ContentToolbar } from '@/components/layout/content-toolbar';
 import { RideForm } from '@/components/rides/ride-form';
 import { SignupRoster } from '@/components/rides/signup-roster';
 import { appContent } from '@/content/app';
@@ -65,20 +64,22 @@ export function RideFormPage({
 
   return (
     <DashboardShell>
-      <PageHeader title={isEdit ? ridesContent.edit.heading : ridesContent.create.heading} />
-
-      {isEdit && rideId && (
-        <ContentToolbar
-          right={
+      <PageHeader
+        title={isEdit ? ridesContent.edit.heading : ridesContent.create.heading}
+        actions={
+          isEdit && rideId ? (
             <Link href={`${routes.manageNewRide}?duplicate=${rideId}`}>
-              <Button variant="outline" size="sm">
-                <Copy className="h-4 w-4 mr-1.5" />
-                {ridesContent.edit.duplicateRide}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
+              >
+                <Copy className="size-6" />
               </Button>
             </Link>
-          }
-        />
-      )}
+          ) : undefined
+        }
+      />
 
       <RideForm
         clubId={clubId}

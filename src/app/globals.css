@@ -246,10 +246,45 @@
   --card-padding: 1rem;
   --card-padding-md: 1.25rem;
 
-  /* Typography sizes */
-  --text-micro: 0.6rem;
-  --text-compact: 0.8rem;
-  --text-overline: 0.6875rem; /* 11px — design system overline tier */
+  /* ── Fluid typography scale ──
+   * Sizes scale smoothly between 375px (mobile floor) and 1280px (desktop
+   * ceiling) via clamp(). The mobile value of every override exactly matches
+   * the Tailwind v4 default, so nothing changes on small screens — desktop
+   * gets the scaling lift.
+   *
+   * Formula: clamp(MOBILE, INTERCEPT + SLOPE·100vw, DESKTOP)
+   *   where slope = (desktop − mobile) / 905px viewport range.
+   */
+
+  /* Display tier — aggressive scaling */
+  --text-5xl: clamp(3rem, 2.793rem + 0.884vw, 3.5rem); /* 48 → 56 px */
+  --text-4xl: clamp(2.25rem, 2.095rem + 0.663vw, 2.625rem); /* 36 → 42 px */
+  --text-3xl: clamp(1.875rem, 1.771rem + 0.442vw, 2.125rem); /* 30 → 34 px */
+
+  /* Heading tier — moderate scaling */
+  --text-2xl: clamp(1.5rem, 1.422rem + 0.331vw, 1.6875rem); /* 24 → 27 px */
+  --text-xl: clamp(1.25rem, 1.198rem + 0.221vw, 1.375rem); /* 20 → 22 px */
+  --text-lg: clamp(1.125rem, 1.073rem + 0.221vw, 1.25rem); /* 18 → 20 px */
+
+  /* Body tier — gentle scaling */
+  --text-base: clamp(1rem, 0.974rem + 0.11vw, 1.0625rem); /* 16 → 17 px */
+  --text-sm: clamp(0.875rem, 0.849rem + 0.11vw, 0.9375rem); /* 14 → 15 px */
+
+  /* Caption tier — gentle scaling */
+  --text-xs: clamp(0.75rem, 0.724rem + 0.11vw, 0.8125rem); /* 12 → 13 px */
+
+  /* Custom tokens (no Tailwind default equivalent) */
+  --text-body-sm: clamp(0.8125rem, 0.787rem + 0.11vw, 0.875rem); /* 13 → 14 px */
+  --text-body-sm--line-height: 1.25rem;
+  --text-body-lg: clamp(0.9375rem, 0.912rem + 0.11vw, 1rem); /* 15 → 16 px */
+  --text-body-lg--line-height: 1.5rem;
+  --text-caption-sm: clamp(0.625rem, 0.599rem + 0.11vw, 0.6875rem); /* 10 → 11 px */
+  --text-caption-sm--line-height: 0.875rem;
+  --text-overline: clamp(0.6875rem, 0.662rem + 0.11vw, 0.75rem); /* 11 → 12 px */
+
+  /* Fixed micro sizes — too small to benefit from scaling */
+  --text-micro: 0.6rem; /* 9.6 px — badge counts, inline notifications */
+  --text-compact: 0.8rem; /* 12.8 px — weather temp display */
 
   /* Opacity */
   --opacity-disabled: 0.4;

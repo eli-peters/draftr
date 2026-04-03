@@ -143,7 +143,7 @@
   --action-secondary-default: var(--color-secondary-600);
   --action-secondary-hover: var(--color-secondary-700);
   --action-secondary-active: var(--color-secondary-800);
-  --action-secondary-subtle-bg: var(--color-secondary-50);
+  --action-secondary-subtle-bg: var(--color-secondary-100);
   --action-secondary-subtle-text: var(--color-secondary-700);
   --action-danger-default: var(--color-error-600);
   --action-danger-hover: var(--color-error-700);
@@ -293,7 +293,7 @@
   --action-secondary-default: var(--color-secondary-400);
   --action-secondary-hover: var(--color-secondary-300);
   --action-secondary-active: var(--color-secondary-500);
-  --action-secondary-subtle-bg: var(--color-secondary-500-alpha-12);
+  --action-secondary-subtle-bg: var(--color-secondary-900);
   --action-secondary-subtle-text: var(--color-secondary-300);
   --action-danger-default: var(--color-error-500);
   --action-danger-hover: var(--color-error-400);

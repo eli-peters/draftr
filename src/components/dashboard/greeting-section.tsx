@@ -17,14 +17,15 @@ function getGreeting(): string {
 
 interface GreetingSectionProps {
   firstName: string;
+  className?: string;
 }
 
-export function GreetingSection({ firstName }: GreetingSectionProps) {
+export function GreetingSection({ firstName, className }: GreetingSectionProps) {
   const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
     setGreeting(dashboard.greetingWithName(getGreeting(), firstName));
   }, [firstName]);
 
-  return <PageHeader title={greeting || '\u00A0'} />;
+  return <PageHeader title={greeting || '\u00A0'} className={className} />;
 }

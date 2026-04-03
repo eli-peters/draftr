@@ -20,7 +20,7 @@ export function PageHeader({
 }: PageHeaderProps) {
   if (centered) {
     return (
-      <div className={cn('relative mb-4 md:mb-8', className)}>
+      <div className={cn('relative mb-2 md:mb-6', className)}>
         {actions && <div className="absolute top-0 right-0 flex items-center gap-1">{actions}</div>}
         <div className="text-center">
           <div className="inline-flex items-center gap-3">

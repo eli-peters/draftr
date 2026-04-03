@@ -8,14 +8,12 @@ import {
   getUserClubMembership,
   getRideComments,
   getRideCoLeaders,
-  getRideReactions,
   getCommentReactions,
 } from '@/lib/rides/queries';
 import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { RideSignupSection } from '@/components/rides/ride-signup-section';
 import { RideComments } from '@/components/rides/ride-comments';
 import { RideDetailCard } from '@/components/rides/ride-detail-card';
-import { RideReactionBar } from '@/components/rides/ride-reaction-bar';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -34,17 +32,14 @@ interface RideDetailPageProps {
 
 export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const { id } = await params;
-  const [ride, signup, signups, membership, comments, coLeaders, rideReactions] = await Promise.all(
-    [
-      getRideById(id),
-      getUserSignupStatus(id),
-      getRideSignups(id),
-      getUserClubMembership(),
-      getRideComments(id),
-      getRideCoLeaders(id),
-      getRideReactions(id),
-    ],
-  );
+  const [ride, signup, signups, membership, comments, coLeaders] = await Promise.all([
+    getRideById(id),
+    getUserSignupStatus(id),
+    getRideSignups(id),
+    getUserClubMembership(),
+    getRideComments(id),
+    getRideCoLeaders(id),
+  ]);
   if (!ride) notFound();
 
   const commentReactions = await getCommentReactions(comments.map((c) => c.id));
@@ -89,7 +84,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         }
       />
 
-      {/* Main ride detail card — weather integrated near metadata */}
+      {/* Main ride detail card */}
       <RideDetailCard
         ride={ride}
         isSignedUp={isSignedUp}
@@ -98,11 +93,6 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         lifecycle={availability.lifecycle}
         weather={ride.weather}
       />
-
-      {/* Ride-level reactions */}
-      <div className="mt-4">
-        <RideReactionBar rideId={ride.id} reactions={rideReactions} currentUserId={currentUserId} />
-      </div>
 
       {/* Sign-ups closed message — shown when CTA is hidden and rider isn't signed up */}
       {!availability.canSignUp && !availability.isCancelled && !isSignedUp && (

@@ -160,7 +160,7 @@ export function MemberList({ members, clubId, currentUserId }: MemberListProps) 
         />
       </FloatingField>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-2 md:mb-4">
         <FilterChipGroup
           value={[roleFilter]}
           onValueChange={(values: string[]) => {

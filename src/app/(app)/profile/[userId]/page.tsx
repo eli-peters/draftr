@@ -109,7 +109,7 @@ export default async function PublicProfilePage({
       <ContentCard padding="spacious" className="mt-8">
         <div className="grid grid-cols-2 divide-x divide-border">
           <div className="flex flex-col items-center px-2">
-            <span className="text-xl font-bold tabular-nums text-foreground">
+            <span className="font-mono text-xl font-bold tabular-nums text-foreground">
               {stats.totalRides}
             </span>
             <p className="text-sm font-medium text-muted-foreground mt-1.5 text-center">
@@ -117,7 +117,9 @@ export default async function PublicProfilePage({
             </p>
           </div>
           <div className="flex flex-col items-center px-2">
-            <span className="text-xl font-bold tabular-nums text-foreground">{memberSince}</span>
+            <span className="font-mono text-xl font-bold tabular-nums text-foreground">
+              {memberSince}
+            </span>
             <p className="text-sm font-medium text-muted-foreground mt-1.5 text-center">
               {content.sections.memberSince}
             </p>

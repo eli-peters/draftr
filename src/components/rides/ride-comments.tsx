@@ -109,7 +109,7 @@ function CommentRow({
       <Avatar className="h-6 w-6 shrink-0">
         {comment.avatar_url && <AvatarImage src={comment.avatar_url} alt={comment.user_name} />}
         <AvatarFallback
-          className={`text-[0.625rem] font-medium ${getAvatarColourClasses(comment.user_name)}`}
+          className={`text-caption-sm font-medium ${getAvatarColourClasses(comment.user_name)}`}
         >
           {getInitials(comment.user_name)}
         </AvatarFallback>
@@ -168,7 +168,7 @@ function CommentRow({
             {isOwn && (
               <button
                 onClick={() => setIsEditing(true)}
-                className="text-[0.6875rem] text-muted-foreground transition-colors hover:text-foreground"
+                className="text-overline text-muted-foreground transition-colors hover:text-foreground"
               >
                 {content.edit}
               </button>
@@ -176,7 +176,7 @@ function CommentRow({
             <button
               onClick={handleDelete}
               disabled={isPending}
-              className="text-[0.6875rem] text-muted-foreground transition-colors hover:text-destructive"
+              className="text-overline text-muted-foreground transition-colors hover:text-destructive"
             >
               {content.delete}
             </button>

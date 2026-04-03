@@ -157,7 +157,7 @@ export function ActionBar({
   if (!hasItems) return null;
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       {/* Rider: your next confirmed ride */}
       {nextSignup &&
         (() => {
@@ -320,7 +320,7 @@ export function ActionBar({
         </ActionCard>
       )}
 
-      {/* Nudge: next available club ride (shown when rider has no signups) */}
+      {/* Next club ride the user doesn't already have a card for */}
       {nextAvailableRide && (
         <ActionCard
           label={content.nudge.heading}
