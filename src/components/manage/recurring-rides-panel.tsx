@@ -50,7 +50,7 @@ interface RecurringRideData {
   season_end_date: string | null;
   default_distance_km: number | null;
   default_capacity: number | null;
-  meeting_location_name: string | null;
+  start_location_name: string | null;
   pace_group_name: string | null;
 }
 

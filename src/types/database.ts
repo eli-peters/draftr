@@ -293,6 +293,8 @@ export interface SignupAvatar {
 export interface RideWithDetails extends Ride {
   pace_group: PaceGroup | null;
   signup_count: number;
+  /** Confirmed signups excluding leaders — used for capacity/availability math. */
+  rider_count: number;
   /** First few confirmed signups for avatar display (ordered by signed_up_at). */
   signup_avatars: SignupAvatar[];
   creator: Pick<User, 'id' | 'full_name' | 'avatar_url'> | null;

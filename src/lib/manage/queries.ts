@@ -192,7 +192,7 @@ export async function getClubRideTemplates(clubId: string) {
     const raw = t as Record<string, unknown>;
     return {
       ...t,
-      meeting_location_name: (raw.default_start_location_name as string) ?? null,
+      start_location_name: (raw.default_start_location_name as string) ?? null,
       pace_group_name: pace?.name ?? null,
     };
   });

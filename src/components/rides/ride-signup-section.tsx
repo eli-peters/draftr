@@ -1,19 +1,24 @@
 'use client';
 
-import { useState } from 'react';
-import { SignupRoster } from '@/components/rides/signup-roster';
+import { useState, useTransition } from 'react';
+import { SignupRoster, type SignupEntry } from '@/components/rides/signup-roster';
 import { FloatingSignupBar } from '@/components/rides/floating-signup-bar';
 import { CancelSignupDrawer } from '@/components/rides/cancel-signup-drawer';
+import { removeRiderFromRide } from '@/lib/rides/actions';
+import { Button } from '@/components/ui/button';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerClose,
+} from '@/components/ui/drawer';
+import { appContent } from '@/content/app';
+import { toast } from 'sonner';
 
-interface SignupEntry {
-  id: string;
-  status: string;
-  signed_up_at: string | null;
-  waitlist_position: number | null;
-  user_id: string;
-  user_name: string;
-  avatar_url: string | null;
-}
+const { roster } = appContent.rides;
 
 interface RideSignupSectionProps {
   rideId: string;
@@ -25,6 +30,7 @@ interface RideSignupSectionProps {
   canSignUp: boolean;
   canCancel: boolean;
   isFull: boolean;
+  canRemoveRiders?: boolean;
 }
 
 export function RideSignupSection({
@@ -37,8 +43,26 @@ export function RideSignupSection({
   canSignUp,
   canCancel,
   isFull,
+  canRemoveRiders,
 }: RideSignupSectionProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [removeTarget, setRemoveTarget] = useState<{ userId: string; userName: string } | null>(
+    null,
+  );
+  const [isRemoving, startRemoveTransition] = useTransition();
+
+  function handleRemoveConfirm() {
+    if (!removeTarget) return;
+    startRemoveTransition(async () => {
+      const result = await removeRiderFromRide(rideId, removeTarget.userId);
+      if (result.success) {
+        toast.success(roster.removeSuccess(removeTarget.userName));
+      } else if (result.error) {
+        toast.error(result.error);
+      }
+      setRemoveTarget(null);
+    });
+  }
 
   return (
     <>
@@ -48,6 +72,10 @@ export function RideSignupSection({
         coLeaderIds={coLeaderIds}
         currentUserId={currentUserId}
         onCancelSignup={canCancel && isSignedUp ? () => setDrawerOpen(true) : undefined}
+        canRemoveRiders={canRemoveRiders}
+        onRemoveRider={
+          canRemoveRiders ? (userId, userName) => setRemoveTarget({ userId, userName }) : undefined
+        }
       />
 
       {/* Floating signup bar — visible when not signed up */}
@@ -57,6 +85,26 @@ export function RideSignupSection({
       {canCancel && isSignedUp && (
         <CancelSignupDrawer rideId={rideId} open={drawerOpen} onOpenChange={setDrawerOpen} />
       )}
+
+      {/* Remove rider confirmation drawer */}
+      <Drawer open={!!removeTarget} onOpenChange={(open) => !open && setRemoveTarget(null)}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>
+              {removeTarget ? roster.removeConfirmTitle(removeTarget.userName) : ''}
+            </DrawerTitle>
+            <DrawerDescription>{roster.removeConfirmDescription}</DrawerDescription>
+          </DrawerHeader>
+          <DrawerFooter>
+            <Button variant="destructive" onClick={handleRemoveConfirm} disabled={isRemoving}>
+              {isRemoving ? appContent.common.loading : roster.removeRider}
+            </Button>
+            <DrawerClose asChild>
+              <Button variant="outline">{roster.removeConfirmKeep}</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 }

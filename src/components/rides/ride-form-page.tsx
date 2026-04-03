@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import { Copy } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
-import { ContentCard } from '@/components/ui/content-card';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { RideForm } from '@/components/rides/ride-form';
 import { SignupRoster } from '@/components/rides/signup-roster';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
+import { SignupStatus } from '@/config/statuses';
 import type { IntegrationService } from '@/types/database';
 import type { RideFormInitialData } from '@/types/rides';
 
@@ -24,7 +24,6 @@ interface RideFormPageProps {
 
   /** Present when editing — triggers edit mode */
   rideId?: string;
-  templateId?: string;
   returnTo?: string;
   rideTitle?: string;
 
@@ -53,7 +52,6 @@ export function RideFormPage({
   seasonStart,
   seasonEnd,
   rideId,
-  templateId,
   returnTo,
   rideTitle,
   initialCoLeaderIds,
@@ -85,7 +83,6 @@ export function RideFormPage({
         clubId={clubId}
         paceGroups={paceGroups}
         rideId={rideId}
-        templateId={templateId}
         initialData={initialData}
         seasonStart={seasonStart}
         seasonEnd={seasonEnd}
@@ -94,11 +91,14 @@ export function RideFormPage({
         initialCoLeaderIds={initialCoLeaderIds}
         rideTitle={rideTitle}
         returnTo={returnTo}
+        signupCount={
+          signups?.filter(
+            (s) => s.status === SignupStatus.CONFIRMED || s.status === SignupStatus.CHECKED_IN,
+          ).length
+        }
       >
         {isEdit && rideId && signups && (
-          <ContentCard className="mt-8" heading={ridesContent.edit.signups}>
-            <SignupRoster signups={signups} createdBy={rideCreatedBy ?? null} />
-          </ContentCard>
+          <SignupRoster signups={signups} createdBy={rideCreatedBy ?? null} />
         )}
       </RideForm>
     </DashboardShell>

@@ -5,7 +5,6 @@
  */
 
 function ordinal(n: number): string {
-  if (n === 1) return 'first';
   const suffixes = ['th', 'st', 'nd', 'rd'];
   const mod100 = n % 100;
   return `${n}${suffixes[(mod100 - 20) % 10] || suffixes[mod100] || suffixes[0]}`;
@@ -190,6 +189,11 @@ export const appContent = {
       distanceLabel: 'Distance',
       elevationLabel: 'Elevation',
       routeMapPlaceholder: 'Route map coming soon',
+      sectionRouteTerrain: 'Route & Terrain',
+      sectionRiders: 'Riders',
+      goingCount: (total: number) => `${total} going`,
+      spotsCount: (confirmed: number, capacity: number | null) =>
+        capacity ? `${confirmed} of ${capacity} spots` : `${confirmed} signed up`,
       ridersHeading: (confirmed: number, waitlisted: number, capacity: number | null) => {
         const parts: string[] = [];
         if (capacity != null) {
@@ -240,10 +244,13 @@ export const appContent = {
     form: {
       // Section headings
       sectionBasics: 'Basics',
+      sectionRideDetails: 'Ride Details',
       sectionWhenWhere: 'When & Where',
       sectionRoute: 'Route',
       sectionSettings: 'Settings',
       sectionAdditional: 'Additional',
+      sectionRiders: 'Riders',
+      sectionCoLeaders: 'Co-Leaders',
       sectionWhen: 'When',
       sectionWhere: 'Start Location',
       sectionRideType: 'Ride Type',
@@ -331,12 +338,21 @@ export const appContent = {
       fieldRequired: 'Required',
       descriptionPlaceholder: 'Brief description of the ride...',
       descriptionHelper: 'A few words help riders know what to expect.',
+      addDescription: 'Add a description',
+      addCoLeader: 'Add a co-leader',
+      replaceRoute: 'Replace this route?',
+      replaceRouteDescription: 'Import a new route to replace the current one.',
     },
     roster: {
       noSignups: 'No signups yet.',
       waitlisted: 'Waitlisted',
       leader: 'Leader',
       joined: (timeAgo: string) => `Joined ${timeAgo} ago`,
+      removeRider: 'Remove',
+      removeConfirmTitle: (name: string) => `Remove ${name} from this ride?`,
+      removeConfirmDescription: "They'll be notified and their spot will be released.",
+      removeConfirmKeep: 'Keep',
+      removeSuccess: (name: string) => `${name} has been removed from this ride.`,
     },
     comments: {
       heading: 'Comments',
@@ -542,6 +558,7 @@ export const appContent = {
       waitlist_promoted: 'Waitlist Update',
       waitlist_joined: 'Waitlist Alert',
       announcement: 'Announcement',
+      rider_removed: 'Removed from Ride',
     },
   },
 
@@ -732,6 +749,8 @@ export const appContent = {
   },
 
   common: {
+    decrease: 'Decrease',
+    increase: 'Increase',
     loading: 'Loading...',
     error: 'Something went wrong',
     errorDescription: 'An unexpected error occurred. Please try again.',
@@ -793,6 +812,10 @@ export const appContent = {
     rideCancelled: {
       title: (rideTitle: string) => `Ride Cancelled: ${rideTitle}`,
       defaultBody: 'This ride has been cancelled by the organiser.',
+    },
+    riderRemoved: {
+      title: (rideTitle: string) => `Removed from ${rideTitle}`,
+      body: 'A ride leader removed you from this ride. Your spot has been released.',
     },
   },
 } as const;

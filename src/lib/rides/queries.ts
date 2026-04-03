@@ -54,7 +54,7 @@ function toActionBarResult(row: ActionBarRideRow) {
     start_time: row.start_time,
     end_time: row.end_time,
     distance_km: row.distance_km,
-    meeting_location_name: row.start_location_name ?? null,
+    start_location_name: row.start_location_name ?? null,
     pace_group_name: row.pace_group?.name ?? null,
     pace_group_sort_order: row.pace_group?.sort_order ?? null,
     weather: row.ride_weather_snapshots ?? null,
@@ -114,9 +114,17 @@ function toRideWithDetails(ride: RawRideRow, currentUserId?: string): RideWithDe
     full_name: s.user.full_name,
   }));
 
+  // Leaders don't count against capacity
+  const leaderUserIds = new Set([
+    ride.created_by,
+    ...(ride.ride_leaders ?? []).map((rl) => rl.user_id),
+  ]);
+  const riderCount = confirmedSignups.filter((s) => !leaderUserIds.has(s.user_id)).length;
+
   return {
     ...ride,
     signup_count: confirmedSignups.length,
+    rider_count: riderCount,
     signup_avatars: signupAvatars,
     creator: ride.creator ?? null,
     current_user_signup_status: (userSignup?.status as 'confirmed' | 'waitlisted') ?? null,
@@ -275,7 +283,7 @@ export async function getUserNextSignup(userId: string, clubId: string, timezone
       ride_date: ride.ride_date,
       start_time: ride.start_time,
       end_time: ride.end_time,
-      meeting_location_name: ride.start_location_name ?? null,
+      start_location_name: ride.start_location_name ?? null,
       pace_group_name: ride.pace_group?.name ?? null,
       pace_group_sort_order: ride.pace_group?.sort_order ?? null,
       distance_km: ride.distance_km,
@@ -402,7 +410,7 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string, 
       end_time: ride.end_time,
       distance_km: ride.distance_km,
       elevation_m: ride.elevation_m,
-      meeting_location_name: ride.start_location_name ?? null,
+      start_location_name: ride.start_location_name ?? null,
       pace_group_name: ride.pace_group?.name ?? null,
       pace_group_sort_order: ride.pace_group?.sort_order ?? null,
       waitlist_position: count ?? 1,
@@ -596,7 +604,7 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
       capacity: ride.capacity as number | null,
       distance_km: (ride as Record<string, unknown>).distance_km as number | null,
       template_id: (ride as Record<string, unknown>).template_id as string | null,
-      meeting_location_name:
+      start_location_name:
         ((ride as Record<string, unknown>).start_location_name as string) ?? null,
       pace_group_id: pace?.id ?? null,
       pace_group_name: pace?.name ?? null,
@@ -657,10 +665,10 @@ export type UserRideSignup = {
   ride_date: string;
   start_time: string;
   pace_group_name: string | null;
-  meeting_location_name: string | null;
-  meeting_location_address: string | null;
-  meeting_location_latitude: number | null;
-  meeting_location_longitude: number | null;
+  start_location_name: string | null;
+  start_location_address: string | null;
+  start_location_latitude: number | null;
+  start_location_longitude: number | null;
   distance_km: number | null;
   elevation_m: number | null;
   end_time: string | null;
@@ -774,10 +782,10 @@ export async function getUserRideSignups(
       end_time: ride.end_time ?? null,
       pace_group_name: ride.pace_group?.name ?? null,
       pace_group_sort_order: ride.pace_group?.sort_order ?? null,
-      meeting_location_name: ride.start_location_name ?? null,
-      meeting_location_address: ride.start_location_address ?? null,
-      meeting_location_latitude: ride.start_latitude ?? null,
-      meeting_location_longitude: ride.start_longitude ?? null,
+      start_location_name: ride.start_location_name ?? null,
+      start_location_address: ride.start_location_address ?? null,
+      start_location_latitude: ride.start_latitude ?? null,
+      start_location_longitude: ride.start_longitude ?? null,
       distance_km: ride.distance_km,
       elevation_m: ride.elevation_m ?? null,
       signup_count: countActiveSignups(ride.ride_signups ?? []),

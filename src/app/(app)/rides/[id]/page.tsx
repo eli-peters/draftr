@@ -47,14 +47,18 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const isSignedUp =
     signup?.status === SignupStatus.CONFIRMED || signup?.status === SignupStatus.WAITLISTED;
 
-  const confirmedCount = signups.filter(
+  const confirmedSignups = signups.filter(
     (s) => s.status === SignupStatus.CONFIRMED || s.status === SignupStatus.CHECKED_IN,
-  ).length;
+  );
   const waitlistedCount = signups.filter((s) => s.status === SignupStatus.WAITLISTED).length;
 
-  // Centralized availability — replaces manual isPast/isCancelled checks
+  // Leaders don't count against capacity
+  const leaderUserIds = new Set([ride.created_by, ...coLeaders.map((cl) => cl.user_id)]);
+  const riderConfirmedCount = confirmedSignups.filter((s) => !leaderUserIds.has(s.user_id)).length;
+
+  // Centralized availability — uses non-leader count for capacity math
   const timezone = (membership?.club as unknown as Club)?.timezone ?? 'America/Toronto';
-  const availability = getRideAvailability(ride, confirmedCount, timezone);
+  const availability = getRideAvailability(ride, riderConfirmedCount, timezone);
 
   const userRole = (membership?.role as UserRole) ?? 'rider';
   const isCreator = membership?.user_id === ride.created_by;
@@ -109,7 +113,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         <ContentCard
           padding="compact"
           className="mt-8"
-          heading={detail.ridersHeading(confirmedCount, waitlistedCount, ride.capacity)}
+          heading={`${detail.sectionRiders} — ${detail.spotsCount(riderConfirmedCount, ride.capacity)}${waitlistedCount > 0 ? ` · ${detail.waitlistedCount(waitlistedCount)}` : ''}`}
         >
           <RideSignupSection
             rideId={ride.id}
@@ -121,6 +125,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
             canSignUp={availability.canSignUp}
             canCancel={availability.canCancel}
             isFull={availability.isFull}
+            canRemoveRiders={userRole === 'admin'}
           />
         </ContentCard>
       )}

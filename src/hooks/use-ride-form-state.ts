@@ -11,7 +11,6 @@ import { reverseGeocode } from '@/lib/maps/reverse-geocode';
 import {
   createRide,
   updateRide,
-  updateRecurringSeries,
   getLeaderRideConflicts,
   type CreateRideData,
   type UpdateRideData,
@@ -55,15 +54,9 @@ export interface RideFormState {
   startLongitude: number | null;
   isGeocodingLocation: boolean;
 
-  // Additional
+  // Riders
   selectedCoLeaders: string[];
   coLeaderConflicts: LeaderConflict[];
-  isRecurring: boolean;
-  recurringEndType: 'never' | 'after' | 'on_date';
-  recurringEndDate: string;
-
-  // UI
-  editScope: 'this' | 'all';
 
   // Form
   isPending: boolean;
@@ -126,10 +119,10 @@ function rideFormReducer(state: RideFormState, action: RideFormAction): RideForm
         importedRouteName: payload.routeName,
         // Only overwrite title if currently empty
         title: state.title ? state.title : (payload.title ?? state.title),
-        // Only overwrite description if currently empty
+        // Only overwrite description if currently empty — truncate to 250 chars
         description: state.description
           ? state.description
-          : (payload.description ?? state.description),
+          : (payload.description?.slice(0, 250) ?? state.description),
         distanceKm: payload.distanceKm ?? state.distanceKm,
         elevationM: payload.elevationM ?? state.elevationM,
         startLatitude: payload.startLatitude ?? state.startLatitude,
@@ -240,15 +233,9 @@ function buildInitialState(initialData?: RideFormInitialData): RideFormState {
     startLongitude: initialData?.start_longitude ?? null,
     isGeocodingLocation: false,
 
-    // Additional
+    // Riders
     selectedCoLeaders: [],
     coLeaderConflicts: [],
-    isRecurring: false,
-    recurringEndType: 'never',
-    recurringEndDate: '',
-
-    // UI
-    editScope: 'this',
 
     // Form
     isPending: false,
@@ -264,7 +251,6 @@ function buildInitialState(initialData?: RideFormInitialData): RideFormState {
 interface UseRideFormStateOptions {
   initialData?: RideFormInitialData;
   rideId?: string;
-  templateId?: string;
   clubId: string;
   connectedServices: IntegrationService[];
   eligibleLeaders: { user_id: string; name: string; avatar_url: string | null }[];
@@ -275,7 +261,6 @@ interface UseRideFormStateOptions {
 export function useRideFormState({
   initialData,
   rideId,
-  templateId,
   clubId,
   connectedServices,
   eligibleLeaders,
@@ -284,7 +269,6 @@ export function useRideFormState({
 }: UseRideFormStateOptions) {
   const router = useRouter();
   const isEdit = !!rideId;
-  const isRecurringSeries = isEdit && !!templateId;
 
   const [state, dispatch] = useReducer(rideFormReducer, initialData, buildInitialState);
 
@@ -393,6 +377,25 @@ export function useRideFormState({
 
   // ── Paste URL handler ───────────────────────────────────────────────────
 
+  /** Try to scrape route details from a URL. Returns true if successful. */
+  async function tryScrapeAndApply(url: string): Promise<boolean> {
+    dispatch({ type: 'SET_FIELD', field: 'isFetchingRoute', value: true });
+    try {
+      const res = await fetch(`${routes.scrapeRoute}?url=${encodeURIComponent(url)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.route) {
+          await applyRouteData(data.route as ImportableRoute);
+          toast.success(appContent.rides.importRoute.imported);
+          return true;
+        }
+      }
+    } catch {
+      // Scrape failed — caller handles fallback
+    }
+    return false;
+  }
+
   async function handlePasteUrlBlur() {
     const url = pasteUrlRef.current?.value?.trim();
     if (!url) return;
@@ -405,46 +408,22 @@ export function useRideFormState({
 
     // Unrecognized service — try scraping
     if (!parsed) {
-      dispatch({ type: 'SET_FIELD', field: 'isFetchingRoute', value: true });
-      try {
-        const res = await fetch(`${routes.scrapeRoute}?url=${encodeURIComponent(url)}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.route) {
-            await applyRouteData(data.route as ImportableRoute);
-            toast.success(appContent.rides.importRoute.imported);
-            return;
-          }
-        }
-      } catch {
-        // Scrape failed — store as link-only
+      if (!(await tryScrapeAndApply(url))) {
+        dispatch({ type: 'SET_LINK_ONLY', routeName: form.routeLinkAdded });
       }
-      dispatch({ type: 'SET_LINK_ONLY', routeName: form.routeLinkAdded });
       return;
     }
 
     // No connection for this service — try scraping
     if (!connectedServices.includes(parsed.service)) {
       dispatch({ type: 'SET_FIELD', field: 'detectedService', value: parsed.service });
-      dispatch({ type: 'SET_FIELD', field: 'isFetchingRoute', value: true });
-      try {
-        const res = await fetch(`${routes.scrapeRoute}?url=${encodeURIComponent(url)}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.route) {
-            await applyRouteData(data.route as ImportableRoute);
-            toast.success(appContent.rides.importRoute.imported);
-            return;
-          }
-        }
-      } catch {
-        // Scrape failed
+      if (!(await tryScrapeAndApply(url))) {
+        dispatch({
+          type: 'SET_LINK_ONLY',
+          routeName: form.routeLinkAdded,
+          detectedService: parsed.service,
+        });
       }
-      dispatch({
-        type: 'SET_LINK_ONLY',
-        routeName: form.routeLinkAdded,
-        detectedService: parsed.service,
-      });
       return;
     }
 
@@ -524,41 +503,15 @@ export function useRideFormState({
 
     let result: { error?: string; success?: boolean; rideId?: string };
 
-    if (isEdit && state.editScope === 'all' && isRecurringSeries) {
-      result = await updateRecurringSeries(rideId!, {
-        ...shared,
-        co_leader_ids: state.selectedCoLeaders,
-      } as UpdateRideData);
-    } else if (isEdit) {
+    if (isEdit) {
       result = await updateRide(rideId!, {
         ...shared,
         co_leader_ids: state.selectedCoLeaders,
       } as UpdateRideData);
     } else {
-      // Read recurring fields from FormData since they use native selects with defaultValue
-      const fd = new FormData(e.currentTarget);
-      const recurrence = fd.get('recurrence') as string;
-      let recurring: CreateRideData['recurring'] = undefined;
-      if (state.isRecurring && recurrence) {
-        const [y, m, d] = state.rideDate.split('-').map(Number);
-        recurring = {
-          recurrence,
-          day_of_week: new Date(y, m - 1, d).getDay(),
-          end_after_occurrences:
-            state.recurringEndType === 'after' && fd.get('end_after')
-              ? Number(fd.get('end_after'))
-              : undefined,
-          end_date:
-            state.recurringEndType === 'on_date'
-              ? (fd.get('end_date') as string) || undefined
-              : undefined,
-        };
-      }
-
       result = await createRide({
         ...shared,
         club_id: clubId,
-        recurring,
         co_leader_ids: state.selectedCoLeaders.length > 0 ? state.selectedCoLeaders : undefined,
       } as CreateRideData);
     }
@@ -584,19 +537,16 @@ export function useRideFormState({
 
   return {
     state,
-    dispatch,
     setField,
     pasteUrlRef,
 
     // Derived
     isEdit,
-    isRecurringSeries,
 
     // Handlers
     handleRouteImport,
     handlePasteUrlBlur,
     handleSubmit,
     clearRouteData,
-    applyRouteData,
   };
 }

@@ -26,7 +26,7 @@ export interface ManageRideData {
   capacity: number | null;
   distance_km: number | null;
   template_id: string | null;
-  meeting_location_name: string | null;
+  start_location_name: string | null;
   pace_group_id: string | null;
   pace_group_name: string | null;
   pace_group_sort_order: number | null;
@@ -104,10 +104,10 @@ function ManageRideRow({ ride }: { ride: ManageRideData }) {
 
         {/* Location — fixed width, truncated */}
         <div className="w-32 shrink-0 truncate text-sm text-muted-foreground">
-          {ride.meeting_location_name && (
+          {ride.start_location_name && (
             <span className="flex items-center gap-1">
               <MapPin className="size-3.5 shrink-0" />
-              <span className="truncate">{ride.meeting_location_name}</span>
+              <span className="truncate">{ride.start_location_name}</span>
             </span>
           )}
         </div>
@@ -151,10 +151,10 @@ function ManageRideRow({ ride }: { ride: ManageRideData }) {
             <Users className="size-3 shrink-0" />
             {spotsText}
           </span>
-          {ride.meeting_location_name && (
+          {ride.start_location_name && (
             <span className="flex items-center gap-1">
               <MapPin className="size-3 shrink-0" />
-              <span className="truncate">{ride.meeting_location_name}</span>
+              <span className="truncate">{ride.start_location_name}</span>
             </span>
           )}
           {ride.pace_group_name && (
