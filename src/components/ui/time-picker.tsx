@@ -96,7 +96,7 @@ function TimePicker({
                   type="button"
                   data-selected={isSelected || undefined}
                   className={cn(
-                    'shrink-0 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors outline-none',
+                    'shrink-0 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors outline-none focus-ring-inset',
                     isSelected
                       ? 'bg-primary text-primary-foreground'
                       : 'text-foreground hover:bg-accent',

@@ -41,7 +41,7 @@ export function RideCard({ ride, variant = 'rides', timezone }: RideCardProps) {
   const isBannerSuppressed = isHome && homeSuppressed.includes(cardState);
 
   return (
-    <Link href={routes.ride(ride.id)} className="group block">
+    <Link href={routes.ride(ride.id)} className="group block rounded-(--card-radius) focus-ring">
       <Card
         className={cn(
           'overflow-clip p-0',

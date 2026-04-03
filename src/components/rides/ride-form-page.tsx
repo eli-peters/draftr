@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Copy } from '@phosphor-icons/react/dist/ssr';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { RideForm } from '@/components/rides/ride-form';
@@ -66,14 +66,16 @@ export function RideFormPage({
         title={isEdit ? ridesContent.edit.heading : ridesContent.create.heading}
         actions={
           isEdit && rideId ? (
-            <Link href={`${routes.manageNewRide}?duplicate=${rideId}`}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
-              >
-                <Copy className="size-6" />
-              </Button>
+            <Link
+              href={`${routes.manageNewRide}?duplicate=${rideId}`}
+              className={buttonVariants({
+                variant: 'ghost',
+                size: 'icon',
+                className:
+                  'rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90',
+              })}
+            >
+              <Copy className="size-6" />
             </Link>
           ) : undefined
         }

@@ -96,7 +96,7 @@ function SelectItem({ className, children, ...props }: SelectPrimitive.Item.Prop
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        'relative flex cursor-default items-center gap-1.5 rounded-md py-2 pr-8 pl-3 text-sm outline-hidden select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50',
+        'relative flex cursor-default items-center gap-1.5 rounded-md py-2 pr-8 pl-3 text-sm outline-none focus-ring-inset select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50',
         className,
       )}
       {...props}

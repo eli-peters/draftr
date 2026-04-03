@@ -89,13 +89,13 @@ export function RouteMap({
   }
 
   return (
-    <div className={cn('w-full max-w-full overflow-hidden', className)}>
+    <div className={cn('w-full max-w-full', className)}>
       {routeUrl ? (
         <a
           href={routeUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="block overflow-hidden rounded-xl"
+          className="block overflow-clip rounded-xl focus-ring"
           title={routeName ?? undefined}
         >
           <MapInner
@@ -107,7 +107,7 @@ export function RouteMap({
           />
         </a>
       ) : (
-        <div className="overflow-hidden rounded-xl">
+        <div className="overflow-clip rounded-xl">
           <MapInner
             ref={mapRef}
             isDark={isDark}
@@ -142,7 +142,7 @@ const MapInner = forwardRef<MapRef, MapInnerProps>(function MapInner(
       mapboxAccessToken={MAPBOX_TOKEN}
       mapStyle={isDark ? DARK_STYLE : LIGHT_STYLE}
       style={{ width: '100%', height: 'auto', aspectRatio }}
-      interactive={true}
+      interactive={false}
       scrollZoom={false}
       attributionControl={false}
       onLoad={onLoad}

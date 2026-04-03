@@ -1,20 +1,12 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { CancelRideButton } from '@/components/rides/cancel-ride-button';
-import { appContent } from '@/content/app';
+import { RideFormActionBar } from '@/components/rides/ride-form-action-bar';
 import { todayDateString } from '@/config/formatting';
 import { useRideFormState } from '@/hooks/use-ride-form-state';
-import {
-  StepRoute,
-  StepDetails,
-  StepWhenWhere,
-  StepCoLeaders,
-} from '@/components/rides/form-steps';
+import { StepRoute, StepDetails, StepCoLeaders } from '@/components/rides/form-steps';
 import type { IntegrationService } from '@/types/database';
 import type { RideFormInitialData } from '@/types/rides';
-
-const { rides: ridesContent, common } = appContent;
 
 interface RideFormProps {
   clubId: string;
@@ -73,7 +65,7 @@ export function RideForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      <fieldset disabled={state.isFetchingRoute} className="min-w-0 space-y-5">
+      <fieldset disabled={state.isFetchingRoute} className="min-w-0 space-y-5 pb-28 md:pb-0">
         {/* ── Step 1: Route ────────────────────────────────────────── */}
         <div>
           <StepRoute
@@ -116,20 +108,15 @@ export function RideForm({
             }
           }}
           onCapacityChange={(v) => setField('capacity', v)}
-        />
-
-        {/* ── Step 3: When & Where ─────────────────────────────────── */}
-        <StepWhenWhere
           rideDate={state.rideDate}
           startTime={state.startTime}
           dateMin={effectiveMin}
           dateMax={seasonEnd || undefined}
-          fieldErrors={state.fieldErrors}
           onDateChange={(v) => setField('rideDate', v)}
           onTimeChange={(v) => setField('startTime', v)}
         />
 
-        {/* ── Step 4: Co-Leaders ────────────────────────────────────── */}
+        {/* ── Step 3: Co-Leaders ────────────────────────────────────── */}
         <StepCoLeaders
           isEdit={isEdit}
           eligibleLeaders={eligibleLeaders}
@@ -148,33 +135,13 @@ export function RideForm({
           {children}
         </StepCoLeaders>
 
-        {/* ── Actions ──────────────────────────────────────────────── */}
-        <div>
-          {state.error && <p className="text-sm text-destructive mb-4">{state.error}</p>}
-          <div className="flex flex-col-reverse items-center gap-3 md:flex-row">
-            {isEdit && rideId && rideTitle && (
-              <div className="md:mr-auto w-full md:w-auto">
-                <CancelRideButton rideId={rideId} rideTitle={rideTitle} />
-              </div>
-            )}
-            <div className="flex items-center gap-3 w-full md:w-auto md:ml-auto justify-center md:justify-end">
-              <button
-                type="button"
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                onClick={() => history.back()}
-              >
-                {isEdit ? common.discard : common.cancel}
-              </button>
-              <Button type="submit" disabled={state.isPending} className="w-full md:w-auto">
-                {state.isPending
-                  ? common.loading
-                  : isEdit
-                    ? common.save
-                    : ridesContent.create.submitButton}
-              </Button>
-            </div>
-          </div>
-        </div>
+        {/* ── Cancel Ride (edit mode only) ─────────────────────────── */}
+        {isEdit && rideId && rideTitle && (
+          <CancelRideButton rideId={rideId} rideTitle={rideTitle} />
+        )}
+
+        {/* ── Action Bar ──────────────────────────────────────────── */}
+        <RideFormActionBar isEdit={isEdit} isPending={state.isPending} error={state.error} />
       </fieldset>
     </form>
   );

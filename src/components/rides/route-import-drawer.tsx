@@ -30,7 +30,7 @@ export function RouteImportDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} direction={isMobile ? 'bottom' : 'right'}>
-      <DrawerContent className="overflow-hidden data-[vaul-drawer-direction=bottom]:h-[80vh] data-[vaul-drawer-direction=right]:h-full data-[vaul-drawer-direction=left]:h-full">
+      <DrawerContent className="overflow-clip data-[vaul-drawer-direction=bottom]:h-[80vh] data-[vaul-drawer-direction=right]:h-full data-[vaul-drawer-direction=left]:h-full">
         <DrawerHeader className="flex flex-row items-center gap-3 pr-12">
           <div className="flex size-8 items-center justify-center" style={{ color: brandColor }}>
             <Icon className="size-5" />

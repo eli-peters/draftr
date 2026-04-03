@@ -161,30 +161,6 @@ export function StepRoute({
                   aspectRatio="5/2"
                 />
               )}
-              {(distanceKm || elevationM) && (
-                <div className="rounded-xl bg-accent-secondary-subtle p-4">
-                  <div className="flex gap-6">
-                    {distanceKm && (
-                      <div className="flex flex-col items-start">
-                        <span className="text-sm text-foreground">{detail.distanceLabel}</span>
-                        <span className="font-mono text-base font-medium text-foreground">
-                          {distanceKm}
-                          {units.km}
-                        </span>
-                      </div>
-                    )}
-                    {elevationM && (
-                      <div className="flex flex-col items-start">
-                        <span className="text-sm text-foreground">{detail.elevationLabel}</span>
-                        <span className="font-mono text-base font-medium text-foreground">
-                          {elevationM}
-                          {units.m}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
               <StartLocationDisplay
                 name={startLocationName}
                 address={startLocationAddress}
@@ -193,6 +169,28 @@ export function StepRoute({
                 isGeocoding={isGeocodingLocation}
                 hasRoute
               />
+              {(distanceKm || elevationM) && (
+                <div className="flex gap-3">
+                  {distanceKm && (
+                    <div className="flex flex-col items-start rounded-xl bg-accent-secondary-subtle px-4 py-3">
+                      <span className="text-xs text-muted-foreground">{detail.distanceLabel}</span>
+                      <span className="font-mono text-base font-medium text-foreground">
+                        {distanceKm}
+                        {units.km}
+                      </span>
+                    </div>
+                  )}
+                  {elevationM && (
+                    <div className="flex flex-col items-start rounded-xl bg-accent-secondary-subtle px-4 py-3">
+                      <span className="text-xs text-muted-foreground">{detail.elevationLabel}</span>
+                      <span className="font-mono text-base font-medium text-foreground">
+                        {elevationM}
+                        {units.m}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )
         ) : (

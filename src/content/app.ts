@@ -226,11 +226,9 @@ export const appContent = {
       confirmCancel: 'Cancel',
       editRide: 'Edit',
       cancelRide: 'Cancel Ride',
-      cancelReasonPlaceholder: 'Weather, insufficient signups, etc.',
       cancelRideWarning: (count: number) =>
         `This will notify ${count === 1 ? '1 rider' : `all ${count} riders`}`,
       confirmCancelRide: 'Confirm Cancel',
-      leadingThisRide: "You're leading this ride",
     },
     create: {
       heading: 'Create a Ride',

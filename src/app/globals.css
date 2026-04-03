@@ -255,11 +255,11 @@
   --bar-padding-y-desktop: 1.5rem;
   --bar-shadow: var(--shadow-md);
   --bar-shadow-desktop: var(--shadow-xs);
-  --bar-bg-opacity: 70%;
+  --bar-bg-opacity: 80%;
   --bar-backdrop-blur: 12px;
   --bar-inset-x: 1rem;
   --bar-inset-bottom: 0rem;
-  --bar-fade-height: 4rem;
+  --bar-fade-height: 8rem;
 
   /* ── Fluid typography scale ──
    * Sizes scale smoothly between 375px (mobile floor) and 1280px (desktop
@@ -344,6 +344,10 @@
   --border: var(--border-default);
   --input: var(--border-default);
   --ring: var(--border-focus);
+
+  /* ── Focus ring ── */
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
 
   /* ── Status — via feedback semantic tokens ── */
   --info: var(--feedback-info-default);
@@ -448,7 +452,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
   body {
     @apply bg-background text-foreground;
@@ -642,4 +646,29 @@
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* ── Focus ring utilities ──
+ * Uses CSS outline (not box-shadow ring) so focus indicators
+ * are never clipped by overflow-hidden parent containers.
+ */
+@utility focus-ring {
+  &:focus-visible {
+    outline: var(--focus-ring-width) solid var(--ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+}
+
+@utility focus-ring-inset {
+  &:focus-visible {
+    outline: var(--focus-ring-width) solid var(--ring);
+    outline-offset: calc(-1 * var(--focus-ring-width));
+  }
+}
+
+@utility invalid-ring {
+  &:is([aria-invalid]) {
+    outline: var(--focus-ring-width) solid var(--destructive);
+    outline-offset: var(--focus-ring-offset);
+  }
 }

@@ -29,13 +29,13 @@ export function LocationMap({ latitude, longitude, aspectRatio = '5/2' }: Locati
   if (!MAPBOX_TOKEN) return null;
 
   return (
-    <div className="w-full overflow-hidden rounded-xl">
+    <div className="w-full overflow-clip rounded-xl">
       <Map
         mapboxAccessToken={MAPBOX_TOKEN}
         mapStyle={isDark ? DARK_STYLE : LIGHT_STYLE}
         style={{ width: '100%', height: 'auto', aspectRatio }}
         initialViewState={{ longitude, latitude, zoom: 14 }}
-        interactive={true}
+        interactive={false}
         scrollZoom={false}
         attributionControl={false}
       >
