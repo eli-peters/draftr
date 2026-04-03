@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Copy } from '@phosphor-icons/react/dist/ssr';
-import { buttonVariants } from '@/components/ui/button';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { RideForm } from '@/components/rides/ride-form';
@@ -68,12 +67,7 @@ export function RideFormPage({
           isEdit && rideId ? (
             <Link
               href={`${routes.manageNewRide}?duplicate=${rideId}`}
-              className={buttonVariants({
-                variant: 'ghost',
-                size: 'icon',
-                className:
-                  'rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90',
-              })}
+              className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
             >
               <Copy className="size-6" />
             </Link>

@@ -36,7 +36,7 @@ export function RideFormActionBar(props: RideFormActionBarProps) {
     <>
       {/* Mobile — fixed bottom, pill-shaped, glass/blur */}
       <div className="fixed left-(--bar-inset-x) right-(--bar-inset-x) bottom-[max(var(--bar-inset-x),env(safe-area-inset-bottom,0px))] z-40 mx-auto max-w-lg md:hidden">
-        <div className="rounded-(--bar-radius) border border-border/20 bg-surface-default/(--bar-bg-opacity) px-(--bar-padding-x) py-(--bar-padding-y) shadow-(--bar-shadow) backdrop-blur-(--bar-backdrop-blur)">
+        <div className="rounded-(--bar-radius) border border-border/20 bg-surface-default/(--bar-bg-opacity) px-(--bar-padding-x-action) py-(--bar-padding-y) shadow-(--bar-shadow) backdrop-blur-(--bar-backdrop-blur)">
           <ActionButtons {...props} />
         </div>
       </div>

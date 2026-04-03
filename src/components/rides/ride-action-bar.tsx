@@ -66,7 +66,7 @@ export function RideActionBar({ rideId, state, avatars, totalCount }: RideAction
           mode === 'confirm-cancel-ride' ? 'max-h-24 border border-destructive/30' : 'max-h-24',
         )}
       >
-        <div className="px-(--bar-padding-x)">
+        <div className="px-(--bar-padding-x-action)">
           {/* Main bar — left/right zones */}
           <div className="flex items-center justify-between gap-3 py-(--bar-padding-y)">
             {/* LEFT ZONE */}
