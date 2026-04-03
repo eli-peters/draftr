@@ -33,14 +33,20 @@ export default async function EditRidePage({
 
   const userId = membership.user_id;
 
-  const [ride, paceGroups, signups, members, connections, coLeaders] = await Promise.all([
-    getRideById(id),
-    getPaceGroups(membership.club_id),
-    getRideSignups(id),
-    getClubMembers(membership.club_id),
-    getUserConnections(userId),
-    getRideCoLeaders(id),
-  ]);
+  let ride, paceGroups, signups, members, connections, coLeaders;
+  try {
+    [ride, paceGroups, signups, members, connections, coLeaders] = await Promise.all([
+      getRideById(id),
+      getPaceGroups(membership.club_id),
+      getRideSignups(id),
+      getClubMembers(membership.club_id),
+      getUserConnections(userId),
+      getRideCoLeaders(id),
+    ]);
+  } catch (err) {
+    console.error('[EditRidePage] Query failed:', err);
+    throw err;
+  }
 
   if (!ride) notFound();
 

@@ -59,7 +59,7 @@ export function RideActionBar({ rideId, state, avatars, totalCount }: RideAction
   }
 
   return (
-    <div className="fixed left-(--bar-inset-x) right-(--bar-inset-x) bottom-[calc(var(--bar-inset-bottom)+env(safe-area-inset-bottom))] z-40 mx-auto max-w-lg md:hidden">
+    <div className="fixed left-(--bar-inset-x) right-(--bar-inset-x) bottom-[max(var(--bar-inset-x),env(safe-area-inset-bottom,0px))] z-40 mx-auto max-w-lg md:hidden">
       <div
         className={cn(
           'overflow-clip rounded-(--bar-radius) border border-border/20 bg-surface-default/(--bar-bg-opacity) shadow-(--bar-shadow) backdrop-blur-(--bar-backdrop-blur) transition-[max-height,background-color] duration-[--duration-normal] ease-[--ease-out]',
