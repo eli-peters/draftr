@@ -84,7 +84,7 @@ export function ReactionPills({ reactions, onToggle, currentUserId }: ReactionPi
           disabled={isPending}
           title={content.reactedBy(r.userNames)}
           className={cn(
-            'inline-flex items-center gap-1 rounded-full border px-3 py-1 transition-colors',
+            'inline-flex h-7 items-center gap-1 rounded-full border px-3 transition-colors',
             r.hasReacted
               ? 'border-primary bg-action-primary-subtle-bg text-primary'
               : 'border-border bg-muted/50 text-muted-foreground hover:border-primary/30 hover:bg-action-primary-subtle-bg/50',
@@ -111,7 +111,7 @@ function ReactionPicker({
       <PopoverTrigger
         disabled={disabled}
         aria-label={content.addReaction}
-        className="inline-flex items-center justify-center rounded-full border border-border px-3 py-1 text-muted-foreground transition-colors hover:border-primary hover:bg-action-primary-subtle-bg hover:text-primary"
+        className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary hover:bg-action-primary-subtle-bg hover:text-primary"
       >
         <span className="relative">
           <Smiley className="size-4" weight="fill" />
