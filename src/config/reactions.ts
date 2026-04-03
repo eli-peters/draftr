@@ -16,9 +16,9 @@ export const REACTION_CONFIG: Record<ReactionType, ReactionConfig> = {
 
 export const REACTION_ORDER: ReactionType[] = [
   'thumbs_up',
-  'fire',
   'heart',
+  'fire',
   'laugh',
-  'cycling',
   'tired',
+  'cycling',
 ];

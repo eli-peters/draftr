@@ -1,7 +1,7 @@
 'use client';
 
 import { useOptimistic, useTransition } from 'react';
-import { Plus } from '@phosphor-icons/react';
+import { Plus, Smiley } from '@phosphor-icons/react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { REACTION_CONFIG, REACTION_ORDER } from '@/config/reactions';
 import { appContent } from '@/content/app';
@@ -84,14 +84,14 @@ export function ReactionPills({ reactions, onToggle, currentUserId }: ReactionPi
           disabled={isPending}
           title={content.reactedBy(r.userNames)}
           className={cn(
-            'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors',
+            'inline-flex items-center gap-1 rounded-full border px-2 py-1 transition-colors',
             r.hasReacted
-              ? 'border-primary/30 bg-action-primary-subtle-bg text-primary'
-              : 'border-border bg-muted/50 text-muted-foreground hover:border-primary/20 hover:bg-action-primary-subtle-bg/50',
+              ? 'border-primary bg-action-primary-subtle-bg text-primary'
+              : 'border-border bg-muted/50 text-muted-foreground hover:border-primary/30 hover:bg-action-primary-subtle-bg/50',
           )}
         >
-          <span>{REACTION_CONFIG[r.reaction].emoji}</span>
-          <span className="tabular-nums">{r.count}</span>
+          <span className="text-sm">{REACTION_CONFIG[r.reaction].emoji}</span>
+          <span className="text-xs tabular-nums">{r.count}</span>
         </button>
       ))}
       <ReactionPicker onSelect={handleToggle} disabled={isPending} />
@@ -111,9 +111,15 @@ function ReactionPicker({
       <PopoverTrigger
         disabled={disabled}
         aria-label={content.addReaction}
-        className="inline-flex size-6 items-center justify-center rounded-full border border-dashed border-border text-muted-foreground transition-colors hover:border-primary hover:bg-action-primary-subtle-bg hover:text-primary"
+        className="inline-flex size-7 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary hover:bg-action-primary-subtle-bg hover:text-primary"
       >
-        <Plus className="size-3.5" weight="bold" />
+        <span className="relative">
+          <Smiley className="size-4" weight="fill" />
+          <Plus
+            className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-background"
+            weight="bold"
+          />
+        </span>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-1.5">
         <div className="flex gap-1">
@@ -122,7 +128,7 @@ function ReactionPicker({
               key={reaction}
               onClick={() => onSelect(reaction)}
               aria-label={REACTION_CONFIG[reaction].label}
-              className="rounded-md p-1.5 text-lg transition-transform hover:scale-110 hover:bg-accent active:scale-95"
+              className="rounded-md p-2 text-xl transition-transform hover:scale-110 hover:bg-accent active:scale-95"
             >
               {REACTION_CONFIG[reaction].emoji}
             </button>

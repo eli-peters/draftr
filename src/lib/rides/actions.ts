@@ -757,6 +757,27 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
       await supabase
         .from('ride_leaders')
         .insert(newCoLeaders.map((uid) => ({ ride_id: rideId, user_id: uid })));
+
+      // Auto-enroll new co-leaders as confirmed riders if not already signed up
+      const { data: existingSignups } = await supabase
+        .from('ride_signups')
+        .select('user_id')
+        .eq('ride_id', rideId)
+        .in('user_id', newCoLeaders);
+
+      const alreadyEnrolled = new Set(existingSignups?.map((s) => s.user_id) ?? []);
+      const toEnroll = newCoLeaders.filter((id) => !alreadyEnrolled.has(id));
+
+      if (toEnroll.length > 0) {
+        await supabase.from('ride_signups').insert(
+          toEnroll.map((uid) => ({
+            ride_id: rideId,
+            user_id: uid,
+            status: 'confirmed' as const,
+            signed_up_at: new Date().toISOString(),
+          })),
+        );
+      }
     }
   }
 

@@ -101,7 +101,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         rideId={ride.id}
         state={actionBarState}
         avatars={actionBarAvatars}
-        totalCount={riderConfirmedCount}
+        totalCount={confirmedSignups.length}
       />
 
       {/* Main ride detail card */}
@@ -162,7 +162,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         rideId={ride.id}
         state={actionBarState}
         avatars={actionBarAvatars}
-        totalCount={riderConfirmedCount}
+        totalCount={confirmedSignups.length}
       />
     </DashboardShell>
   );

@@ -135,6 +135,17 @@ export function RideDetailCard({
           </p>
         )}
 
+        {/* Route map — full map when polyline exists, link-only placeholder otherwise */}
+        {ride.route_polyline ? (
+          <RouteMapLoader
+            polylineStr={ride.route_polyline}
+            routeUrl={ride.route_url}
+            routeName={ride.route_name}
+          />
+        ) : ride.route_url ? (
+          <RouteMapPlaceholder routeUrl={ride.route_url} />
+        ) : null}
+
         {/* Route & Terrain section */}
         {(statsItems.length > 0 || ride.route_polyline || ride.route_url) && (
           <SectionHeading as="p" className="pb-0 pt-2">
@@ -160,17 +171,6 @@ export function RideDetailCard({
             </div>
           </div>
         )}
-
-        {/* Route map — full map when polyline exists, link-only placeholder otherwise */}
-        {ride.route_polyline ? (
-          <RouteMapLoader
-            polylineStr={ride.route_polyline}
-            routeUrl={ride.route_url}
-            routeName={ride.route_name}
-          />
-        ) : ride.route_url ? (
-          <RouteMapPlaceholder routeUrl={ride.route_url} />
-        ) : null}
       </div>
     </Card>
   );
