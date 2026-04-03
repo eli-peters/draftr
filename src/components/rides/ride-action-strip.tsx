@@ -68,10 +68,10 @@ export function RideActionStrip({ rideId, state, avatars, totalCount }: RideActi
 
   return (
     <div className="sticky top-14 z-30 my-3 hidden rounded-(--bar-radius-desktop) border border-border/20 bg-surface-default/(--bar-bg-opacity) shadow-(--bar-shadow-desktop) backdrop-blur-(--bar-backdrop-blur) md:block">
-      <div className="px-(--bar-padding-x)">
+      <div className="px-(--bar-padding-x-desktop)">
         {/* Idle state */}
         {mode === 'idle' && (
-          <div className="flex items-center justify-between gap-4 py-3">
+          <div className="flex items-center justify-between gap-4 py-(--bar-padding-y-desktop)">
             {/* Left: rider avatars or leader actions */}
             <div className="min-w-0 flex-1">
               {!state.isLeaderView && (
@@ -121,7 +121,7 @@ export function RideActionStrip({ rideId, state, avatars, totalCount }: RideActi
 
         {/* Confirm leave */}
         {mode === 'confirm-leave' && (
-          <div className="flex items-center justify-between gap-4 py-3">
+          <div className="flex items-center justify-between gap-4 py-(--bar-padding-y-desktop)">
             <p className="text-sm font-medium text-muted-foreground">
               {actionBar.confirmLeaveTitle}
             </p>
@@ -145,7 +145,7 @@ export function RideActionStrip({ rideId, state, avatars, totalCount }: RideActi
         {mode === 'confirm-cancel-ride' && (
           <div
             className={cn(
-              'space-y-2 px-3 py-3 transition-colors duration-[--duration-normal]',
+              'space-y-2 px-3 py-(--bar-padding-y-desktop) transition-colors duration-[--duration-normal]',
               'bg-(--feedback-error-bg)/60',
             )}
           >
