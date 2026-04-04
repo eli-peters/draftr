@@ -16,7 +16,9 @@ import { RideComments } from '@/components/rides/ride-comments';
 import { RideDetailCard } from '@/components/rides/ride-detail-card';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { RideKebabMenu } from '@/components/rides/ride-kebab-menu';
 
+import { Users } from '@phosphor-icons/react/dist/ssr';
 import { ContentCard } from '@/components/ui/content-card';
 import { appContent } from '@/content/app';
 import { SignupStatus } from '@/config/statuses';
@@ -86,15 +88,23 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
     canCancel: availability.canCancel,
     confirmedCount: riderConfirmedCount,
     capacity: ride.capacity,
-    isLeader: hasEditRole,
     isSoleLeader: isCreator && coLeaders.length === 0,
-    totalSignups: signups.filter((s) => s.status !== 'cancelled').length,
   });
 
   return (
     <DashboardShell>
-      {/* Header — title only (edit action lives in action bar) */}
-      <PageHeader title={ride.title} />
+      <PageHeader
+        title={ride.title}
+        actions={
+          hasEditRole ? (
+            <RideKebabMenu
+              rideId={ride.id}
+              canCancel={availability.canCancel}
+              signupCount={signups.filter((s) => s.status !== 'cancelled').length}
+            />
+          ) : undefined
+        }
+      />
 
       {/* Desktop action strip — sticky below header */}
       <RideActionStrip
@@ -129,7 +139,8 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         <ContentCard
           padding="compact"
           className="mt-8"
-          heading={`${detail.sectionRiders} — ${detail.spotsCount(riderConfirmedCount, ride.capacity)}${waitlistedCount > 0 ? ` · ${detail.waitlistedCount(waitlistedCount)}` : ''}`}
+          icon={Users}
+          heading={`${detail.spotsCount(riderConfirmedCount, ride.capacity)}${waitlistedCount > 0 ? ` · ${detail.waitlistedCount(waitlistedCount)}` : ''}`}
         >
           <RideSignupSection
             rideId={ride.id}

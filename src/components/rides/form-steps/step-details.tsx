@@ -53,12 +53,8 @@ export function StepDetails({
   onTimeChange,
 }: StepDetailsProps) {
   return (
-    <ContentCard
-      padding="default"
-      heading={form.sectionRideDetails}
-      icon={<Bicycle weight="duotone" className="size-6 text-primary" />}
-    >
-      <div className="flex flex-col gap-5">
+    <ContentCard padding="default" heading={form.sectionRideDetails} icon={Bicycle}>
+      <div className="flex flex-col gap-5 md:gap-6">
         <FloatingField label={form.title} htmlFor="title" error={fieldErrors?.title}>
           <Input
             id="title"
@@ -175,12 +171,14 @@ export function StepDetails({
         </div>
 
         {/* ── Drop Ride Toggle ─────────────────────────────────────── */}
-        <PillToggle
-          id="is_drop_ride"
-          label={form.isDropRide}
-          checked={isDropRide}
-          onCheckedChange={(v) => onFieldChange('isDropRide', v)}
-        />
+        <div className="mt-1">
+          <PillToggle
+            id="is_drop_ride"
+            label={form.isDropRide}
+            checked={isDropRide}
+            onCheckedChange={(v) => onFieldChange('isDropRide', v)}
+          />
+        </div>
       </div>
     </ContentCard>
   );

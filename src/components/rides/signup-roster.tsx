@@ -66,19 +66,51 @@ export function SignupRoster({
     return 0;
   });
 
+  // Admin view: split confirmed into leaders + riders subsections (no badges)
+  // Non-admin view: flat list with Leader badges
+  const confirmedLeaders = sortedConfirmed.filter((s) => leaderIds.has(s.user_id));
+  const confirmedRiders = sortedConfirmed.filter((s) => !leaderIds.has(s.user_id));
+
   return (
     <div className="space-y-1">
-      {sortedConfirmed.map((signup) => (
-        <SignupRow
-          key={signup.id}
-          signup={signup}
-          isLeader={leaderIds.has(signup.user_id)}
-          canRemove={
-            canRemoveRiders && !leaderIds.has(signup.user_id) && signup.user_id !== currentUserId
-          }
-          onRemove={onRemoveRider}
-        />
-      ))}
+      {canRemoveRiders ? (
+        <>
+          {confirmedLeaders.length > 0 && (
+            <>
+              <SectionHeading as="p" className="pb-1">
+                {ridesContent.roster.leaders}
+              </SectionHeading>
+              {confirmedLeaders.map((signup) => (
+                <SignupRow
+                  key={signup.id}
+                  signup={signup}
+                  canRemove={signup.user_id !== createdBy && signup.user_id !== currentUserId}
+                  onRemove={onRemoveRider}
+                />
+              ))}
+            </>
+          )}
+          {confirmedRiders.length > 0 && (
+            <>
+              <SectionHeading as="p" className="pb-1 pt-3">
+                {ridesContent.roster.riders}
+              </SectionHeading>
+              {confirmedRiders.map((signup) => (
+                <SignupRow
+                  key={signup.id}
+                  signup={signup}
+                  canRemove={signup.user_id !== currentUserId}
+                  onRemove={onRemoveRider}
+                />
+              ))}
+            </>
+          )}
+        </>
+      ) : (
+        sortedConfirmed.map((signup) => (
+          <SignupRow key={signup.id} signup={signup} isLeader={leaderIds.has(signup.user_id)} />
+        ))
+      )}
       {waitlisted.length > 0 && (
         <>
           <SectionHeading as="p" className="pb-1 pt-3">
@@ -88,11 +120,9 @@ export function SignupRoster({
             <SignupRow
               key={signup.id}
               signup={signup}
-              isLeader={leaderIds.has(signup.user_id)}
+              isLeader={!canRemoveRiders && leaderIds.has(signup.user_id)}
               canRemove={
-                canRemoveRiders &&
-                !leaderIds.has(signup.user_id) &&
-                signup.user_id !== currentUserId
+                canRemoveRiders && signup.user_id !== createdBy && signup.user_id !== currentUserId
               }
               onRemove={onRemoveRider}
             />

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 
 import { cn } from '@/lib/utils';
 
@@ -27,7 +28,7 @@ const variantStyles = {
 
 const paddingStyles = {
   compact: 'p-(--card-padding) md:p-(--card-padding-md)',
-  default: 'p-(--card-padding-md) md:p-5',
+  default: 'p-(--card-padding-md) md:p-6',
   spacious: 'p-5 md:p-6',
   none: '',
 } as const;
@@ -39,8 +40,8 @@ interface ContentCardProps extends React.ComponentProps<'div'> {
   variant?: ContentCardVariant;
   padding?: ContentCardPadding;
   interactive?: boolean;
-  /** Icon element rendered centered above the heading inside the card */
-  icon?: React.ReactNode;
+  /** Phosphor icon component rendered centered above the heading */
+  icon?: PhosphorIcon;
   /** Heading text rendered centered inside the card at top */
   heading?: string;
   /** Subtitle text rendered below the heading */
@@ -79,12 +80,19 @@ function ContentCard({
       {...props}
     >
       {(icon || heading) && (
-        <div data-slot="content-card-hero" className={cn('text-center', children && 'mb-3')}>
-          {icon && <div className="mb-2 flex justify-center">{icon}</div>}
+        <div
+          data-slot="content-card-hero"
+          className={cn('text-center', children && 'mb-3 md:mb-4')}
+        >
+          {icon && (
+            <div className="mb-2 flex justify-center">
+              {React.createElement(icon, { weight: 'duotone', className: 'size-8 text-primary' })}
+            </div>
+          )}
           {heading && (
             <h3
               data-slot="content-card-heading"
-              className={cn('text-base font-semibold leading-snug', headingClassName)}
+              className={cn('text-lg font-semibold leading-snug', headingClassName)}
             >
               {heading}
             </h3>

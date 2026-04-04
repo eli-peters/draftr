@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { shortenAddress } from '@/lib/utils';
 
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 
@@ -81,7 +82,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       name: place.displayName?.text ?? '',
-      address: place.formattedAddress ?? '',
+      address: shortenAddress(place.formattedAddress ?? ''),
       latitude: place.location?.latitude,
       longitude: place.location?.longitude,
     });

@@ -82,6 +82,7 @@ type RideFormAction =
         elevationM?: string;
         startLatitude?: number | null;
         startLongitude?: number | null;
+        detectedService?: IntegrationService | null;
       };
     }
   | { type: 'CLEAR_ROUTE_DATA'; preserveUrl?: boolean }
@@ -117,6 +118,7 @@ function rideFormReducer(state: RideFormState, action: RideFormAction): RideForm
         routeName: payload.routeName,
         routePolyline: payload.routePolyline,
         importedRouteName: payload.routeName,
+        detectedService: payload.detectedService ?? state.detectedService,
         // Only overwrite title if currently empty
         title: state.title ? state.title : (payload.title ?? state.title),
         // Only overwrite description if currently empty — truncate to 250 chars
@@ -293,15 +295,15 @@ export function useRideFormState({
         return;
       }
       const ids = eligibleLeaders.map((l) => l.user_id);
-      const conflicts = await getLeaderRideConflicts(date, ids);
+      const conflicts = await getLeaderRideConflicts(date, ids, rideId);
       dispatch({ type: 'SET_CO_LEADER_CONFLICTS', conflicts });
     },
-    [eligibleLeaders],
+    [eligibleLeaders, rideId],
   );
 
   useEffect(() => {
-    if (!isEdit) fetchConflicts(state.rideDate);
-  }, [state.rideDate, isEdit, fetchConflicts]);
+    fetchConflicts(state.rideDate);
+  }, [state.rideDate, fetchConflicts]);
 
   // ── Route data application (async — handles geocoding) ─────────────────
 
@@ -330,6 +332,7 @@ export function useRideFormState({
         elevationM: route.elevation_m ? String(Math.round(route.elevation_m)) : undefined,
         startLatitude: startCoords?.latitude ?? null,
         startLongitude: startCoords?.longitude ?? null,
+        detectedService: route.service ?? null,
       },
     });
 

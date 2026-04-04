@@ -1,3 +1,5 @@
+import { shortenAddress } from '@/lib/utils';
+
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
 export interface ReverseGeocodeResult {
@@ -41,7 +43,7 @@ export async function reverseGeocode(
     if (poi) {
       return {
         name: poi.text,
-        address: best.place_name,
+        address: shortenAddress(best.place_name),
         latitude,
         longitude,
       };
@@ -57,7 +59,7 @@ export async function reverseGeocode(
         if (place.name) {
           return {
             name: place.name,
-            address: place.address || best.place_name,
+            address: shortenAddress(place.address || best.place_name),
             latitude,
             longitude,
           };
@@ -74,7 +76,7 @@ export async function reverseGeocode(
 
     return {
       name: streetName,
-      address: best.place_name,
+      address: shortenAddress(best.place_name),
       latitude,
       longitude,
     };

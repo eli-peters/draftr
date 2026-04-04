@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { CalendarBlank, Clock, Path } from '@phosphor-icons/react/dist/ssr';
+import { CalendarBlank, Clock, Gauge, Mountains, Path } from '@phosphor-icons/react/dist/ssr';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import {
@@ -11,10 +11,8 @@ import { RouteMapLoader } from '@/components/rides/route-map-loader';
 import { RouteMapPlaceholder } from '@/components/rides/route-map-placeholder';
 import { StartLocationDisplay } from '@/components/rides/start-location-display';
 import { RideWeatherSummary } from '@/components/weather/ride-weather-summary';
-import { buildDirectionsUrl } from '@/lib/maps/directions';
 import { appContent } from '@/content/app';
 import { dateFormats, formatTime, separators, units, parseLocalDate } from '@/config/formatting';
-import { SectionHeading } from '@/components/ui/section-heading';
 import { cn } from '@/lib/utils';
 import type { RideLifecycle } from '@/lib/rides/lifecycle';
 import type { RideWithDetails, RideWeatherSnapshot } from '@/types/database';
@@ -61,15 +59,6 @@ export function RideDetailCard({
       : appContent.rides.roster.waitlisted;
   }
 
-  // Stats items — only render columns with data
-  const statsItems: { label: string; value: string }[] = [];
-  if (ride.distance_km != null) {
-    statsItems.push({ label: detail.distanceLabel, value: `${ride.distance_km}${units.km}` });
-  }
-  if (ride.elevation_m != null) {
-    statsItems.push({ label: detail.elevationLabel, value: `${ride.elevation_m}${units.m}` });
-  }
-
   return (
     <Card className={cn('mt-6 overflow-clip p-0', stateStyle.borderClass)}>
       {/* Unified banner */}
@@ -90,6 +79,8 @@ export function RideDetailCard({
         {/* Weather — forecast for ride date/time */}
         <RideWeatherSummary weather={weather} />
 
+        <div className="border-t border-border" />
+
         {/* Metadata rows */}
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-base text-foreground">
@@ -108,15 +99,28 @@ export function RideDetailCard({
               )}
             </span>
           </div>
-          {ride.pace_group && (
+          {ride.distance_km != null && (
             <div className="flex items-center gap-2 text-base text-foreground">
               <Path className="size-4 shrink-0 text-muted-foreground" />
-              <span className="min-w-0 wrap-break-word">
-                {ride.pace_group.name}
-                {ride.pace_group.moving_pace_min && ride.pace_group.moving_pace_max
-                  ? ` (${ride.pace_group.moving_pace_min}–${ride.pace_group.moving_pace_max}${units.kmh})`
-                  : ''}
+              <span className="tabular-nums">
+                {ride.distance_km}
+                {units.km}
               </span>
+            </div>
+          )}
+          {ride.elevation_m != null && (
+            <div className="flex items-center gap-2 text-base text-foreground">
+              <Mountains className="size-4 shrink-0 text-muted-foreground" />
+              <span className="tabular-nums">
+                {ride.elevation_m}
+                {units.m}
+              </span>
+            </div>
+          )}
+          {ride.pace_group && (
+            <div className="flex items-center gap-2 text-base text-foreground">
+              <Gauge className="size-4 shrink-0 text-muted-foreground" />
+              <span className="min-w-0 wrap-break-word">{ride.pace_group.name}</span>
               <Badge
                 variant={ride.is_drop_ride ? 'destructive' : 'secondary'}
                 size="sm"
@@ -141,36 +145,11 @@ export function RideDetailCard({
             polylineStr={ride.route_polyline}
             routeUrl={ride.route_url}
             routeName={ride.route_name}
+            aspectRatio="2.39/1"
           />
         ) : ride.route_url ? (
           <RouteMapPlaceholder routeUrl={ride.route_url} />
         ) : null}
-
-        {/* Route & Terrain section */}
-        {(statsItems.length > 0 || ride.route_polyline || ride.route_url) && (
-          <SectionHeading as="p" className="pb-0 pt-2">
-            {detail.sectionRouteTerrain}
-          </SectionHeading>
-        )}
-
-        {/* Stats box */}
-        {statsItems.length > 0 && (
-          <div className="rounded-xl bg-accent-secondary-subtle p-4">
-            <div
-              className="grid gap-4"
-              style={{ gridTemplateColumns: `repeat(${statsItems.length}, 1fr)` }}
-            >
-              {statsItems.map((item) => (
-                <div key={item.label} className="flex flex-col items-start">
-                  <span className="text-sm text-foreground">{item.label}</span>
-                  <span className="font-mono text-base font-medium tabular-nums text-foreground">
-                    {item.value}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </Card>
   );

@@ -550,7 +550,7 @@
   transform: translateY(-50%);
   pointer-events: none;
   color: var(--muted-foreground);
-  font-size: 1rem;
+  font-size: var(--text-base);
   line-height: 1;
   font-weight: 400;
   transition:
@@ -558,13 +558,6 @@
     transform var(--duration-fast) var(--ease-out),
     font-size var(--duration-fast) var(--ease-out),
     color var(--duration-fast) var(--ease-out);
-}
-
-/* Match input's md:text-sm on larger screens */
-@media (min-width: 768px) {
-  .floating-field > label {
-    font-size: 0.875rem;
-  }
 }
 
 /* Textarea: label rests at the first line of the textarea content area */
@@ -580,7 +573,7 @@
 .floating-field:has([data-slot='textarea']:not(:placeholder-shown)) > label {
   top: 0.375rem;
   transform: translateY(0);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 500;
 }
 
@@ -594,7 +587,7 @@
 .floating-field:has([data-slot='select-trigger']:not([data-placeholder])) > label {
   top: 0.375rem;
   transform: translateY(0);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 500;
 }
 
@@ -603,7 +596,7 @@
 .floating-field[data-has-value] > label {
   top: 0.375rem;
   transform: translateY(0);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 500;
 }
 
@@ -611,9 +604,9 @@
   color: var(--foreground);
 }
 
-/* ── Icon offset: label shifts right when icon present ── */
-.floating-field[data-has-icon] > label {
-  left: 2.25rem;
+/* ── Icon offset: input gets right padding so text doesn't overlap icon ── */
+.floating-field[data-has-icon] [data-slot='input'] {
+  padding-right: 2.25rem;
 }
 
 /* ── Error state — bottom border turns invalid color ── */

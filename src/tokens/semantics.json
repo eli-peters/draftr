@@ -1406,26 +1406,26 @@
     "notification": {
       "bg": {
         "$type": "color",
-        "$description": "Notification badge and unread-dot background — high-contrast neutral",
-        "$value": "{color.neutral.950}",
+        "$description": "Notification badge and unread-dot background — secondary brand colour",
+        "$value": "{color.secondary.500}",
         "$extensions": {
           "com.figma": {
             "modes": {
-              "Light": "{color.neutral.950}",
-              "Dark": "{color.neutral.0}"
+              "Light": "{color.secondary.500}",
+              "Dark": "{color.secondary.500}"
             }
           }
         }
       },
       "text": {
         "$type": "color",
-        "$description": "Notification badge text — inverts with bg for contrast",
+        "$description": "Notification badge text — white on secondary",
         "$value": "{color.neutral.0}",
         "$extensions": {
           "com.figma": {
             "modes": {
               "Light": "{color.neutral.0}",
-              "Dark": "{color.neutral.950}"
+              "Dark": "{color.neutral.0}"
             }
           }
         }

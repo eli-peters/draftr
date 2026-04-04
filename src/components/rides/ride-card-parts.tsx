@@ -1,5 +1,4 @@
 import {
-  ArrowsClockwise,
   Bicycle,
   Clock,
   ClockCountdown,
@@ -497,7 +496,6 @@ export function CardMetadataRow({
 interface CardContentSectionProps {
   date: string;
   time: string;
-  isRecurring?: boolean;
   title: string;
   description?: string | null;
   paceGroupName?: string | null;
@@ -515,7 +513,6 @@ interface CardContentSectionProps {
 export function CardContentSection({
   date,
   time,
-  isRecurring,
   title,
   description,
   paceGroupName,
@@ -530,18 +527,13 @@ export function CardContentSection({
 }: CardContentSectionProps) {
   return (
     <div className={cn('flex flex-col gap-3', className)}>
-      {/* Top row: date/time · weather (left) ... recurring icon (right) */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <DateTimeRow date={date} time={time} />
-          <span className={cn(BODY_SM, 'font-bold leading-5 text-muted-foreground/40')}>
-            {separators.dot.trim()}
-          </span>
-          <RideWeatherBadge weather={weather ?? null} layout="inline" />
-        </div>
-        {isRecurring && (
-          <ArrowsClockwise weight="bold" className="size-4 shrink-0 text-muted-foreground" />
-        )}
+      {/* Top row: date/time · weather */}
+      <div className="flex items-center gap-1.5">
+        <DateTimeRow date={date} time={time} />
+        <span className={cn(BODY_SM, 'font-bold leading-5 text-muted-foreground/40')}>
+          {separators.dot.trim()}
+        </span>
+        <RideWeatherBadge weather={weather ?? null} layout="inline" />
       </div>
 
       {/* Title */}

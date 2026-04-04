@@ -189,11 +189,13 @@ export const appContent = {
       distanceLabel: 'Distance',
       elevationLabel: 'Elevation',
       routeMapPlaceholder: 'Route map coming soon',
-      sectionRouteTerrain: 'Route & Terrain',
-      sectionRiders: 'Riders',
       goingCount: (total: number) => `${total} going`,
       spotsCount: (confirmed: number, capacity: number | null) =>
-        capacity ? `${confirmed} of ${capacity} spots` : `${confirmed} signed up`,
+        capacity
+          ? capacity - confirmed === 0
+            ? `${confirmed} riders — Ride full`
+            : `${confirmed} riders — ${capacity - confirmed} spots left`
+          : `${confirmed} signed up`,
       ridersHeading: (confirmed: number, waitlisted: number, capacity: number | null) => {
         const parts: string[] = [];
         if (capacity != null) {
@@ -229,6 +231,8 @@ export const appContent = {
       cancelRideWarning: (count: number) =>
         `This will notify ${count === 1 ? '1 rider' : `all ${count} riders`}`,
       confirmCancelRide: 'Confirm Cancel',
+      cancelRideDialogTitle: 'Cancel this ride?',
+      cancelRideDialogDescription: 'This ride will be cancelled and removed from the schedule.',
     },
     create: {
       heading: 'Create a Ride',
@@ -291,7 +295,9 @@ export const appContent = {
       importHeading: 'Start from a route',
       importDescription: 'Import from a connected service to pre-fill ride details.',
       importConfirmed: (routeName: string) => `"${routeName}" imported`,
-      importChange: 'Change Route',
+      importChange: 'Change route',
+      viaService: (serviceName: string) => `via ${serviceName}`,
+      viaLink: 'via link',
       connectPrompt: 'Connect a service to import routes',
 
       // URL detection
@@ -303,7 +309,7 @@ export const appContent = {
       pasteRoutePlaceholder: 'Paste a link from Strava, RWGPS, Komoot...',
       addRouteButton: 'Add route',
       pasteLinkHelper:
-        'Riders won\u2019t see a route map with a pasted link. Use Import Route above for the best experience.',
+        'Pasted links won\u2019t show a route map. Import from a connected service for a richer rider experience.',
       routeLinkAdded: 'Route link added',
       linkOnlyPreviewLabel: 'This is what riders will see',
       linkOnlyViewRoute: (serviceName: string) => `View route on ${serviceName}`,
@@ -339,6 +345,7 @@ export const appContent = {
       coLeadersNoneSelected: 'No co-leaders selected',
       coLeadersCount: (count: number) => `${count} co-leader${count === 1 ? '' : 's'} selected`,
       coLeadersUnavailable: 'Not available \u2014 already leading another ride',
+      coLeadersCancelled: 'Not available \u2014 cancelled their signup',
       routeName: 'Route Name',
       routeLink: 'Route Link',
       isDropRide: 'Drop ride',
@@ -370,6 +377,8 @@ export const appContent = {
       noSignups: 'No signups yet.',
       waitlisted: 'Waitlisted',
       leader: 'Leader',
+      leaders: 'Leaders',
+      riders: 'Riders',
       joined: (timeAgo: string) => `Joined ${timeAgo} ago`,
       removeRider: 'Remove',
       removeConfirmTitle: (name: string) => `Remove ${name} from this ride?`,
@@ -410,17 +419,21 @@ export const appContent = {
           heading: 'Strava',
           connected: 'Browse your saved routes and recent rides.',
           notConnected: 'Connect your Strava account to browse routes.',
-          connectButton: 'Connect Strava',
+          connectButton: 'Connect',
         },
         ridewithgps: {
           heading: 'Ride with GPS',
           connected: 'Browse your saved routes and recent trips.',
           notConnected: 'Connect your Ride with GPS account to browse routes.',
-          connectButton: 'Connect Ride with GPS',
+          connectButton: 'Connect',
         },
         paste: {
           heading: 'Paste a link',
           description: 'Strava, Ride with GPS, Komoot, or any route URL.',
+        },
+        gpx: {
+          heading: 'GPX file',
+          comingSoon: 'Coming soon',
         },
       },
       noConnections: {

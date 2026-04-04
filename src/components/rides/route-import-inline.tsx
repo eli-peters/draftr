@@ -85,7 +85,7 @@ export function ServiceRouteList({
 }) {
   return (
     <Tabs defaultValue="routes" className="flex min-h-0 flex-1 flex-col">
-      <TabsList variant="line" className="w-full shrink-0">
+      <TabsList className="w-full shrink-0">
         <TabsTrigger value="routes" className="flex-1">
           {content.routesTab}
         </TabsTrigger>

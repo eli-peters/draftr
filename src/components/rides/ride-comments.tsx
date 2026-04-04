@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRef, useState, useTransition } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { PaperPlaneTilt } from '@phosphor-icons/react';
+import { ChatCircle, PaperPlaneTilt } from '@phosphor-icons/react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { Button } from '@/components/ui/button';
@@ -40,9 +40,9 @@ export function RideComments({
   isCancelled,
 }: RideCommentsProps) {
   return (
-    <ContentCard heading={content.heading}>
+    <ContentCard heading={content.heading} icon={ChatCircle}>
       {comments.length === 0 && (
-        <p className="text-sm text-muted-foreground">{content.noComments}</p>
+        <p className="text-center text-sm text-muted-foreground">{content.noComments}</p>
       )}
 
       {comments.length > 0 && (

@@ -132,7 +132,7 @@ function NumberField({
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         placeholder=" "
-        className="h-12 w-full min-w-0 border-0 bg-transparent px-1 text-center text-base tabular-nums outline-none placeholder:text-muted-foreground md:text-sm"
+        className="h-12 w-full min-w-0 border-0 bg-transparent px-1 text-center text-base tabular-nums outline-none placeholder:text-muted-foreground"
       />
       <button
         type="button"

@@ -19,12 +19,6 @@ export interface RideActionBarState {
   ctaLabel: string | null;
   /** Button variant for the CTA */
   ctaVariant: ActionBarCtaVariant;
-  /** True when the user has edit permissions (leader/admin) */
-  isLeaderView: boolean;
-  /** Leader: show "Cancel Ride" button alongside Edit */
-  showCancelRide: boolean;
-  /** Total confirmed signups — used for cancel-ride warning message */
-  signupCount: number;
 }
 
 export interface ActionBarInput {
@@ -38,11 +32,8 @@ export interface ActionBarInput {
   canCancel: boolean;
   confirmedCount: number;
   capacity: number | null;
-  isLeader: boolean;
   /** True when the user is the ride creator with no co-leaders — cannot leave, only cancel */
   isSoleLeader: boolean;
-  /** Total confirmed+waitlisted signups — for cancel-ride warning */
-  totalSignups: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -61,9 +52,7 @@ export function computeRideActionState(params: ActionBarInput): RideActionBarSta
     canCancel,
     confirmedCount,
     capacity,
-    isLeader,
     isSoleLeader,
-    totalSignups,
   } = params;
 
   // Terminal states — no CTA
@@ -73,9 +62,6 @@ export function computeRideActionState(params: ActionBarInput): RideActionBarSta
       cta: null,
       ctaLabel: null,
       ctaVariant: 'default',
-      isLeaderView: isLeader,
-      showCancelRide: false,
-      signupCount: totalSignups,
     };
   }
 
@@ -85,14 +71,8 @@ export function computeRideActionState(params: ActionBarInput): RideActionBarSta
       cta: null,
       ctaLabel: null,
       ctaVariant: 'default',
-      isLeaderView: isLeader,
-      showCancelRide: false,
-      signupCount: totalSignups,
     };
   }
-
-  // Active ride states
-  const showCancelRide = isLeader && canCancel;
 
   // User is on waitlist
   if (isOnWaitlist) {
@@ -103,9 +83,6 @@ export function computeRideActionState(params: ActionBarInput): RideActionBarSta
       cta: canCancel ? 'leave-waitlist' : null,
       ctaLabel: canCancel ? actionBar.leaveWaitlist : null,
       ctaVariant: 'destructive',
-      isLeaderView: isLeader,
-      showCancelRide,
-      signupCount: totalSignups,
     };
   }
 
@@ -118,9 +95,6 @@ export function computeRideActionState(params: ActionBarInput): RideActionBarSta
       cta: canLeave ? 'leave' : null,
       ctaLabel: canLeave ? actionBar.leaveRide : null,
       ctaVariant: 'destructive',
-      isLeaderView: isLeader,
-      showCancelRide,
-      signupCount: totalSignups,
     };
   }
 
@@ -131,9 +105,6 @@ export function computeRideActionState(params: ActionBarInput): RideActionBarSta
       cta: canSignUp ? 'waitlist' : null,
       ctaLabel: canSignUp ? actionBar.joinWaitlist : null,
       ctaVariant: 'secondary',
-      isLeaderView: isLeader,
-      showCancelRide,
-      signupCount: totalSignups,
     };
   }
 
@@ -143,8 +114,5 @@ export function computeRideActionState(params: ActionBarInput): RideActionBarSta
     cta: canSignUp ? 'join' : null,
     ctaLabel: canSignUp ? actionBar.joinRide : null,
     ctaVariant: 'default',
-    isLeaderView: isLeader,
-    showCancelRide,
-    signupCount: totalSignups,
   };
 }

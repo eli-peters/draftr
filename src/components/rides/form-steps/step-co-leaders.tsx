@@ -34,12 +34,8 @@ export function StepCoLeaders({
     .sort(sortByFirstName);
 
   return (
-    <ContentCard
-      padding="default"
-      heading={form.sectionCoLeaders}
-      icon={<UsersThree weight="duotone" className="size-6 text-primary" />}
-    >
-      <div className="flex flex-col gap-5">
+    <ContentCard padding="default" heading={form.sectionCoLeaders} icon={UsersThree}>
+      <div className="flex flex-col gap-5 md:gap-6">
         {eligibleLeaders.length > 0 && (
           <div className="flex flex-col gap-1">
             {available.map((leader) => {
@@ -78,22 +74,27 @@ export function StepCoLeaders({
             {unavailable.length > 0 && (
               <>
                 <div className="border-t border-border-subtle my-1" />
-                {unavailable.map((leader) => (
-                  <div
-                    key={leader.user_id}
-                    className="flex items-center gap-3 rounded-lg px-2 py-2 grayscale"
-                  >
-                    <div className="relative">
-                      <RiderAvatar avatarUrl={leader.avatar_url} name={leader.name} />
+                {unavailable.map((leader) => {
+                  const conflict = coLeaderConflicts.find((c) => c.user_id === leader.user_id);
+                  const reason =
+                    conflict?.reason === 'cancelled'
+                      ? form.coLeadersCancelled
+                      : form.coLeadersUnavailable;
+                  return (
+                    <div
+                      key={leader.user_id}
+                      className="flex items-center gap-3 rounded-lg px-2 py-2 grayscale"
+                    >
+                      <div className="relative">
+                        <RiderAvatar avatarUrl={leader.avatar_url} name={leader.name} />
+                      </div>
+                      <div className="flex-1 min-w-0 text-left">
+                        <p className="text-sm truncate text-muted-foreground">{leader.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{reason}</p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0 text-left">
-                      <p className="text-sm truncate text-muted-foreground">{leader.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {form.coLeadersUnavailable}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </>
             )}
           </div>

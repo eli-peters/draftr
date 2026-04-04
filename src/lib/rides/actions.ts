@@ -351,6 +351,14 @@ export async function removeRiderFromRide(rideId: string, targetUserId: string) 
     return { error: errors.notAuthorized };
   }
 
+  // Check if target is a co-leader — admins can remove them (and clean up the leader row)
+  const { data: membership } = await supabase
+    .from('club_memberships')
+    .select('role')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .single();
+
   const { data: isTargetLeader } = await supabase
     .from('ride_leaders')
     .select('id')
@@ -359,7 +367,11 @@ export async function removeRiderFromRide(rideId: string, targetUserId: string) 
     .maybeSingle();
 
   if (isTargetLeader) {
-    return { error: errors.notAuthorized };
+    if (membership?.role !== 'admin') {
+      return { error: errors.notAuthorized };
+    }
+    // Admin removing a co-leader — also remove from ride_leaders
+    await supabase.from('ride_leaders').delete().eq('ride_id', rideId).eq('user_id', targetUserId);
   }
 
   // Check if the target user was confirmed (a spot may open up)
@@ -707,7 +719,7 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
   // Reject updates to cancelled rides
   const { data: existingRide } = await supabase
     .from('rides')
-    .select('status')
+    .select('status, created_by')
     .eq('id', rideId)
     .single();
 
@@ -751,8 +763,8 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
     // Remove all existing co-leaders
     await supabase.from('ride_leaders').delete().eq('ride_id', rideId);
 
-    // Insert new co-leaders (excluding the current user)
-    const newCoLeaders = data.co_leader_ids.filter((id) => id !== user.id);
+    // Insert new co-leaders (exclude the ride creator — they're already the primary leader)
+    const newCoLeaders = data.co_leader_ids.filter((id) => id !== existingRide?.created_by);
     if (newCoLeaders.length > 0) {
       await supabase
         .from('ride_leaders')
@@ -1234,21 +1246,27 @@ export async function removeCoLeader(rideId: string, userId: string) {
 export interface LeaderConflict {
   user_id: string;
   ride_title: string;
+  reason: 'scheduling' | 'cancelled';
 }
 
 /**
- * Check which leaders have existing rides on a given date.
- * Returns conflicts for leaders who are signed up for a ride that day.
+ * Check which leaders have conflicts for a given date.
+ * Returns conflicts for leaders who are signed up for another ride that day,
+ * and (when editing) leaders who cancelled their signup on the current ride.
  */
 export async function getLeaderRideConflicts(
   date: string,
   userIds: string[],
+  currentRideId?: string,
 ): Promise<LeaderConflict[]> {
   if (!date || userIds.length === 0) return [];
 
   const supabase = await createClient();
   const user = await getUser();
   if (!user) return [];
+
+  const conflicts: LeaderConflict[] = [];
+  const seen = new Set<string>();
 
   // Find rides on this date where any of the given users are signed up
   const { data: signups } = await supabase
@@ -1259,14 +1277,27 @@ export async function getLeaderRideConflicts(
     .neq('ride.status', 'cancelled')
     .neq('status', 'cancelled');
 
-  const conflicts: LeaderConflict[] = [];
-  const seen = new Set<string>();
-
   for (const row of signups ?? []) {
     if (seen.has(row.user_id)) continue;
     seen.add(row.user_id);
     const ride = row.ride as unknown as { title: string };
-    conflicts.push({ user_id: row.user_id, ride_title: ride?.title ?? '' });
+    conflicts.push({ user_id: row.user_id, ride_title: ride?.title ?? '', reason: 'scheduling' });
+  }
+
+  // When editing, also check for co-leaders who cancelled their signup on this ride
+  if (currentRideId) {
+    const { data: cancelledSignups } = await supabase
+      .from('ride_signups')
+      .select('user_id')
+      .eq('ride_id', currentRideId)
+      .in('user_id', userIds)
+      .eq('status', 'cancelled');
+
+    for (const row of cancelledSignups ?? []) {
+      if (seen.has(row.user_id)) continue;
+      seen.add(row.user_id);
+      conflicts.push({ user_id: row.user_id, ride_title: '', reason: 'cancelled' });
+    }
   }
 
   return conflicts;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useOptimistic, useTransition } from 'react';
+import { useState, useOptimistic, useTransition } from 'react';
 import { Smiley } from '@phosphor-icons/react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { REACTION_CONFIG, REACTION_ORDER } from '@/config/reactions';
@@ -106,8 +106,10 @@ function ReactionPicker({
   onSelect: (reaction: ReactionType) => void;
   disabled?: boolean;
 }) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         disabled={disabled}
         aria-label={content.addReaction}
@@ -120,7 +122,10 @@ function ReactionPicker({
           {REACTION_ORDER.map((reaction) => (
             <button
               key={reaction}
-              onClick={() => onSelect(reaction)}
+              onClick={() => {
+                setOpen(false);
+                requestAnimationFrame(() => onSelect(reaction));
+              }}
               aria-label={REACTION_CONFIG[reaction].label}
               className="rounded-md p-2 text-xl transition-transform hover:scale-110 hover:bg-accent active:scale-95"
             >

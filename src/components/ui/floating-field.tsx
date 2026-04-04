@@ -71,10 +71,10 @@ function FloatingField({
       data-has-icon={Icon ? '' : undefined}
       onInput={maxLength ? handleInput : undefined}
     >
-      {Icon && (
-        <Icon className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
-      )}
       {children}
+      {Icon && (
+        <Icon className="pointer-events-none absolute right-3 top-8.5 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
+      )}
       <label htmlFor={htmlFor}>{label}</label>
       {(helperText || maxLength || error) && (
         <div className="mt-1 flex items-baseline justify-between gap-2 px-3">

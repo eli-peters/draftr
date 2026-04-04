@@ -80,7 +80,6 @@ function HomeLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boo
       className={cn('px-5 pt-5 pb-5', hasBanner && 'pt-4')}
       date={getRelativeDay(rideDate, dateFormats.dayShort, true)}
       time={formatTime(ride.start_time)}
-      isRecurring={!!ride.template_id}
       title={ride.title}
       paceGroupName={ride.pace_group?.name ?? null}
       paceGroupSortOrder={ride.pace_group?.sort_order ?? null}
@@ -113,7 +112,6 @@ function RidesLayout({
         className={cn('px-5 pt-5 pb-5', hasBanner && 'pt-4')}
         date={getRelativeDay(rideDate, dateFormats.dayShort, true)}
         time={formatTime(ride.start_time)}
-        isRecurring={!!ride.template_id}
         title={ride.title}
         description={ride.description}
         paceGroupName={ride.pace_group?.name ?? null}

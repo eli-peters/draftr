@@ -1,5 +1,6 @@
 import { MapPin } from '@phosphor-icons/react/dist/ssr';
 import { buildDirectionsUrl } from '@/lib/maps/directions';
+import { shortenAddress } from '@/lib/utils';
 import { appContent } from '@/content/app';
 
 const form = appContent.rides.form;
@@ -39,7 +40,11 @@ export function StartLocationDisplay({
           <p className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground decoration-primary/30 underline-offset-2 group-hover:underline">
             {name}
           </p>
-          {address && <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">{address}</p>}
+          {address && (
+            <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">
+              {shortenAddress(address)}
+            </p>
+          )}
         </div>
       </Wrapper>
     );
