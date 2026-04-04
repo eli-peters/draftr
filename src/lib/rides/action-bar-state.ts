@@ -6,7 +6,7 @@ const { actionBar } = appContent.rides;
 // Types
 // ---------------------------------------------------------------------------
 
-export type ActionBarCta = 'join' | 'leave' | 'waitlist' | 'leave-waitlist' | null;
+export type ActionBarCta = 'join' | 'leave' | 'waitlist' | 'leave-waitlist' | 'sole-leader' | null;
 
 export type ActionBarCtaVariant = 'default' | 'outline' | 'secondary' | 'destructive';
 
@@ -88,12 +88,18 @@ export function computeRideActionState(params: ActionBarInput): RideActionBarSta
 
   // User is signed up (confirmed)
   if (isSignedUp) {
-    // Sole leaders cannot leave — they must cancel the ride instead
-    const canLeave = canCancel && !isSoleLeader;
+    if (isSoleLeader) {
+      return {
+        statusText: actionBar.youreInSpots(confirmedCount, capacity),
+        cta: 'sole-leader',
+        ctaLabel: actionBar.leaveRide,
+        ctaVariant: 'destructive',
+      };
+    }
     return {
       statusText: actionBar.youreInSpots(confirmedCount, capacity),
-      cta: canLeave ? 'leave' : null,
-      ctaLabel: canLeave ? actionBar.leaveRide : null,
+      cta: canCancel ? 'leave' : null,
+      ctaLabel: canCancel ? actionBar.leaveRide : null,
       ctaVariant: 'destructive',
     };
   }

@@ -5,7 +5,7 @@ import { signUpForRide, cancelSignUp } from '@/lib/rides/actions';
 import { appContent } from '@/content/app';
 import type { RideActionBarState } from '@/lib/rides/action-bar-state';
 
-type BarMode = 'idle' | 'confirm-leave';
+type BarMode = 'idle' | 'confirm-leave' | 'sole-leader-options';
 
 export function useRideActionCta(rideId: string, state: RideActionBarState) {
   const [mode, setMode] = useState<BarMode>('idle');
@@ -13,6 +13,11 @@ export function useRideActionCta(rideId: string, state: RideActionBarState) {
 
   function handleCtaClick() {
     if (!state.cta) return;
+
+    if (state.cta === 'sole-leader') {
+      setMode('sole-leader-options');
+      return;
+    }
 
     if (state.cta === 'leave' || state.cta === 'leave-waitlist') {
       setMode('confirm-leave');

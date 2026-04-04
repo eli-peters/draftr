@@ -52,11 +52,7 @@ export function RideKebabMenu({ rideId, canCancel, signupCount }: RideKebabMenuP
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="rounded-full text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
-            >
+            <Button variant="ghost" size="icon-sm" className="rounded-full">
               <DotsThreeOutline weight="fill" className="size-5" />
             </Button>
           }

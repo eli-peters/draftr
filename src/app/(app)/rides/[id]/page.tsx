@@ -16,7 +16,6 @@ import { RideComments } from '@/components/rides/ride-comments';
 import { RideDetailCard } from '@/components/rides/ride-detail-card';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { HeaderActions } from '@/components/layout/header-actions';
 import { RideKebabMenu } from '@/components/rides/ride-kebab-menu';
 
 import { Users } from '@phosphor-icons/react/dist/ssr';
@@ -70,6 +69,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
     full_name: s.user_name,
   }));
 
+  const activeSignupCount = signups.filter((s) => s.status !== 'cancelled').length;
   const userRole = (membership?.role as UserRole) ?? 'rider';
   const isCreator = membership?.user_id === ride.created_by;
   const isCoLeader = coLeaders.some((cl) => cl.user_id === membership?.user_id);
@@ -91,26 +91,34 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
     isSoleLeader: isCreator && coLeaders.length === 0,
   });
 
+  const showManageActions = hasEditRole && !availability.isCancelled;
+
   return (
     <DashboardShell>
-      {hasEditRole && (
-        <HeaderActions>
-          <RideKebabMenu
-            rideId={ride.id}
-            canCancel={availability.canCancel}
-            signupCount={signups.filter((s) => s.status !== 'cancelled').length}
-          />
-        </HeaderActions>
-      )}
-      <PageHeader title={ride.title} />
-
-      {/* Desktop action strip — sticky below header */}
-      <RideActionStrip
-        rideId={ride.id}
-        state={actionBarState}
-        avatars={actionBarAvatars}
-        totalCount={confirmedSignups.length}
+      <PageHeader
+        title={ride.title}
+        centered={!showManageActions}
+        actions={
+          showManageActions ? (
+            <RideKebabMenu
+              rideId={ride.id}
+              canCancel={availability.canCancel}
+              signupCount={activeSignupCount}
+            />
+          ) : undefined
+        }
       />
+
+      {/* Desktop action strip — sticky below header (hidden for cancelled rides) */}
+      {!availability.isCancelled && (
+        <RideActionStrip
+          rideId={ride.id}
+          state={actionBarState}
+          avatars={actionBarAvatars}
+          totalCount={confirmedSignups.length}
+          signupCount={activeSignupCount}
+        />
+      )}
 
       {/* Main ride detail card */}
       <RideDetailCard
@@ -164,15 +172,18 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       </div>
 
       {/* Bottom spacer for action bar on mobile */}
-      <div className="h-24 md:h-0" />
+      {!availability.isCancelled && <div className="h-24 md:h-0" />}
 
-      {/* Mobile action bar — fixed to bottom */}
-      <RideActionBar
-        rideId={ride.id}
-        state={actionBarState}
-        avatars={actionBarAvatars}
-        totalCount={confirmedSignups.length}
-      />
+      {/* Mobile action bar — fixed to bottom (hidden for cancelled rides) */}
+      {!availability.isCancelled && (
+        <RideActionBar
+          rideId={ride.id}
+          state={actionBarState}
+          avatars={actionBarAvatars}
+          totalCount={confirmedSignups.length}
+          signupCount={activeSignupCount}
+        />
+      )}
     </DashboardShell>
   );
 }

@@ -225,7 +225,19 @@ export const appContent = {
         capacity ? `You're in · ${confirmed} of ${capacity}` : `You're in · ${confirmed} signed up`,
       confirmLeaveTitle: 'Leave this ride?',
       confirmLeave: 'Confirm Leave',
-      confirmCancel: 'Cancel',
+      confirmCancel: 'Never mind',
+      soleLeaderTitle: "You're the only leader",
+      soleLeaderDescription:
+        'Every ride needs a leader. Cancel the ride, or add a co-leader first so they can take over.',
+      soleLeaderDismiss: 'Never mind',
+      soleLeaderCancelRide: 'Cancel Ride',
+      soleLeaderAddCoLeader: 'Add Co-Leader',
+      soleLeaderConfirmCancelTitle: 'Cancel this ride?',
+      soleLeaderConfirmCancelDescription:
+        'This ride will be cancelled and removed from the schedule.',
+      soleLeaderConfirmCancelWarning: (count: number) =>
+        `This will notify ${count === 1 ? '1 rider' : `all ${count} riders`}`,
+      soleLeaderConfirmCancel: 'Confirm Cancel',
       editRide: 'Edit',
       cancelRide: 'Cancel Ride',
       cancelRideWarning: (count: number) =>

@@ -198,15 +198,33 @@ export async function cancelSignUp(rideId: string) {
     }
   }
 
-  // Sole leader guard — creators with no co-leaders cannot leave, only cancel the ride
+  // Sole leader guard — creators with no active co-leaders cannot leave, only cancel the ride
   const isCreator = ride?.created_by === user.id;
   if (isCreator) {
-    const { count: coLeaderCount } = await supabase
+    // Check for co-leaders who still have an active signup (not ghosts who already left)
+    const { data: coLeaders } = await supabase
       .from('ride_leaders')
-      .select('id', { count: 'exact', head: true })
+      .select('user_id')
       .eq('ride_id', rideId);
 
-    if ((coLeaderCount ?? 0) === 0) {
+    let hasActiveCoLeader = false;
+    if (coLeaders && coLeaders.length > 0) {
+      for (const cl of coLeaders) {
+        const { data: clSignup } = await supabase
+          .from('ride_signups')
+          .select('status')
+          .eq('ride_id', rideId)
+          .eq('user_id', cl.user_id)
+          .single();
+
+        if (clSignup?.status === 'confirmed' || clSignup?.status === 'checked_in') {
+          hasActiveCoLeader = true;
+          break;
+        }
+      }
+    }
+
+    if (!hasActiveCoLeader) {
       return { error: errors.soleLeaderCannotLeave };
     }
   }
@@ -234,15 +252,38 @@ export async function cancelSignUp(rideId: string) {
     return { error: error.message };
   }
 
+  // Co-leader leaving — remove from ride_leaders table so they don't ghost-block succession
+  if (!isCreator) {
+    const admin = createAdminClient();
+    await admin.from('ride_leaders').delete().eq('ride_id', rideId).eq('user_id', user.id);
+  }
+
   // Creator leaving with co-leaders — promote first co-leader to primary creator
   if (isCreator) {
-    const { data: firstCoLeader } = await supabase
+    // Only consider co-leaders who still have an active signup (confirmed or checked_in)
+    const { data: activeCoLeaders } = await supabase
       .from('ride_leaders')
-      .select('user_id')
+      .select('user_id, added_at')
       .eq('ride_id', rideId)
-      .order('added_at', { ascending: true })
-      .limit(1)
-      .maybeSingle();
+      .order('added_at', { ascending: true });
+
+    // Filter to co-leaders with active signups
+    let firstCoLeader: { user_id: string } | null = null;
+    if (activeCoLeaders && activeCoLeaders.length > 0) {
+      for (const cl of activeCoLeaders) {
+        const { data: clSignup } = await supabase
+          .from('ride_signups')
+          .select('status')
+          .eq('ride_id', rideId)
+          .eq('user_id', cl.user_id)
+          .single();
+
+        if (clSignup?.status === 'confirmed' || clSignup?.status === 'checked_in') {
+          firstCoLeader = cl;
+          break;
+        }
+      }
+    }
 
     if (firstCoLeader) {
       const admin = createAdminClient();
@@ -1180,6 +1221,15 @@ export async function addCoLeader(rideId: string, userId: string) {
 
   if (!user) return { error: common.notAuthenticated };
 
+  // Block operations on cancelled/completed rides
+  const { data: rideStatus } = await supabase
+    .from('rides')
+    .select('status')
+    .eq('id', rideId)
+    .single();
+
+  if (rideStatus?.status === RideStatus.CANCELLED) return { error: errors.rideCancelled };
+
   const permissionError = await checkRideEditPermission(supabase, user.id, rideId);
   if (permissionError) return { error: permissionError };
 
@@ -1216,6 +1266,15 @@ export async function removeCoLeader(rideId: string, userId: string) {
   const user = await getUser();
 
   if (!user) return { error: common.notAuthenticated };
+
+  // Block operations on cancelled/completed rides
+  const { data: rideStatus } = await supabase
+    .from('rides')
+    .select('status')
+    .eq('id', rideId)
+    .single();
+
+  if (rideStatus?.status === RideStatus.CANCELLED) return { error: errors.rideCancelled };
 
   const permissionError = await checkRideEditPermission(supabase, user.id, rideId);
   if (permissionError) return { error: permissionError };
