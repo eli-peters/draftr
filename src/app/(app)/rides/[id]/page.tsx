@@ -16,13 +16,13 @@ import { RideComments } from '@/components/rides/ride-comments';
 import { RideDetailCard } from '@/components/rides/ride-detail-card';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { HeaderActions } from '@/components/layout/header-actions';
 import { RideKebabMenu } from '@/components/rides/ride-kebab-menu';
 
 import { Users } from '@phosphor-icons/react/dist/ssr';
 import { ContentCard } from '@/components/ui/content-card';
 import { appContent } from '@/content/app';
 import { SignupStatus } from '@/config/statuses';
-import { routes } from '@/config/routes';
 import { computeRideActionState } from '@/lib/rides/action-bar-state';
 
 import type { UserRole } from '@/config/navigation';
@@ -93,18 +93,16 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
   return (
     <DashboardShell>
-      <PageHeader
-        title={ride.title}
-        actions={
-          hasEditRole ? (
-            <RideKebabMenu
-              rideId={ride.id}
-              canCancel={availability.canCancel}
-              signupCount={signups.filter((s) => s.status !== 'cancelled').length}
-            />
-          ) : undefined
-        }
-      />
+      {hasEditRole && (
+        <HeaderActions>
+          <RideKebabMenu
+            rideId={ride.id}
+            canCancel={availability.canCancel}
+            signupCount={signups.filter((s) => s.status !== 'cancelled').length}
+          />
+        </HeaderActions>
+      )}
+      <PageHeader title={ride.title} />
 
       {/* Desktop action strip — sticky below header */}
       <RideActionStrip

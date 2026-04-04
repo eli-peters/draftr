@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { signUpForRide, cancelSignUp } from '@/lib/rides/actions';
+import { useRideActionCta } from '@/hooks/use-ride-action-cta';
 import { Button } from '@/components/ui/button';
 import { RiderAvatarGroup } from '@/components/rides/ride-card-parts';
 import { appContent } from '@/content/app';
@@ -9,8 +8,6 @@ import type { RideActionBarState } from '@/lib/rides/action-bar-state';
 import type { SignupAvatar } from '@/types/database';
 
 const { actionBar } = appContent.rides;
-
-type StripMode = 'idle' | 'confirm-leave';
 
 interface RideActionStripProps {
   rideId: string;
@@ -24,32 +21,15 @@ interface RideActionStripProps {
  * Same state machine and left/right zone model as the mobile RideActionBar.
  */
 export function RideActionStrip({ rideId, state, avatars, totalCount }: RideActionStripProps) {
-  const [mode, setMode] = useState<StripMode>('idle');
-  const [isPending, startTransition] = useTransition();
-
-  function handleCtaClick() {
-    if (!state.cta) return;
-
-    if (state.cta === 'leave' || state.cta === 'leave-waitlist') {
-      setMode('confirm-leave');
-      return;
-    }
-
-    startTransition(async () => {
-      await signUpForRide(rideId);
-    });
-  }
-
-  function handleConfirmLeave() {
-    startTransition(async () => {
-      await cancelSignUp(rideId);
-      setMode('idle');
-    });
-  }
-
-  function handleDismiss() {
-    setMode('idle');
-  }
+  const {
+    mode,
+    isPending,
+    handleCtaClick,
+    handleConfirmLeave,
+    handleDismiss,
+    ctaLabel,
+    confirmLeaveLabel,
+  } = useRideActionCta(rideId, state);
 
   return (
     <div className="my-3 hidden rounded-(--bar-radius-desktop) border border-border/20 bg-surface-default/(--bar-bg-opacity) shadow-(--bar-shadow-desktop) backdrop-blur-(--bar-backdrop-blur) md:block">
@@ -69,7 +49,7 @@ export function RideActionStrip({ rideId, state, avatars, totalCount }: RideActi
                 onClick={handleCtaClick}
                 disabled={isPending}
               >
-                {isPending ? appContent.common.loading : state.ctaLabel}
+                {ctaLabel}
               </Button>
             )}
           </div>
@@ -91,7 +71,7 @@ export function RideActionStrip({ rideId, state, avatars, totalCount }: RideActi
                 onClick={handleConfirmLeave}
                 disabled={isPending}
               >
-                {isPending ? appContent.common.loading : actionBar.confirmLeave}
+                {confirmLeaveLabel}
               </Button>
             </div>
           </div>

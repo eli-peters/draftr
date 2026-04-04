@@ -56,7 +56,7 @@ export function RideForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      <fieldset disabled={state.isFetchingRoute} className="min-w-0 space-y-5 pb-28 md:pb-0">
+      <fieldset disabled={state.isFetchingRoute} className="min-w-0 space-y-5">
         {/* ── Step 1: Route ────────────────────────────────────────── */}
         <div>
           <StepRoute
@@ -121,10 +121,11 @@ export function RideForm({
             )
           }
         />
-
-        {/* ── Action Bar ──────────────────────────────────────────── */}
-        <RideFormActionBar isEdit={isEdit} isPending={state.isPending} error={state.error} />
       </fieldset>
+
+      {/* ── Action Bar — outside fieldset, matches ride-detail pattern ── */}
+      <div className="h-20 md:h-5" />
+      <RideFormActionBar isEdit={isEdit} isPending={state.isPending} error={state.error} />
     </form>
   );
 }

@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { DotsThree, PencilSimple, XCircle } from '@phosphor-icons/react';
+import { DotsThreeOutline, PencilSimple, XCircle } from '@phosphor-icons/react';
+import { toast } from 'sonner';
 import { cancelRide } from '@/lib/rides/actions';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,7 +39,10 @@ export function RideKebabMenu({ rideId, canCancel, signupCount }: RideKebabMenuP
 
   function handleConfirmCancel() {
     startTransition(async () => {
-      await cancelRide(rideId, '');
+      const result = await cancelRide(rideId, '');
+      if (result.error) {
+        toast.error(result.error);
+      }
       setCancelOpen(false);
     });
   }
@@ -48,8 +52,12 @@ export function RideKebabMenu({ rideId, canCancel, signupCount }: RideKebabMenuP
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <Button variant="ghost" size="icon-sm" className="rounded-full">
-              <DotsThree weight="bold" className="size-5" />
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="rounded-full text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+            >
+              <DotsThreeOutline weight="fill" className="size-5" />
             </Button>
           }
         />

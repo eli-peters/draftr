@@ -1,5 +1,3 @@
-'use client';
-
 import { UsersThree, Check } from '@phosphor-icons/react/dist/ssr';
 import { ContentCard } from '@/components/ui/content-card';
 import { RiderAvatar } from '@/components/ui/avatar';

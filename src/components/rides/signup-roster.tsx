@@ -183,6 +183,7 @@ function SignupRow({
       {canRemove && onRemove && (
         <button
           onClick={() => onRemove(signup.user_id, signup.user_name)}
+          aria-label={ridesContent.roster.removeConfirmTitle(signup.user_name)}
           className="text-xs text-muted-foreground transition-colors hover:text-destructive"
         >
           {ridesContent.roster.removeRider}

@@ -10,6 +10,15 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { FloatingField } from '@/components/ui/floating-field';
 import { ContentCard } from '@/components/ui/content-card';
+import {
+  AlertDialog,
+  AlertDialogClose,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { addComment, editComment, deleteComment, toggleCommentReaction } from '@/lib/rides/actions';
 import { ReactionPills } from '@/components/rides/reaction-pills';
@@ -81,6 +90,7 @@ function CommentRow({
   isAdmin: boolean;
 }) {
   const [isEditing, setIsEditing] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [editBody, setEditBody] = useState(comment.body);
   const [isPending, startTransition] = useTransition();
   const editRef = useRef<HTMLTextAreaElement>(null);
@@ -97,10 +107,10 @@ function CommentRow({
   }
 
   function handleDelete() {
-    if (!confirm(content.deleteConfirm)) return;
     startTransition(async () => {
       const result = await deleteComment(comment.id);
       if (!result.success) toast.error(content.deleteFailed);
+      setDeleteOpen(false);
     });
   }
 
@@ -174,7 +184,7 @@ function CommentRow({
               </button>
             )}
             <button
-              onClick={handleDelete}
+              onClick={() => setDeleteOpen(true)}
               disabled={isPending}
               className="text-overline text-muted-foreground transition-colors hover:text-destructive"
             >
@@ -193,6 +203,28 @@ function CommentRow({
             currentUserId={currentUserId}
           />
         </div>
+
+        {/* Delete confirmation */}
+        <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{content.deleteConfirmTitle}</AlertDialogTitle>
+              <AlertDialogDescription>{content.deleteConfirm}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogClose
+                render={
+                  <Button variant="outline" size="sm" disabled={isPending}>
+                    {content.cancelEdit}
+                  </Button>
+                }
+              />
+              <Button variant="destructive" size="sm" onClick={handleDelete} disabled={isPending}>
+                {isPending ? appContent.common.loading : content.delete}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

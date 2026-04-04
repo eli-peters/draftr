@@ -9,6 +9,7 @@ import { AppLogo } from './app-logo';
 import { routes, isChildRoute, getParentRoute } from '@/config/routes';
 import { getParentRouteLabel } from '@/config/navigation';
 import { useIsMobile } from '@/hooks/use-is-mobile';
+import { useHeaderActions } from './header-actions';
 import type { Notification } from '@/components/notifications/notification-item';
 
 interface HeaderBarProps {
@@ -35,6 +36,7 @@ export function HeaderBar({
 }: HeaderBarProps) {
   const pathname = usePathname();
   const isMobile = useIsMobile();
+  const actions = useHeaderActions();
   const isChild = isChildRoute(pathname);
   const showBackNav = isMobile && isChild;
   const parentRoute = getParentRoute(pathname);
@@ -57,8 +59,9 @@ export function HeaderBar({
         </Link>
       )}
 
-      {/* Right: notification bell + avatar */}
+      {/* Right: page actions + notification bell + avatar */}
       <div className="flex items-center gap-3">
+        {actions}
         <NotificationBell notifications={notifications} unreadCount={unreadNotificationCount} />
         <AvatarMenu
           userName={userName}
