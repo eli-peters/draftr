@@ -124,7 +124,7 @@ export function RideForm({
       </fieldset>
 
       {/* ── Action Bar — outside fieldset, matches ride-detail pattern ── */}
-      <div className="h-20 md:h-5" />
+      <div className="h-24 md:h-0" />
       <RideFormActionBar isEdit={isEdit} isPending={state.isPending} error={state.error} />
     </form>
   );
