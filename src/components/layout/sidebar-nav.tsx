@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import type { NavItem } from '@/config/navigation';
 import { manageSubNav } from '@/config/navigation';
 import { routes } from '@/config/routes';
@@ -21,9 +21,9 @@ interface SidebarNavProps {
  */
 export function SidebarNav({ items, isAdmin = false }: SidebarNavProps) {
   const pathname = usePathname();
-  const router = useRouter();
 
   const isManageActive = pathname === routes.manage || pathname.startsWith(`${routes.manage}/`);
+  const isManageExact = pathname === routes.manage;
 
   return (
     <aside className="hidden md:sticky md:top-[calc(4rem+0.75rem)] md:flex md:h-[calc(100vh-4rem-1.5rem)] md:w-60 md:shrink-0 md:flex-col md:rounded-(--card-radius-lg) md:border-(length:--card-border-width) md:border-border md:bg-surface-default md:shadow-(--card-shadow)">
@@ -35,38 +35,35 @@ export function SidebarNav({ items, isAdmin = false }: SidebarNavProps) {
           if (isManageItem && isAdmin) {
             return (
               <div key={item.href}>
-                {/* Manage group label — clicking navigates to /manage (rides) and expands */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!isManageActive) router.push(routes.manage);
-                  }}
+                {/* Manage group label — navigates to /manage dashboard and expands sub-nav */}
+                <Link
+                  href={routes.manage}
                   className={cn(
-                    'relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors',
-                    isManageActive
-                      ? 'text-primary'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                    'relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                    isManageExact
+                      ? 'text-primary bg-primary/10'
+                      : isManageActive
+                        ? 'text-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
                   )}
                 >
                   <NavIcon name={item.icon} className="relative h-5 w-5" active={isManageActive} />
                   <span className="relative">{item.label}</span>
-                </button>
+                </Link>
 
                 {/* Sub-navigation — always visible when any manage route is active */}
                 {isManageActive && (
                   <div className="ml-[1.375rem] mt-0.5 flex flex-col gap-0.5 border-l border-(--border-subtle) pl-3">
                     {manageSubNav.map((child) => {
                       const isChildActive =
-                        child.href === routes.manage
-                          ? pathname === routes.manage
-                          : pathname === child.href || pathname.startsWith(`${child.href}/`);
+                        pathname === child.href || pathname.startsWith(`${child.href}/`);
 
                       return (
                         <Link
                           key={child.href}
                           href={child.href}
                           className={cn(
-                            'flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors',
+                            'flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors',
                             isChildActive
                               ? 'text-primary font-medium bg-primary/10'
                               : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
@@ -83,7 +80,8 @@ export function SidebarNav({ items, isAdmin = false }: SidebarNavProps) {
             );
           }
 
-          // Standard nav item
+          // Standard nav item — leaders go straight to /manage/rides
+          const navHref = isManageItem ? routes.manageRides : item.href;
           const isActive =
             item.href === routes.home
               ? pathname === routes.home
@@ -92,7 +90,7 @@ export function SidebarNav({ items, isAdmin = false }: SidebarNavProps) {
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={navHref}
               className={cn(
                 'relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                 isActive

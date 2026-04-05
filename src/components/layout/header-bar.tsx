@@ -18,6 +18,7 @@ interface HeaderBarProps {
   avatarUrl: string | null;
   notifications: Notification[];
   unreadNotificationCount: number;
+  isAdmin?: boolean;
 }
 
 /**
@@ -32,13 +33,14 @@ export function HeaderBar({
   avatarUrl,
   notifications,
   unreadNotificationCount,
+  isAdmin = false,
 }: HeaderBarProps) {
   const pathname = usePathname();
   const isMobile = useIsMobile();
   const isChild = isChildRoute(pathname);
   const showBackNav = isMobile && isChild;
   const parentRoute = getParentRoute(pathname);
-  const parentLabel = getParentRouteLabel(parentRoute);
+  const parentLabel = getParentRouteLabel(parentRoute, isAdmin);
 
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between bg-primary px-5 md:px-8 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3">

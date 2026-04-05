@@ -6,6 +6,7 @@ import { getPaceTiersWithUsage } from '@/lib/manage/queries';
 import { createClient } from '@/lib/supabase/server';
 import { SeasonDatesSection } from '@/components/manage/season-dates-section';
 import { PaceTiersSection } from '@/components/manage/pace-tiers-section';
+import { MobileGate } from '@/components/manage/mobile-gate';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import type { UserRole } from '@/config/navigation';
@@ -17,7 +18,7 @@ export default async function ManageSettingsPage() {
   if (!membership) redirect(routes.signIn);
 
   const userRole = membership.role as UserRole;
-  if (userRole !== 'admin') redirect(routes.manage);
+  if (userRole !== 'admin') redirect(routes.manageRides);
 
   const supabase = await createClient();
   const { data: club } = await supabase
@@ -30,16 +31,18 @@ export default async function ManageSettingsPage() {
   const paceTiersWithUsage = await getPaceTiersWithUsage(membership.club_id);
 
   return (
-    <DashboardShell>
-      <PageHeader centered={false} title={content.sections.club} />
-      <div className="mt-4 space-y-8">
-        <SeasonDatesSection
-          clubId={membership.club_id}
-          seasonStart={clubSettings.season_start ?? ''}
-          seasonEnd={clubSettings.season_end ?? ''}
-        />
-        <PaceTiersSection clubId={membership.club_id} initialTiers={paceTiersWithUsage} />
-      </div>
-    </DashboardShell>
+    <MobileGate mode="block">
+      <DashboardShell>
+        <PageHeader centered={false} title={content.sections.club} />
+        <div className="mt-4 space-y-8">
+          <SeasonDatesSection
+            clubId={membership.club_id}
+            seasonStart={clubSettings.season_start ?? ''}
+            seasonEnd={clubSettings.season_end ?? ''}
+          />
+          <PaceTiersSection clubId={membership.club_id} initialTiers={paceTiersWithUsage} />
+        </div>
+      </DashboardShell>
+    </MobileGate>
   );
 }

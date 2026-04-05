@@ -24,6 +24,7 @@ export const appContent = {
     notifications: 'Notifications',
     profile: 'Profile',
     manage: 'Manage',
+    club: 'Club',
   },
 
   header: {
@@ -617,6 +618,8 @@ export const appContent = {
     mobileGateTitle: 'Desktop recommended',
     mobileGateDescription:
       'This section is optimized for desktop. Switch to a larger screen for the full experience.',
+    mobileBannerDescription:
+      "You're viewing a simplified version. Sorting, bulk actions, and expanded views are available on desktop.",
     clearFilters: 'Clear filters',
     addFilter: 'Add filter',
     rowsPerPage: 'Rows per page',
@@ -625,6 +628,42 @@ export const appContent = {
       rides: 'Rides',
       members: 'Members',
       club: 'Club Settings',
+    },
+    dashboard: {
+      heading: 'Manage your club',
+      stats: {
+        fillRate: 'Rider fill rate',
+        cancellationRate: 'Cancellation rate',
+        activeMembers: 'Active members',
+        newThisMonth: 'New This Month',
+        waitlistDemand: 'Waitlisted',
+        fillRateContext: (change: number) => `${change}% this month`,
+        cancellationContext: (count: number) => `${count} this month`,
+        activeMembersContext: (month: string) => month,
+      },
+      sectionCards: {
+        rides: 'Rides',
+        members: 'Members',
+        announcements: 'Announcements',
+        settings: 'Club Settings',
+        createRide: '+ Create Ride',
+        invite: '+ Invite',
+        newAnnouncement: '+ New',
+        edit: 'Edit',
+        upcomingStat: (n: number) => `${n} upcoming`,
+        activeStat: (n: number) => `${n} active`,
+        thisWeekStat: (n: number) => `${n} this week`,
+      },
+      activity: {
+        heading: 'Recent Activity',
+        empty: 'No recent activity to show.',
+        signup: (name: string, ride: string) => `${name} signed up for ${ride}`,
+        cancellation: (name: string, ride: string) => `${name} cancelled ${ride}`,
+        newMember: (name: string) => `${name} joined the club`,
+        signupAction: (ride: string) => `Signed up for ${ride}`,
+        cancellationAction: (ride: string) => `Cancelled ${ride}`,
+        newMemberAction: 'Joined the club',
+      },
     },
     rides: {
       createRide: 'Create Ride',
@@ -763,6 +802,7 @@ export const appContent = {
       edit: 'Edit',
       noAnnouncements: 'No announcements yet.',
       pinned: 'Pinned',
+      pinToTop: 'Pin to top',
       typeLabel: 'Banner Type',
       dismissibleLabel: 'Members can dismiss',
       expiryLabel: 'Expires on',

@@ -150,6 +150,9 @@
   --color-banner-soft-secondary-bg: var(--banner-soft-secondary-bg);
   --color-banner-soft-secondary-text: var(--banner-soft-secondary-text);
 
+  /* Fills tokens → Tailwind */
+  --color-fills-primary: var(--fills-primary);
+
   /* Accent tokens → Tailwind */
   --color-accent-primary-default: var(--accent-primary-default);
   --color-accent-primary-muted: var(--accent-primary-muted);
@@ -374,6 +377,7 @@
   --tabs-trigger-active-border: transparent;
   --tabs-trigger-active-text: var(--text-on-primary);
   --destructive-focus-bg: color-mix(in srgb, var(--action-danger-default) 10%, transparent);
+  --fills-primary: color-mix(in srgb, var(--color-neutral-500) 20%, transparent);
 
   /* ── Toast — opaque feedback backgrounds ── */
   --toast-success-bg: var(--feedback-success-bg);
@@ -382,8 +386,8 @@
   --toast-info-bg: var(--feedback-info-bg);
 
   /* ── Layout ── */
-  --drawer-height-md: 70vh;
-  --drawer-height-lg: 85vh;
+  --drawer-height-md: 70dvh;
+  --drawer-height-lg: 85dvh;
   --drawer-width-sidebar: 28rem;
   --overlay: color-mix(in srgb, var(--color-neutral-950) 10%, transparent);
   --overlay-heavy: color-mix(in srgb, var(--color-neutral-950) 40%, transparent);
@@ -423,6 +427,7 @@
   --tabs-trigger-active-border: transparent;
   --tabs-trigger-active-text: var(--text-on-primary);
   --destructive-focus-bg: color-mix(in srgb, var(--action-danger-default) 20%, transparent);
+  --fills-primary: color-mix(in srgb, var(--color-neutral-400) 20%, transparent);
 
   /* ── Layout ── */
   --overlay: color-mix(in srgb, var(--color-neutral-0) 5%, transparent);

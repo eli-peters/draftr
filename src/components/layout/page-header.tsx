@@ -36,12 +36,10 @@ export function PageHeader({
   }
 
   return (
-    <div className={cn('mb-6 flex items-start justify-between gap-4', className)}>
+    <div className={cn('mb-6 flex items-center justify-between gap-3 md:gap-4', className)}>
       <div className="min-w-0">
         <div className="flex min-w-0 items-center gap-3">
-          <h1 className="line-clamp-2 text-3xl font-bold tracking-tight text-foreground">
-            {title}
-          </h1>
+          <h1 className="truncate text-3xl font-bold tracking-tight text-foreground">{title}</h1>
           {badge}
         </div>
         {subtitle && <p className="mt-1.5 text-base text-muted-foreground">{subtitle}</p>}

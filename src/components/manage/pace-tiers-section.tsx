@@ -374,7 +374,7 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
                   </td>
                   <td className="p-3 font-mono text-body-sm text-(--text-primary)">
                     {tier.upcoming_ride_count > 0 ? (
-                      <Link href={`${routes.manage}?pace=${tier.id}`}>
+                      <Link href={`${routes.manageRides}?pace=${tier.id}`}>
                         <Button
                           variant="ghost"
                           size="sm"

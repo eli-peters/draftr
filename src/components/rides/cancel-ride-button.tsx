@@ -33,7 +33,7 @@ export function CancelRideButton({ rideId, rideTitle }: CancelRideButtonProps) {
     if (result.error) {
       setError(result.error);
     } else {
-      router.push(routes.manage);
+      router.push(routes.manageRides);
     }
   }
 

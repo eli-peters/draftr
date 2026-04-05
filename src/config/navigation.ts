@@ -61,7 +61,7 @@ export const primaryNav: NavItem[] = [
  */
 export const manageSubNav: NavItem[] = [
   {
-    href: '/manage',
+    href: '/manage/rides',
     label: appContent.manage.sections.rides,
     icon: 'bike',
   },
@@ -83,14 +83,21 @@ export const manageSubNav: NavItem[] = [
 ];
 
 /** Look up the display label for a parent route path (e.g. "/rides" → "Rides"). */
-export function getParentRouteLabel(parentPath: string): string {
+export function getParentRouteLabel(parentPath: string, isAdmin = false): string {
   const match = primaryNav.find((item) => item.href === parentPath);
-  return match?.label ?? appContent.nav.home;
+  if (match) {
+    if (match.href === '/manage' && isAdmin) return appContent.nav.club;
+    return match.label;
+  }
+  const subMatch = manageSubNav.find((item) => item.href === parentPath);
+  if (subMatch) return subMatch.label;
+  return appContent.nav.home;
 }
 
 /**
  * Filter nav items based on user role.
- * Riders see 4 tabs. Ride leaders and admins see 5 (includes Manage).
+ * Riders see 4 tabs. Ride leaders and admins see 5 (includes Manage/Club).
+ * Admins see "Club" instead of "Manage" in the nav label.
  */
 export function getNavForRole(role: UserRole): NavItem[] {
   const roleHierarchy: Record<UserRole, number> = {
@@ -99,8 +106,21 @@ export function getNavForRole(role: UserRole): NavItem[] {
     admin: 2,
   };
 
-  return primaryNav.filter((item) => {
-    if (!item.requiredRole) return true;
-    return roleHierarchy[role] >= roleHierarchy[item.requiredRole];
-  });
+  return primaryNav
+    .filter((item) => {
+      if (!item.requiredRole) return true;
+      return roleHierarchy[role] >= roleHierarchy[item.requiredRole];
+    })
+    .map((item) => {
+      if (item.href === '/manage') {
+        if (role === 'admin') {
+          return { ...item, label: appContent.nav.club };
+        }
+        // Leaders go straight to /manage/rides (skip server redirect)
+        if (role === 'ride_leader') {
+          return { ...item, href: '/manage/rides' };
+        }
+      }
+      return item;
+    });
 }

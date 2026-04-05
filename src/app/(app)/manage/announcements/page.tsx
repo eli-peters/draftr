@@ -7,6 +7,7 @@ import {
   AnnouncementsPanel,
   CreateAnnouncementButton,
 } from '@/components/manage/announcements-panel';
+import { MobileGate } from '@/components/manage/mobile-gate';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import type { UserRole } from '@/config/navigation';
@@ -18,20 +19,22 @@ export default async function ManageAnnouncementsPage() {
   if (!membership) redirect(routes.signIn);
 
   const userRole = membership.role as UserRole;
-  if (userRole !== 'admin') redirect(routes.manage);
+  if (userRole !== 'admin') redirect(routes.manageRides);
 
   const announcements = await getClubAnnouncements(membership.club_id);
 
   return (
-    <DashboardShell>
-      <PageHeader
-        centered={false}
-        title={content.announcements.heading}
-        actions={<CreateAnnouncementButton clubId={membership.club_id} />}
-      />
-      <div className="mt-4">
-        <AnnouncementsPanel announcements={announcements} clubId={membership.club_id} />
-      </div>
-    </DashboardShell>
+    <MobileGate>
+      <DashboardShell>
+        <PageHeader
+          centered={false}
+          title={content.announcements.heading}
+          actions={<CreateAnnouncementButton clubId={membership.club_id} />}
+        />
+        <div className="mt-4">
+          <AnnouncementsPanel announcements={announcements} clubId={membership.club_id} />
+        </div>
+      </DashboardShell>
+    </MobileGate>
   );
 }

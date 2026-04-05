@@ -42,6 +42,17 @@ export function AppShell({
   const isHome = pathname === routes.home;
   const isChild = isChildRoute(pathname);
   const isManage = pathname === routes.manage || pathname.startsWith(`${routes.manage}/`);
+  const isManageSection =
+    isManage &&
+    (
+      [
+        routes.manage,
+        routes.manageRides,
+        routes.manageMembers,
+        routes.manageAnnouncements,
+        routes.manageSettings,
+      ] as string[]
+    ).includes(pathname);
 
   return (
     <div className="flex min-h-screen flex-col md:bg-surface-page">
@@ -52,6 +63,7 @@ export function AppShell({
         avatarUrl={user.avatarUrl}
         notifications={notifications ?? []}
         unreadNotificationCount={unreadNotificationCount ?? 0}
+        isAdmin={isAdmin}
       />
 
       <div className="flex flex-1 md:flex-row md:gap-3 md:p-3">
@@ -65,7 +77,7 @@ export function AppShell({
           <main
             className={cn(
               'mx-auto flex w-full min-w-0 flex-1 flex-col md:pb-0',
-              isManage && isAdmin && !isChild ? 'max-w-400' : 'max-w-3xl',
+              isManageSection && isAdmin ? 'max-w-400' : 'max-w-3xl',
               isChild ? 'pb-0' : 'pb-20',
             )}
           >

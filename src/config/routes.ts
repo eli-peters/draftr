@@ -1,29 +1,34 @@
 /**
- * Parent routes show bottom nav + logo header on mobile.
+ * Top-level routes show bottom nav + logo header on mobile.
  * Any route NOT in this set is a "child" route (back arrow header, no bottom nav).
  */
-const parentRoutes = new Set([
-  '/',
-  '/rides',
-  '/my-rides',
-  '/manage',
+const topLevelRoutes = new Set(['/', '/rides', '/my-rides', '/manage', '/notifications']);
+
+/**
+ * Routes that can serve as a back-navigation target for deeper children,
+ * but are themselves children of a top-level route.
+ */
+const intermediateRoutes = new Set([
+  '/manage/rides',
   '/manage/members',
   '/manage/announcements',
   '/manage/settings',
-  '/notifications',
 ]);
 
 /** Returns true if the given pathname is a child route (not a top-level tab). */
 export function isChildRoute(pathname: string): boolean {
-  return !parentRoutes.has(pathname);
+  return !topLevelRoutes.has(pathname);
 }
 
-/** Returns the parent route for a given child pathname. */
+/** Returns the nearest navigable ancestor for a given child pathname. */
 export function getParentRoute(pathname: string): string {
   const segments = pathname.split('/').filter(Boolean);
-  if (segments.length <= 1) return '/';
-  const candidate = `/${segments[0]}`;
-  return parentRoutes.has(candidate) ? candidate : '/';
+  while (segments.length > 0) {
+    segments.pop();
+    const candidate = segments.length === 0 ? '/' : `/${segments.join('/')}`;
+    if (topLevelRoutes.has(candidate) || intermediateRoutes.has(candidate)) return candidate;
+  }
+  return '/';
 }
 
 export const routes = {
@@ -34,6 +39,7 @@ export const routes = {
   ride: (id: string) => `/rides/${id}`,
   schedule: '/my-rides',
   manage: '/manage',
+  manageRides: '/manage/rides',
   manageMembers: '/manage/members',
   manageAnnouncements: '/manage/announcements',
   manageSettings: '/manage/settings',
@@ -42,7 +48,7 @@ export const routes = {
     returnTo
       ? `/manage/rides/${id}/edit?returnTo=${encodeURIComponent(returnTo)}`
       : `/manage/rides/${id}/edit`,
-  manageTab: (tab: string) => `/manage?tab=${tab}`,
+  manageTab: (tab: string) => `/manage/rides?tab=${tab}`,
   profile: '/profile',
   publicProfile: (userId: string) => `/profile/${userId}`,
   notifications: '/notifications',

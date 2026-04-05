@@ -105,61 +105,10 @@ export function AdminFilterToolbar({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {/* Active filter chips */}
-      {activeFilters.map((filter) => (
-        <div
-          key={filter.key}
-          className="flex items-center gap-1 rounded-md border border-(--border-subtle) bg-(--surface-default) pl-2.5 pr-1 py-0.5"
-        >
-          <span className="text-xs font-medium text-(--text-tertiary)">{filter.label}</span>
-          <Select
-            size="sm"
-            value={filterValues[filter.key] ?? filter.defaultValue}
-            onValueChange={(v) => onFilterChange(filter.key, v)}
-            items={Object.fromEntries(filter.options.map((o) => [o.value, o.label]))}
-          >
-            <SelectTrigger className="h-6 w-auto min-w-16 border-0 bg-transparent px-1 text-xs font-medium text-(--text-primary)">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {filter.options.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <button
-            type="button"
-            onClick={() => removeFilter(filter.key)}
-            className="rounded p-0.5 text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)"
-          >
-            <X className="h-3 w-3" />
-          </button>
-        </div>
-      ))}
-
-      {/* + Add filter button */}
-      {availableFilters.length > 0 && (
-        <DropdownMenu>
-          <DropdownMenuTrigger className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
-            <Plus className="h-3 w-3" />
-            {manageContent.addFilter}
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            {availableFilters.map((filter) => (
-              <DropdownMenuItem key={filter.key} onClick={() => addFilter(filter.key)}>
-                {filter.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-
-      {/* Search input — always visible */}
+    <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
+      {/* Search input — always visible, full-width on mobile */}
       {onSearchChange && (
-        <div className="relative ml-auto">
+        <div className="relative order-first md:order-last md:ml-auto">
           <MagnifyingGlass className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={localSearch}
@@ -168,7 +117,7 @@ export function AdminFilterToolbar({
               debouncedSearch(e.target.value);
             }}
             placeholder={searchPlaceholder ?? ''}
-            className="h-8 w-48 pl-7 pr-7 text-xs"
+            className="h-8 w-full pl-7 pr-7 text-xs md:w-48"
           />
           {localSearch && (
             <button
@@ -184,6 +133,59 @@ export function AdminFilterToolbar({
           )}
         </div>
       )}
+
+      {/* Active filter chips */}
+      <div className="flex flex-wrap items-center gap-2">
+        {activeFilters.map((filter) => (
+          <div
+            key={filter.key}
+            className="flex items-center gap-1 rounded-md border border-(--border-subtle) bg-(--surface-default) pl-2.5 pr-1 py-0.5"
+          >
+            <span className="text-xs font-medium text-(--text-tertiary)">{filter.label}</span>
+            <Select
+              size="sm"
+              value={filterValues[filter.key] ?? filter.defaultValue}
+              onValueChange={(v) => onFilterChange(filter.key, v)}
+              items={Object.fromEntries(filter.options.map((o) => [o.value, o.label]))}
+            >
+              <SelectTrigger className="h-6 w-auto min-w-16 border-0 bg-transparent px-1 text-xs font-medium text-(--text-primary)">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {filter.options.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <button
+              type="button"
+              onClick={() => removeFilter(filter.key)}
+              className="rounded p-0.5 text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        ))}
+
+        {/* + Add filter button */}
+        {availableFilters.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
+              <Plus className="h-3 w-3" />
+              {manageContent.addFilter}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {availableFilters.map((filter) => (
+                <DropdownMenuItem key={filter.key} onClick={() => addFilter(filter.key)}>
+                  {filter.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
     </div>
   );
 }

@@ -179,6 +179,7 @@ export async function updateAnnouncement(
     body: string;
     announcement_type?: AnnouncementType;
     is_dismissible?: boolean;
+    is_pinned?: boolean;
     expires_at?: string | null;
   },
 ) {
@@ -193,6 +194,7 @@ export async function updateAnnouncement(
       body: data.body,
       announcement_type: data.announcement_type ?? 'info',
       is_dismissible: data.is_dismissible ?? true,
+      is_pinned: data.is_pinned ?? false,
       expires_at: data.expires_at ?? null,
     })
     .eq('id', announcementId);

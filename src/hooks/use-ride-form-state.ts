@@ -527,7 +527,7 @@ export function useRideFormState({
       if (!isEdit && result.rideId) {
         router.push(routes.ride(result.rideId));
       } else {
-        router.push(returnTo && returnTo.startsWith('/') ? returnTo : routes.manage);
+        router.push(returnTo && returnTo.startsWith('/') ? returnTo : routes.manageRides);
       }
     }
   }

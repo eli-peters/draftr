@@ -160,6 +160,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
   const [body, setBody] = useState('');
   const [announcementType, setAnnouncementType] = useState<AnnouncementType>('info');
   const [isDismissible, setIsDismissible] = useState(true);
+  const [isPinned, setIsPinned] = useState(false);
   const [expiresAt, setExpiresAt] = useState('');
   const [isPending, startTransition] = useTransition();
 
@@ -228,6 +229,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
     setBody(a.body);
     setAnnouncementType(a.announcement_type);
     setIsDismissible(a.is_dismissible);
+    setIsPinned(a.is_pinned);
     setExpiresAt(a.expires_at?.split('T')[0] ?? '');
     setOpen(true);
   }
@@ -240,6 +242,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
         body,
         announcement_type: announcementType,
         is_dismissible: isDismissible,
+        is_pinned: isPinned,
         expires_at: expiresAt || null,
       });
       if (result?.error) {
@@ -285,121 +288,139 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
           {content.announcements.noAnnouncements}
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-md border border-(--border-subtle)">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-(--border-subtle) bg-(--surface-sunken)">
-                <SortableHeader
-                  label={content.announcements.typeColumn}
-                  sortKey="type"
-                  {...sortProps}
-                />
-                <SortableHeader
-                  label={content.announcements.titleColumn}
-                  sortKey="title"
-                  {...sortProps}
-                />
-                <SortableHeader
-                  label={content.announcements.dateColumn}
-                  sortKey="published"
-                  {...sortProps}
-                />
-                <th className="p-3 text-overline font-mono text-(--text-secondary)">
-                  {content.announcements.pinned}
-                </th>
-                <th className="w-10 p-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedAnnouncements.map((a) => (
-                <tr
-                  key={a.id}
-                  className="group border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-sunken) hover:bg-muted/50"
-                >
-                  {/* Type dot + label */}
-                  <td className="p-3">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={cn(
-                          'h-2 w-2 shrink-0 rounded-full',
-                          typeDotColors[a.announcement_type],
-                        )}
-                      />
-                      <span className="truncate font-mono text-body-sm text-(--text-tertiary)">
-                        {content.announcements.typeOptions[a.announcement_type]}
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Title */}
-                  <td className="min-w-0 p-3">
-                    <p className="truncate font-mono text-body-sm font-semibold text-(--text-primary)">
-                      {a.title}
-                    </p>
-                  </td>
-
-                  {/* Published */}
-                  <td className="p-3">
-                    <span className="whitespace-nowrap font-mono text-body-sm text-(--text-tertiary)">
-                      {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
-                    </span>
-                  </td>
-
-                  {/* Pinned — clickable toggle */}
-                  <td className="p-3">
-                    <button
-                      type="button"
-                      onClick={() => handleTogglePin(a.id, a.is_pinned)}
-                      className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)"
-                    >
-                      <PushPin className="h-4 w-4" weight={a.is_pinned ? 'fill' : 'light'} />
-                    </button>
-                  </td>
-
-                  {/* Actions — kebab menu */}
-                  <td className="p-3">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
-                        <DotsThree className="h-4 w-4" weight="bold" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEdit(a)}>
-                          {content.announcements.edit}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem variant="destructive" onClick={() => handleDelete(a.id)}>
-                          {content.announcements.delete}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
+        <>
+          {/* Desktop table */}
+          <div className="hidden overflow-x-auto rounded-md border border-(--border-subtle) md:block">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-(--border-subtle) bg-(--surface-sunken)">
+                  <SortableHeader
+                    label={content.announcements.typeColumn}
+                    sortKey="type"
+                    {...sortProps}
+                  />
+                  <SortableHeader
+                    label={content.announcements.titleColumn}
+                    sortKey="title"
+                    {...sortProps}
+                  />
+                  <SortableHeader
+                    label={content.announcements.dateColumn}
+                    sortKey="published"
+                    {...sortProps}
+                  />
+                  <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                    {content.announcements.pinned}
+                  </th>
+                  <th className="w-10 p-3" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <TablePagination
-            totalItems={visibleAnnouncements.length}
-            page={page}
-            pageSize={pageSize}
-            onPageChange={setPage}
-            onPageSizeChange={setPageSize}
-          />
-        </div>
+              </thead>
+              <tbody>
+                {paginatedAnnouncements.map((a) => (
+                  <tr
+                    key={a.id}
+                    onClick={() => handleEdit(a)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleEdit(a);
+                      }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    className="group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-sunken) hover:bg-muted/50"
+                  >
+                    {/* Type dot + label */}
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={cn(
+                            'h-2 w-2 shrink-0 rounded-full',
+                            typeDotColors[a.announcement_type],
+                          )}
+                        />
+                        <span className="truncate font-mono text-body-sm text-(--text-tertiary)">
+                          {content.announcements.typeOptions[a.announcement_type]}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Title */}
+                    <td className="min-w-0 p-3">
+                      <p className="truncate font-mono text-body-sm font-semibold text-(--text-primary)">
+                        {a.title}
+                      </p>
+                    </td>
+
+                    {/* Published */}
+                    <td className="p-3">
+                      <span className="whitespace-nowrap font-mono text-body-sm text-(--text-tertiary)">
+                        {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
+                      </span>
+                    </td>
+
+                    {/* Pinned — clickable toggle */}
+                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePin(a.id, a.is_pinned)}
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)"
+                      >
+                        <PushPin className="h-4 w-4" weight={a.is_pinned ? 'fill' : 'light'} />
+                      </button>
+                    </td>
+
+                    {/* Actions — kebab menu */}
+                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
+                          <DotsThree className="h-4 w-4" weight="bold" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEdit(a)}>
+                            {content.announcements.edit}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => handleDelete(a.id)}
+                          >
+                            {content.announcements.delete}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <TablePagination
+              totalItems={visibleAnnouncements.length}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
+          </div>
+
+          {/* Mobile condensed rows — all filtered results, no pagination */}
+          <div className="min-w-0 overflow-hidden rounded-md border border-(--border-subtle) divide-y divide-(--border-subtle) [&>*:nth-child(even)]:bg-(--surface-sunken) md:hidden">
+            {visibleAnnouncements.map((a) => (
+              <MobileAnnouncementRow key={a.id} announcement={a} onEdit={handleEdit} />
+            ))}
+          </div>
+        </>
       )}
 
       {mounted && (
         <Drawer open={open} onOpenChange={setOpen} direction={isMobile ? 'bottom' : 'right'}>
           <DrawerContent
-            className={
-              isMobile
-                ? 'max-h-(--drawer-height-md) overflow-y-auto'
-                : 'w-(--drawer-width-sidebar) overflow-y-auto'
-            }
+            className={isMobile ? 'max-h-(--drawer-height-md)' : 'w-(--drawer-width-sidebar)'}
           >
             <DrawerHeader>
               <DrawerTitle>{content.announcements.edit}</DrawerTitle>
             </DrawerHeader>
-            <div className="space-y-4 px-4">
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4">
               <FloatingField
                 label={content.announcements.titleLabel}
                 htmlFor="announcement-title"
@@ -458,6 +479,10 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                   checked={isDismissible}
                   onCheckedChange={setIsDismissible}
                 />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="pinned-toggle">{content.announcements.pinToTop}</Label>
+                <Switch id="pinned-toggle" checked={isPinned} onCheckedChange={setIsPinned} />
               </div>
               <FloatingField
                 label={content.announcements.expiryLabel}
@@ -548,16 +573,12 @@ export function CreateAnnouncementButton({ clubId }: CreateAnnouncementButtonPro
           direction={isMobile ? 'bottom' : 'right'}
         >
           <DrawerContent
-            className={
-              isMobile
-                ? 'max-h-(--drawer-height-md) overflow-y-auto'
-                : 'w-(--drawer-width-sidebar) overflow-y-auto'
-            }
+            className={isMobile ? 'max-h-(--drawer-height-md)' : 'w-(--drawer-width-sidebar)'}
           >
             <DrawerHeader>
               <DrawerTitle>{content.announcements.create}</DrawerTitle>
             </DrawerHeader>
-            <div className="space-y-4 px-4">
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4">
               <FloatingField
                 label={content.announcements.titleLabel}
                 htmlFor="create-announcement-title"
@@ -641,5 +662,52 @@ export function CreateAnnouncementButton({ clubId }: CreateAnnouncementButtonPro
         </Drawer>
       )}
     </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// MobileAnnouncementRow
+// ---------------------------------------------------------------------------
+
+function MobileAnnouncementRow({
+  announcement: a,
+  onEdit,
+}: {
+  announcement: AnnouncementData;
+  onEdit: (a: AnnouncementData) => void;
+}) {
+  return (
+    <div
+      onClick={() => onEdit(a)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onEdit(a);
+        }
+      }}
+      tabIndex={0}
+      role="button"
+      className="min-w-0 cursor-pointer overflow-hidden px-3 py-2.5 hover:bg-muted/50"
+    >
+      <div className="flex items-center gap-2">
+        <p className="truncate font-mono text-body-sm font-semibold text-(--text-primary)">
+          {a.title}
+        </p>
+        {a.is_pinned && (
+          <PushPin className="h-3.5 w-3.5 shrink-0 text-(--text-tertiary)" weight="fill" />
+        )}
+      </div>
+      <div className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 font-mono text-xs">
+        <span className="text-(--text-tertiary)">{content.announcements.typeColumn}</span>
+        <span className="text-(--text-secondary)">
+          {content.announcements.typeOptions[a.announcement_type]}
+        </span>
+
+        <span className="text-(--text-tertiary)">{content.announcements.dateColumn}</span>
+        <span className="text-(--text-secondary)">
+          {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
+        </span>
+      </div>
+    </div>
   );
 }

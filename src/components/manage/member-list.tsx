@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -128,6 +129,7 @@ function SortableHeader({
 }
 
 export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: MemberListProps) {
+  const router = useRouter();
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [search, setSearch] = useState('');
@@ -275,7 +277,8 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
         />
       </div>
 
-      <div className="overflow-x-auto rounded-md border border-(--border-subtle)">
+      {/* Desktop table */}
+      <div className="hidden overflow-x-auto rounded-md border border-(--border-subtle) md:block">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-(--border-subtle) bg-(--surface-sunken)">
@@ -335,11 +338,26 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                 ? paceGroupMap.get(member.preferred_pace_group)
                 : undefined;
 
+              function handleRowClick() {
+                router.push(routes.publicProfile(member.user_id));
+              }
+
+              function handleRowKeyDown(e: React.KeyboardEvent) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleRowClick();
+                }
+              }
+
               return (
                 <tr
                   key={member.user_id}
+                  onClick={handleRowClick}
+                  onKeyDown={handleRowKeyDown}
+                  tabIndex={0}
+                  role="link"
                   className={cn(
-                    'group border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-sunken) hover:bg-muted/50',
+                    'group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-sunken) hover:bg-muted/50',
                     isInactive && 'opacity-muted',
                   )}
                 >
@@ -356,12 +374,7 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                       </Avatar>
                       <div className="min-w-0">
                         <p className="font-mono text-body-sm font-medium text-(--text-primary) truncate">
-                          <Link
-                            href={routes.publicProfile(member.user_id)}
-                            className="hover:underline"
-                          >
-                            {name}
-                          </Link>
+                          {name}
                           {isSelf && (
                             <span className="ml-1 text-xs font-normal text-(--text-tertiary)">
                               ({content.members.you})
@@ -376,7 +389,7 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                   </td>
 
                   {/* Role — click-to-edit via kebab or inline */}
-                  <td className="p-3">
+                  <td className="p-3" onClick={(e) => e.stopPropagation()}>
                     {editingRoleUserId === member.user_id ? (
                       <Select
                         size="sm"
@@ -422,7 +435,7 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                   <td className={cn('p-3 font-mono text-body-sm', statusClass)}>{statusText}</td>
 
                   {/* Kebab menu — always visible */}
-                  <td className="p-3">
+                  <td className="p-3" onClick={(e) => e.stopPropagation()}>
                     {isPendingMember ? (
                       <Button size="sm" onClick={() => handleApprove(member.user_id)}>
                         {content.memberActions.approve}
@@ -468,6 +481,89 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
           onPageSizeChange={setPageSize}
         />
       </div>
+
+      {/* Mobile condensed rows — all filtered results, no pagination */}
+      <div className="min-w-0 overflow-hidden rounded-md border border-(--border-subtle) divide-y divide-(--border-subtle) [&>*:nth-child(even)]:bg-(--surface-sunken) md:hidden">
+        {displayMembers.map((member) => (
+          <MobileMemberRow
+            key={member.user_id}
+            member={member}
+            isSelf={member.user_id === currentUserId}
+          />
+        ))}
+      </div>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// MobileMemberRow
+// ---------------------------------------------------------------------------
+
+function MobileMemberRow({ member, isSelf }: { member: MemberData; isSelf: boolean }) {
+  const name = member.full_name;
+  const initials = getInitials(name);
+  const isInactive = member.status === MemberStatus.INACTIVE;
+  const isPendingMember = member.status === MemberStatus.PENDING;
+
+  const roleKey = member.role as keyof typeof content.members.roles;
+
+  let statusText = '';
+  let statusClass = '';
+  if (isPendingMember) {
+    statusText = content.members.status.pending;
+    statusClass = 'text-(--feedback-warning-text)';
+  } else if (isInactive) {
+    statusText = content.members.status.inactive;
+    statusClass = 'text-(--text-tertiary)';
+  }
+
+  return (
+    <Link
+      href={routes.publicProfile(member.user_id)}
+      className={cn(
+        'flex items-start gap-3 px-3 py-2.5 hover:bg-muted/50',
+        isInactive && 'opacity-muted',
+      )}
+    >
+      <Avatar className="mt-0.5 h-8 w-8 shrink-0">
+        {member.avatar_url && <AvatarImage src={member.avatar_url} alt={name} />}
+        <AvatarFallback className={`text-xs font-medium ${getAvatarColourClasses(name)}`}>
+          {initials}
+        </AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 flex-1">
+        <p className="truncate font-mono text-body-sm font-medium text-(--text-primary)">
+          {name}
+          {isSelf && (
+            <span className="ml-1 text-xs font-normal text-(--text-tertiary)">
+              ({content.members.you})
+            </span>
+          )}
+        </p>
+        <div className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 font-mono text-xs">
+          <span className="text-(--text-tertiary)">{content.memberActions.roleColumn}</span>
+          <span className="text-(--text-secondary)">
+            {content.members.roles[roleKey] ?? member.role}
+          </span>
+
+          {member.preferred_pace_group && (
+            <>
+              <span className="text-(--text-tertiary)">
+                {content.memberActions.paceGroupColumn}
+              </span>
+              <span className="text-(--text-secondary)">{member.preferred_pace_group}</span>
+            </>
+          )}
+
+          {statusText && (
+            <>
+              <span className="text-(--text-tertiary)">{content.memberActions.statusColumn}</span>
+              <span className={statusClass}>{statusText}</span>
+            </>
+          )}
+        </div>
+      </div>
+    </Link>
   );
 }

@@ -5,6 +5,7 @@ import { getUserClubMembership, getPaceGroups } from '@/lib/rides/queries';
 import { getClubMembers } from '@/lib/manage/queries';
 import { InviteMemberDrawer } from '@/components/manage/invite-member-drawer';
 import { MemberList } from '@/components/manage/member-list';
+import { MobileGate } from '@/components/manage/mobile-gate';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import type { UserRole } from '@/config/navigation';
@@ -16,7 +17,7 @@ export default async function ManageMembersPage() {
   if (!membership) redirect(routes.signIn);
 
   const userRole = membership.role as UserRole;
-  if (userRole !== 'admin') redirect(routes.manage);
+  if (userRole !== 'admin') redirect(routes.manageRides);
 
   const [members, paceGroups] = await Promise.all([
     getClubMembers(membership.club_id),
@@ -24,20 +25,22 @@ export default async function ManageMembersPage() {
   ]);
 
   return (
-    <DashboardShell>
-      <PageHeader
-        centered={false}
-        title={content.members.heading}
-        actions={<InviteMemberDrawer clubId={membership.club_id} />}
-      />
-      <div className="mt-4">
-        <MemberList
-          members={members}
-          clubId={membership.club_id}
-          currentUserId={membership.user_id}
-          paceGroups={paceGroups}
+    <MobileGate>
+      <DashboardShell>
+        <PageHeader
+          centered={false}
+          title={content.members.heading}
+          actions={<InviteMemberDrawer clubId={membership.club_id} />}
         />
-      </div>
-    </DashboardShell>
+        <div className="mt-4">
+          <MemberList
+            members={members}
+            clubId={membership.club_id}
+            currentUserId={membership.user_id}
+            paceGroups={paceGroups}
+          />
+        </div>
+      </DashboardShell>
+    </MobileGate>
   );
 }
