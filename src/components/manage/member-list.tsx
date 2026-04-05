@@ -1,12 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr';
-import { Input } from '@/components/ui/input';
-import { FloatingField } from '@/components/ui/floating-field';
-import { Button } from '@/components/ui/button';
+import { CaretUp, CaretDown, DotsThree } from '@phosphor-icons/react/dist/ssr';
 import {
   Select,
   SelectTrigger,
@@ -14,15 +12,22 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { FilterChip, FilterChipGroup } from '@/components/ui/filter-chip';
-import { SectionHeading } from '@/components/ui/section-heading';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { AdminFilterToolbar, type FilterDefinition } from './admin-filter-toolbar';
+import { TablePagination } from './table-pagination';
 import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { appContent } from '@/content/app';
 import { cn, getInitials } from '@/lib/utils';
 import { routes } from '@/config/routes';
+import { getPaceBadgeVariant } from '@/config/formatting';
 import {
   updateMemberRole,
   deactivateMember,
@@ -30,7 +35,6 @@ import {
   approveMember,
 } from '@/lib/manage/actions';
 import { MemberStatus } from '@/config/statuses';
-import { separators } from '@/config/formatting';
 import type { MemberRole } from '@/types/database';
 
 const { manage: content } = appContent;
@@ -46,14 +50,23 @@ interface MemberData {
   joined_at: string;
 }
 
+interface PaceGroupInfo {
+  id: string;
+  name: string;
+  sort_order: number;
+}
+
 interface MemberListProps {
   members: MemberData[];
   clubId: string;
   currentUserId: string;
+  paceGroups?: PaceGroupInfo[];
 }
 
 type RoleFilter = 'all' | MemberRole;
-type SortOption = 'alpha' | 'newest';
+type StatusFilter = 'all' | 'active' | 'pending' | 'inactive';
+type MemberSortKey = 'name' | 'role' | 'paceGroup' | 'joined' | 'status';
+type SortDir = 'asc' | 'desc';
 
 const roleOptions: { value: MemberRole; label: string }[] = [
   { value: 'rider', label: content.members.roles.rider },
@@ -61,288 +74,400 @@ const roleOptions: { value: MemberRole; label: string }[] = [
   { value: 'admin', label: content.members.roles.admin },
 ];
 
-const roleFilterOptions: { value: RoleFilter; label: string }[] = [
-  { value: 'all', label: content.memberActions.filterAll },
-  ...roleOptions,
-];
+const roleOrder: Record<string, number> = { rider: 0, ride_leader: 1, admin: 2 };
+const statusOrder: Record<string, number> = { pending: 0, active: 1, inactive: 2 };
 
-const sortOptions: { value: SortOption; label: string }[] = [
-  { value: 'alpha', label: content.memberActions.sortAlpha },
-  { value: 'newest', label: content.memberActions.sortNewest },
-];
-
-function sortMembers(members: MemberData[], sortBy: SortOption): MemberData[] {
-  return [...members].sort((a, b) => {
-    switch (sortBy) {
-      case 'alpha': {
-        const nameA = a.full_name.toLowerCase();
-        const nameB = b.full_name.toLowerCase();
-        return nameA.localeCompare(nameB);
-      }
-      case 'newest':
-        return b.joined_at.localeCompare(a.joined_at);
-      default:
-        return 0;
-    }
-  });
+function compareMembers(a: MemberData, b: MemberData, key: MemberSortKey, dir: SortDir): number {
+  const m = dir === 'asc' ? 1 : -1;
+  switch (key) {
+    case 'name':
+      return a.full_name.toLowerCase().localeCompare(b.full_name.toLowerCase()) * m;
+    case 'role':
+      return ((roleOrder[a.role] ?? 99) - (roleOrder[b.role] ?? 99)) * m;
+    case 'paceGroup':
+      return (a.preferred_pace_group ?? '').localeCompare(b.preferred_pace_group ?? '') * m;
+    case 'joined':
+      return a.joined_at.localeCompare(b.joined_at) * m;
+    case 'status':
+      return ((statusOrder[a.status] ?? 99) - (statusOrder[b.status] ?? 99)) * m;
+    default:
+      return 0;
+  }
 }
 
-export function MemberList({ members, clubId, currentUserId }: MemberListProps) {
-  const [search, setSearch] = useState('');
+function SortableHeader({
+  label,
+  sortKey,
+  currentKey,
+  currentDir,
+  onSort,
+}: {
+  label: string;
+  sortKey: MemberSortKey;
+  currentKey: MemberSortKey;
+  currentDir: SortDir;
+  onSort: (key: MemberSortKey) => void;
+}) {
+  const isActive = sortKey === currentKey;
+  return (
+    <th
+      className="cursor-pointer select-none p-3 text-overline font-mono text-(--text-secondary) hover:text-(--text-primary)"
+      onClick={() => onSort(sortKey)}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        {isActive &&
+          (currentDir === 'asc' ? (
+            <CaretUp className="h-3 w-3" weight="bold" />
+          ) : (
+            <CaretDown className="h-3 w-3" weight="bold" />
+          ))}
+      </span>
+    </th>
+  );
+}
+
+export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: MemberListProps) {
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
-  const [sortBy, setSortBy] = useState<SortOption>('alpha');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [search, setSearch] = useState('');
+  const [sortKey, setSortKey] = useState<MemberSortKey>('name');
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [isPending, startTransition] = useTransition();
+  const [editingRoleUserId, setEditingRoleUserId] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(15);
 
-  // Filter by search + role
-  const filtered = members.filter((m) => {
-    if (roleFilter !== 'all' && m.role !== roleFilter) return false;
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return m.full_name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q);
-  });
+  const pendingCount = members.filter((m) => m.status === MemberStatus.PENDING).length;
 
-  // Group by status, then sort within groups (current user pinned in active)
-  const pending = sortMembers(
-    filtered.filter((m) => m.status === MemberStatus.PENDING),
-    sortBy,
+  // Build pace group name → sort_order map for badge colouring
+  const paceGroupMap = useMemo(
+    () => new Map(paceGroups.map((pg) => [pg.name, pg.sort_order])),
+    [paceGroups],
   );
-  const activeFiltered = filtered.filter((m) => m.status === MemberStatus.ACTIVE);
-  const currentUser = activeFiltered.find((m) => m.user_id === currentUserId);
-  const otherActive = sortMembers(
-    activeFiltered.filter((m) => m.user_id !== currentUserId),
-    sortBy,
-  );
-  const active = currentUser ? [currentUser, ...otherActive] : otherActive;
-  const inactive = sortMembers(
-    filtered.filter((m) => m.status === MemberStatus.INACTIVE),
-    sortBy,
-  );
+
+  function handleSort(key: MemberSortKey) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
+  }
+
+  const displayMembers = useMemo(() => {
+    let filtered = members;
+
+    if (roleFilter !== 'all') {
+      filtered = filtered.filter((m) => m.role === roleFilter);
+    }
+
+    if (statusFilter === 'active') {
+      filtered = filtered.filter((m) => m.status === MemberStatus.ACTIVE);
+    } else if (statusFilter === 'pending') {
+      filtered = filtered.filter((m) => m.status === MemberStatus.PENDING);
+    } else if (statusFilter === 'inactive') {
+      filtered = filtered.filter((m) => m.status === MemberStatus.INACTIVE);
+    } else {
+      filtered = filtered.filter((m) => m.status !== MemberStatus.INACTIVE);
+    }
+
+    if (search) {
+      const q = search.toLowerCase();
+      filtered = filtered.filter(
+        (m) => m.full_name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q),
+      );
+    }
+
+    const sorted = [...filtered].sort((a, b) => compareMembers(a, b, sortKey, sortDir));
+    const currentUser = sorted.find((m) => m.user_id === currentUserId);
+    const others = sorted.filter((m) => m.user_id !== currentUserId);
+    return currentUser ? [currentUser, ...others] : others;
+  }, [members, roleFilter, statusFilter, search, sortKey, sortDir, currentUserId]);
+
+  const paginatedMembers = displayMembers.slice(page * pageSize, (page + 1) * pageSize);
+
+  const roleFilterDef: FilterDefinition = {
+    key: 'role',
+    label: content.memberActions.roleColumn,
+    defaultValue: 'all',
+    options: [
+      { value: 'all', label: content.memberActions.filterAll },
+      { value: 'rider', label: content.memberActions.filterRiders },
+      { value: 'ride_leader', label: content.memberActions.filterLeaders },
+      { value: 'admin', label: content.memberActions.filterAdmins },
+    ],
+  };
+
+  const statusFilterDef: FilterDefinition = {
+    key: 'status',
+    label: content.memberActions.statusColumn,
+    defaultValue: 'all',
+    options: [
+      { value: 'all', label: content.memberActions.filterAll },
+      { value: 'active', label: content.members.status.active },
+      {
+        value: 'pending',
+        label:
+          pendingCount > 0
+            ? content.memberActions.filterPending(pendingCount)
+            : content.members.status.pending,
+      },
+      { value: 'inactive', label: content.memberActions.filterInactive },
+    ],
+  };
+
+  const filterValues: Record<string, string> = {
+    role: roleFilter,
+    status: statusFilter,
+  };
+
+  function handleFilterChange(key: string, value: string) {
+    if (key === 'role') setRoleFilter(value as RoleFilter);
+    if (key === 'status') setStatusFilter(value as StatusFilter);
+    setPage(0);
+  }
 
   function handleRoleChange(userId: string, newRole: MemberRole) {
+    setEditingRoleUserId(null);
     startTransition(async () => {
-      await updateMemberRole(clubId, userId, newRole);
+      const result = await updateMemberRole(clubId, userId, newRole);
+      if (result?.error) toast.error(result.error);
     });
   }
 
   function handleDeactivate(userId: string) {
     startTransition(async () => {
-      await deactivateMember(clubId, userId);
+      const result = await deactivateMember(clubId, userId);
+      if (result?.error) toast.error(result.error);
     });
   }
 
   function handleReactivate(userId: string) {
     startTransition(async () => {
-      await reactivateMember(clubId, userId);
+      const result = await reactivateMember(clubId, userId);
+      if (result?.error) toast.error(result.error);
     });
   }
 
   function handleApprove(userId: string) {
     startTransition(async () => {
-      await approveMember(clubId, userId);
+      const result = await approveMember(clubId, userId);
+      if (result?.error) toast.error(result.error);
     });
   }
 
+  const sortProps = { currentKey: sortKey, currentDir: sortDir, onSort: handleSort };
+
   return (
     <div className={isPending ? 'opacity-pending pointer-events-none' : ''}>
-      {/* Search + Filter + Sort controls */}
-      <FloatingField
-        label={content.memberActions.searchPlaceholder}
-        htmlFor="member-search"
-        hasValue={search.length > 0}
-        icon={MagnifyingGlass}
-        className="mb-3"
-      >
-        <Input
-          id="member-search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder=" "
+      <div className="mb-3">
+        <AdminFilterToolbar
+          filters={[roleFilterDef, statusFilterDef]}
+          filterValues={filterValues}
+          onFilterChange={handleFilterChange}
+          search={search}
+          onSearchChange={(v) => {
+            setSearch(v);
+            setPage(0);
+          }}
+          searchPlaceholder={content.memberActions.searchPlaceholder}
         />
-      </FloatingField>
-
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-2 md:mb-4">
-        <FilterChipGroup
-          value={[roleFilter]}
-          onValueChange={(values: string[]) => {
-            if (values.length > 0) setRoleFilter(values[0] as RoleFilter);
-          }}
-        >
-          {roleFilterOptions.map((opt) => (
-            <FilterChip key={opt.value} value={opt.value} label={opt.label} />
-          ))}
-        </FilterChipGroup>
-
-        <FilterChipGroup
-          value={[sortBy]}
-          onValueChange={(values: string[]) => {
-            if (values.length > 0) setSortBy(values[0] as SortOption);
-          }}
-        >
-          {sortOptions.map((opt) => (
-            <FilterChip key={opt.value} value={opt.value} label={opt.label} />
-          ))}
-        </FilterChipGroup>
       </div>
 
-      {/* Pending approvals */}
-      {pending.length > 0 && (
-        <div className="mb-6 flex flex-col gap-4">
-          <SectionHeading as="h3" className="text-warning">
-            {content.members.status.pending} ({pending.length})
-          </SectionHeading>
-          {pending.map((member) => (
-            <MemberRow
-              key={member.user_id}
-              member={member}
-              isSelf={member.user_id === currentUserId}
-              onRoleChange={handleRoleChange}
-              onApprove={handleApprove}
-            />
-          ))}
-        </div>
-      )}
+      <div className="overflow-x-auto rounded-md border border-(--border-subtle)">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b border-(--border-subtle) bg-(--surface-sunken)">
+              <SortableHeader
+                label={content.memberActions.memberColumn}
+                sortKey="name"
+                {...sortProps}
+              />
+              <SortableHeader
+                label={content.memberActions.roleColumn}
+                sortKey="role"
+                {...sortProps}
+              />
+              <SortableHeader
+                label={content.memberActions.paceGroupColumn}
+                sortKey="paceGroup"
+                {...sortProps}
+              />
+              <SortableHeader
+                label={content.memberActions.joinedColumn}
+                sortKey="joined"
+                {...sortProps}
+              />
+              <SortableHeader
+                label={content.memberActions.statusColumn}
+                sortKey="status"
+                {...sortProps}
+              />
+              <th className="w-10 p-3" />
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedMembers.map((member) => {
+              const isSelf = member.user_id === currentUserId;
+              const isInactive = member.status === MemberStatus.INACTIVE;
+              const isPendingMember = member.status === MemberStatus.PENDING;
+              const name = member.full_name;
+              const initials = getInitials(name);
+              const joinedFormatted = format(new Date(member.joined_at), 'MMM yyyy');
+              const roleKey = member.role as keyof typeof content.members.roles;
+              const canEditRole = !isInactive && !isPendingMember && !isSelf;
 
-      {/* Active members */}
-      {active.length > 0 && (
-        <div className="mb-6 flex flex-col gap-4">
-          {active.map((member) => (
-            <MemberRow
-              key={member.user_id}
-              member={member}
-              isSelf={member.user_id === currentUserId}
-              onRoleChange={handleRoleChange}
-              onDeactivate={handleDeactivate}
-            />
-          ))}
-        </div>
-      )}
+              let statusText = '';
+              let statusClass = '';
+              if (isPendingMember) {
+                statusText = content.members.status.pending;
+                statusClass = 'text-(--feedback-warning-text)';
+              } else if (isInactive) {
+                statusText = content.members.status.inactive;
+                statusClass = 'text-(--text-tertiary)';
+              } else {
+                statusText = content.members.status.active;
+              }
 
-      {/* Inactive members */}
-      {inactive.length > 0 && (
-        <div className="flex flex-col gap-4">
-          <SectionHeading as="h3">
-            {content.members.status.inactive} ({inactive.length})
-          </SectionHeading>
-          {inactive.map((member) => (
-            <MemberRow
-              key={member.user_id}
-              member={member}
-              isSelf={member.user_id === currentUserId}
-              onReactivate={handleReactivate}
-            />
-          ))}
-        </div>
-      )}
+              // Pace group badge
+              const pgSortOrder = member.preferred_pace_group
+                ? paceGroupMap.get(member.preferred_pace_group)
+                : undefined;
+
+              return (
+                <tr
+                  key={member.user_id}
+                  className={cn(
+                    'group border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-sunken) hover:bg-muted/50',
+                    isInactive && 'opacity-muted',
+                  )}
+                >
+                  {/* Member — name is a clickable link */}
+                  <td className="p-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Avatar className="h-6 w-6 shrink-0">
+                        {member.avatar_url && <AvatarImage src={member.avatar_url} alt={name} />}
+                        <AvatarFallback
+                          className={`text-[10px] font-medium ${getAvatarColourClasses(name)}`}
+                        >
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="font-mono text-body-sm font-medium text-(--text-primary) truncate">
+                          <Link
+                            href={routes.publicProfile(member.user_id)}
+                            className="hover:underline"
+                          >
+                            {name}
+                          </Link>
+                          {isSelf && (
+                            <span className="ml-1 text-xs font-normal text-(--text-tertiary)">
+                              ({content.members.you})
+                            </span>
+                          )}
+                        </p>
+                        <p className="font-mono text-xs text-(--text-tertiary) truncate">
+                          {member.email}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Role — click-to-edit via kebab or inline */}
+                  <td className="p-3">
+                    {editingRoleUserId === member.user_id ? (
+                      <Select
+                        size="sm"
+                        value={member.role}
+                        onValueChange={(v) => handleRoleChange(member.user_id, v as MemberRole)}
+                        items={Object.fromEntries(roleOptions.map((opt) => [opt.value, opt.label]))}
+                      >
+                        <SelectTrigger className="h-7 text-xs" autoFocus>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {roleOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <span className="font-mono text-body-sm text-(--text-secondary)">
+                        {content.members.roles[roleKey] ?? member.role}
+                      </span>
+                    )}
+                  </td>
+
+                  {/* Pace Group — coloured badge */}
+                  <td className="p-3">
+                    {member.preferred_pace_group && pgSortOrder != null ? (
+                      <Badge variant={getPaceBadgeVariant(pgSortOrder)} size="sm">
+                        {member.preferred_pace_group}
+                      </Badge>
+                    ) : (
+                      <span className="font-mono text-body-sm text-(--text-tertiary)">—</span>
+                    )}
+                  </td>
+
+                  {/* Joined */}
+                  <td className="p-3 font-mono text-body-sm text-(--text-primary)">
+                    {joinedFormatted}
+                  </td>
+
+                  {/* Status */}
+                  <td className={cn('p-3 font-mono text-body-sm', statusClass)}>{statusText}</td>
+
+                  {/* Kebab menu — always visible */}
+                  <td className="p-3">
+                    {isPendingMember ? (
+                      <Button size="sm" onClick={() => handleApprove(member.user_id)}>
+                        {content.memberActions.approve}
+                      </Button>
+                    ) : !isSelf ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
+                          <DotsThree className="h-4 w-4" weight="bold" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {canEditRole && (
+                            <DropdownMenuItem onClick={() => setEditingRoleUserId(member.user_id)}>
+                              {content.memberActions.editRole}
+                            </DropdownMenuItem>
+                          )}
+                          {!isInactive && (
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => handleDeactivate(member.user_id)}
+                            >
+                              {content.memberActions.deactivate}
+                            </DropdownMenuItem>
+                          )}
+                          {isInactive && (
+                            <DropdownMenuItem onClick={() => handleReactivate(member.user_id)}>
+                              {content.memberActions.reactivate}
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : null}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <TablePagination
+          totalItems={displayMembers.length}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+        />
+      </div>
     </div>
-  );
-}
-
-function MemberRow({
-  member,
-  isSelf = false,
-  onRoleChange,
-  onDeactivate,
-  onReactivate,
-  onApprove,
-}: {
-  member: MemberData;
-  isSelf?: boolean;
-  onRoleChange?: (userId: string, role: MemberRole) => void;
-  onDeactivate?: (userId: string) => void;
-  onReactivate?: (userId: string) => void;
-  onApprove?: (userId: string) => void;
-}) {
-  const name = member.full_name;
-  const initials = getInitials(member.full_name);
-  const isInactive = member.status === MemberStatus.INACTIVE;
-  const isPending = member.status === MemberStatus.PENDING;
-  const roleKey = member.role as keyof typeof content.members.roles;
-  const joinedFormatted = format(new Date(member.joined_at), 'MMM yyyy');
-
-  // Build metadata line: pace group · Joined date
-  const metaParts: string[] = [];
-  if (member.preferred_pace_group) metaParts.push(member.preferred_pace_group);
-  metaParts.push(content.memberActions.joinedDate(joinedFormatted));
-  const metaLine = metaParts.join(separators.dot);
-
-  return (
-    <Card className={cn('p-4', isInactive && 'opacity-muted')}>
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <Avatar className="h-9 w-9 shrink-0">
-            {member.avatar_url && <AvatarImage src={member.avatar_url} alt={name} />}
-            <AvatarFallback className={`text-sm font-medium ${getAvatarColourClasses(name)}`}>
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <p className="text-base font-medium text-foreground truncate">
-              <Link href={routes.publicProfile(member.user_id)} className="hover:underline">
-                {name}
-              </Link>
-              {isSelf && (
-                <span className="ml-1.5 text-sm font-normal text-muted-foreground">
-                  ({content.members.you})
-                </span>
-              )}
-            </p>
-            <p className="text-sm text-muted-foreground truncate">{member.email}</p>
-            <p className="text-xs text-muted-foreground/60 truncate">{metaLine}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          {isPending && onApprove && (
-            <Button size="sm" onClick={() => onApprove(member.user_id)}>
-              {content.memberActions.approve}
-            </Button>
-          )}
-
-          {!isInactive && !isPending && onRoleChange && !isSelf && (
-            <Select
-              size="sm"
-              value={member.role}
-              onValueChange={(v) => onRoleChange(member.user_id, v as MemberRole)}
-              items={Object.fromEntries(roleOptions.map((opt) => [opt.value, opt.label]))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {roleOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-
-          {!isInactive && !isPending && isSelf && (
-            <span className="text-sm font-medium text-muted-foreground">
-              {content.members.roles[roleKey] ?? member.role}
-            </span>
-          )}
-
-          {isPending && (
-            <Badge variant="warning" className="text-sm">
-              {content.members.status.pending}
-            </Badge>
-          )}
-
-          {!isInactive && !isPending && onDeactivate && !isSelf && (
-            <Button variant="destructive" size="sm" onClick={() => onDeactivate(member.user_id)}>
-              {content.memberActions.deactivate}
-            </Button>
-          )}
-
-          {isInactive && onReactivate && (
-            <Button variant="outline" size="sm" onClick={() => onReactivate(member.user_id)}>
-              {content.memberActions.reactivate}
-            </Button>
-          )}
-        </div>
-      </div>
-    </Card>
   );
 }

@@ -1,16 +1,15 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
-import { PushPin, Trash, PencilSimple, Plus } from '@phosphor-icons/react/dist/ssr';
+import { PushPin, Plus, CaretUp, CaretDown, DotsThree } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { ContentCard } from '@/components/ui/content-card';
 import {
   Select,
   SelectTrigger,
@@ -19,7 +18,6 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ContentToolbar } from '@/components/layout/content-toolbar';
 import {
   Drawer,
   DrawerContent,
@@ -27,7 +25,17 @@ import {
   DrawerFooter,
   DrawerTitle,
 } from '@/components/ui/drawer';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { AdminFilterToolbar, type FilterDefinition } from './admin-filter-toolbar';
+import { TablePagination } from './table-pagination';
 import { useIsMobile } from '@/hooks/use-is-mobile';
+import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
 import {
   createAnnouncement,
@@ -41,18 +49,12 @@ const { manage: content, common } = appContent;
 
 const announcementTypes: AnnouncementType[] = ['info', 'warning', 'danger', 'success'];
 
-/**
- * Static badge styles per type — Tailwind v4 requires full class strings to be scannable.
- * "danger" maps to the "error" feedback token family.
- */
-const typeBadgeStyles: Record<AnnouncementType, string> = {
-  info: 'bg-(--feedback-info-bg) text-(--feedback-info-text) border-(--feedback-info-default)/20',
-  warning:
-    'bg-(--feedback-warning-bg) text-(--feedback-warning-text) border-(--feedback-warning-default)/20',
-  danger:
-    'bg-(--feedback-error-bg) text-(--feedback-error-text) border-(--feedback-error-default)/20',
-  success:
-    'bg-(--feedback-success-bg) text-(--feedback-success-text) border-(--feedback-success-default)/20',
+/** Type indicator dot colours — small coloured dots, not Badge chips. */
+const typeDotColors: Record<AnnouncementType, string> = {
+  info: 'bg-(--feedback-info-default)',
+  warning: 'bg-(--feedback-warning-default)',
+  danger: 'bg-(--feedback-error-default)',
+  success: 'bg-(--feedback-success-default)',
 };
 
 interface AnnouncementData {
@@ -72,6 +74,80 @@ interface AnnouncementsPanelProps {
   clubId: string;
 }
 
+/* ------------------------------------------------------------------ */
+/*  Sort infrastructure                                                */
+/* ------------------------------------------------------------------ */
+
+type AnnouncementSortKey = 'type' | 'title' | 'published';
+type SortDir = 'asc' | 'desc';
+
+const typeOrder: Record<AnnouncementType, number> = {
+  danger: 0,
+  warning: 1,
+  info: 2,
+  success: 3,
+};
+
+function compareAnnouncements(
+  a: AnnouncementData,
+  b: AnnouncementData,
+  key: AnnouncementSortKey,
+  dir: SortDir,
+): number {
+  const m = dir === 'asc' ? 1 : -1;
+  switch (key) {
+    case 'type':
+      return ((typeOrder[a.announcement_type] ?? 99) - (typeOrder[b.announcement_type] ?? 99)) * m;
+    case 'title':
+      return a.title.toLowerCase().localeCompare(b.title.toLowerCase()) * m;
+    case 'published':
+      return a.published_at.localeCompare(b.published_at) * m;
+    default:
+      return 0;
+  }
+}
+
+function SortableHeader({
+  label,
+  sortKey,
+  currentKey,
+  currentDir,
+  onSort,
+  className,
+}: {
+  label: string;
+  sortKey: AnnouncementSortKey;
+  currentKey: AnnouncementSortKey;
+  currentDir: SortDir;
+  onSort: (key: AnnouncementSortKey) => void;
+  className?: string;
+}) {
+  const isActive = sortKey === currentKey;
+  return (
+    <th
+      className={cn(
+        'cursor-pointer select-none p-3 text-overline font-mono text-(--text-secondary) hover:text-(--text-primary)',
+        className,
+      )}
+      onClick={() => onSort(sortKey)}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        {isActive &&
+          (currentDir === 'asc' ? (
+            <CaretUp className="h-3 w-3" weight="bold" />
+          ) : (
+            <CaretDown className="h-3 w-3" weight="bold" />
+          ))}
+      </span>
+    </th>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Component                                                          */
+/* ------------------------------------------------------------------ */
+
 export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanelProps) {
   const isMobile = useIsMobile();
   const [mounted, setMounted] = useState(false);
@@ -87,15 +163,64 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
   const [expiresAt, setExpiresAt] = useState('');
   const [isPending, startTransition] = useTransition();
 
-  function handleNew() {
-    setEditingId(null);
-    setTitle('');
-    setBody('');
-    setAnnouncementType('info');
-    setIsDismissible(true);
-    setExpiresAt('');
-    setOpen(true);
+  // Filters
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(15);
+
+  // Sort
+  const [sortKey, setSortKey] = useState<AnnouncementSortKey>('published');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
+
+  function handleSort(key: AnnouncementSortKey) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
   }
+
+  const visibleAnnouncements = useMemo(() => {
+    let filtered = announcements;
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter((a) => a.announcement_type === typeFilter);
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      filtered = filtered.filter(
+        (a) => a.title.toLowerCase().includes(q) || a.body.toLowerCase().includes(q),
+      );
+    }
+    return [...filtered].sort((a, b) => {
+      // Pinned items always float to the top
+      if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
+      return compareAnnouncements(a, b, sortKey, sortDir);
+    });
+  }, [announcements, typeFilter, search, sortKey, sortDir]);
+
+  const typeFilterDef: FilterDefinition = {
+    key: 'type',
+    label: content.announcements.filterType,
+    defaultValue: 'all',
+    options: [
+      { value: 'all', label: content.announcements.filterAll },
+      ...announcementTypes.map((t) => ({
+        value: t,
+        label: content.announcements.typeOptions[t],
+      })),
+    ],
+  };
+
+  const filterValues: Record<string, string> = { type: typeFilter };
+
+  function handleFilterChange(key: string, value: string) {
+    if (key === 'type') setTypeFilter(value);
+    setPage(0);
+  }
+
+  const paginatedAnnouncements = visibleAnnouncements.slice(page * pageSize, (page + 1) * pageSize);
 
   function handleEdit(a: AnnouncementData) {
     setEditingId(a.id);
@@ -108,19 +233,18 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
   }
 
   function handleSubmit() {
-    if (!title.trim() || !body.trim()) return;
+    if (!editingId || !title.trim() || !body.trim()) return;
     startTransition(async () => {
-      const payload = {
+      const result = await updateAnnouncement(editingId, {
         title,
         body,
         announcement_type: announcementType,
         is_dismissible: isDismissible,
         expires_at: expiresAt || null,
-      };
-      if (editingId) {
-        await updateAnnouncement(editingId, payload);
-      } else {
-        await createAnnouncement(clubId, payload);
+      });
+      if (result?.error) {
+        toast.error(result.error);
+        return;
       }
       setOpen(false);
     });
@@ -128,97 +252,140 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
 
   function handleDelete(id: string) {
     startTransition(async () => {
-      await deleteAnnouncement(id);
+      const result = await deleteAnnouncement(id);
+      if (result?.error) toast.error(result.error);
     });
   }
 
   function handleTogglePin(id: string, currentlyPinned: boolean) {
     startTransition(async () => {
-      await toggleAnnouncementPin(id, !currentlyPinned, clubId);
+      const result = await toggleAnnouncementPin(id, !currentlyPinned, clubId);
+      if (result?.error) toast.error(result.error);
     });
   }
 
-  return (
-    <div className={isPending ? 'opacity-pending pointer-events-none' : ''}>
-      {/* TODO: card wrapper decision pending — Option A (wrapped) implemented, revisit if announcements need a more prominent/feed-like treatment */}
-      {/* TODO: consider admin-specific visual treatment */}
-      <ContentCard heading={content.announcements.heading}>
-        <ContentToolbar
-          right={
-            <Button size="sm" variant="outline" onClick={handleNew}>
-              <Plus className="h-4 w-4 mr-1.5" />
-              {content.announcements.create}
-            </Button>
-          }
-          className="mb-3"
-        />
+  const sortProps = { currentKey: sortKey, currentDir: sortDir, onSort: handleSort };
 
-        {announcements.length === 0 ? (
-          <p className="text-base text-muted-foreground">{content.announcements.noAnnouncements}</p>
-        ) : (
-          <div className="divide-y divide-border">
-            {announcements.map((a) => (
-              <div
-                key={a.id}
-                className="flex items-start justify-between gap-3 py-4 first:pt-0 last:pb-0"
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-base font-semibold text-foreground">{a.title}</h3>
-                    {a.is_pinned && (
-                      <Badge variant="outline" className="text-xs">
-                        {content.announcements.pinned}
-                      </Badge>
-                    )}
-                    <Badge
-                      variant="outline"
-                      className={`text-xs ${typeBadgeStyles[a.announcement_type] ?? ''}`}
+  return (
+    <div className={cn('space-y-3', isPending && 'opacity-pending pointer-events-none')}>
+      <AdminFilterToolbar
+        filters={[typeFilterDef]}
+        filterValues={filterValues}
+        onFilterChange={handleFilterChange}
+        search={search}
+        onSearchChange={(v) => {
+          setSearch(v);
+          setPage(0);
+        }}
+        searchPlaceholder={content.announcements.searchPlaceholder}
+      />
+
+      {visibleAnnouncements.length === 0 ? (
+        <p className="font-mono text-body-sm text-(--text-secondary)">
+          {content.announcements.noAnnouncements}
+        </p>
+      ) : (
+        <div className="overflow-x-auto rounded-md border border-(--border-subtle)">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-(--border-subtle) bg-(--surface-sunken)">
+                <SortableHeader
+                  label={content.announcements.typeColumn}
+                  sortKey="type"
+                  {...sortProps}
+                />
+                <SortableHeader
+                  label={content.announcements.titleColumn}
+                  sortKey="title"
+                  {...sortProps}
+                />
+                <SortableHeader
+                  label={content.announcements.dateColumn}
+                  sortKey="published"
+                  {...sortProps}
+                />
+                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                  {content.announcements.pinned}
+                </th>
+                <th className="w-10 p-3" />
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedAnnouncements.map((a) => (
+                <tr
+                  key={a.id}
+                  className="group border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-sunken) hover:bg-muted/50"
+                >
+                  {/* Type dot + label */}
+                  <td className="p-3">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={cn(
+                          'h-2 w-2 shrink-0 rounded-full',
+                          typeDotColors[a.announcement_type],
+                        )}
+                      />
+                      <span className="truncate font-mono text-body-sm text-(--text-tertiary)">
+                        {content.announcements.typeOptions[a.announcement_type]}
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Title */}
+                  <td className="min-w-0 p-3">
+                    <p className="truncate font-mono text-body-sm font-semibold text-(--text-primary)">
+                      {a.title}
+                    </p>
+                  </td>
+
+                  {/* Published */}
+                  <td className="p-3">
+                    <span className="whitespace-nowrap font-mono text-body-sm text-(--text-tertiary)">
+                      {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
+                    </span>
+                  </td>
+
+                  {/* Pinned — clickable toggle */}
+                  <td className="p-3">
+                    <button
+                      type="button"
+                      onClick={() => handleTogglePin(a.id, a.is_pinned)}
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)"
                     >
-                      {content.announcements.typeOptions[a.announcement_type]}
-                    </Badge>
-                  </div>
-                  <p className="mt-1.5 text-sm text-foreground/75 leading-relaxed line-clamp-3">
-                    {a.body}
-                  </p>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {a.created_by_name} &middot;{' '}
-                    {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
-                  </p>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => handleTogglePin(a.id, a.is_pinned)}
-                    className="text-muted-foreground/50 hover:text-primary"
-                    title={a.is_pinned ? content.announcements.unpin : content.announcements.pin}
-                  >
-                    <PushPin weight={a.is_pinned ? 'fill' : undefined} className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => handleEdit(a)}
-                    className="text-muted-foreground/50 hover:text-foreground"
-                    title={content.announcements.edit}
-                  >
-                    <PencilSimple className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => handleDelete(a.id)}
-                    className="text-muted-foreground/50 hover:text-destructive"
-                    title={content.announcements.delete}
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </ContentCard>
+                      <PushPin className="h-4 w-4" weight={a.is_pinned ? 'fill' : 'light'} />
+                    </button>
+                  </td>
+
+                  {/* Actions — kebab menu */}
+                  <td className="p-3">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
+                        <DotsThree className="h-4 w-4" weight="bold" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleEdit(a)}>
+                          {content.announcements.edit}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem variant="destructive" onClick={() => handleDelete(a.id)}>
+                          {content.announcements.delete}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <TablePagination
+            totalItems={visibleAnnouncements.length}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
+        </div>
+      )}
 
       {mounted && (
         <Drawer open={open} onOpenChange={setOpen} direction={isMobile ? 'bottom' : 'right'}>
@@ -230,9 +397,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
             }
           >
             <DrawerHeader>
-              <DrawerTitle>
-                {editingId ? content.announcements.edit : content.announcements.create}
-              </DrawerTitle>
+              <DrawerTitle>{content.announcements.edit}</DrawerTitle>
             </DrawerHeader>
             <div className="space-y-4 px-4">
               <FloatingField
@@ -305,12 +470,176 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
             </div>
             <DrawerFooter>
               <Button onClick={handleSubmit} disabled={!title.trim() || !body.trim()}>
-                {editingId ? common.save : content.announcements.create}
+                {common.save}
               </Button>
             </DrawerFooter>
           </DrawerContent>
         </Drawer>
       )}
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  CreateAnnouncementButton — self-contained create trigger + drawer  */
+/* ------------------------------------------------------------------ */
+
+interface CreateAnnouncementButtonProps {
+  clubId: string;
+}
+
+export function CreateAnnouncementButton({ clubId }: CreateAnnouncementButtonProps) {
+  const isMobile = useIsMobile();
+  const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
+  useEffect(() => setMounted(true), []);
+
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [announcementType, setAnnouncementType] = useState<AnnouncementType>('info');
+  const [isDismissible, setIsDismissible] = useState(true);
+  const [expiresAt, setExpiresAt] = useState('');
+  const [isPending, startTransition] = useTransition();
+
+  function resetForm() {
+    setTitle('');
+    setBody('');
+    setAnnouncementType('info');
+    setIsDismissible(true);
+    setExpiresAt('');
+  }
+
+  function handleOpenChange(isOpen: boolean) {
+    setOpen(isOpen);
+    if (!isOpen) resetForm();
+  }
+
+  function handleSubmit() {
+    if (!title.trim() || !body.trim()) return;
+    startTransition(async () => {
+      const result = await createAnnouncement(clubId, {
+        title,
+        body,
+        announcement_type: announcementType,
+        is_dismissible: isDismissible,
+        expires_at: expiresAt || null,
+      });
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+      setOpen(false);
+      resetForm();
+    });
+  }
+
+  return (
+    <>
+      <Button size="sm" onClick={() => setOpen(true)} disabled={isPending}>
+        <Plus className="mr-1.5 h-4 w-4" />
+        {content.announcements.create}
+      </Button>
+
+      {mounted && (
+        <Drawer
+          open={open}
+          onOpenChange={handleOpenChange}
+          direction={isMobile ? 'bottom' : 'right'}
+        >
+          <DrawerContent
+            className={
+              isMobile
+                ? 'max-h-(--drawer-height-md) overflow-y-auto'
+                : 'w-(--drawer-width-sidebar) overflow-y-auto'
+            }
+          >
+            <DrawerHeader>
+              <DrawerTitle>{content.announcements.create}</DrawerTitle>
+            </DrawerHeader>
+            <div className="space-y-4 px-4">
+              <FloatingField
+                label={content.announcements.titleLabel}
+                htmlFor="create-announcement-title"
+                hasValue={!!title}
+              >
+                <Input
+                  id="create-announcement-title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder=" "
+                />
+              </FloatingField>
+              <FloatingField
+                label={content.announcements.bodyLabel}
+                htmlFor="create-announcement-body"
+                hasValue={!!body}
+                maxLength={500}
+              >
+                <Textarea
+                  id="create-announcement-body"
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  placeholder=" "
+                  rows={4}
+                  maxLength={500}
+                />
+              </FloatingField>
+              <FloatingField
+                label={content.announcements.typeLabel}
+                htmlFor="create-announcement-type"
+                hasValue={true}
+              >
+                <Select
+                  value={announcementType}
+                  onValueChange={(v) => setAnnouncementType(v as AnnouncementType)}
+                  items={Object.fromEntries(
+                    announcementTypes.map((t) => [t, content.announcements.typeOptions[t]]),
+                  )}
+                >
+                  <SelectTrigger id="create-announcement-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {announcementTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {content.announcements.typeOptions[type]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FloatingField>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="create-dismissible-toggle">
+                  {content.announcements.dismissibleLabel}
+                </Label>
+                <Switch
+                  id="create-dismissible-toggle"
+                  checked={isDismissible}
+                  onCheckedChange={setIsDismissible}
+                />
+              </div>
+              <FloatingField
+                label={content.announcements.expiryLabel}
+                htmlFor="create-announcement-expiry"
+                hasValue={!!expiresAt}
+                helperText={content.announcements.expiryDescription}
+              >
+                <DatePicker
+                  id="create-announcement-expiry"
+                  value={expiresAt}
+                  onChange={setExpiresAt}
+                />
+              </FloatingField>
+            </div>
+            <DrawerFooter>
+              <Button onClick={handleSubmit} disabled={isPending || !title.trim() || !body.trim()}>
+                {content.announcements.create}
+              </Button>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      )}
+    </>
   );
 }

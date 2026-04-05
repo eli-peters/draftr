@@ -2,7 +2,16 @@
  * Parent routes show bottom nav + logo header on mobile.
  * Any route NOT in this set is a "child" route (back arrow header, no bottom nav).
  */
-const parentRoutes = new Set(['/', '/rides', '/my-rides', '/manage', '/notifications']);
+const parentRoutes = new Set([
+  '/',
+  '/rides',
+  '/my-rides',
+  '/manage',
+  '/manage/members',
+  '/manage/announcements',
+  '/manage/settings',
+  '/notifications',
+]);
 
 /** Returns true if the given pathname is a child route (not a top-level tab). */
 export function isChildRoute(pathname: string): boolean {
@@ -25,6 +34,9 @@ export const routes = {
   ride: (id: string) => `/rides/${id}`,
   schedule: '/my-rides',
   manage: '/manage',
+  manageMembers: '/manage/members',
+  manageAnnouncements: '/manage/announcements',
+  manageSettings: '/manage/settings',
   manageNewRide: '/manage/rides/new',
   manageEditRide: (id: string, returnTo?: string) =>
     returnTo

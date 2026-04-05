@@ -80,7 +80,7 @@ export function InviteMemberDrawer({ clubId }: InviteMemberDrawerProps) {
 
   return (
     <>
-      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+      <Button size="sm" onClick={() => setOpen(true)}>
         <EnvelopeSimple className="mr-1.5 h-4 w-4" />
         {content.members.inviteButton}
       </Button>

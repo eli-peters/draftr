@@ -238,7 +238,7 @@
 
   /* Card surface tokens — shared by ContentCard, shadcn Card, sidebar, etc.
    * Change these to restyle every card-like surface site-wide.
-   * See docs/card-surface-tokens.md for usage. */
+   */
   --card-radius: var(--radius-2xl);
   --card-radius-lg: var(--radius-3xl);
   --card-border-width: 0px;

@@ -25,6 +25,8 @@ interface AppShellProps {
   notifications?: Notification[];
   unreadNotificationCount?: number;
   banner?: React.ReactNode;
+  /** When true, the sidebar shows expandable admin sub-navigation. */
+  isAdmin?: boolean;
 }
 
 export function AppShell({
@@ -34,10 +36,12 @@ export function AppShell({
   notifications,
   unreadNotificationCount,
   banner,
+  isAdmin = false,
 }: AppShellProps) {
   const pathname = usePathname();
   const isHome = pathname === routes.home;
   const isChild = isChildRoute(pathname);
+  const isManage = pathname === routes.manage || pathname.startsWith(`${routes.manage}/`);
 
   return (
     <div className="flex min-h-screen flex-col md:bg-surface-page">
@@ -51,7 +55,7 @@ export function AppShell({
       />
 
       <div className="flex flex-1 md:flex-row md:gap-3 md:p-3">
-        <SidebarNav items={navItems} />
+        <SidebarNav items={navItems} isAdmin={isAdmin} />
 
         <div className="flex min-h-0 flex-1 flex-col overflow-x-clip">
           {isHome && banner && (
@@ -60,7 +64,8 @@ export function AppShell({
 
           <main
             className={cn(
-              'mx-auto flex w-full min-w-0 max-w-3xl flex-1 flex-col md:pb-0',
+              'mx-auto flex w-full min-w-0 flex-1 flex-col md:pb-0',
+              isManage && isAdmin && !isChild ? 'max-w-400' : 'max-w-3xl',
               isChild ? 'pb-0' : 'pb-20',
             )}
           >

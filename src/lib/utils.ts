@@ -1,7 +1,15 @@
 import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { extendTailwindMerge } from 'tailwind-merge';
 import { isToday, isTomorrow, differenceInCalendarDays, format } from 'date-fns';
 import { appContent } from '@/content/app';
+
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      'font-size': [{ text: ['overline', 'body-sm', 'body-lg', 'caption-sm', 'micro', 'compact'] }],
+    },
+  },
+});
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

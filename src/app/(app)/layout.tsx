@@ -50,6 +50,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <AppShell
       navItems={navItems}
+      isAdmin={userRole === 'admin'}
       user={{
         name: userName,
         email: userEmail,

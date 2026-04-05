@@ -2,7 +2,16 @@ import { appContent } from '@/content/app';
 
 export type UserRole = 'rider' | 'ride_leader' | 'admin';
 
-export type IconName = 'house' | 'bike' | 'calendar-check' | 'bell' | 'user' | 'settings';
+export type IconName =
+  | 'house'
+  | 'bike'
+  | 'calendar-check'
+  | 'bell'
+  | 'user'
+  | 'settings'
+  | 'users-three'
+  | 'megaphone'
+  | 'sliders';
 
 export interface NavItem {
   /** Route path */
@@ -13,6 +22,8 @@ export interface NavItem {
   icon: IconName;
   /** Minimum role required to see this item. If not set, visible to all. */
   requiredRole?: UserRole;
+  /** Expandable sub-navigation children (desktop sidebar only). */
+  children?: NavItem[];
 }
 
 /**
@@ -41,6 +52,33 @@ export const primaryNav: NavItem[] = [
     label: appContent.nav.manage,
     icon: 'settings',
     requiredRole: 'ride_leader',
+  },
+];
+
+/**
+ * Admin sub-navigation items under "Manage".
+ * Desktop sidebar only — mobile bottom nav navigates straight to /manage (rides).
+ */
+export const manageSubNav: NavItem[] = [
+  {
+    href: '/manage',
+    label: appContent.manage.sections.rides,
+    icon: 'bike',
+  },
+  {
+    href: '/manage/members',
+    label: appContent.manage.sections.members,
+    icon: 'users-three',
+  },
+  {
+    href: '/manage/announcements',
+    label: appContent.manage.announcements.heading,
+    icon: 'megaphone',
+  },
+  {
+    href: '/manage/settings',
+    label: appContent.manage.sections.club,
+    icon: 'sliders',
   },
 ];
 

@@ -5,6 +5,9 @@ import {
   Bell,
   UserCircle,
   GearSix,
+  UsersThree,
+  Megaphone,
+  Sliders,
 } from '@phosphor-icons/react/dist/ssr';
 import type { IconName } from '@/config/navigation';
 
@@ -21,6 +24,9 @@ const iconMap: Record<
   bell: Bell,
   user: UserCircle,
   settings: GearSix,
+  'users-three': UsersThree,
+  megaphone: Megaphone,
+  sliders: Sliders,
 };
 
 interface NavIconProps {

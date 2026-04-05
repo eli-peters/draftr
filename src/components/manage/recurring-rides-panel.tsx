@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
-import { Plus, Trash, Pause, Play, ArrowClockwise } from '@phosphor-icons/react/dist/ssr';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { Plus, Trash, ArrowClockwise } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
@@ -14,8 +16,8 @@ import {
 } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
 import { TimePicker } from '@/components/ui/time-picker';
-import { Badge } from '@/components/ui/badge';
-import { ContentCard } from '@/components/ui/content-card';
+import { SectionHeading } from '@/components/ui/section-heading';
+import { Switch } from '@/components/ui/switch';
 import {
   Drawer,
   DrawerContent,
@@ -23,6 +25,7 @@ import {
   DrawerFooter,
   DrawerTitle,
 } from '@/components/ui/drawer';
+import { AdminFilterToolbar, type FilterDefinition } from './admin-filter-toolbar';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { appContent } from '@/content/app';
@@ -60,6 +63,14 @@ interface RecurringRidesPanelProps {
   paceGroups: { id: string; name: string }[];
 }
 
+function formatSeason(startDate: string | null, endDate: string | null): string {
+  if (!startDate && !endDate) return rc.yearRound;
+  const fmt = (d: string) => format(new Date(d), 'MMM d');
+  if (startDate && endDate) return `${fmt(startDate)} → ${fmt(endDate)}`;
+  if (startDate) return `${fmt(startDate)} →`;
+  return `→ ${fmt(endDate!)}`;
+}
+
 export function RecurringRidesPanel({
   recurringRides,
   clubId,
@@ -77,6 +88,53 @@ export function RecurringRidesPanel({
   const [rcSeasonStart, setRcSeasonStart] = useState('');
   const [rcSeasonEnd, setRcSeasonEnd] = useState('');
 
+  // Filters
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dayFilter, setDayFilter] = useState('all');
+  const [search, setSearch] = useState('');
+
+  const visibleRides = useMemo(() => {
+    let filtered = recurringRides;
+    if (statusFilter === 'active') filtered = filtered.filter((r) => r.is_active);
+    if (statusFilter === 'paused') filtered = filtered.filter((r) => !r.is_active);
+    if (dayFilter !== 'all') {
+      filtered = filtered.filter((r) => r.day_of_week === Number(dayFilter));
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      filtered = filtered.filter((r) => r.title.toLowerCase().includes(q));
+    }
+    return filtered;
+  }, [recurringRides, statusFilter, dayFilter, search]);
+
+  const statusFilterDef: FilterDefinition = {
+    key: 'status',
+    label: rc.filterStatus,
+    defaultValue: 'all',
+    options: [
+      { value: 'all', label: rc.filterAll },
+      { value: 'active', label: rc.active },
+      { value: 'paused', label: rc.paused },
+    ],
+  };
+
+  const dayFilterDef: FilterDefinition = {
+    key: 'day',
+    label: rc.filterDay,
+    defaultValue: 'all',
+    options: [
+      { value: 'all', label: rc.filterAll },
+      ...rc.dayOfWeek.map((day, i) => ({ value: String(i), label: day })),
+    ],
+  };
+
+  const filterValues: Record<string, string> = { status: statusFilter, day: dayFilter };
+
+  function handleFilterChange(key: string, value: string) {
+    if (key === 'status') setStatusFilter(value);
+    if (key === 'day') setDayFilter(value);
+  }
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
@@ -87,7 +145,7 @@ export function RecurringRidesPanel({
     if (!title || !start_time || !day_of_week || !recurrence) return;
 
     startTransition(async () => {
-      await createRecurringRide(clubId, {
+      const result = await createRecurringRide(clubId, {
         title,
         start_time,
         day_of_week: Number(day_of_week),
@@ -106,19 +164,25 @@ export function RecurringRidesPanel({
           ? Number(fd.get('default_capacity'))
           : undefined,
       });
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
       setOpen(false);
     });
   }
 
   function handleDelete(id: string) {
     startTransition(async () => {
-      await deleteRecurringRide(id);
+      const result = await deleteRecurringRide(id);
+      if (result?.error) toast.error(result.error);
     });
   }
 
   function handleToggle(id: string, currentlyActive: boolean) {
     startTransition(async () => {
-      await toggleRecurringRide(id, !currentlyActive);
+      const result = await toggleRecurringRide(id, !currentlyActive);
+      if (result?.error) toast.error(result.error);
     });
   }
 
@@ -133,90 +197,120 @@ export function RecurringRidesPanel({
   }
 
   return (
-    <div className={isPending ? 'opacity-pending pointer-events-none' : ''}>
-      {/* TODO: consider admin-specific visual treatment */}
-      <ContentCard heading={rc.heading}>
-        <div className="flex items-center justify-end mb-3">
-          <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-            <Plus className="h-4 w-4 mr-1.5" />
-            {rc.create}
-          </Button>
-        </div>
+    <div className={cn('space-y-3', isPending && 'opacity-pending pointer-events-none')}>
+      <div className="flex items-center justify-between">
+        <SectionHeading as="h3">{rc.heading}</SectionHeading>
+        <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+          <Plus className="h-4 w-4 mr-1.5" />
+          {rc.createButton}
+        </Button>
+      </div>
 
-        {message && <p className="text-sm text-success mb-4">{message}</p>}
+      <AdminFilterToolbar
+        filters={[statusFilterDef, dayFilterDef]}
+        filterValues={filterValues}
+        onFilterChange={handleFilterChange}
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder={rc.searchPlaceholder}
+      />
 
-        {recurringRides.length === 0 ? (
-          <p className="text-base text-muted-foreground">{rc.noRecurring}</p>
-        ) : (
-          <div className="divide-y divide-border">
-            {recurringRides.map((r) => (
-              <div
-                key={r.id}
-                className={cn(
-                  'flex items-start justify-between gap-3 py-4 first:pt-0 last:pb-0',
-                  !r.is_active && 'opacity-muted',
-                )}
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-base font-semibold text-foreground">{r.title}</h3>
-                    {!r.is_active && (
-                      <Badge variant="warning" className="text-xs">
-                        {rc.paused}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                    {r.day_of_week != null && <span>{rc.dayOfWeek[r.day_of_week]}s</span>}
-                    <span>{r.start_time.slice(0, 5)}</span>
-                    {r.recurrence && (
-                      <Badge variant="outline" className="text-xs">
-                        {rc.recurrence[r.recurrence as keyof typeof rc.recurrence]}
-                      </Badge>
-                    )}
-                    {r.pace_group_name && <span className="truncate">{r.pace_group_name}</span>}
-                  </div>
-                  {(r.season_start_date || r.season_end_date) && (
-                    <p className="mt-1 text-xs text-muted-foreground/70">
-                      {rc.seasonLabel}: {r.season_start_date ?? '...'} →{' '}
-                      {r.season_end_date ?? '...'}
-                    </p>
+      {message && <p className="text-sm text-success">{message}</p>}
+
+      {visibleRides.length === 0 ? (
+        <p className="font-mono text-body-sm text-(--text-secondary)">{rc.noRecurring}</p>
+      ) : (
+        <div className="overflow-x-auto rounded-md border border-(--border-subtle)">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-(--border-subtle) bg-(--surface-sunken)">
+                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                  {rc.dayColumn}
+                </th>
+                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                  {rc.timeColumn}
+                </th>
+                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                  {rc.titleColumn}
+                </th>
+                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                  {rc.paceColumn}
+                </th>
+                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                  {rc.recurrenceColumn}
+                </th>
+                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                  {rc.seasonColumn}
+                </th>
+                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                  {rc.statusColumn}
+                </th>
+                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                  {rc.actionsColumn}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleRides.map((r) => (
+                <tr
+                  key={r.id}
+                  className={cn(
+                    'group border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-sunken) hover:bg-muted/50',
+                    !r.is_active && 'opacity-muted',
                   )}
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => handleGenerate(r.id)}
-                    className="text-muted-foreground/50 hover:text-primary"
-                    title={rc.generateNow}
-                  >
-                    <ArrowClockwise className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => handleToggle(r.id, r.is_active)}
-                    className="text-muted-foreground/50 hover:text-foreground"
-                    title={r.is_active ? rc.pause : rc.resume}
-                  >
-                    {r.is_active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => handleDelete(r.id)}
-                    className="text-muted-foreground/50 hover:text-destructive"
-                    title={rc.delete}
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </ContentCard>
+                >
+                  <td className="p-3 font-mono text-body-sm text-(--text-primary)">
+                    {r.day_of_week != null ? rc.dayOfWeek[r.day_of_week].slice(0, 3) : '—'}
+                  </td>
+                  <td className="p-3 font-mono text-body-sm text-(--text-primary)">
+                    {r.start_time.slice(0, 5)}
+                  </td>
+                  <td className="p-3 font-mono text-body-sm font-semibold text-(--text-primary)">
+                    {r.title}
+                  </td>
+                  <td className="p-3 font-mono text-body-sm text-(--text-primary)">
+                    {r.pace_group_name ?? '—'}
+                  </td>
+                  <td className="p-3 font-mono text-body-sm text-(--text-primary)">
+                    {r.recurrence ? rc.recurrence[r.recurrence as keyof typeof rc.recurrence] : '—'}
+                  </td>
+                  <td className="p-3 font-mono text-body-sm text-(--text-secondary)">
+                    {formatSeason(r.season_start_date, r.season_end_date)}
+                  </td>
+                  <td className="p-3">
+                    <Switch
+                      checked={r.is_active}
+                      onCheckedChange={() => handleToggle(r.id, r.is_active)}
+                    />
+                  </td>
+                  <td className="p-3">
+                    <div className="flex items-center gap-0.5">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => handleGenerate(r.id)}
+                        className="text-muted-foreground/50 hover:text-primary"
+                        title={rc.generateNow}
+                      >
+                        <ArrowClockwise className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => handleDelete(r.id)}
+                        className="text-muted-foreground/50 hover:text-destructive"
+                        title={rc.delete}
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {mounted && (
         <Drawer open={open} onOpenChange={setOpen} direction={isMobile ? 'bottom' : 'right'}>

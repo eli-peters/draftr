@@ -1,0 +1,37 @@
+import { redirect } from 'next/navigation';
+import { DashboardShell } from '@/components/dashboard/dashboard-shell';
+import { PageHeader } from '@/components/layout/page-header';
+import { getUserClubMembership } from '@/lib/rides/queries';
+import { getClubAnnouncements } from '@/lib/manage/queries';
+import {
+  AnnouncementsPanel,
+  CreateAnnouncementButton,
+} from '@/components/manage/announcements-panel';
+import { appContent } from '@/content/app';
+import { routes } from '@/config/routes';
+import type { UserRole } from '@/config/navigation';
+
+const { manage: content } = appContent;
+
+export default async function ManageAnnouncementsPage() {
+  const membership = await getUserClubMembership();
+  if (!membership) redirect(routes.signIn);
+
+  const userRole = membership.role as UserRole;
+  if (userRole !== 'admin') redirect(routes.manage);
+
+  const announcements = await getClubAnnouncements(membership.club_id);
+
+  return (
+    <DashboardShell>
+      <PageHeader
+        centered={false}
+        title={content.announcements.heading}
+        actions={<CreateAnnouncementButton clubId={membership.club_id} />}
+      />
+      <div className="mt-4">
+        <AnnouncementsPanel announcements={announcements} clubId={membership.club_id} />
+      </div>
+    </DashboardShell>
+  );
+}
