@@ -1,13 +1,16 @@
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import {
   Bicycle,
   UsersThree,
   Megaphone,
   Sliders,
+  Laptop,
   CaretRight,
 } from '@phosphor-icons/react/dist/ssr';
 import { routes } from '@/config/routes';
 import { appContent } from '@/content/app';
+import { InviteCardAction, AnnouncementCardAction } from './section-card-actions';
 import type { SectionCardStats } from '@/lib/manage/queries';
 
 const { dashboard: content } = appContent.manage;
@@ -18,7 +21,12 @@ interface SectionCard {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   icon: React.ComponentType<any>;
   stat?: (stats: SectionCardStats) => string;
+  /** Static descriptive subtitle, shown on desktop only. */
+  subtitle?: string;
+  mobileHint?: string;
   cta: { label: string; href: string };
+  /** When provided, replaces the default CTA link in the footer strip. */
+  action?: (clubId: string) => ReactNode;
 }
 
 const sections: SectionCard[] = [
@@ -35,6 +43,7 @@ const sections: SectionCard[] = [
     icon: UsersThree,
     stat: (s) => content.sectionCards.activeStat(s.activeMembers),
     cta: { label: content.sectionCards.invite, href: routes.manageMembers },
+    action: (clubId) => <InviteCardAction clubId={clubId} />,
   },
   {
     label: content.sectionCards.announcements,
@@ -42,45 +51,79 @@ const sections: SectionCard[] = [
     icon: Megaphone,
     stat: (s) => content.sectionCards.thisWeekStat(s.recentAnnouncements),
     cta: { label: content.sectionCards.newAnnouncement, href: routes.manageAnnouncements },
+    action: (clubId) => <AnnouncementCardAction clubId={clubId} />,
   },
   {
     label: content.sectionCards.settings,
     href: routes.manageSettings,
     icon: Sliders,
+    subtitle: content.sectionCards.settingsStat,
+    mobileHint: content.sectionCards.comingSoonMobile,
     cta: { label: content.sectionCards.edit, href: routes.manageSettings },
   },
 ];
 
 interface SectionCardsProps {
   stats: SectionCardStats;
+  clubId: string;
 }
 
-export function SectionCards({ stats }: SectionCardsProps) {
+export function SectionCards({ stats, clubId }: SectionCardsProps) {
   return (
     <div className="grid grid-cols-2 gap-3">
       {sections.map((section) => (
-        <Link
+        <div
           key={section.href}
-          href={section.href}
-          className="group flex flex-col justify-between rounded-(--card-radius) border border-(--border-default) bg-card p-4 transition-all hover:border-(--border-strong) hover:shadow-sm"
+          className="group relative flex flex-col overflow-clip rounded-(--card-radius) border border-(--border-default) bg-card transition-all hover:border-(--border-strong) hover:shadow-sm"
         >
-          <div className="flex items-start justify-between">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted/60">
-              <section.icon className="h-[1.125rem] w-[1.125rem] text-muted-foreground" />
+          <Link
+            href={section.href}
+            className="absolute inset-0 z-0 rounded-(--card-radius)"
+            tabIndex={-1}
+            aria-hidden="true"
+          />
+
+          <div className="flex-1 p-4">
+            <div className="flex items-start justify-between">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted/60">
+                <section.icon className="h-[1.125rem] w-[1.125rem] text-muted-foreground" />
+              </div>
+              <CaretRight
+                className="h-4 w-4 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5"
+                weight="bold"
+              />
             </div>
-            <CaretRight
-              className="h-4 w-4 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5"
-              weight="bold"
-            />
+
+            <div className="mt-3">
+              <p className="text-sm font-semibold text-foreground">{section.label}</p>
+              {section.stat && (
+                <p className="mt-0.5 text-xs text-muted-foreground">{section.stat(stats)}</p>
+              )}
+              {section.subtitle && (
+                <p className="mt-0.5 hidden text-xs text-muted-foreground md:block">
+                  {section.subtitle}
+                </p>
+              )}
+              {section.mobileHint && (
+                <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground/70 md:hidden">
+                  <Laptop className="h-3 w-3" />
+                  {section.mobileHint}
+                </p>
+              )}
+            </div>
           </div>
 
-          <div className="mt-3">
-            <p className="text-sm font-semibold text-foreground">{section.label}</p>
-            {section.stat && (
-              <p className="mt-0.5 text-xs text-muted-foreground">{section.stat(stats)}</p>
-            )}
-          </div>
-        </Link>
+          {section.action ? (
+            <div className="relative z-10">{section.action(clubId)}</div>
+          ) : (
+            <Link
+              href={section.cta.href}
+              className="relative z-10 block bg-[color-mix(in_oklab,var(--surface-card-footer)_40%,transparent)] px-4 py-2.5 text-xs font-semibold text-primary hover:underline"
+            >
+              {section.cta.label}
+            </Link>
+          )}
+        </div>
       ))}
     </div>
   );

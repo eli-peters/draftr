@@ -43,7 +43,7 @@ export function SidebarNav({ items, isAdmin = false }: SidebarNavProps) {
                     isManageExact
                       ? 'text-primary bg-primary/10'
                       : isManageActive
-                        ? 'text-primary'
+                        ? 'text-primary hover:bg-muted/50'
                         : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
                   )}
                 >

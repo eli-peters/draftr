@@ -29,7 +29,11 @@ export default async function ManageAnnouncementsPage() {
         <PageHeader
           centered={false}
           title={content.announcements.heading}
-          actions={<CreateAnnouncementButton clubId={membership.club_id} />}
+          actions={
+            <span className="hidden md:block">
+              <CreateAnnouncementButton clubId={membership.club_id} />
+            </span>
+          }
         />
         <div className="mt-4">
           <AnnouncementsPanel announcements={announcements} clubId={membership.club_id} />

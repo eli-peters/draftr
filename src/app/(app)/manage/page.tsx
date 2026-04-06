@@ -75,7 +75,7 @@ export default async function AdminDashboardPage() {
             },
           ]}
         />
-        <SectionCards stats={sectionStats} />
+        <SectionCards stats={sectionStats} clubId={membership.club_id} />
       </div>
     </DashboardShell>
   );

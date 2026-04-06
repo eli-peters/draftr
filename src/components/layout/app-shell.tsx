@@ -66,10 +66,10 @@ export function AppShell({
         isAdmin={isAdmin}
       />
 
-      <div className="flex flex-1 md:flex-row md:gap-3 md:p-3">
+      <div className="flex flex-1 overflow-x-clip md:flex-row md:gap-3 md:p-3">
         <SidebarNav items={navItems} isAdmin={isAdmin} />
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-x-clip">
+        <div className="flex min-h-0 flex-1 flex-col">
           {isHome && banner && (
             <div className="overflow-clip md:rounded-lg md:shadow-(--card-shadow)">{banner}</div>
           )}
@@ -78,14 +78,14 @@ export function AppShell({
             className={cn(
               'mx-auto flex w-full min-w-0 flex-1 flex-col md:pb-0',
               isManageSection && isAdmin ? 'max-w-400' : 'max-w-3xl',
-              isChild ? 'pb-0' : 'pb-20',
+              isChild && !isManageSection ? 'pb-0' : 'pb-20',
             )}
           >
             <PageTransitionWrapper>{children}</PageTransitionWrapper>
           </main>
 
           <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-(--bar-fade-height) bg-linear-to-t from-surface-page to-transparent md:hidden" />
-          {!isChild && <BottomNav items={navItems} />}
+          {(!isChild || isManageSection) && <BottomNav items={navItems} />}
         </div>
       </div>
     </div>

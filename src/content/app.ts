@@ -615,7 +615,7 @@ export const appContent = {
   manage: {
     headingAdmin: 'Manage all rides',
     headingLeader: 'Manage your Rides',
-    mobileGateTitle: 'Desktop recommended',
+    mobileGateTitle: 'This is better on desktop',
     mobileGateDescription:
       'This section is optimized for desktop. Switch to a larger screen for the full experience.',
     mobileBannerDescription:
@@ -650,6 +650,8 @@ export const appContent = {
         invite: '+ Invite',
         newAnnouncement: '+ New',
         edit: 'Edit',
+        settingsStat: 'Name, branding, preferences',
+        comingSoonMobile: 'Coming soon to mobile',
         upcomingStat: (n: number) => `${n} upcoming`,
         activeStat: (n: number) => `${n} active`,
         thisWeekStat: (n: number) => `${n} this week`,

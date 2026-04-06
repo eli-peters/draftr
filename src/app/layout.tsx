@@ -65,12 +65,12 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`overflow-x-hidden ${outfit.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
+      className={`${outfit.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: COLOR_MODE_SCRIPT }} />
       </head>
-      <body className="overflow-x-hidden antialiased">
+      <body className="antialiased">
         <ThemeProvider>
           {children}
           <Toaster />

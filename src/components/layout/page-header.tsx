@@ -7,6 +7,7 @@ interface PageHeaderProps {
   badge?: ReactNode;
   actions?: ReactNode;
   centered?: boolean;
+  sticky?: boolean;
   className?: string;
 }
 
@@ -16,6 +17,7 @@ export function PageHeader({
   badge,
   actions,
   centered = true,
+  sticky = false,
   className,
 }: PageHeaderProps) {
   if (centered) {
@@ -36,7 +38,14 @@ export function PageHeader({
   }
 
   return (
-    <div className={cn('mb-6 flex items-center justify-between gap-3 md:gap-4', className)}>
+    <div
+      className={cn(
+        'mb-6 flex items-center justify-between gap-3 md:gap-4',
+        sticky &&
+          'sticky top-[calc(env(safe-area-inset-top)+3rem)] z-30 -mx-5 bg-background px-5 pt-1 pb-3 md:-mx-6 md:top-[calc(4rem+0.75rem)] md:px-6',
+        className,
+      )}
+    >
       <div className="min-w-0">
         <div className="flex min-w-0 items-center gap-3">
           <h1 className="truncate text-3xl font-bold tracking-tight text-foreground">{title}</h1>

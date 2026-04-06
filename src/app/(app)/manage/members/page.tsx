@@ -30,7 +30,11 @@ export default async function ManageMembersPage() {
         <PageHeader
           centered={false}
           title={content.members.heading}
-          actions={<InviteMemberDrawer clubId={membership.club_id} />}
+          actions={
+            <span className="hidden md:block">
+              <InviteMemberDrawer clubId={membership.club_id} />
+            </span>
+          }
         />
         <div className="mt-4">
           <MemberList

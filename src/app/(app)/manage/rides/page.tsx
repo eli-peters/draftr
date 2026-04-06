@@ -39,12 +39,14 @@ export default async function ManageRidesPage({
           centered={false}
           title={isAdmin ? content.headingAdmin : content.headingLeader}
           actions={
-            <Link href={routes.manageNewRide}>
-              <Button size="sm">
-                <Plus className="mr-1.5 h-4 w-4" />
-                {content.rides.createRide}
-              </Button>
-            </Link>
+            <span className="hidden md:block">
+              <Link href={routes.manageNewRide}>
+                <Button size="sm">
+                  <Plus className="mr-1.5 h-4 w-4" />
+                  {content.rides.createRide}
+                </Button>
+              </Link>
+            </span>
           }
         />
         <ManageRidesPanel

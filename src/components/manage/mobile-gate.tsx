@@ -1,21 +1,9 @@
-'use client';
-
-import { Monitor } from '@phosphor-icons/react/dist/ssr';
+import { Laptop } from '@phosphor-icons/react/dist/ssr';
 import { EmptyState } from '@/components/ui/empty-state';
-import { AnnouncementBanner } from '@/components/dashboard/announcement-banner';
+import { SystemNoticeBanner } from '@/components/dashboard/system-notice-banner';
 import { appContent } from '@/content/app';
 
 const { manage: content } = appContent;
-
-const mobileBannerAnnouncement = {
-  id: 'mobile-gate-banner',
-  title: content.mobileGateTitle,
-  body: content.mobileBannerDescription,
-  announcement_type: 'info' as const,
-  is_dismissible: false,
-  created_by_name: null,
-  published_at: new Date().toISOString(),
-};
 
 interface MobileGateProps {
   children: React.ReactNode;
@@ -33,7 +21,7 @@ export function MobileGate({ children, mode = 'banner' }: MobileGateProps) {
       <>
         <div className="md:hidden">
           <EmptyState
-            icon={Monitor}
+            icon={Laptop}
             title={content.mobileGateTitle}
             description={content.mobileGateDescription}
           />
@@ -46,7 +34,11 @@ export function MobileGate({ children, mode = 'banner' }: MobileGateProps) {
   return (
     <>
       <div className="md:hidden">
-        <AnnouncementBanner announcement={mobileBannerAnnouncement} />
+        <SystemNoticeBanner
+          icon={Laptop}
+          title={content.mobileGateTitle}
+          body={content.mobileBannerDescription}
+        />
       </div>
       {children}
     </>
