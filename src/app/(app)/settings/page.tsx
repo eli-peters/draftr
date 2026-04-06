@@ -21,7 +21,7 @@ export default async function SettingsPage() {
 
   const supabase = await createClient();
 
-  const [{ data: membership }, { data: user }, connections] = await Promise.all([
+  const [{ data: membership }, { data: user, error: userError }, connections] = await Promise.all([
     supabase
       .from('club_memberships')
       .select('role')
@@ -32,9 +32,14 @@ export default async function SettingsPage() {
     getUserConnections(authUser.id),
   ]);
 
+  if (userError?.message) {
+    console.error('[settings] Error fetching user preferences:', userError.message);
+  }
+
   const role = membership?.role ?? 'rider';
   const isLeaderOrAbove = role === 'ride_leader' || role === 'admin';
-  const pushEnabled = (user?.notification_preferences as Record<string, unknown>)?.push !== false;
+  const prefs = user?.notification_preferences as Record<string, unknown> | null;
+  const pushEnabled = prefs?.push !== false;
 
   return (
     <DashboardShell>

@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useTransition, useCallback, useEffect } from 'react';
-import { PencilSimple, Check, X, SpinnerGap } from '@phosphor-icons/react';
+import { useCallback, useState, useTransition } from 'react';
+import { PencilSimple } from '@phosphor-icons/react';
 import { User } from '@phosphor-icons/react/dist/ssr';
 import { toast } from 'sonner';
 import { ContentCard } from '@/components/ui/content-card';
 import { FloatingField } from '@/components/ui/floating-field';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { InlineEditActions } from '@/components/profile/inline-edit-actions';
+import { useEscapeKey } from '@/hooks/use-escape-key';
 import { updateProfile } from '@/lib/profile/actions';
 import { appContent } from '@/content/app';
 
@@ -22,22 +24,12 @@ export function ProfileAboutSection({ bio: initialBio }: ProfileAboutSectionProp
   const [bio, setBio] = useState(initialBio);
   const [isPending, startTransition] = useTransition();
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (!isEditing) return;
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        handleCancel();
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isEditing],
-  );
+  const handleCancel = useCallback(() => {
+    setBio(initialBio);
+    setIsEditing(false);
+  }, [initialBio]);
 
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+  useEscapeKey(isEditing, handleCancel);
 
   function handleSave() {
     startTransition(async () => {
@@ -49,11 +41,6 @@ export function ProfileAboutSection({ bio: initialBio }: ProfileAboutSectionProp
       toast.success(content.bioSaved);
       setIsEditing(false);
     });
-  }
-
-  function handleCancel() {
-    setBio(initialBio);
-    setIsEditing(false);
   }
 
   return (
@@ -70,30 +57,7 @@ export function ProfileAboutSection({ bio: initialBio }: ProfileAboutSectionProp
               maxLength={300}
             />
           </FloatingField>
-          <div className="flex items-center gap-2 justify-end">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={handleCancel}
-              disabled={isPending}
-              aria-label={common.cancel}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={handleSave}
-              disabled={isPending}
-              aria-label={common.save}
-            >
-              {isPending ? (
-                <SpinnerGap className="h-4 w-4 animate-spin" />
-              ) : (
-                <Check className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
+          <InlineEditActions onSave={handleSave} onCancel={handleCancel} isPending={isPending} />
         </div>
       ) : (
         <div className="group relative flex items-start justify-between gap-2">

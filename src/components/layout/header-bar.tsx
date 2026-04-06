@@ -13,7 +13,6 @@ import type { Notification } from '@/components/notifications/notification-item'
 
 interface HeaderBarProps {
   userName: string;
-  userEmail: string;
   userInitials: string;
   avatarUrl: string | null;
   notifications: Notification[];
@@ -29,7 +28,6 @@ interface HeaderBarProps {
  */
 export function HeaderBar({
   userName,
-  userEmail,
   userInitials,
   avatarUrl,
   notifications,
@@ -66,7 +64,6 @@ export function HeaderBar({
         <NotificationBell notifications={notifications} unreadCount={unreadNotificationCount} />
         <AvatarMenu
           userName={userName}
-          userEmail={userEmail}
           userInitials={userInitials}
           avatarUrl={avatarUrl}
           userRole={userRole}

@@ -13,7 +13,6 @@ import { cn } from '@/lib/utils';
 
 interface AppShellUser {
   name: string;
-  email: string;
   initials: string;
   avatarUrl: string | null;
 }
@@ -61,7 +60,6 @@ export function AppShell({
     <div className="flex min-h-screen flex-col md:bg-surface-page">
       <HeaderBar
         userName={user.name}
-        userEmail={user.email}
         userInitials={user.initials}
         avatarUrl={user.avatarUrl}
         notifications={notifications ?? []}

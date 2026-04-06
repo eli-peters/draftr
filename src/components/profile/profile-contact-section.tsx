@@ -1,25 +1,151 @@
 'use client';
 
-import { useState, useRef, useTransition, useCallback, useEffect } from 'react';
-import {
-  PencilSimple,
-  Check,
-  X,
-  SpinnerGap,
-  AddressBook,
-  FirstAidKit,
-} from '@phosphor-icons/react';
+import { useCallback, useRef, useState, useTransition } from 'react';
+import { PencilSimple, AddressBook, FirstAidKit } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { ContentCard } from '@/components/ui/content-card';
 import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { Button } from '@/components/ui/button';
+import { InlineEditActions } from '@/components/profile/inline-edit-actions';
+import { useEscapeKey } from '@/hooks/use-escape-key';
 import { formatPhoneDisplay } from '@/lib/phone';
 import { updateProfile } from '@/lib/profile/actions';
 import { appContent } from '@/content/app';
 
 const { profile: content, common } = appContent;
+
+// ---------------------------------------------------------------------------
+// Contact Info Editor (phone only — name and email are read-only)
+// ---------------------------------------------------------------------------
+
+function ContactInfoEditor({
+  fullName,
+  email,
+  initialPhone,
+  phoneKey,
+  isPending,
+  onSave,
+  onCancel,
+}: {
+  fullName: string;
+  email: string;
+  initialPhone: string;
+  phoneKey: number;
+  isPending: boolean;
+  onSave: (phone: string) => void;
+  onCancel: () => void;
+}) {
+  const formRef = useRef<HTMLFormElement>(null);
+
+  function handleSave() {
+    const formData = new FormData(formRef.current!);
+    onSave(formData.get('phone_number') as string);
+  }
+
+  return (
+    <form
+      ref={formRef}
+      onSubmit={(e) => e.preventDefault()}
+      className="space-y-3 rounded-xl bg-surface-sunken p-3 animate-in fade-in-0 duration-150"
+    >
+      <p className="text-sm text-muted-foreground">
+        {content.contactInfo.nameLabel}: {fullName}
+      </p>
+      <FloatingField label={content.contactInfo.phoneLabel} htmlFor="phone_number">
+        <PhoneInput
+          key={phoneKey}
+          id="phone_number"
+          name="phone_number"
+          defaultValue={initialPhone}
+          placeholder=" "
+        />
+      </FloatingField>
+      <p className="text-sm text-muted-foreground">
+        {content.contactInfo.emailLabel}: {email}
+      </p>
+      <InlineEditActions onSave={handleSave} onCancel={onCancel} isPending={isPending} />
+    </form>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Emergency Contact Editor
+// ---------------------------------------------------------------------------
+
+function EmergencyContactEditor({
+  initialName,
+  initialPhone,
+  initialRelationship,
+  phoneKey,
+  isPending,
+  onSave,
+  onCancel,
+}: {
+  initialName: string;
+  initialPhone: string;
+  initialRelationship: string;
+  phoneKey: number;
+  isPending: boolean;
+  onSave: (name: string, phone: string, relationship: string) => void;
+  onCancel: () => void;
+}) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const [name, setName] = useState(initialName);
+  const [relationship, setRelationship] = useState(initialRelationship);
+
+  function handleSave() {
+    const formData = new FormData(formRef.current!);
+    onSave(name, formData.get('emergency_contact_phone') as string, relationship);
+  }
+
+  return (
+    <form
+      ref={formRef}
+      onSubmit={(e) => e.preventDefault()}
+      className="space-y-3 animate-in fade-in-0 duration-150"
+    >
+      <div className="flex items-center gap-2 justify-center mb-2">
+        <FirstAidKit className="h-6 w-6 text-primary" />
+        <p className="text-base font-bold text-foreground">{content.sections.emergencyContact}</p>
+      </div>
+      <FloatingField label={content.emergencyContact.nameLabel} htmlFor="emergency_contact_name">
+        <Input
+          id="emergency_contact_name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder=" "
+        />
+      </FloatingField>
+      <FloatingField
+        label={content.emergencyContact.relationshipLabel}
+        htmlFor="emergency_contact_relationship"
+      >
+        <Input
+          id="emergency_contact_relationship"
+          value={relationship}
+          onChange={(e) => setRelationship(e.target.value)}
+          placeholder={content.emergencyContact.relationshipPlaceholder}
+        />
+      </FloatingField>
+      <FloatingField label={content.emergencyContact.phoneLabel} htmlFor="emergency_contact_phone">
+        <PhoneInput
+          key={`em-${phoneKey}`}
+          id="emergency_contact_phone"
+          name="emergency_contact_phone"
+          defaultValue={initialPhone}
+          placeholder=" "
+        />
+      </FloatingField>
+      <InlineEditActions onSave={handleSave} onCancel={onCancel} isPending={isPending} />
+    </form>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main Section — composes contact info + emergency contact
+// ---------------------------------------------------------------------------
 
 interface ProfileContactSectionProps {
   fullName: string;
@@ -41,38 +167,17 @@ export function ProfileContactSection({
   emergencyRelationship: initialEmRelationship,
 }: ProfileContactSectionProps) {
   const [editing, setEditing] = useState<EditingSection>(null);
-  const contactFormRef = useRef<HTMLFormElement>(null);
-  const emergencyFormRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = useTransition();
-
-  // Emergency contact controlled fields
-  const [emName, setEmName] = useState(initialEmName);
-  const [emRelationship, setEmRelationship] = useState(initialEmRelationship);
-
-  // Key to force PhoneInput remount on cancel
   const [phoneKey, setPhoneKey] = useState(0);
 
-  // Keyboard support
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (!editing) return;
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        handleCancel();
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [editing],
-  );
+  const handleCancel = useCallback(() => {
+    setPhoneKey((k) => k + 1);
+    setEditing(null);
+  }, []);
 
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+  useEscapeKey(editing !== null, handleCancel);
 
-  function handleSaveContact() {
-    const formData = new FormData(contactFormRef.current!);
-    const phone = formData.get('phone_number') as string;
+  function handleSaveContact(phone: string) {
     startTransition(async () => {
       const result = await updateProfile({ phone_number: phone });
       if (result.error) {
@@ -84,14 +189,12 @@ export function ProfileContactSection({
     });
   }
 
-  function handleSaveEmergency() {
-    const formData = new FormData(emergencyFormRef.current!);
-    const phone = formData.get('emergency_contact_phone') as string;
+  function handleSaveEmergency(name: string, phone: string, relationship: string) {
     startTransition(async () => {
       const result = await updateProfile({
-        emergency_contact_name: emName,
+        emergency_contact_name: name,
         emergency_contact_phone: phone,
-        emergency_contact_relationship: emRelationship,
+        emergency_contact_relationship: relationship,
       });
       if (result.error) {
         toast.error(result.error);
@@ -102,42 +205,6 @@ export function ProfileContactSection({
     });
   }
 
-  function handleCancel() {
-    if (editing === 'emergency') {
-      setEmName(initialEmName);
-      setEmRelationship(initialEmRelationship);
-    }
-    setPhoneKey((k) => k + 1);
-    setEditing(null);
-  }
-
-  const saveButton = (onClick: () => void) => (
-    <div className="flex items-center gap-2 justify-end pt-1">
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        onClick={handleCancel}
-        disabled={isPending}
-        aria-label={common.cancel}
-      >
-        <X className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        onClick={onClick}
-        disabled={isPending}
-        aria-label={common.save}
-      >
-        {isPending ? (
-          <SpinnerGap className="h-4 w-4 animate-spin" />
-        ) : (
-          <Check className="h-4 w-4" />
-        )}
-      </Button>
-    </div>
-  );
-
   return (
     <ContentCard
       className="mt-8"
@@ -145,30 +212,17 @@ export function ProfileContactSection({
       icon={AddressBook}
       heading={content.sections.contactInfo}
     >
-      {/* Contact Info Section */}
+      {/* Contact Info */}
       {editing === 'contact' ? (
-        <form
-          ref={contactFormRef}
-          onSubmit={(e) => e.preventDefault()}
-          className="space-y-3 rounded-xl bg-surface-sunken p-3 animate-in fade-in-0 duration-150"
-        >
-          <p className="text-sm text-muted-foreground">
-            {content.contactInfo.nameLabel}: {fullName}
-          </p>
-          <FloatingField label={content.contactInfo.phoneLabel} htmlFor="phone_number">
-            <PhoneInput
-              key={phoneKey}
-              id="phone_number"
-              name="phone_number"
-              defaultValue={initialPhone}
-              placeholder=" "
-            />
-          </FloatingField>
-          <p className="text-sm text-muted-foreground">
-            {content.contactInfo.emailLabel}: {email}
-          </p>
-          {saveButton(handleSaveContact)}
-        </form>
+        <ContactInfoEditor
+          fullName={fullName}
+          email={email}
+          initialPhone={initialPhone}
+          phoneKey={phoneKey}
+          isPending={isPending}
+          onSave={handleSaveContact}
+          onCancel={handleCancel}
+        />
       ) : (
         <div className="group/contact relative">
           <div className="space-y-2">
@@ -196,56 +250,18 @@ export function ProfileContactSection({
         </div>
       )}
 
-      {/* Emergency Contact Sub-Section */}
+      {/* Emergency Contact */}
       <div className="mt-4 rounded-2xl bg-action-primary-subtle-bg p-4">
         {editing === 'emergency' ? (
-          <form
-            ref={emergencyFormRef}
-            onSubmit={(e) => e.preventDefault()}
-            className="space-y-3 animate-in fade-in-0 duration-150"
-          >
-            <div className="flex items-center gap-2 justify-center mb-2">
-              <FirstAidKit className="h-6 w-6 text-primary" />
-              <p className="text-base font-bold text-foreground">
-                {content.sections.emergencyContact}
-              </p>
-            </div>
-            <FloatingField
-              label={content.emergencyContact.nameLabel}
-              htmlFor="emergency_contact_name"
-            >
-              <Input
-                id="emergency_contact_name"
-                value={emName}
-                onChange={(e) => setEmName(e.target.value)}
-                placeholder=" "
-              />
-            </FloatingField>
-            <FloatingField
-              label={content.emergencyContact.relationshipLabel}
-              htmlFor="emergency_contact_relationship"
-            >
-              <Input
-                id="emergency_contact_relationship"
-                value={emRelationship}
-                onChange={(e) => setEmRelationship(e.target.value)}
-                placeholder={content.emergencyContact.relationshipPlaceholder}
-              />
-            </FloatingField>
-            <FloatingField
-              label={content.emergencyContact.phoneLabel}
-              htmlFor="emergency_contact_phone"
-            >
-              <PhoneInput
-                key={`em-${phoneKey}`}
-                id="emergency_contact_phone"
-                name="emergency_contact_phone"
-                defaultValue={initialEmPhone}
-                placeholder=" "
-              />
-            </FloatingField>
-            {saveButton(handleSaveEmergency)}
-          </form>
+          <EmergencyContactEditor
+            initialName={initialEmName}
+            initialPhone={initialEmPhone}
+            initialRelationship={initialEmRelationship}
+            phoneKey={phoneKey}
+            isPending={isPending}
+            onSave={handleSaveEmergency}
+            onCancel={handleCancel}
+          />
         ) : (
           <div className="group/emergency relative">
             <div className="flex flex-col items-center gap-2 mb-3">

@@ -47,7 +47,7 @@ export function AppearanceSetting() {
                 'relative inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-[color,background-color,box-shadow] duration-(--duration-normal) ease-(--ease-out)',
                 isActive
                   ? 'bg-tabs-trigger-active-bg text-tabs-trigger-active-text shadow-sm'
-                  : 'text-tabs-trigger-text hover:bg-black/5 dark:hover:bg-white/8',
+                  : 'text-tabs-trigger-text hover:bg-muted',
               )}
             >
               <Icon weight={isActive ? 'fill' : undefined} className="h-4 w-4" />

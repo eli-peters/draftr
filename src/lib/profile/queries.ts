@@ -22,7 +22,7 @@ export interface UserProfile {
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   const supabase = await createClient();
 
-  const { data: user } = await supabase
+  const { data: user, error: userError } = await supabase
     .from('users')
     .select(
       'id, full_name, email, avatar_url, bio, phone_number, emergency_contact_name, emergency_contact_phone, emergency_contact_relationship, preferred_pace_group, created_at',
@@ -30,14 +30,22 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     .eq('id', userId)
     .single();
 
+  if (userError?.message) {
+    console.error('[profile] Error fetching user:', userError.message);
+  }
+
   if (!user) return null;
 
-  const { data: membership } = await supabase
+  const { data: membership, error: membershipError } = await supabase
     .from('club_memberships')
     .select('role, club:clubs(name)')
     .eq('user_id', userId)
     .eq('status', 'active')
     .single();
+
+  if (membershipError?.message && membershipError.code !== 'PGRST116') {
+    console.error('[profile] Error fetching membership:', membershipError.message);
+  }
 
   const club = membership?.club as unknown as { name: string } | null;
 
@@ -54,6 +62,8 @@ export interface ProfileStats {
   ridesLastMonth: number;
 }
 
+const MS_PER_DAY = 86_400_000;
+
 /**
  * Fetch ride stats for the user's profile.
  * Distance/elevation are Phase 3 (require ride completion tracking).
@@ -64,19 +74,23 @@ export async function getUserProfileStats(userId: string): Promise<ProfileStats>
   // Total rides (confirmed or checked_in, past dates only)
   const today = new Date().toISOString().split('T')[0];
 
-  const { count: totalRides } = await supabase
+  const { count: totalRides, error: totalError } = await supabase
     .from('ride_signups')
     .select('*, ride:rides!inner(ride_date)', { count: 'exact', head: true })
     .eq('user_id', userId)
     .in('status', ['confirmed', 'checked_in'])
     .lt('ride.ride_date', today);
 
+  if (totalError?.message) {
+    console.error('[profile] Error fetching total rides:', totalError.message);
+  }
+
   // Rides this month
   const monthStart = new Date();
   monthStart.setDate(1);
   const monthStartStr = monthStart.toISOString().split('T')[0];
 
-  const { count: ridesThisMonth } = await supabase
+  const { count: ridesThisMonth, error: thisMonthError } = await supabase
     .from('ride_signups')
     .select('*, ride:rides!inner(ride_date)', { count: 'exact', head: true })
     .eq('user_id', userId)
@@ -84,20 +98,28 @@ export async function getUserProfileStats(userId: string): Promise<ProfileStats>
     .gte('ride.ride_date', monthStartStr)
     .lt('ride.ride_date', today);
 
+  if (thisMonthError?.message) {
+    console.error('[profile] Error fetching this month rides:', thisMonthError.message);
+  }
+
   // Rides last month (for delta badge)
   const lastMonthEnd = new Date(monthStart);
   lastMonthEnd.setDate(lastMonthEnd.getDate() - 1);
   const lastMonthStart = new Date(lastMonthEnd.getFullYear(), lastMonthEnd.getMonth(), 1);
   const lastMonthStartStr = lastMonthStart.toISOString().split('T')[0];
-  const lastMonthEndStr = new Date(lastMonthEnd.getTime() + 86400000).toISOString().split('T')[0];
+  const lastMonthEndStr = new Date(lastMonthEnd.getTime() + MS_PER_DAY).toISOString().split('T')[0];
 
-  const { count: ridesLastMonth } = await supabase
+  const { count: ridesLastMonth, error: lastMonthError } = await supabase
     .from('ride_signups')
     .select('*, ride:rides!inner(ride_date)', { count: 'exact', head: true })
     .eq('user_id', userId)
     .in('status', ['confirmed', 'checked_in'])
     .gte('ride.ride_date', lastMonthStartStr)
     .lt('ride.ride_date', lastMonthEndStr);
+
+  if (lastMonthError?.message) {
+    console.error('[profile] Error fetching last month rides:', lastMonthError.message);
+  }
 
   return {
     totalRides: totalRides ?? 0,
@@ -134,7 +156,7 @@ export async function getUserRecentRides(userId: string, limit = 5): Promise<Rec
     .limit(limit);
 
   if (error?.message) {
-    console.error('Error fetching recent rides:', error.message, error.code, error.details);
+    console.error('[profile] Error fetching recent rides:', error.message);
     return [];
   }
 

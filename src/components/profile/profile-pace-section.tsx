@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useTransition, useCallback, useEffect } from 'react';
-import { PencilSimple, Check, X, SpinnerGap, Bicycle } from '@phosphor-icons/react';
+import { useCallback, useState, useTransition } from 'react';
+import { PencilSimple, Bicycle } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { ContentCard } from '@/components/ui/content-card';
 import { FloatingField } from '@/components/ui/floating-field';
@@ -13,6 +13,8 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { InlineEditActions } from '@/components/profile/inline-edit-actions';
+import { useEscapeKey } from '@/hooks/use-escape-key';
 import { updateProfile } from '@/lib/profile/actions';
 import { appContent } from '@/content/app';
 
@@ -31,22 +33,12 @@ export function ProfilePaceSection({
   const [pace, setPace] = useState(initialPace);
   const [isPending, startTransition] = useTransition();
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (!isEditing) return;
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        handleCancel();
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isEditing],
-  );
+  const handleCancel = useCallback(() => {
+    setPace(initialPace);
+    setIsEditing(false);
+  }, [initialPace]);
 
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+  useEscapeKey(isEditing, handleCancel);
 
   function handleSave() {
     startTransition(async () => {
@@ -58,11 +50,6 @@ export function ProfilePaceSection({
       toast.success(content.paceSaved);
       setIsEditing(false);
     });
-  }
-
-  function handleCancel() {
-    setPace(initialPace);
-    setIsEditing(false);
   }
 
   return (
@@ -88,30 +75,7 @@ export function ProfilePaceSection({
               </SelectContent>
             </Select>
           </FloatingField>
-          <div className="flex items-center gap-2 justify-end">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={handleCancel}
-              disabled={isPending}
-              aria-label={common.cancel}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={handleSave}
-              disabled={isPending}
-              aria-label={common.save}
-            >
-              {isPending ? (
-                <SpinnerGap className="h-4 w-4 animate-spin" />
-              ) : (
-                <Check className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
+          <InlineEditActions onSave={handleSave} onCancel={handleCancel} isPending={isPending} />
         </div>
       ) : (
         <div className="group relative flex items-center justify-between">

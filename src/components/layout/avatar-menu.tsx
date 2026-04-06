@@ -39,7 +39,6 @@ const { avatarMenu: content, profile: profileContent } = appContent;
 
 interface AvatarMenuProps {
   userName: string;
-  userEmail: string;
   userInitials: string;
   avatarUrl: string | null;
   userRole: string;

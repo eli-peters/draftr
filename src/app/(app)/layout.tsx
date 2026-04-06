@@ -38,8 +38,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   const userName = profile.full_name ?? 'User';
-  const userEmail = profile.email ?? authUser.email ?? '';
-
   const [notifications, pinnedAnnouncement] = await Promise.all([
     getUserNotifications(authUser.id),
     membership ? getPinnedAnnouncement(membership.club_id, authUser.id) : null,
@@ -54,7 +52,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       userRole={userRole}
       user={{
         name: userName,
-        email: userEmail,
         initials: getInitials(userName),
         avatarUrl: profile?.avatar_url ?? null,
       }}
