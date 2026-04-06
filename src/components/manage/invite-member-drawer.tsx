@@ -22,9 +22,11 @@ const inviteContent = content.members.invite;
 
 interface InviteMemberDrawerProps {
   clubId: string;
+  trigger?: React.ReactNode;
+  onSuccess?: () => void;
 }
 
-export function InviteMemberDrawer({ clubId }: InviteMemberDrawerProps) {
+export function InviteMemberDrawer({ clubId, trigger, onSuccess }: InviteMemberDrawerProps) {
   const isMobile = useIsMobile();
   const [mounted, setMounted] = useState(false);
   // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
@@ -75,15 +77,27 @@ export function InviteMemberDrawer({ clubId }: InviteMemberDrawerProps) {
       setInviteLink(result.inviteLink ?? null);
       setCopied(false);
       formRef.current?.reset();
+      onSuccess?.();
     }
   }
 
   return (
     <>
-      <Button size="sm" onClick={() => setOpen(true)}>
-        <EnvelopeSimple className="mr-1.5 h-4 w-4" />
-        {content.members.inviteButton}
-      </Button>
+      {trigger ? (
+        <span
+          onClick={() => setOpen(true)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && setOpen(true)}
+        >
+          {trigger}
+        </span>
+      ) : (
+        <Button size="sm" onClick={() => setOpen(true)}>
+          <EnvelopeSimple className="mr-1.5 h-4 w-4" />
+          {content.members.inviteButton}
+        </Button>
+      )}
 
       {mounted && (
         <Drawer
@@ -189,6 +203,14 @@ export function InviteMemberDrawer({ clubId }: InviteMemberDrawerProps) {
 
                 <Button type="submit" disabled={isPending} className="w-full">
                   {isPending ? common.loading : inviteContent.sendButton}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setOpen(false)}
+                >
+                  {common.cancel}
                 </Button>
               </form>
             )}

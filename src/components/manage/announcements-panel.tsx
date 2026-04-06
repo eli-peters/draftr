@@ -149,19 +149,8 @@ function SortableHeader({
 /* ------------------------------------------------------------------ */
 
 export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanelProps) {
-  const isMobile = useIsMobile();
-  const [mounted, setMounted] = useState(false);
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
-  useEffect(() => setMounted(true), []);
-
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
-  const [announcementType, setAnnouncementType] = useState<AnnouncementType>('info');
-  const [isDismissible, setIsDismissible] = useState(true);
-  const [isPinned, setIsPinned] = useState(false);
-  const [expiresAt, setExpiresAt] = useState('');
   const [isPending, startTransition] = useTransition();
 
   // Filters
@@ -223,34 +212,21 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
 
   const paginatedAnnouncements = visibleAnnouncements.slice(page * pageSize, (page + 1) * pageSize);
 
+  const editingAnnouncement = announcements.find((a) => a.id === editingId);
+  const editInitialValues = editingAnnouncement
+    ? {
+        title: editingAnnouncement.title,
+        body: editingAnnouncement.body,
+        announcementType: editingAnnouncement.announcement_type,
+        isDismissible: editingAnnouncement.is_dismissible,
+        isPinned: editingAnnouncement.is_pinned,
+        expiresAt: editingAnnouncement.expires_at?.split('T')[0] ?? '',
+      }
+    : undefined;
+
   function handleEdit(a: AnnouncementData) {
     setEditingId(a.id);
-    setTitle(a.title);
-    setBody(a.body);
-    setAnnouncementType(a.announcement_type);
-    setIsDismissible(a.is_dismissible);
-    setIsPinned(a.is_pinned);
-    setExpiresAt(a.expires_at?.split('T')[0] ?? '');
     setOpen(true);
-  }
-
-  function handleSubmit() {
-    if (!editingId || !title.trim() || !body.trim()) return;
-    startTransition(async () => {
-      const result = await updateAnnouncement(editingId, {
-        title,
-        body,
-        announcement_type: announcementType,
-        is_dismissible: isDismissible,
-        is_pinned: isPinned,
-        expires_at: expiresAt || null,
-      });
-      if (result?.error) {
-        toast.error(result.error);
-        return;
-      }
-      setOpen(false);
-    });
   }
 
   function handleDelete(id: string) {
@@ -412,96 +388,224 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
         </>
       )}
 
-      {mounted && (
-        <Drawer open={open} onOpenChange={setOpen} direction={isMobile ? 'bottom' : 'right'}>
-          <DrawerContent
-            className={isMobile ? 'max-h-(--drawer-height-md)' : 'w-(--drawer-width-sidebar)'}
-          >
-            <DrawerHeader>
-              <DrawerTitle>{content.announcements.edit}</DrawerTitle>
-            </DrawerHeader>
-            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4">
-              <FloatingField
-                label={content.announcements.titleLabel}
-                htmlFor="announcement-title"
-                hasValue={!!title}
-              >
-                <Input
-                  id="announcement-title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder=" "
-                />
-              </FloatingField>
-              <FloatingField
-                label={content.announcements.bodyLabel}
-                htmlFor="announcement-body"
-                hasValue={!!body}
-                maxLength={500}
-              >
-                <Textarea
-                  id="announcement-body"
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  placeholder=" "
-                  rows={4}
-                  maxLength={500}
-                />
-              </FloatingField>
-              <FloatingField
-                label={content.announcements.typeLabel}
-                htmlFor="announcement-type"
-                hasValue={true}
-              >
-                <Select
-                  value={announcementType}
-                  onValueChange={(v) => setAnnouncementType(v as AnnouncementType)}
-                  items={Object.fromEntries(
-                    announcementTypes.map((t) => [t, content.announcements.typeOptions[t]]),
-                  )}
-                >
-                  <SelectTrigger id="announcement-type">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {announcementTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {content.announcements.typeOptions[type]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FloatingField>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="dismissible-toggle">{content.announcements.dismissibleLabel}</Label>
-                <Switch
-                  id="dismissible-toggle"
-                  checked={isDismissible}
-                  onCheckedChange={setIsDismissible}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="pinned-toggle">{content.announcements.pinToTop}</Label>
-                <Switch id="pinned-toggle" checked={isPinned} onCheckedChange={setIsPinned} />
-              </div>
-              <FloatingField
-                label={content.announcements.expiryLabel}
-                htmlFor="announcement-expiry"
-                hasValue={!!expiresAt}
-                helperText={content.announcements.expiryDescription}
-              >
-                <DatePicker id="announcement-expiry" value={expiresAt} onChange={setExpiresAt} />
-              </FloatingField>
-            </div>
-            <DrawerFooter>
-              <Button onClick={handleSubmit} disabled={!title.trim() || !body.trim()}>
-                {common.save}
-              </Button>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
-      )}
+      <AnnouncementFormDrawer
+        open={open}
+        onOpenChange={setOpen}
+        mode="edit"
+        announcementId={editingId ?? undefined}
+        initialValues={editInitialValues}
+      />
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  AnnouncementFormDrawer — shared create / edit form                  */
+/* ------------------------------------------------------------------ */
+
+interface AnnouncementFormDrawerProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  mode: 'create' | 'edit';
+  clubId?: string;
+  announcementId?: string;
+  initialValues?: {
+    title: string;
+    body: string;
+    announcementType: AnnouncementType;
+    isDismissible: boolean;
+    isPinned: boolean;
+    expiresAt: string;
+  };
+  onSuccess?: () => void;
+}
+
+function AnnouncementFormDrawer({
+  open,
+  onOpenChange,
+  mode,
+  clubId,
+  announcementId,
+  initialValues,
+  onSuccess,
+}: AnnouncementFormDrawerProps) {
+  const isMobile = useIsMobile();
+  const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
+  useEffect(() => setMounted(true), []);
+
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [announcementType, setAnnouncementType] = useState<AnnouncementType>('info');
+  const [isDismissible, setIsDismissible] = useState(true);
+  const [isPinned, setIsPinned] = useState(false);
+  const [expiresAt, setExpiresAt] = useState('');
+  const [isPending, startTransition] = useTransition();
+
+  function resetForm() {
+    setTitle('');
+    setBody('');
+    setAnnouncementType('info');
+    setIsDismissible(true);
+    setIsPinned(false);
+    setExpiresAt('');
+  }
+
+  // Sync form state when drawer opens
+  /* eslint-disable react-hooks/set-state-in-effect -- sync initial values on open */
+  useEffect(() => {
+    if (open && initialValues) {
+      setTitle(initialValues.title);
+      setBody(initialValues.body);
+      setAnnouncementType(initialValues.announcementType);
+      setIsDismissible(initialValues.isDismissible);
+      setIsPinned(initialValues.isPinned);
+      setExpiresAt(initialValues.expiresAt);
+    } else if (open) {
+      resetForm();
+    }
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  function handleOpenChange(isOpen: boolean) {
+    onOpenChange(isOpen);
+    if (!isOpen) resetForm();
+  }
+
+  function handleSubmit() {
+    if (!title.trim() || !body.trim()) return;
+    startTransition(async () => {
+      const payload = {
+        title,
+        body,
+        announcement_type: announcementType,
+        is_dismissible: isDismissible,
+        is_pinned: isPinned,
+        expires_at: expiresAt || null,
+      };
+
+      const result =
+        mode === 'create'
+          ? await createAnnouncement(clubId!, payload)
+          : await updateAnnouncement(announcementId!, payload);
+
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+      onOpenChange(false);
+      resetForm();
+      onSuccess?.();
+    });
+  }
+
+  const idPrefix = mode;
+  const headerText = mode === 'create' ? content.announcements.create : content.announcements.edit;
+  const submitText = mode === 'create' ? content.announcements.create : common.save;
+
+  if (!mounted) return null;
+
+  return (
+    <Drawer open={open} onOpenChange={handleOpenChange} direction={isMobile ? 'bottom' : 'right'}>
+      <DrawerContent
+        className={isMobile ? 'max-h-(--drawer-height-md)' : 'w-(--drawer-width-sidebar)'}
+      >
+        <DrawerHeader>
+          <DrawerTitle>{headerText}</DrawerTitle>
+        </DrawerHeader>
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4">
+          <FloatingField
+            label={content.announcements.titleLabel}
+            htmlFor={`${idPrefix}-announcement-title`}
+            hasValue={!!title}
+          >
+            <Input
+              id={`${idPrefix}-announcement-title`}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder=" "
+            />
+          </FloatingField>
+          <FloatingField
+            label={content.announcements.bodyLabel}
+            htmlFor={`${idPrefix}-announcement-body`}
+            hasValue={!!body}
+            maxLength={500}
+          >
+            <Textarea
+              id={`${idPrefix}-announcement-body`}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder=" "
+              rows={4}
+              maxLength={500}
+            />
+          </FloatingField>
+          <FloatingField
+            label={content.announcements.typeLabel}
+            htmlFor={`${idPrefix}-announcement-type`}
+            hasValue={true}
+          >
+            <Select
+              value={announcementType}
+              onValueChange={(v) => setAnnouncementType(v as AnnouncementType)}
+              items={Object.fromEntries(
+                announcementTypes.map((t) => [t, content.announcements.typeOptions[t]]),
+              )}
+            >
+              <SelectTrigger id={`${idPrefix}-announcement-type`}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {announcementTypes.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {content.announcements.typeOptions[type]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FloatingField>
+          <div className="flex items-center justify-between">
+            <Label htmlFor={`${idPrefix}-dismissible-toggle`}>
+              {content.announcements.dismissibleLabel}
+            </Label>
+            <Switch
+              id={`${idPrefix}-dismissible-toggle`}
+              checked={isDismissible}
+              onCheckedChange={setIsDismissible}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor={`${idPrefix}-pinned-toggle`}>{content.announcements.pinToTop}</Label>
+            <Switch
+              id={`${idPrefix}-pinned-toggle`}
+              checked={isPinned}
+              onCheckedChange={setIsPinned}
+            />
+          </div>
+          <FloatingField
+            label={content.announcements.expiryLabel}
+            htmlFor={`${idPrefix}-announcement-expiry`}
+            hasValue={!!expiresAt}
+            helperText={content.announcements.expiryDescription}
+          >
+            <DatePicker
+              id={`${idPrefix}-announcement-expiry`}
+              value={expiresAt}
+              onChange={setExpiresAt}
+            />
+          </FloatingField>
+        </div>
+        <DrawerFooter>
+          <Button onClick={handleSubmit} disabled={isPending || !title.trim() || !body.trim()}>
+            {submitText}
+          </Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            {common.cancel}
+          </Button>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }
 
@@ -511,156 +615,42 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
 
 interface CreateAnnouncementButtonProps {
   clubId: string;
+  trigger?: React.ReactNode;
+  onSuccess?: () => void;
 }
 
-export function CreateAnnouncementButton({ clubId }: CreateAnnouncementButtonProps) {
-  const isMobile = useIsMobile();
-  const [mounted, setMounted] = useState(false);
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
-  useEffect(() => setMounted(true), []);
-
+export function CreateAnnouncementButton({
+  clubId,
+  trigger,
+  onSuccess,
+}: CreateAnnouncementButtonProps) {
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
-  const [announcementType, setAnnouncementType] = useState<AnnouncementType>('info');
-  const [isDismissible, setIsDismissible] = useState(true);
-  const [expiresAt, setExpiresAt] = useState('');
-  const [isPending, startTransition] = useTransition();
-
-  function resetForm() {
-    setTitle('');
-    setBody('');
-    setAnnouncementType('info');
-    setIsDismissible(true);
-    setExpiresAt('');
-  }
-
-  function handleOpenChange(isOpen: boolean) {
-    setOpen(isOpen);
-    if (!isOpen) resetForm();
-  }
-
-  function handleSubmit() {
-    if (!title.trim() || !body.trim()) return;
-    startTransition(async () => {
-      const result = await createAnnouncement(clubId, {
-        title,
-        body,
-        announcement_type: announcementType,
-        is_dismissible: isDismissible,
-        expires_at: expiresAt || null,
-      });
-      if (result?.error) {
-        toast.error(result.error);
-        return;
-      }
-      setOpen(false);
-      resetForm();
-    });
-  }
 
   return (
     <>
-      <Button size="sm" onClick={() => setOpen(true)} disabled={isPending}>
-        <Plus className="mr-1.5 h-4 w-4" />
-        {content.announcements.create}
-      </Button>
-
-      {mounted && (
-        <Drawer
-          open={open}
-          onOpenChange={handleOpenChange}
-          direction={isMobile ? 'bottom' : 'right'}
+      {trigger ? (
+        <span
+          onClick={() => setOpen(true)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && setOpen(true)}
         >
-          <DrawerContent
-            className={isMobile ? 'max-h-(--drawer-height-md)' : 'w-(--drawer-width-sidebar)'}
-          >
-            <DrawerHeader>
-              <DrawerTitle>{content.announcements.create}</DrawerTitle>
-            </DrawerHeader>
-            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4">
-              <FloatingField
-                label={content.announcements.titleLabel}
-                htmlFor="create-announcement-title"
-                hasValue={!!title}
-              >
-                <Input
-                  id="create-announcement-title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder=" "
-                />
-              </FloatingField>
-              <FloatingField
-                label={content.announcements.bodyLabel}
-                htmlFor="create-announcement-body"
-                hasValue={!!body}
-                maxLength={500}
-              >
-                <Textarea
-                  id="create-announcement-body"
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  placeholder=" "
-                  rows={4}
-                  maxLength={500}
-                />
-              </FloatingField>
-              <FloatingField
-                label={content.announcements.typeLabel}
-                htmlFor="create-announcement-type"
-                hasValue={true}
-              >
-                <Select
-                  value={announcementType}
-                  onValueChange={(v) => setAnnouncementType(v as AnnouncementType)}
-                  items={Object.fromEntries(
-                    announcementTypes.map((t) => [t, content.announcements.typeOptions[t]]),
-                  )}
-                >
-                  <SelectTrigger id="create-announcement-type">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {announcementTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {content.announcements.typeOptions[type]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FloatingField>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="create-dismissible-toggle">
-                  {content.announcements.dismissibleLabel}
-                </Label>
-                <Switch
-                  id="create-dismissible-toggle"
-                  checked={isDismissible}
-                  onCheckedChange={setIsDismissible}
-                />
-              </div>
-              <FloatingField
-                label={content.announcements.expiryLabel}
-                htmlFor="create-announcement-expiry"
-                hasValue={!!expiresAt}
-                helperText={content.announcements.expiryDescription}
-              >
-                <DatePicker
-                  id="create-announcement-expiry"
-                  value={expiresAt}
-                  onChange={setExpiresAt}
-                />
-              </FloatingField>
-            </div>
-            <DrawerFooter>
-              <Button onClick={handleSubmit} disabled={isPending || !title.trim() || !body.trim()}>
-                {content.announcements.create}
-              </Button>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
+          {trigger}
+        </span>
+      ) : (
+        <Button size="sm" onClick={() => setOpen(true)}>
+          <Plus className="mr-1.5 h-4 w-4" />
+          {content.announcements.create}
+        </Button>
       )}
+
+      <AnnouncementFormDrawer
+        open={open}
+        onOpenChange={setOpen}
+        mode="create"
+        clubId={clubId}
+        onSuccess={onSuccess}
+      />
     </>
   );
 }
