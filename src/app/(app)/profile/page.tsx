@@ -1,23 +1,20 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { Path, CaretRight, SignOut } from '@phosphor-icons/react/dist/ssr';
+import { Path, CaretRight, Bicycle, ArrowUp, ArrowDown } from '@phosphor-icons/react/dist/ssr';
 import { createClient, getUser } from '@/lib/supabase/server';
-import { signOut } from '@/lib/auth/actions';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AppearanceSetting } from '@/components/settings/appearance-setting';
-import { IntegrationsSetting } from '@/components/settings/integrations-setting';
+import { ContentCard } from '@/components/ui/content-card';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { getInitials } from '@/lib/utils';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
-import { ContentCard } from '@/components/ui/content-card';
 import { dateFormats, units } from '@/config/formatting';
 import { getUserProfile, getUserProfileStats, getUserRecentRides } from '@/lib/profile/queries';
-import { getUserConnections } from '@/lib/integrations/queries';
 import { ProfileAvatarEditor } from '@/components/profile/profile-avatar-editor';
-import { ProfileDetailsForm } from '@/components/profile/profile-details-form';
+import { ProfileAboutSection } from '@/components/profile/profile-about-section';
+import { ProfilePaceSection } from '@/components/profile/profile-pace-section';
+import { ProfileContactSection } from '@/components/profile/profile-contact-section';
 
 const { profile: content } = appContent;
 
@@ -27,11 +24,10 @@ export default async function ProfilePage() {
 
   const supabase = await createClient();
 
-  const [profile, stats, recentRides, connections, { data: paceGroups }] = await Promise.all([
+  const [profile, stats, recentRides, { data: paceGroups }] = await Promise.all([
     getUserProfile(authUser.id),
     getUserProfileStats(authUser.id),
     getUserRecentRides(authUser.id),
-    getUserConnections(authUser.id),
     supabase.from('pace_groups').select('id, name').order('sort_order', { ascending: true }),
   ]);
 
@@ -52,15 +48,17 @@ export default async function ProfilePage() {
           initials={initials}
         />
         <h1 className="mt-4 text-2xl font-bold tracking-tight text-foreground">{displayName}</h1>
-        <p className="text-sm text-muted-foreground">{profile.email}</p>
+        <p className="text-sm text-muted-foreground">
+          {content.sections.memberSince} {memberSince}
+        </p>
         <Badge variant="default" className="mt-2">
           {content.roles[role] ?? role}
         </Badge>
       </div>
 
-      {/* Stat Strip */}
+      {/* Stat Strip — 2 columns: Total Rides | Rides This Month + delta */}
       <ContentCard className="mt-8" padding="compact">
-        <div className="grid grid-cols-3 divide-x divide-border">
+        <div className="grid grid-cols-2 divide-x divide-border">
           <div className="flex flex-col items-center px-2">
             <span className="font-mono text-xl font-bold tabular-nums text-foreground">
               {stats.totalRides}
@@ -69,50 +67,56 @@ export default async function ProfilePage() {
               {content.stats.totalRides}
             </p>
           </div>
-          <div className="flex flex-col items-center px-2">
-            <span className="font-mono text-xl font-bold tabular-nums text-foreground">
-              {stats.ridesThisMonth}
-            </span>
-            <p className="text-sm font-medium text-muted-foreground mt-1.5 text-center">
-              {content.stats.thisMonth}
-            </p>
-          </div>
-          <div className="flex flex-col items-center px-2">
-            <span className="font-mono text-xl font-bold tabular-nums text-foreground">
-              {memberSince}
-            </span>
-            <p className="text-sm font-medium text-muted-foreground mt-1.5 text-center">
-              {content.sections.memberSince}
-            </p>
+          <div className="flex flex-col items-center gap-2 px-2">
+            <div className="flex flex-col items-center">
+              <span className="font-mono text-xl font-bold tabular-nums text-foreground">
+                {stats.ridesThisMonth}
+              </span>
+              <p className="text-sm font-medium text-muted-foreground mt-1.5 text-center">
+                {content.stats.thisMonth}
+              </p>
+            </div>
+            {stats.ridesThisMonth !== stats.ridesLastMonth && (
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                  stats.ridesThisMonth > stats.ridesLastMonth
+                    ? 'bg-feedback-success-bg text-feedback-success-text'
+                    : 'bg-feedback-warning-bg text-feedback-warning-text'
+                }`}
+              >
+                {stats.ridesThisMonth > stats.ridesLastMonth ? (
+                  <ArrowUp className="h-3 w-3" weight="bold" />
+                ) : (
+                  <ArrowDown className="h-3 w-3" weight="bold" />
+                )}
+                {content.stats.delta(stats.ridesThisMonth - stats.ridesLastMonth)}
+              </span>
+            )}
           </div>
         </div>
       </ContentCard>
 
-      {/* Editable profile details */}
-      <div className="mt-8">
-        <ProfileDetailsForm
-          bio={profile.bio ?? ''}
-          preferredPaceGroup={profile.preferred_pace_group ?? ''}
-          emergencyContactName={profile.emergency_contact_name ?? ''}
-          emergencyContactPhone={profile.emergency_contact_phone ?? ''}
-          paceGroups={paceGroups ?? []}
-        />
-      </div>
+      {/* About — inline editable */}
+      <ProfileAboutSection bio={profile.bio ?? ''} />
 
-      {/* Appearance */}
-      <div className="mt-8">
-        <AppearanceSetting />
-      </div>
+      {/* Pace Group — inline editable */}
+      <ProfilePaceSection
+        preferredPaceGroup={profile.preferred_pace_group ?? ''}
+        paceGroups={paceGroups ?? []}
+      />
 
-      {/* Connected Services — only for leaders and admins (used for ride import) */}
-      {(role === 'ride_leader' || role === 'admin') && (
-        <div className="mt-8">
-          <IntegrationsSetting connections={connections} />
-        </div>
-      )}
+      {/* Contact Information + Emergency Contact — inline editable */}
+      <ProfileContactSection
+        fullName={profile.full_name}
+        email={profile.email}
+        phoneNumber={profile.phone_number ?? ''}
+        emergencyName={profile.emergency_contact_name ?? ''}
+        emergencyPhone={profile.emergency_contact_phone ?? ''}
+        emergencyRelationship={profile.emergency_contact_relationship ?? ''}
+      />
 
-      {/* Recent Rides */}
-      <ContentCard heading={content.recentRides} className="mt-8">
+      {/* Ride History */}
+      <ContentCard className="mt-8" icon={Bicycle} heading={content.recentRides}>
         {recentRides.length === 0 ? (
           <p className="text-base text-muted-foreground">{content.noRidesYet}</p>
         ) : (
@@ -144,16 +148,6 @@ export default async function ProfilePage() {
           </div>
         )}
       </ContentCard>
-
-      {/* Sign Out */}
-      <div className="mt-12 flex justify-center">
-        <form action={signOut}>
-          <Button type="submit" variant="ghost" size="sm" className="text-muted-foreground">
-            <SignOut className="h-4 w-4" />
-            {content.signOut}
-          </Button>
-        </form>
-      </div>
     </DashboardShell>
   );
 }

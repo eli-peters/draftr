@@ -27,6 +27,8 @@ interface AppShellProps {
   banner?: React.ReactNode;
   /** When true, the sidebar shows expandable admin sub-navigation. */
   isAdmin?: boolean;
+  /** User's role label for the avatar menu. */
+  userRole?: string;
 }
 
 export function AppShell({
@@ -37,6 +39,7 @@ export function AppShell({
   unreadNotificationCount,
   banner,
   isAdmin = false,
+  userRole = 'rider',
 }: AppShellProps) {
   const pathname = usePathname();
   const isHome = pathname === routes.home;
@@ -64,6 +67,7 @@ export function AppShell({
         notifications={notifications ?? []}
         unreadNotificationCount={unreadNotificationCount ?? 0}
         isAdmin={isAdmin}
+        userRole={userRole}
       />
 
       <div className="flex flex-1 overflow-x-clip md:flex-row md:gap-3 md:p-3">

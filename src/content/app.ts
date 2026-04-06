@@ -36,6 +36,14 @@ export const appContent = {
     notificationsBadge: (count: string) => `Notifications, ${count} unread`,
   },
 
+  avatarMenu: {
+    myProfile: 'My Profile',
+    settings: 'Settings',
+    signOut: 'Sign Out',
+    signOutConfirm: 'Sign out of Draftr?',
+    signOutConfirmAction: 'Sign Out',
+  },
+
   auth: {
     signIn: {
       heading: 'Welcome to Draftr',
@@ -521,15 +529,26 @@ export const appContent = {
       thisMonth: 'This Month',
       distance: 'Distance',
       elevation: 'Elevation',
+      delta: (change: number) => `${change > 0 ? '+' : ''}${change} vs last month`,
     },
     noBio: 'No bio yet',
+    bioSaved: 'Bio updated',
+    paceSaved: 'Pace preference updated',
     sections: {
       about: 'About',
+      contactInfo: 'Contact information',
       preferences: 'Preferences',
       paceGroup: 'Preferred Pace',
       memberSince: 'Member since',
       role: 'Role',
       emergencyContact: 'Emergency Contact',
+    },
+    contactInfo: {
+      nameLabel: 'Name',
+      phoneLabel: 'Phone',
+      emailLabel: 'Email',
+      noPhone: 'No phone number set',
+      saved: 'Contact info updated',
     },
     emergencyContact: {
       nameLabel: 'Emergency Contact Name',
@@ -539,8 +558,15 @@ export const appContent = {
       phonePrefix: '+1',
       phoneInputPlaceholder: '555-123-4567',
       phoneInvalidError: 'Please enter a valid 10-digit phone number',
+      relationshipLabel: 'Relationship',
+      relationshipPlaceholder: 'e.g. Spouse, Parent, Partner',
       noContact: 'No emergency contact set',
+      saved: 'Emergency contact updated',
       visibilityNote: 'Only visible to ride leaders and admins',
+    },
+    emergencyAccess: {
+      banner: (rideName: string, expiresTime: string) =>
+        `Visible as ride leader for ${rideName} \u00b7 access expires ${expiresTime}`,
     },
     avatar: {
       uploadButton: 'Change Photo',
@@ -563,6 +589,19 @@ export const appContent = {
   },
 
   settings: {
+    heading: 'Settings',
+    preferencesGroup: 'Preferences',
+    connectionsGroup: 'Connections',
+    signOut: 'Sign Out',
+    signOutDescription: 'You can always sign back in later.',
+    notifications: {
+      heading: 'Notifications',
+      description: 'Ride reminders on',
+      descriptionOff: 'Ride reminders off',
+    },
+    account: {
+      heading: 'Account',
+    },
     appearance: {
       heading: 'Appearance',
       options: {
@@ -767,6 +806,32 @@ export const appContent = {
       upTo: (max: number, unit: string) => `up to ${max} ${unit}`,
       minPlaceholder: 'min',
       maxPlaceholder: 'max',
+    },
+    adminMetadata: {
+      heading: 'Admin',
+      roleLabel: 'Role',
+      statusLabel: 'Status',
+      notesLabel: 'Admin Notes',
+      notesPlaceholder: 'Internal notes about this member...',
+      joined: 'Joined',
+      lastActive: 'Last Active',
+      neverActive: 'Never',
+      confirmRoleChange: (name: string, newRole: string) => `Change ${name}'s role to ${newRole}?`,
+      confirmRoleDescription: (newRole: string) =>
+        newRole === 'ride_leader'
+          ? "They'll gain access to ride management tools."
+          : newRole === 'admin'
+            ? "They'll gain full club management access."
+            : "They'll lose management permissions.",
+      confirmStatusChange: (name: string, newStatus: string) =>
+        `${newStatus === 'inactive' ? 'Deactivate' : 'Reactivate'} ${name}?`,
+      confirmStatusDescription: (newStatus: string) =>
+        newStatus === 'inactive'
+          ? 'They will lose access to the app.'
+          : 'They will regain access to the app.',
+      roleUpdated: 'Role updated',
+      statusUpdated: 'Status updated',
+      notesSaved: 'Notes saved',
     },
     memberActions: {
       searchPlaceholder: 'Search members...',

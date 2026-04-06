@@ -21,8 +21,8 @@ export async function GET(request: Request) {
   const state = searchParams.get('state');
   const oauthError = searchParams.get('error');
 
-  const errorRedirect = `${origin}${routes.profile}?integration=${SERVICE}&status=error`;
-  const successRedirect = `${origin}${routes.profile}?integration=${SERVICE}&status=connected`;
+  const errorRedirect = `${origin}${routes.settings}?integration=${SERVICE}&status=error`;
+  const successRedirect = `${origin}${routes.settings}?integration=${SERVICE}&status=connected`;
 
   // User denied access
   if (oauthError) {

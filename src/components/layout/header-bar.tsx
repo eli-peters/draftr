@@ -19,6 +19,7 @@ interface HeaderBarProps {
   notifications: Notification[];
   unreadNotificationCount: number;
   isAdmin?: boolean;
+  userRole?: string;
 }
 
 /**
@@ -34,6 +35,7 @@ export function HeaderBar({
   notifications,
   unreadNotificationCount,
   isAdmin = false,
+  userRole = 'rider',
 }: HeaderBarProps) {
   const pathname = usePathname();
   const isMobile = useIsMobile();
@@ -67,6 +69,7 @@ export function HeaderBar({
           userEmail={userEmail}
           userInitials={userInitials}
           avatarUrl={avatarUrl}
+          userRole={userRole}
         />
       </div>
     </header>

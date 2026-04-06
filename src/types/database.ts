@@ -26,8 +26,10 @@ export interface User {
   full_name: string;
   avatar_url: string | null;
   bio: string | null;
+  phone_number: string | null;
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
+  emergency_contact_relationship: string | null;
   preferred_pace_group: string | null;
   notification_preferences: {
     push: boolean;
@@ -51,6 +53,8 @@ export interface ClubMembership {
   status: MemberStatus;
   oca_registered: boolean;
   waiver_signed_at: string | null;
+  admin_notes: string | null;
+  incident_override: boolean;
   joined_at: string;
 }
 

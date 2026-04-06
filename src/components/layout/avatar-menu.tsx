@@ -1,21 +1,63 @@
-import Link from 'next/link';
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { UserCircle, GearSix, SignOut } from '@phosphor-icons/react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import {
+  Drawer,
+  DrawerTrigger,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerClose,
+} from '@/components/ui/drawer';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogClose,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-is-mobile';
+import { signOut } from '@/lib/auth/actions';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 
-const { header } = appContent;
+const { avatarMenu: content, profile: profileContent } = appContent;
 
 interface AvatarMenuProps {
   userName: string;
   userEmail: string;
   userInitials: string;
   avatarUrl: string | null;
+  userRole: string;
 }
 
 /**
- * Header avatar that links directly to the profile page.
+ * Header avatar menu.
+ * Desktop: dropdown menu. Mobile: bottom sheet drawer.
+ * Shows My Profile, Settings, and Sign Out.
  */
-export function AvatarMenu({ userName, userInitials, avatarUrl }: AvatarMenuProps) {
+export function AvatarMenu({ userName, userInitials, avatarUrl, userRole }: AvatarMenuProps) {
+  const isMobile = useIsMobile();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const roleLabel = profileContent.roles[userRole as keyof typeof profileContent.roles] ?? userRole;
+
   const avatarElement = (
     <Avatar className="h-9 w-9 after:border-border-strong">
       {avatarUrl && <AvatarImage src={avatarUrl} alt={userName} />}
@@ -25,13 +67,143 @@ export function AvatarMenu({ userName, userInitials, avatarUrl }: AvatarMenuProp
     </Avatar>
   );
 
+  const headerBlock = (
+    <div className="flex items-center gap-3">
+      <Avatar className="h-10 w-10">
+        {avatarUrl && <AvatarImage src={avatarUrl} alt={userName} />}
+        <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
+          {userInitials}
+        </AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 text-left">
+        <p className="text-sm font-medium text-foreground truncate">{userName}</p>
+        <p className="text-xs text-muted-foreground">{roleLabel}</p>
+      </div>
+    </div>
+  );
+
+  function handleNavigate(path: string) {
+    setOpen(false);
+    router.push(path);
+  }
+
+  function handleSignOut() {
+    setOpen(false);
+    setConfirmOpen(true);
+  }
+
+  const signOutConfirmDialog = (
+    <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{content.signOutConfirm}</AlertDialogTitle>
+          <AlertDialogDescription>{appContent.settings.signOutDescription}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogClose>
+            <Button variant="outline">{appContent.common.cancel}</Button>
+          </AlertDialogClose>
+          <form action={signOut}>
+            <Button type="submit" variant="destructive">
+              {content.signOutConfirmAction}
+            </Button>
+          </form>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
+  // Mobile: bottom sheet drawer
+  if (isMobile) {
+    return (
+      <>
+        <Drawer open={open} onOpenChange={setOpen}>
+          <DrawerTrigger asChild>
+            <button
+              type="button"
+              className="flex items-center justify-center rounded-full p-0.5 ring-offset-primary transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              aria-label={appContent.header.profileMenu}
+            >
+              {avatarElement}
+            </button>
+          </DrawerTrigger>
+          <DrawerContent showCloseButton={false}>
+            <DrawerHeader>
+              <DrawerTitle className="sr-only">{appContent.header.profileMenu}</DrawerTitle>
+              <DrawerDescription className="sr-only">
+                {appContent.header.profileMenu}
+              </DrawerDescription>
+              {headerBlock}
+            </DrawerHeader>
+            <div className="flex flex-col gap-1 px-4 pb-6">
+              <DrawerClose asChild>
+                <button
+                  type="button"
+                  onClick={() => handleNavigate(routes.profile)}
+                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                >
+                  <UserCircle className="size-5 text-muted-foreground" />
+                  {content.myProfile}
+                </button>
+              </DrawerClose>
+              <DrawerClose asChild>
+                <button
+                  type="button"
+                  onClick={() => handleNavigate(routes.settings)}
+                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                >
+                  <GearSix className="size-5 text-muted-foreground" />
+                  {content.settings}
+                </button>
+              </DrawerClose>
+              <div className="my-1 h-px bg-border" />
+              <DrawerClose asChild>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+                >
+                  <SignOut className="size-5" />
+                  {content.signOut}
+                </button>
+              </DrawerClose>
+            </div>
+          </DrawerContent>
+        </Drawer>
+        {signOutConfirmDialog}
+      </>
+    );
+  }
+
+  // Desktop: dropdown menu
   return (
-    <Link
-      href={routes.profile}
-      className="rounded-full ring-offset-primary transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-      aria-label={header.profileMenu}
-    >
-      {avatarElement}
-    </Link>
+    <>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger
+          className="flex items-center justify-center rounded-full p-0.5 ring-offset-primary transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          render={<button type="button" aria-label={appContent.header.profileMenu} />}
+        >
+          {avatarElement}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="bottom" align="end" sideOffset={8} className="w-56">
+          <div className="px-3 py-2.5">{headerBlock}</div>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => handleNavigate(routes.profile)}>
+            <UserCircle className="size-4" />
+            {content.myProfile}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleNavigate(routes.settings)}>
+            <GearSix className="size-4" />
+            {content.settings}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive" onClick={handleSignOut}>
+            <SignOut className="size-4" />
+            {content.signOut}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {signOutConfirmDialog}
+    </>
   );
 }

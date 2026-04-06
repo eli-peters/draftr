@@ -16,8 +16,8 @@ export async function GET(request: Request) {
   const state = searchParams.get('state');
   const stravaError = searchParams.get('error');
 
-  const errorRedirect = `${origin}${routes.profile}?integration=strava&status=error`;
-  const successRedirect = `${origin}${routes.profile}?integration=strava&status=connected`;
+  const errorRedirect = `${origin}${routes.settings}?integration=strava&status=error`;
+  const successRedirect = `${origin}${routes.settings}?integration=strava&status=connected`;
 
   // User denied access on Strava
   if (stravaError) {

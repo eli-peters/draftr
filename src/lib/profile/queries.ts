@@ -6,8 +6,10 @@ export interface UserProfile {
   email: string;
   avatar_url: string | null;
   bio: string | null;
+  phone_number: string | null;
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
+  emergency_contact_relationship: string | null;
   preferred_pace_group: string | null;
   created_at: string;
   role: string;
@@ -23,7 +25,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   const { data: user } = await supabase
     .from('users')
     .select(
-      'id, full_name, email, avatar_url, bio, emergency_contact_name, emergency_contact_phone, preferred_pace_group, created_at',
+      'id, full_name, email, avatar_url, bio, phone_number, emergency_contact_name, emergency_contact_phone, emergency_contact_relationship, preferred_pace_group, created_at',
     )
     .eq('id', userId)
     .single();
@@ -49,6 +51,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
 export interface ProfileStats {
   totalRides: number;
   ridesThisMonth: number;
+  ridesLastMonth: number;
 }
 
 /**
@@ -81,9 +84,25 @@ export async function getUserProfileStats(userId: string): Promise<ProfileStats>
     .gte('ride.ride_date', monthStartStr)
     .lt('ride.ride_date', today);
 
+  // Rides last month (for delta badge)
+  const lastMonthEnd = new Date(monthStart);
+  lastMonthEnd.setDate(lastMonthEnd.getDate() - 1);
+  const lastMonthStart = new Date(lastMonthEnd.getFullYear(), lastMonthEnd.getMonth(), 1);
+  const lastMonthStartStr = lastMonthStart.toISOString().split('T')[0];
+  const lastMonthEndStr = new Date(lastMonthEnd.getTime() + 86400000).toISOString().split('T')[0];
+
+  const { count: ridesLastMonth } = await supabase
+    .from('ride_signups')
+    .select('*, ride:rides!inner(ride_date)', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .in('status', ['confirmed', 'checked_in'])
+    .gte('ride.ride_date', lastMonthStartStr)
+    .lt('ride.ride_date', lastMonthEndStr);
+
   return {
     totalRides: totalRides ?? 0,
     ridesThisMonth: ridesThisMonth ?? 0,
+    ridesLastMonth: ridesLastMonth ?? 0,
   };
 }
 

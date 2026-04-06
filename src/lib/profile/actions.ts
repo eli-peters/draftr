@@ -10,12 +10,16 @@ const { common, errors, profile: profileContent } = appContent;
 interface UpdateProfileData {
   bio?: string;
   preferred_pace_group?: string;
+  phone_number?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
+  emergency_contact_relationship?: string;
 }
 
 /**
  * Update the current user's profile.
+ * Only updates fields that are explicitly provided — per-section editing
+ * sends only the fields belonging to that section.
  */
 export async function updateProfile(data: UpdateProfileData) {
   const supabase = await createClient();
@@ -23,27 +27,78 @@ export async function updateProfile(data: UpdateProfileData) {
 
   if (!user) return { error: common.notAuthenticated };
 
-  let normalizedPhone = data.emergency_contact_phone || null;
-  if (normalizedPhone) {
-    normalizedPhone = toE164(normalizedPhone);
-    if (!normalizedPhone) return { error: profileContent.emergencyContact.phoneInvalidError };
+  // Build the update payload from provided fields only
+  const updates: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if ('bio' in data) {
+    updates.bio = data.bio || null;
   }
+  if ('preferred_pace_group' in data) {
+    updates.preferred_pace_group = data.preferred_pace_group || null;
+  }
+  if ('phone_number' in data) {
+    let normalized = data.phone_number || null;
+    if (normalized) {
+      normalized = toE164(normalized);
+      if (!normalized) return { error: profileContent.emergencyContact.phoneInvalidError };
+    }
+    updates.phone_number = normalized;
+  }
+  if ('emergency_contact_name' in data) {
+    updates.emergency_contact_name = data.emergency_contact_name || null;
+  }
+  if ('emergency_contact_phone' in data) {
+    let normalized = data.emergency_contact_phone || null;
+    if (normalized) {
+      normalized = toE164(normalized);
+      if (!normalized) return { error: profileContent.emergencyContact.phoneInvalidError };
+    }
+    updates.emergency_contact_phone = normalized;
+  }
+  if ('emergency_contact_relationship' in data) {
+    updates.emergency_contact_relationship = data.emergency_contact_relationship || null;
+  }
+
+  const { error } = await supabase.from('users').update(updates).eq('id', user.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/profile');
+  revalidatePath('/');
+  return { success: true };
+}
+
+/**
+ * Toggle push notification preference.
+ */
+export async function updateNotificationPreference(pushEnabled: boolean) {
+  const supabase = await createClient();
+  const user = await getUser();
+
+  if (!user) return { error: common.notAuthenticated };
+
+  // Fetch current preferences to preserve other fields
+  const { data: current } = await supabase
+    .from('users')
+    .select('notification_preferences')
+    .eq('id', user.id)
+    .single();
+
+  const prefs = (current?.notification_preferences as Record<string, unknown>) ?? {};
 
   const { error } = await supabase
     .from('users')
     .update({
-      bio: data.bio || null,
-      preferred_pace_group: data.preferred_pace_group || null,
-      emergency_contact_name: data.emergency_contact_name || null,
-      emergency_contact_phone: normalizedPhone,
+      notification_preferences: { ...prefs, push: pushEnabled },
       updated_at: new Date().toISOString(),
     })
     .eq('id', user.id);
 
   if (error) return { error: error.message };
 
-  revalidatePath('/profile');
-  revalidatePath('/');
+  revalidatePath('/settings');
   return { success: true };
 }
 

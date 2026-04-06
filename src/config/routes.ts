@@ -51,6 +51,7 @@ export const routes = {
   manageTab: (tab: string) => `/manage/rides?tab=${tab}`,
   profile: '/profile',
   publicProfile: (userId: string) => `/profile/${userId}`,
+  settings: '/settings',
   notifications: '/notifications',
   stravaCallback: '/api/integrations/strava/callback',
   rwgpsCallback: '/api/integrations/ridewithgps/callback',

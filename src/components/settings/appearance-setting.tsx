@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { Monitor, Sun, Moon } from '@phosphor-icons/react/dist/ssr';
-import { Button } from '@/components/ui/button';
 import { ContentCard } from '@/components/ui/content-card';
 import { useTheme } from '@/components/theme-provider';
 import { appContent } from '@/content/app';
@@ -26,28 +25,36 @@ export function AppearanceSetting() {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
   useEffect(() => setMounted(true), []);
 
-  // Before hydration, treat all buttons as unselected to avoid mismatch
   const activeMode = mounted ? colorMode : null;
 
   return (
     <ContentCard padding="compact" heading={content.heading}>
-      <div className="inline-flex rounded-lg bg-muted p-1">
-        {options.map(({ value, label, icon: Icon }) => (
-          <Button
-            key={value}
-            variant="ghost"
-            size="sm"
-            onClick={() => setColorMode(value)}
-            className={cn(
-              activeMode === value
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground',
-            )}
-          >
-            <Icon weight={activeMode === value ? 'fill' : undefined} className="h-4 w-4" />
-            {label}
-          </Button>
-        ))}
+      <div
+        role="radiogroup"
+        aria-label={content.heading}
+        className="inline-flex items-center rounded-full bg-tabs-list-bg p-1"
+      >
+        {options.map(({ value, label, icon: Icon }) => {
+          const isActive = activeMode === value;
+          return (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={isActive}
+              onClick={() => setColorMode(value)}
+              className={cn(
+                'relative inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-[color,background-color,box-shadow] duration-(--duration-normal) ease-(--ease-out)',
+                isActive
+                  ? 'bg-tabs-trigger-active-bg text-tabs-trigger-active-text shadow-sm'
+                  : 'text-tabs-trigger-text hover:bg-black/5 dark:hover:bg-white/8',
+              )}
+            >
+              <Icon weight={isActive ? 'fill' : undefined} className="h-4 w-4" />
+              {label}
+            </button>
+          );
+        })}
       </div>
     </ContentCard>
   );
