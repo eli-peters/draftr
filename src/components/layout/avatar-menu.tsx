@@ -16,6 +16,7 @@ import {
   DrawerTrigger,
   DrawerContent,
   DrawerHeader,
+  DrawerBody,
   DrawerTitle,
   DrawerDescription,
   DrawerClose,
@@ -134,7 +135,7 @@ export function AvatarMenu({ userName, userInitials, avatarUrl, userRole }: Avat
               </DrawerDescription>
               {headerBlock}
             </DrawerHeader>
-            <div className="flex flex-col gap-1 px-4 pb-6">
+            <DrawerBody className="flex flex-col gap-1 pb-5">
               <DrawerClose asChild>
                 <Button
                   variant="ghost"
@@ -169,7 +170,7 @@ export function AvatarMenu({ userName, userInitials, avatarUrl, userRole }: Avat
                   {content.signOut}
                 </Button>
               </DrawerClose>
-            </div>
+            </DrawerBody>
           </DrawerContent>
         </Drawer>
         {signOutConfirmDialog}

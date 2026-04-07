@@ -7,14 +7,13 @@ import { useIsMobile } from '@/hooks/use-is-mobile';
 import { cancelRide } from '@/lib/rides/actions';
 import { Button } from '@/components/ui/button';
 import {
-  Drawer,
-  DrawerContent,
   DrawerHeader,
   DrawerTitle,
   DrawerDescription,
   DrawerFooter,
   DrawerClose,
 } from '@/components/ui/drawer';
+import { ResponsiveDrawer } from '@/components/ui/responsive-drawer';
 import {
   Dialog,
   DialogContent,
@@ -79,7 +78,7 @@ export function SoleLeaderDialog({
 
   if (isMobile) {
     return (
-      <Drawer
+      <ResponsiveDrawer
         open={localOpen}
         onOpenChange={(o) => {
           if (!o) {
@@ -87,45 +86,44 @@ export function SoleLeaderDialog({
             onDismissComplete();
           }
         }}
+        size="auto"
       >
-        <DrawerContent>
-          {step === 'options' && (
-            <>
-              <DrawerHeader>
-                <DrawerTitle>{actionBar.soleLeaderTitle}</DrawerTitle>
-                <DrawerDescription>{actionBar.soleLeaderDescription}</DrawerDescription>
-              </DrawerHeader>
-              <DrawerFooter>
-                <Button variant="default" onClick={() => router.push(editUrl)}>
-                  {actionBar.soleLeaderAddCoLeader}
-                </Button>
-                <Button variant="destructive" onClick={() => setStep('confirm-cancel')}>
-                  {actionBar.soleLeaderCancelRide}
-                </Button>
-                <DrawerClose asChild>
-                  <Button variant="ghost">{actionBar.soleLeaderDismiss}</Button>
-                </DrawerClose>
-              </DrawerFooter>
-            </>
-          )}
-          {step === 'confirm-cancel' && (
-            <>
-              <DrawerHeader>
-                <DrawerTitle>{actionBar.soleLeaderConfirmCancelTitle}</DrawerTitle>
-                <DrawerDescription>{cancelDescription}</DrawerDescription>
-              </DrawerHeader>
-              <DrawerFooter>
-                <Button variant="destructive" onClick={handleCancelRide} disabled={isPending}>
-                  {isPending ? appContent.common.loading : actionBar.soleLeaderConfirmCancel}
-                </Button>
-                <Button variant="ghost" onClick={() => setStep('options')} disabled={isPending}>
-                  {actionBar.soleLeaderDismiss}
-                </Button>
-              </DrawerFooter>
-            </>
-          )}
-        </DrawerContent>
-      </Drawer>
+        {step === 'options' && (
+          <>
+            <DrawerHeader>
+              <DrawerTitle>{actionBar.soleLeaderTitle}</DrawerTitle>
+              <DrawerDescription>{actionBar.soleLeaderDescription}</DrawerDescription>
+            </DrawerHeader>
+            <DrawerFooter>
+              <Button variant="default" onClick={() => router.push(editUrl)}>
+                {actionBar.soleLeaderAddCoLeader}
+              </Button>
+              <Button variant="destructive" onClick={() => setStep('confirm-cancel')}>
+                {actionBar.soleLeaderCancelRide}
+              </Button>
+              <DrawerClose asChild>
+                <Button variant="ghost">{actionBar.soleLeaderDismiss}</Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </>
+        )}
+        {step === 'confirm-cancel' && (
+          <>
+            <DrawerHeader>
+              <DrawerTitle>{actionBar.soleLeaderConfirmCancelTitle}</DrawerTitle>
+              <DrawerDescription>{cancelDescription}</DrawerDescription>
+            </DrawerHeader>
+            <DrawerFooter>
+              <Button variant="destructive" onClick={handleCancelRide} disabled={isPending}>
+                {isPending ? appContent.common.loading : actionBar.soleLeaderConfirmCancel}
+              </Button>
+              <Button variant="ghost" onClick={() => setStep('options')} disabled={isPending}>
+                {actionBar.soleLeaderDismiss}
+              </Button>
+            </DrawerFooter>
+          </>
+        )}
+      </ResponsiveDrawer>
     );
   }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Plus, Trash, ArrowClockwise } from '@phosphor-icons/react/dist/ssr';
@@ -18,16 +18,10 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { TimePicker } from '@/components/ui/time-picker';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { Switch } from '@/components/ui/switch';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerFooter,
-  DrawerTitle,
-} from '@/components/ui/drawer';
+import { DrawerBody, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { ResponsiveDrawer } from '@/components/ui/responsive-drawer';
 import { AdminFilterToolbar, type FilterDefinition } from './admin-filter-toolbar';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-is-mobile';
 import { appContent } from '@/content/app';
 import {
   createRecurringRide,
@@ -76,11 +70,6 @@ export function RecurringRidesPanel({
   clubId,
   paceGroups,
 }: RecurringRidesPanelProps) {
-  const isMobile = useIsMobile();
-  const [mounted, setMounted] = useState(false);
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
-  useEffect(() => setMounted(true), []);
-
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
@@ -312,168 +301,162 @@ export function RecurringRidesPanel({
         </div>
       )}
 
-      {mounted && (
-        <Drawer open={open} onOpenChange={setOpen} direction={isMobile ? 'bottom' : 'right'}>
-          <DrawerContent
-            className={
-              isMobile
-                ? 'max-h-(--drawer-height-lg) overflow-y-auto'
-                : 'w-(--drawer-width-sidebar) overflow-y-auto'
-            }
-          >
-            <DrawerHeader>
-              <DrawerTitle>{rc.create}</DrawerTitle>
-            </DrawerHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 px-4">
-              <FloatingField label={`${form.title} *`} htmlFor="rc-title">
-                <Input id="rc-title" name="title" required placeholder=" " />
+      <ResponsiveDrawer open={open} onOpenChange={setOpen} size="lg">
+        <DrawerHeader>
+          <DrawerTitle>{rc.create}</DrawerTitle>
+        </DrawerHeader>
+        <DrawerBody className="space-y-4 pt-2">
+          <form id="recurring-ride-form" onSubmit={handleSubmit} className="space-y-4">
+            <FloatingField label={`${form.title} *`} htmlFor="rc-title">
+              <Input id="rc-title" name="title" required placeholder=" " />
+            </FloatingField>
+            <div className="grid grid-cols-3 gap-4">
+              <FloatingField
+                label={`${rc.dayOfWeek[0].slice(0, 3)}... *`}
+                htmlFor="rc-day"
+                hasValue={false}
+              >
+                <Select
+                  name="day_of_week"
+                  required
+                  items={Object.fromEntries(rc.dayOfWeek.map((day, i) => [String(i), day]))}
+                >
+                  <SelectTrigger id="rc-day">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {rc.dayOfWeek.map((day, i) => (
+                      <SelectItem key={i} value={String(i)}>
+                        {day}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </FloatingField>
-              <div className="grid grid-cols-3 gap-4">
-                <FloatingField
-                  label={`${rc.dayOfWeek[0].slice(0, 3)}... *`}
-                  htmlFor="rc-day"
-                  hasValue={false}
+              <FloatingField
+                label={`${form.startTime} *`}
+                htmlFor="rc-time"
+                hasValue={!!rcStartTime}
+              >
+                <TimePicker
+                  id="rc-time"
+                  name="start_time"
+                  value={rcStartTime}
+                  onChange={setRcStartTime}
+                  required
+                />
+              </FloatingField>
+              <FloatingField
+                label={`${rc.recurrence.weekly} *`}
+                htmlFor="rc-recurrence"
+                hasValue={true}
+              >
+                <Select
+                  name="recurrence"
+                  required
+                  defaultValue="weekly"
+                  items={{
+                    weekly: rc.recurrence.weekly,
+                    biweekly: rc.recurrence.biweekly,
+                    monthly: rc.recurrence.monthly,
+                  }}
                 >
-                  <Select
-                    name="day_of_week"
-                    required
-                    items={Object.fromEntries(rc.dayOfWeek.map((day, i) => [String(i), day]))}
-                  >
-                    <SelectTrigger id="rc-day">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {rc.dayOfWeek.map((day, i) => (
-                        <SelectItem key={i} value={String(i)}>
-                          {day}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FloatingField>
-                <FloatingField
-                  label={`${form.startTime} *`}
-                  htmlFor="rc-time"
-                  hasValue={!!rcStartTime}
+                  <SelectTrigger id="rc-recurrence">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="weekly">{rc.recurrence.weekly}</SelectItem>
+                    <SelectItem value="biweekly">{rc.recurrence.biweekly}</SelectItem>
+                    <SelectItem value="monthly">{rc.recurrence.monthly}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FloatingField>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <FloatingField
+                label={rc.seasonStartLabel}
+                htmlFor="rc-season-start"
+                hasValue={!!rcSeasonStart}
+              >
+                <DatePicker
+                  id="rc-season-start"
+                  name="season_start_date"
+                  value={rcSeasonStart}
+                  onChange={setRcSeasonStart}
+                />
+              </FloatingField>
+              <FloatingField
+                label={rc.seasonEndLabel}
+                htmlFor="rc-season-end"
+                hasValue={!!rcSeasonEnd}
+              >
+                <DatePicker
+                  id="rc-season-end"
+                  name="season_end_date"
+                  value={rcSeasonEnd}
+                  onChange={setRcSeasonEnd}
+                />
+              </FloatingField>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <FloatingField label={form.paceGroup} htmlFor="rc-pace" hasValue={false}>
+                <Select
+                  name="pace_group_id"
+                  items={Object.fromEntries(paceGroups.map((pg) => [pg.id, pg.name]))}
                 >
-                  <TimePicker
-                    id="rc-time"
-                    name="start_time"
-                    value={rcStartTime}
-                    onChange={setRcStartTime}
-                    required
-                  />
-                </FloatingField>
-                <FloatingField
-                  label={`${rc.recurrence.weekly} *`}
-                  htmlFor="rc-recurrence"
-                  hasValue={true}
-                >
-                  <Select
-                    name="recurrence"
-                    required
-                    defaultValue="weekly"
-                    items={{
-                      weekly: rc.recurrence.weekly,
-                      biweekly: rc.recurrence.biweekly,
-                      monthly: rc.recurrence.monthly,
-                    }}
-                  >
-                    <SelectTrigger id="rc-recurrence">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="weekly">{rc.recurrence.weekly}</SelectItem>
-                      <SelectItem value="biweekly">{rc.recurrence.biweekly}</SelectItem>
-                      <SelectItem value="monthly">{rc.recurrence.monthly}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FloatingField>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <FloatingField
-                  label={rc.seasonStartLabel}
-                  htmlFor="rc-season-start"
-                  hasValue={!!rcSeasonStart}
-                >
-                  <DatePicker
-                    id="rc-season-start"
-                    name="season_start_date"
-                    value={rcSeasonStart}
-                    onChange={setRcSeasonStart}
-                  />
-                </FloatingField>
-                <FloatingField
-                  label={rc.seasonEndLabel}
-                  htmlFor="rc-season-end"
-                  hasValue={!!rcSeasonEnd}
-                >
-                  <DatePicker
-                    id="rc-season-end"
-                    name="season_end_date"
-                    value={rcSeasonEnd}
-                    onChange={setRcSeasonEnd}
-                  />
-                </FloatingField>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <FloatingField label={form.paceGroup} htmlFor="rc-pace" hasValue={false}>
-                  <Select
-                    name="pace_group_id"
-                    items={Object.fromEntries(paceGroups.map((pg) => [pg.id, pg.name]))}
-                  >
-                    <SelectTrigger id="rc-pace">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {paceGroups.map((pg) => (
-                        <SelectItem key={pg.id} value={pg.id}>
-                          {pg.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FloatingField>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <FloatingField label={form.distance} htmlFor="rc-distance">
-                  <Input
-                    id="rc-distance"
-                    name="default_distance_km"
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    placeholder=" "
-                  />
-                </FloatingField>
-                <FloatingField label={form.capacity} htmlFor="rc-capacity">
-                  <Input
-                    id="rc-capacity"
-                    name="default_capacity"
-                    type="number"
-                    min="1"
-                    placeholder=" "
-                  />
-                </FloatingField>
-                <FloatingField label={rc.weeksAheadLabel} htmlFor="rc-weeks" hasValue={true}>
-                  <Input
-                    id="rc-weeks"
-                    name="generate_weeks_ahead"
-                    type="number"
-                    min="1"
-                    max="12"
-                    defaultValue="4"
-                    placeholder=" "
-                  />
-                </FloatingField>
-              </div>
-              <DrawerFooter>
-                <Button type="submit">{rc.create}</Button>
-              </DrawerFooter>
-            </form>
-          </DrawerContent>
-        </Drawer>
-      )}
+                  <SelectTrigger id="rc-pace">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {paceGroups.map((pg) => (
+                      <SelectItem key={pg.id} value={pg.id}>
+                        {pg.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FloatingField>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <FloatingField label={form.distance} htmlFor="rc-distance">
+                <Input
+                  id="rc-distance"
+                  name="default_distance_km"
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  placeholder=" "
+                />
+              </FloatingField>
+              <FloatingField label={form.capacity} htmlFor="rc-capacity">
+                <Input
+                  id="rc-capacity"
+                  name="default_capacity"
+                  type="number"
+                  min="1"
+                  placeholder=" "
+                />
+              </FloatingField>
+              <FloatingField label={rc.weeksAheadLabel} htmlFor="rc-weeks" hasValue={true}>
+                <Input
+                  id="rc-weeks"
+                  name="generate_weeks_ahead"
+                  type="number"
+                  min="1"
+                  max="12"
+                  defaultValue="4"
+                  placeholder=" "
+                />
+              </FloatingField>
+            </div>
+          </form>
+        </DrawerBody>
+        <DrawerFooter>
+          <Button type="submit" form="recurring-ride-form">
+            {rc.create}
+          </Button>
+        </DrawerFooter>
+      </ResponsiveDrawer>
     </div>
   );
 }

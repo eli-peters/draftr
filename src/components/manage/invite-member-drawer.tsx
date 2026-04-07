@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { CheckCircle, EnvelopeSimple, Copy, Check } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { FloatingField } from '@/components/ui/floating-field';
@@ -12,8 +12,8 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { useIsMobile } from '@/hooks/use-is-mobile';
+import { DrawerBody, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { ResponsiveDrawer } from '@/components/ui/responsive-drawer';
 import { inviteMember } from '@/lib/auth/actions';
 import { appContent } from '@/content/app';
 
@@ -27,11 +27,6 @@ interface InviteMemberDrawerProps {
 }
 
 export function InviteMemberDrawer({ clubId, trigger, onSuccess }: InviteMemberDrawerProps) {
-  const isMobile = useIsMobile();
-  const [mounted, setMounted] = useState(false);
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
-  useEffect(() => setMounted(true), []);
-
   const [open, setOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -99,25 +94,15 @@ export function InviteMemberDrawer({ clubId, trigger, onSuccess }: InviteMemberD
         </Button>
       )}
 
-      {mounted && (
-        <Drawer
-          open={open}
-          onOpenChange={handleOpenChange}
-          direction={isMobile ? 'bottom' : 'right'}
-        >
-          <DrawerContent
-            className={
-              isMobile
-                ? 'max-h-(--drawer-height-md) overflow-y-auto'
-                : 'w-(--drawer-width-sidebar) overflow-y-auto'
-            }
-          >
-            <DrawerHeader>
-              <DrawerTitle>{content.members.inviteButton}</DrawerTitle>
-            </DrawerHeader>
+      <ResponsiveDrawer open={open} onOpenChange={handleOpenChange} size="auto">
+        <DrawerHeader>
+          <DrawerTitle>{content.members.inviteButton}</DrawerTitle>
+        </DrawerHeader>
 
-            {success ? (
-              <div className="mt-8 flex flex-col items-center text-center px-4">
+        {success ? (
+          <>
+            <DrawerBody>
+              <div className="flex flex-col items-center pt-2 text-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
                   <CheckCircle className="h-8 w-8 text-success" />
                 </div>
@@ -150,24 +135,35 @@ export function InviteMemberDrawer({ clubId, trigger, onSuccess }: InviteMemberD
                     </div>
                   </div>
                 )}
-                <div className="mt-6 flex gap-3 w-full">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => {
-                      setSuccess(false);
-                      setSentEmail('');
-                    }}
-                  >
-                    {inviteContent.inviteAnother}
-                  </Button>
-                  <Button className="flex-1" onClick={() => setOpen(false)}>
-                    {inviteContent.done}
-                  </Button>
-                </div>
               </div>
-            ) : (
-              <form ref={formRef} onSubmit={handleSubmit} className="mt-6 space-y-6 px-4">
+            </DrawerBody>
+            <DrawerFooter>
+              <div className="flex w-full gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setSuccess(false);
+                    setSentEmail('');
+                  }}
+                >
+                  {inviteContent.inviteAnother}
+                </Button>
+                <Button className="flex-1" onClick={() => setOpen(false)}>
+                  {inviteContent.done}
+                </Button>
+              </div>
+            </DrawerFooter>
+          </>
+        ) : (
+          <>
+            <DrawerBody className="space-y-6 pt-2">
+              <form
+                ref={formRef}
+                id="invite-member-form"
+                onSubmit={handleSubmit}
+                className="space-y-6"
+              >
                 <FloatingField label={inviteContent.emailLabel} htmlFor="invite-email">
                   <Input id="invite-email" name="email" type="email" required placeholder=" " />
                 </FloatingField>
@@ -200,23 +196,29 @@ export function InviteMemberDrawer({ clubId, trigger, onSuccess }: InviteMemberD
                 </FloatingField>
 
                 {error && <p className="text-sm text-destructive">{error}</p>}
-
-                <Button type="submit" disabled={isPending} className="w-full">
-                  {isPending ? common.loading : inviteContent.sendButton}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setOpen(false)}
-                >
-                  {common.cancel}
-                </Button>
               </form>
-            )}
-          </DrawerContent>
-        </Drawer>
-      )}
+            </DrawerBody>
+            <DrawerFooter>
+              <Button
+                type="submit"
+                form="invite-member-form"
+                disabled={isPending}
+                className="w-full"
+              >
+                {isPending ? common.loading : inviteContent.sendButton}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => setOpen(false)}
+              >
+                {common.cancel}
+              </Button>
+            </DrawerFooter>
+          </>
+        )}
+      </ResponsiveDrawer>
     </>
   );
 }

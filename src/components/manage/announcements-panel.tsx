@@ -20,13 +20,8 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerFooter,
-  DrawerTitle,
-} from '@/components/ui/drawer';
+import { DrawerBody, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { ResponsiveDrawer } from '@/components/ui/responsive-drawer';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -36,7 +31,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { AdminFilterToolbar, type FilterDefinition } from './admin-filter-toolbar';
 import { TablePagination } from './table-pagination';
-import { useIsMobile } from '@/hooks/use-is-mobile';
 import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
 import {
@@ -442,11 +436,6 @@ function AnnouncementFormDrawer({
   initialValues,
   onSuccess,
 }: AnnouncementFormDrawerProps) {
-  const isMobile = useIsMobile();
-  const [mounted, setMounted] = useState(false);
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
-  useEffect(() => setMounted(true), []);
-
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [announcementType, setAnnouncementType] = useState<AnnouncementType>('info');
@@ -516,109 +505,103 @@ function AnnouncementFormDrawer({
   const headerText = mode === 'create' ? content.announcements.create : content.announcements.edit;
   const submitText = mode === 'create' ? content.announcements.create : common.save;
 
-  if (!mounted) return null;
-
   return (
-    <Drawer open={open} onOpenChange={handleOpenChange} direction={isMobile ? 'bottom' : 'right'}>
-      <DrawerContent
-        className={isMobile ? 'max-h-(--drawer-height-md)' : 'w-(--drawer-width-sidebar)'}
-      >
-        <DrawerHeader>
-          <DrawerTitle>{headerText}</DrawerTitle>
-        </DrawerHeader>
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4">
-          <FloatingField
-            label={content.announcements.titleLabel}
-            htmlFor={`${idPrefix}-announcement-title`}
-            hasValue={!!title}
-          >
-            <Input
-              id={`${idPrefix}-announcement-title`}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder=" "
-            />
-          </FloatingField>
-          <FloatingField
-            label={content.announcements.bodyLabel}
-            htmlFor={`${idPrefix}-announcement-body`}
-            hasValue={!!body}
+    <ResponsiveDrawer open={open} onOpenChange={handleOpenChange} size="auto">
+      <DrawerHeader>
+        <DrawerTitle>{headerText}</DrawerTitle>
+      </DrawerHeader>
+      <DrawerBody className="space-y-4 pt-2">
+        <FloatingField
+          label={content.announcements.titleLabel}
+          htmlFor={`${idPrefix}-announcement-title`}
+          hasValue={!!title}
+        >
+          <Input
+            id={`${idPrefix}-announcement-title`}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder=" "
+          />
+        </FloatingField>
+        <FloatingField
+          label={content.announcements.bodyLabel}
+          htmlFor={`${idPrefix}-announcement-body`}
+          hasValue={!!body}
+          maxLength={500}
+        >
+          <Textarea
+            id={`${idPrefix}-announcement-body`}
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder=" "
+            rows={4}
             maxLength={500}
+          />
+        </FloatingField>
+        <FloatingField
+          label={content.announcements.typeLabel}
+          htmlFor={`${idPrefix}-announcement-type`}
+          hasValue={true}
+        >
+          <Select
+            value={announcementType}
+            onValueChange={(v) => setAnnouncementType(v as AnnouncementType)}
+            items={Object.fromEntries(
+              announcementTypes.map((t) => [t, content.announcements.typeOptions[t]]),
+            )}
           >
-            <Textarea
-              id={`${idPrefix}-announcement-body`}
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              placeholder=" "
-              rows={4}
-              maxLength={500}
-            />
-          </FloatingField>
-          <FloatingField
-            label={content.announcements.typeLabel}
-            htmlFor={`${idPrefix}-announcement-type`}
-            hasValue={true}
-          >
-            <Select
-              value={announcementType}
-              onValueChange={(v) => setAnnouncementType(v as AnnouncementType)}
-              items={Object.fromEntries(
-                announcementTypes.map((t) => [t, content.announcements.typeOptions[t]]),
-              )}
-            >
-              <SelectTrigger id={`${idPrefix}-announcement-type`}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {announcementTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {content.announcements.typeOptions[type]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FloatingField>
-          <div className="flex items-center justify-between">
-            <Label htmlFor={`${idPrefix}-dismissible-toggle`}>
-              {content.announcements.dismissibleLabel}
-            </Label>
-            <Switch
-              id={`${idPrefix}-dismissible-toggle`}
-              checked={isDismissible}
-              onCheckedChange={setIsDismissible}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor={`${idPrefix}-pinned-toggle`}>{content.announcements.pinToTop}</Label>
-            <Switch
-              id={`${idPrefix}-pinned-toggle`}
-              checked={isPinned}
-              onCheckedChange={setIsPinned}
-            />
-          </div>
-          <FloatingField
-            label={content.announcements.expiryLabel}
-            htmlFor={`${idPrefix}-announcement-expiry`}
-            hasValue={!!expiresAt}
-            helperText={content.announcements.expiryDescription}
-          >
-            <DatePicker
-              id={`${idPrefix}-announcement-expiry`}
-              value={expiresAt}
-              onChange={setExpiresAt}
-            />
-          </FloatingField>
+            <SelectTrigger id={`${idPrefix}-announcement-type`}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {announcementTypes.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {content.announcements.typeOptions[type]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FloatingField>
+        <div className="flex items-center justify-between">
+          <Label htmlFor={`${idPrefix}-dismissible-toggle`}>
+            {content.announcements.dismissibleLabel}
+          </Label>
+          <Switch
+            id={`${idPrefix}-dismissible-toggle`}
+            checked={isDismissible}
+            onCheckedChange={setIsDismissible}
+          />
         </div>
-        <DrawerFooter>
-          <Button onClick={handleSubmit} disabled={isPending || !title.trim() || !body.trim()}>
-            {submitText}
-          </Button>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {common.cancel}
-          </Button>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+        <div className="flex items-center justify-between">
+          <Label htmlFor={`${idPrefix}-pinned-toggle`}>{content.announcements.pinToTop}</Label>
+          <Switch
+            id={`${idPrefix}-pinned-toggle`}
+            checked={isPinned}
+            onCheckedChange={setIsPinned}
+          />
+        </div>
+        <FloatingField
+          label={content.announcements.expiryLabel}
+          htmlFor={`${idPrefix}-announcement-expiry`}
+          hasValue={!!expiresAt}
+          helperText={content.announcements.expiryDescription}
+        >
+          <DatePicker
+            id={`${idPrefix}-announcement-expiry`}
+            value={expiresAt}
+            onChange={setExpiresAt}
+          />
+        </FloatingField>
+      </DrawerBody>
+      <DrawerFooter>
+        <Button onClick={handleSubmit} disabled={isPending || !title.trim() || !body.trim()}>
+          {submitText}
+        </Button>
+        <Button variant="outline" onClick={() => onOpenChange(false)}>
+          {common.cancel}
+        </Button>
+      </DrawerFooter>
+    </ResponsiveDrawer>
   );
 }
 

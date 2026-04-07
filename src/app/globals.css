@@ -392,6 +392,7 @@
   --drawer-height-md: 70dvh;
   --drawer-height-lg: 85dvh;
   --drawer-width-sidebar: 28rem;
+  --drawer-inset: 0.5rem;
   --overlay: color-mix(in srgb, var(--color-neutral-950) 10%, transparent);
   --overlay-heavy: color-mix(in srgb, var(--color-neutral-950) 40%, transparent);
 
@@ -522,6 +523,14 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Vaul renders an ::after pseudo-element extending 200% below bottom drawers
+     to provide a rubber-band overscroll background. With our iOS-style inset
+     margins the drawer no longer sits flush against the viewport edge, so this
+     pseudo-element becomes visible as a white rectangle in the gap. Hide it. */
+  [data-vaul-drawer][data-vaul-drawer-direction='bottom']::after,
+  [data-vaul-drawer][data-vaul-drawer-direction='top']::after {
+    display: none;
   }
   html {
     @apply font-sans scroll-smooth;

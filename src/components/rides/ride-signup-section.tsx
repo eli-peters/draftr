@@ -5,14 +5,13 @@ import { SignupRoster, type SignupEntry } from '@/components/rides/signup-roster
 import { removeRiderFromRide } from '@/lib/rides/actions';
 import { Button } from '@/components/ui/button';
 import {
-  Drawer,
-  DrawerContent,
   DrawerHeader,
   DrawerTitle,
   DrawerDescription,
   DrawerFooter,
   DrawerClose,
 } from '@/components/ui/drawer';
+import { ResponsiveDrawer } from '@/components/ui/responsive-drawer';
 import { appContent } from '@/content/app';
 import { toast } from 'sonner';
 
@@ -67,24 +66,26 @@ export function RideSignupSection({
       />
 
       {/* Remove rider confirmation drawer */}
-      <Drawer open={!!removeTarget} onOpenChange={(open) => !open && setRemoveTarget(null)}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>
-              {removeTarget ? roster.removeConfirmTitle(removeTarget.userName) : ''}
-            </DrawerTitle>
-            <DrawerDescription>{roster.removeConfirmDescription}</DrawerDescription>
-          </DrawerHeader>
-          <DrawerFooter>
-            <Button variant="destructive" onClick={handleRemoveConfirm} disabled={isRemoving}>
-              {isRemoving ? appContent.common.loading : roster.removeRider}
-            </Button>
-            <DrawerClose asChild>
-              <Button variant="outline">{roster.removeConfirmKeep}</Button>
-            </DrawerClose>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+      <ResponsiveDrawer
+        open={!!removeTarget}
+        onOpenChange={(open) => !open && setRemoveTarget(null)}
+        size="auto"
+      >
+        <DrawerHeader>
+          <DrawerTitle>
+            {removeTarget ? roster.removeConfirmTitle(removeTarget.userName) : ''}
+          </DrawerTitle>
+          <DrawerDescription>{roster.removeConfirmDescription}</DrawerDescription>
+        </DrawerHeader>
+        <DrawerFooter>
+          <Button variant="destructive" onClick={handleRemoveConfirm} disabled={isRemoving}>
+            {isRemoving ? appContent.common.loading : roster.removeRider}
+          </Button>
+          <DrawerClose asChild>
+            <Button variant="outline">{roster.removeConfirmKeep}</Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </ResponsiveDrawer>
     </>
   );
 }
