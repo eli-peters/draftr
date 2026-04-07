@@ -71,7 +71,7 @@ export function AppShell({
       <div className="flex flex-1 overflow-x-clip md:flex-row md:gap-3 md:p-3">
         <SidebarNav items={navItems} isAdmin={isAdmin} />
 
-        <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {isHome && banner && (
             <div className="overflow-clip md:rounded-lg md:shadow-(--card-shadow)">{banner}</div>
           )}

@@ -99,7 +99,7 @@ function FilterChipGroup<Value extends string = string>({
     <ToggleGroup
       data-slot="filter-chip-group"
       loopFocus
-      className={cn('flex flex-wrap items-center justify-center gap-2', className)}
+      className={cn('flex w-full flex-wrap items-center justify-center gap-2', className)}
       {...props}
     >
       {children}
