@@ -34,11 +34,11 @@ function formatDate(date: Date): string {
   return date.toISOString().split('T')[0];
 }
 
-function pick<T>(arr: T[]): T {
+function pick<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function pickN<T>(arr: T[], n: number): T[] {
+function pickN<T>(arr: readonly T[], n: number): T[] {
   const shuffled = [...arr].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, Math.min(n, arr.length));
 }
@@ -276,14 +276,17 @@ async function main() {
   type LeaderMembership = {
     user_id: string;
     role: string;
-    users: { full_name: string } | null;
+    users: { full_name: string }[] | { full_name: string } | null;
   };
 
-  const leaders = (leaderMemberships as LeaderMembership[]).map((m) => ({
-    id: m.user_id,
-    name: m.users?.full_name ?? 'Unknown',
-    role: m.role,
-  }));
+  const leaders = (leaderMemberships as unknown as LeaderMembership[]).map((m) => {
+    const user = Array.isArray(m.users) ? m.users[0] : m.users;
+    return {
+      id: m.user_id,
+      name: user?.full_name ?? 'Unknown',
+      role: m.role,
+    };
+  });
 
   console.log(`✓ Leaders: ${leaders.length} found`);
   leaders.forEach((l) => console.log(`    - ${l.name} (${l.role})`));

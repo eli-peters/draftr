@@ -36,7 +36,6 @@ export default async function RidesPage() {
           <FilterableRideFeed
             rides={rides}
             paceGroups={paceGroups}
-            toolbarLabel={ridesContent.toolbar.allRides(rides.length)}
             emptyTitle={ridesContent.feed.emptyState.title}
             emptyDescription={ridesContent.feed.emptyState.description}
             timezone={timezone}
