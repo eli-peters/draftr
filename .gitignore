@@ -49,3 +49,6 @@ CLAUDE.md
 DESIGN_SYSTEM.md
 *.code-workspace
 .vscode/mcp.json
+
+# flow capture (admin flow map screenshots)
+/flow-capture/

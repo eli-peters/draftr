@@ -1,5 +1,6 @@
 import { Wind, Drop, CloudRain } from '@phosphor-icons/react/dist/ssr';
 import { ContentCard } from '@/components/ui/content-card';
+import { StatusCallout } from '@/components/ui/status-callout';
 import { WeatherIcon } from '@/components/weather/weather-icon';
 import { appContent } from '@/content/app';
 import {
@@ -33,10 +34,10 @@ export function RideWeatherDetail({ weather }: RideWeatherDetailProps) {
   return (
     <ContentCard padding="spacious" className="mt-8" heading={weatherContent.detail.heading}>
       {severity === 'severe' && (
-        <div className="mb-3 flex items-center gap-2.5 rounded-xl border border-destructive/20 bg-destructive/10 px-5 py-4 text-base text-destructive">
+        <StatusCallout tone="error" className="mb-3 flex items-center gap-2.5 px-5 py-4 text-base">
           <CloudRain className="h-5 w-5 shrink-0" />
           {weatherContent.severeWarning}
-        </div>
+        </StatusCallout>
       )}
       <div className="flex items-center gap-3">
         <WeatherIcon

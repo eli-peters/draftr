@@ -1,8 +1,7 @@
 import { redirect } from 'next/navigation';
-import { Bicycle, UserCircleMinus, UsersThree } from '@phosphor-icons/react/dist/ssr';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
-import { StatsBento } from '@/components/dashboard/stats-bento';
 import { PageHeader } from '@/components/layout/page-header';
+import { ManageStatsBento } from '@/components/manage/manage-stats-bento';
 import { SectionCards } from '@/components/manage/section-cards';
 
 import { getUserClubMembership } from '@/lib/rides/queries';
@@ -30,50 +29,12 @@ export default async function AdminDashboardPage() {
     <DashboardShell>
       <PageHeader centered={false} title={content.heading} />
       <div className="mt-6 min-w-0 space-y-8">
-        <StatsBento
-          stats={[
-            {
-              icon: Bicycle,
-              title: content.stats.fillRate,
-              value: stats.fillRate,
-              suffix: '%',
-              visualization: {
-                type: 'trend',
-                direction: stats.fillRateChange >= 0 ? 'up' : 'down',
-                label: content.stats.fillRateContext(Math.abs(stats.fillRateChange)),
-                sentiment: 'neutral',
-              },
-            },
-            {
-              icon: UserCircleMinus,
-              title: content.stats.cancellationRate,
-              value: stats.cancellationRate,
-              suffix: '%',
-              decimals: 1,
-              visualization: {
-                type: 'trend',
-                direction: 'up',
-                label: content.stats.cancellationContext(stats.cancellationsThisMonth),
-                sentiment: 'neutral',
-              },
-            },
-            {
-              icon: UsersThree,
-              title: content.stats.activeMembers,
-              value: sectionStats.activeMembers,
-              visualization: {
-                type: 'trend',
-                direction: 'up',
-                label: content.stats.activeMembersContext(
-                  new Date().toLocaleDateString('en-US', {
-                    month: 'long',
-                    year: 'numeric',
-                  }),
-                ),
-                sentiment: 'positive',
-              },
-            },
-          ]}
+        <ManageStatsBento
+          fillRate={stats.fillRate}
+          fillRateChange={stats.fillRateChange}
+          cancellationRate={stats.cancellationRate}
+          cancellationsThisMonth={stats.cancellationsThisMonth}
+          activeMembers={sectionStats.activeMembers}
         />
         <SectionCards stats={sectionStats} clubId={membership.club_id} />
       </div>

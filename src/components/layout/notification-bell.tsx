@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Bell } from '@phosphor-icons/react/dist/ssr';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { DURATIONS, EASE } from '@/lib/motion';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { NotificationItem } from '@/components/notifications/notification-item';
@@ -37,6 +39,8 @@ export function NotificationBell({ notifications, unreadCount }: NotificationBel
   // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
   useEffect(() => setMounted(true), []);
 
+  const shouldReduce = useReducedMotion();
+
   async function handleMarkAllRead() {
     await markAllNotificationsRead();
   }
@@ -54,14 +58,29 @@ export function NotificationBell({ notifications, unreadCount }: NotificationBel
   const bellIcon = (
     <>
       <Bell weight="duotone" className="h-7 w-7" />
-      {unreadCount > 0 && (
-        <span
-          aria-hidden="true"
-          className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-badge-notification-bg px-0.5 text-micro font-bold text-badge-notification-text tabular-nums"
-        >
-          {displayCount}
-        </span>
-      )}
+      <AnimatePresence>
+        {unreadCount > 0 && (
+          <motion.span
+            key={displayCount}
+            aria-hidden="true"
+            initial={shouldReduce ? { opacity: 0 } : { opacity: 0, scale: 0.4 }}
+            animate={
+              shouldReduce
+                ? { opacity: 1 }
+                : {
+                    opacity: 1,
+                    scale: 1,
+                    transition: { type: 'spring', stiffness: 500, damping: 22 },
+                  }
+            }
+            exit={shouldReduce ? { opacity: 0 } : { opacity: 0, scale: 0.4 }}
+            transition={{ duration: DURATIONS.fast, ease: EASE.out }}
+            className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-badge-notification-bg px-0.5 text-micro font-bold text-badge-notification-text tabular-nums"
+          >
+            {displayCount}
+          </motion.span>
+        )}
+      </AnimatePresence>
     </>
   );
 

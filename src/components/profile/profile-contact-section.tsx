@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { Button } from '@/components/ui/button';
 import { InlineEditActions } from '@/components/profile/inline-edit-actions';
+import { InlineEditTransition } from '@/components/motion/inline-edit-transition';
 import { useEscapeKey } from '@/hooks/use-escape-key';
 import { formatPhoneDisplay } from '@/lib/phone';
 import { updateProfile } from '@/lib/profile/actions';
@@ -48,7 +49,7 @@ function ContactInfoEditor({
     <form
       ref={formRef}
       onSubmit={(e) => e.preventDefault()}
-      className="space-y-3 rounded-xl bg-surface-sunken p-3 animate-in fade-in-0 duration-150"
+      className="space-y-3 rounded-xl bg-surface-sunken p-3"
     >
       <p className="text-sm text-muted-foreground">
         {content.contactInfo.nameLabel}: {fullName}
@@ -101,11 +102,7 @@ function EmergencyContactEditor({
   }
 
   return (
-    <form
-      ref={formRef}
-      onSubmit={(e) => e.preventDefault()}
-      className="space-y-3 animate-in fade-in-0 duration-150"
-    >
+    <form ref={formRef} onSubmit={(e) => e.preventDefault()} className="space-y-3">
       <div className="flex items-center gap-2 justify-center mb-2">
         <FirstAidKit className="h-6 w-6 text-primary" />
         <p className="text-base font-bold text-foreground">{content.sections.emergencyContact}</p>
@@ -213,93 +210,103 @@ export function ProfileContactSection({
       heading={content.sections.contactInfo}
     >
       {/* Contact Info */}
-      {editing === 'contact' ? (
-        <ContactInfoEditor
-          fullName={fullName}
-          email={email}
-          initialPhone={initialPhone}
-          phoneKey={phoneKey}
-          isPending={isPending}
-          onSave={handleSaveContact}
-          onCancel={handleCancel}
-        />
-      ) : (
-        <div className="group/contact relative">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <p className="text-base text-muted-foreground">{fullName}</p>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => setEditing('contact')}
-                aria-label={`${common.edit} ${content.sections.contactInfo}`}
-                className="opacity-100 md:opacity-0 md:group-hover/contact:opacity-100 transition-opacity"
-              >
-                <PencilSimple className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-            {initialPhone ? (
-              <p className="text-base font-medium text-foreground">
-                {formatPhoneDisplay(initialPhone)}
-              </p>
-            ) : (
-              <p className="text-sm text-muted-foreground italic">{content.contactInfo.noPhone}</p>
-            )}
-            <p className="text-base font-medium text-foreground">{email}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Emergency Contact */}
-      <div className="mt-4 rounded-2xl bg-action-primary-subtle-bg p-4">
-        {editing === 'emergency' ? (
-          <EmergencyContactEditor
-            initialName={initialEmName}
-            initialPhone={initialEmPhone}
-            initialRelationship={initialEmRelationship}
+      <InlineEditTransition
+        editing={editing === 'contact'}
+        edit={
+          <ContactInfoEditor
+            fullName={fullName}
+            email={email}
+            initialPhone={initialPhone}
             phoneKey={phoneKey}
             isPending={isPending}
-            onSave={handleSaveEmergency}
+            onSave={handleSaveContact}
             onCancel={handleCancel}
           />
-        ) : (
-          <div className="group/emergency relative">
-            <div className="flex flex-col items-center gap-2 mb-3">
-              <FirstAidKit className="h-6 w-6 text-primary" />
-              <div className="flex items-center gap-2">
-                <p className="text-base font-bold text-foreground">
-                  {content.sections.emergencyContact}
-                </p>
+        }
+        view={
+          <div className="group/contact relative">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-base text-muted-foreground">{fullName}</p>
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  onClick={() => setEditing('emergency')}
-                  aria-label={`${common.edit} ${content.sections.emergencyContact}`}
-                  className="opacity-100 md:opacity-0 md:group-hover/emergency:opacity-100 transition-opacity"
+                  onClick={() => setEditing('contact')}
+                  aria-label={`${common.edit} ${content.sections.contactInfo}`}
+                  className="opacity-100 md:opacity-0 md:group-hover/contact:opacity-100 transition-opacity"
                 >
                   <PencilSimple className="h-3.5 w-3.5" />
                 </Button>
               </div>
-            </div>
-            {initialEmName ? (
-              <div className="text-center space-y-0.5">
-                <p className="text-base text-foreground">
-                  {initialEmName}
-                  {initialEmRelationship && ` \u2014 ${initialEmRelationship}`}
+              {initialPhone ? (
+                <p className="text-base font-medium text-foreground">
+                  {formatPhoneDisplay(initialPhone)}
                 </p>
-                {initialEmPhone && (
-                  <p className="text-base font-bold text-foreground">
-                    {formatPhoneDisplay(initialEmPhone)}
-                  </p>
-                )}
-              </div>
-            ) : (
-              <p className="text-base text-muted-foreground italic text-center">
-                {content.emergencyContact.noContact}
-              </p>
-            )}
+              ) : (
+                <p className="text-sm text-muted-foreground italic">
+                  {content.contactInfo.noPhone}
+                </p>
+              )}
+              <p className="text-base font-medium text-foreground">{email}</p>
+            </div>
           </div>
-        )}
+        }
+      />
+
+      {/* Emergency Contact */}
+      <div className="mt-4 rounded-2xl bg-action-primary-subtle-bg p-4">
+        <InlineEditTransition
+          editing={editing === 'emergency'}
+          edit={
+            <EmergencyContactEditor
+              initialName={initialEmName}
+              initialPhone={initialEmPhone}
+              initialRelationship={initialEmRelationship}
+              phoneKey={phoneKey}
+              isPending={isPending}
+              onSave={handleSaveEmergency}
+              onCancel={handleCancel}
+            />
+          }
+          view={
+            <div className="group/emergency relative">
+              <div className="flex flex-col items-center gap-2 mb-3">
+                <FirstAidKit className="h-6 w-6 text-primary" />
+                <div className="flex items-center gap-2">
+                  <p className="text-base font-bold text-foreground">
+                    {content.sections.emergencyContact}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => setEditing('emergency')}
+                    aria-label={`${common.edit} ${content.sections.emergencyContact}`}
+                    className="opacity-100 md:opacity-0 md:group-hover/emergency:opacity-100 transition-opacity"
+                  >
+                    <PencilSimple className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+              {initialEmName ? (
+                <div className="text-center space-y-0.5">
+                  <p className="text-base text-foreground">
+                    {initialEmName}
+                    {initialEmRelationship && ` \u2014 ${initialEmRelationship}`}
+                  </p>
+                  {initialEmPhone && (
+                    <p className="text-base font-bold text-foreground">
+                      {formatPhoneDisplay(initialEmPhone)}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-base text-muted-foreground italic text-center">
+                  {content.emergencyContact.noContact}
+                </p>
+              )}
+            </div>
+          }
+        />
       </div>
     </ContentCard>
   );

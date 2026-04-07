@@ -241,11 +241,12 @@
 
   /* Card surface tokens — shared by ContentCard, shadcn Card, sidebar, etc.
    * Change these to restyle every card-like surface site-wide.
+   * See the elevation system comment near --shadow-* below for the rules.
    */
   --card-radius: var(--radius-2xl);
   --card-radius-lg: var(--radius-3xl);
   --card-border-width: 0px;
-  --card-shadow: var(--shadow-sm);
+  --card-shadow: var(--shadow-xs);
   --card-padding: 1rem;
   --card-padding-md: 1.25rem;
 
@@ -257,9 +258,11 @@
   --bar-padding-x-desktop: 2rem;
   --bar-padding-y: 1.5rem;
   --bar-padding-y-desktop: 1.5rem;
-  --bar-shadow: var(--shadow-md);
-  --bar-shadow-desktop: var(--shadow-xs);
-  --bar-bg-opacity: 80%;
+  /* Mobile floating bars use --shadow-floating (omni-directional);
+   * desktop sticky bars sit inline so they get a normal directional shadow. */
+  --bar-shadow: var(--shadow-floating);
+  --bar-shadow-desktop: var(--shadow-md);
+  --bar-bg-opacity: 40%;
   --bar-backdrop-blur: 12px;
   --bar-inset-x: 1rem;
   --bar-fade-height: 8rem;
@@ -395,10 +398,52 @@
   /* ── Radius ── */
   --radius: 0.625rem;
 
-  /* ── Shadows — warm undertone matching the neutral palette ── */
-  --shadow-sm: 0 1px 2px color-mix(in srgb, var(--color-neutral-950) 5%, transparent);
-  --shadow-md: 0 4px 8px color-mix(in srgb, var(--color-neutral-950) 8%, transparent);
-  --shadow-lg: 0 12px 24px color-mix(in srgb, var(--color-neutral-950) 12%, transparent);
+  /* ── Elevation system ──
+   * Canonical mapping of shadow level → surface role. If you're adding a
+   * new elevated surface, pick a row from this table. Don't invent a new
+   * shadow value, and don't apply both a stroke and a shadow unless the
+   * surface is a status-accented card.
+   *
+   *   shadow-xs        : barely-there lift, e.g. calendar grid inside popovers
+   *   shadow-sm        : card surfaces (--card-shadow), sidebar
+   *   shadow-md        : popovers, dropdowns, selects, toasts, desktop sticky bars
+   *   shadow-lg        : modals, dialogs, nested submenus
+   *   shadow-floating  : mobile floating bars (radiates up + down + ambient)
+   *
+   * Stroke usage:
+   *   - Cards rely on shadow only (--card-border-width: 0px)
+   *   - Status accents use --card-border-{success,warning,error,info}
+   *   - List/table containers use --border-subtle, no shadow
+   *   - Inputs use a bottom-only border (--input → --border-default)
+   *   - Overlays use ring-1 ring-foreground/10 in lieu of a stroke
+   *   - Dialogs/drawers use the implicit --border-default
+   *   - Inline status callouts: <StatusCallout> in src/components/ui/
+   *
+   * ── Shadows — layered, warm undertone matching the neutral palette ──
+   * Each elevation stacks 2–3 layers (ambient + key + optional contact) so
+   * surfaces read as physical objects rather than flat cut-outs.
+   * `--shadow-floating` is omni-directional: it lifts upward as well as
+   * casting downward, for pill bars that hug the bottom of the viewport.
+   */
+  --shadow-xs:
+    0 1px 1px color-mix(in srgb, var(--color-neutral-950) 4%, transparent),
+    0 1px 2px color-mix(in srgb, var(--color-neutral-950) 3%, transparent);
+  --shadow-sm:
+    0 1px 1px color-mix(in srgb, var(--color-neutral-950) 5%, transparent),
+    0 2px 4px color-mix(in srgb, var(--color-neutral-950) 4%, transparent),
+    0 4px 8px color-mix(in srgb, var(--color-neutral-950) 3%, transparent);
+  --shadow-md:
+    0 1px 2px color-mix(in srgb, var(--color-neutral-950) 6%, transparent),
+    0 4px 8px color-mix(in srgb, var(--color-neutral-950) 6%, transparent),
+    0 10px 20px color-mix(in srgb, var(--color-neutral-950) 5%, transparent);
+  --shadow-lg:
+    0 2px 4px color-mix(in srgb, var(--color-neutral-950) 6%, transparent),
+    0 8px 16px color-mix(in srgb, var(--color-neutral-950) 8%, transparent),
+    0 24px 40px color-mix(in srgb, var(--color-neutral-950) 10%, transparent);
+  --shadow-floating:
+    0 -6px 16px color-mix(in srgb, var(--color-neutral-950) 5%, transparent),
+    0 8px 20px color-mix(in srgb, var(--color-neutral-950) 8%, transparent),
+    0 2px 4px color-mix(in srgb, var(--color-neutral-950) 6%, transparent);
 
   /* ── Motion ── */
   --duration-fast: 150ms;
@@ -433,10 +478,26 @@
   --overlay: color-mix(in srgb, var(--color-neutral-0) 5%, transparent);
   --overlay-heavy: color-mix(in srgb, var(--color-neutral-950) 60%, transparent);
 
-  /* ── Shadows ── */
-  --shadow-sm: 0 1px 2px color-mix(in srgb, var(--color-neutral-950) 30%, transparent);
-  --shadow-md: 0 4px 8px color-mix(in srgb, var(--color-neutral-950) 40%, transparent);
-  --shadow-lg: 0 12px 24px color-mix(in srgb, var(--color-neutral-950) 50%, transparent);
+  /* ── Shadows — layered, higher opacities for dark backgrounds ── */
+  --shadow-xs:
+    0 1px 1px color-mix(in srgb, var(--color-neutral-950) 25%, transparent),
+    0 1px 2px color-mix(in srgb, var(--color-neutral-950) 20%, transparent);
+  --shadow-sm:
+    0 1px 1px color-mix(in srgb, var(--color-neutral-950) 30%, transparent),
+    0 2px 4px color-mix(in srgb, var(--color-neutral-950) 25%, transparent),
+    0 4px 8px color-mix(in srgb, var(--color-neutral-950) 20%, transparent);
+  --shadow-md:
+    0 1px 2px color-mix(in srgb, var(--color-neutral-950) 35%, transparent),
+    0 4px 8px color-mix(in srgb, var(--color-neutral-950) 35%, transparent),
+    0 10px 20px color-mix(in srgb, var(--color-neutral-950) 30%, transparent);
+  --shadow-lg:
+    0 2px 4px color-mix(in srgb, var(--color-neutral-950) 35%, transparent),
+    0 8px 16px color-mix(in srgb, var(--color-neutral-950) 45%, transparent),
+    0 24px 40px color-mix(in srgb, var(--color-neutral-950) 55%, transparent);
+  --shadow-floating:
+    0 -6px 16px color-mix(in srgb, var(--color-neutral-950) 30%, transparent),
+    0 8px 20px color-mix(in srgb, var(--color-neutral-950) 45%, transparent),
+    0 2px 4px color-mix(in srgb, var(--color-neutral-950) 35%, transparent);
 
   /* ── Toast — opaque feedback backgrounds (alpha tokens look transparent on toasts) ── */
   --toast-success-bg: color-mix(in srgb, var(--color-success-500) 12%, var(--surface-default));

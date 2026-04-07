@@ -63,7 +63,7 @@ export function RideActionBar({
                 {(mode === 'idle' || mode === 'sole-leader-options') && state.cta && (
                   <Button
                     variant={state.ctaVariant}
-                    size="sm"
+                    size="default"
                     onClick={handleCtaClick}
                     disabled={isPending}
                   >

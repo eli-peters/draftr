@@ -1,13 +1,18 @@
+'use client';
+
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { getInitials } from '@/lib/utils';
 import { SignupStatus } from '@/config/statuses';
 import { routes } from '@/config/routes';
+import { useMotionPresets } from '@/lib/motion';
 
 const { rides: ridesContent } = appContent;
 
@@ -80,14 +85,16 @@ export function SignupRoster({
               <SectionHeading as="p" className="pb-1">
                 {ridesContent.roster.leaders}
               </SectionHeading>
-              {confirmedLeaders.map((signup) => (
-                <SignupRow
-                  key={signup.id}
-                  signup={signup}
-                  canRemove={signup.user_id !== createdBy && signup.user_id !== currentUserId}
-                  onRemove={onRemoveRider}
-                />
-              ))}
+              <AnimatePresence initial={false} mode="popLayout">
+                {confirmedLeaders.map((signup) => (
+                  <SignupRow
+                    key={signup.id}
+                    signup={signup}
+                    canRemove={signup.user_id !== createdBy && signup.user_id !== currentUserId}
+                    onRemove={onRemoveRider}
+                  />
+                ))}
+              </AnimatePresence>
             </>
           )}
           {confirmedRiders.length > 0 && (
@@ -95,38 +102,46 @@ export function SignupRoster({
               <SectionHeading as="p" className="pb-1 pt-3">
                 {ridesContent.roster.riders}
               </SectionHeading>
-              {confirmedRiders.map((signup) => (
-                <SignupRow
-                  key={signup.id}
-                  signup={signup}
-                  canRemove={signup.user_id !== currentUserId}
-                  onRemove={onRemoveRider}
-                />
-              ))}
+              <AnimatePresence initial={false} mode="popLayout">
+                {confirmedRiders.map((signup) => (
+                  <SignupRow
+                    key={signup.id}
+                    signup={signup}
+                    canRemove={signup.user_id !== currentUserId}
+                    onRemove={onRemoveRider}
+                  />
+                ))}
+              </AnimatePresence>
             </>
           )}
         </>
       ) : (
-        sortedConfirmed.map((signup) => (
-          <SignupRow key={signup.id} signup={signup} isLeader={leaderIds.has(signup.user_id)} />
-        ))
+        <AnimatePresence initial={false} mode="popLayout">
+          {sortedConfirmed.map((signup) => (
+            <SignupRow key={signup.id} signup={signup} isLeader={leaderIds.has(signup.user_id)} />
+          ))}
+        </AnimatePresence>
       )}
       {waitlisted.length > 0 && (
         <>
           <SectionHeading as="p" className="pb-1 pt-3">
             {ridesContent.roster.waitlisted}
           </SectionHeading>
-          {waitlisted.map((signup) => (
-            <SignupRow
-              key={signup.id}
-              signup={signup}
-              isLeader={!canRemoveRiders && leaderIds.has(signup.user_id)}
-              canRemove={
-                canRemoveRiders && signup.user_id !== createdBy && signup.user_id !== currentUserId
-              }
-              onRemove={onRemoveRider}
-            />
-          ))}
+          <AnimatePresence initial={false} mode="popLayout">
+            {waitlisted.map((signup) => (
+              <SignupRow
+                key={signup.id}
+                signup={signup}
+                isLeader={!canRemoveRiders && leaderIds.has(signup.user_id)}
+                canRemove={
+                  canRemoveRiders &&
+                  signup.user_id !== createdBy &&
+                  signup.user_id !== currentUserId
+                }
+                onRemove={onRemoveRider}
+              />
+            ))}
+          </AnimatePresence>
         </>
       )}
     </div>
@@ -145,9 +160,18 @@ function SignupRow({
   onRemove?: (userId: string, userName: string) => void;
 }) {
   const initials = getInitials(signup.user_name);
+  const { listItem } = useMotionPresets();
 
   return (
-    <div className="flex items-center gap-3 rounded-lg px-2 py-2">
+    <motion.div
+      layout
+      layoutId={`signup-${signup.id}`}
+      variants={listItem}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="flex items-center gap-3 rounded-lg px-2 py-2"
+    >
       <Link
         href={routes.publicProfile(signup.user_id)}
         className="flex flex-1 items-center gap-3 transition-colors hover:opacity-80"
@@ -181,14 +205,16 @@ function SignupRow({
       )}
 
       {canRemove && onRemove && (
-        <button
+        <Button
+          variant="link"
+          size="xs"
           onClick={() => onRemove(signup.user_id, signup.user_name)}
           aria-label={ridesContent.roster.removeConfirmTitle(signup.user_name)}
-          className="text-xs text-muted-foreground transition-colors hover:text-destructive"
+          className="text-muted-foreground hover:text-destructive"
         >
           {ridesContent.roster.removeRider}
-        </button>
+        </Button>
       )}
-    </div>
+    </motion.div>
   );
 }

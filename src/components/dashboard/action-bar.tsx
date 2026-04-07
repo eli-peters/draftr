@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import {
   Bicycle,
@@ -9,6 +11,8 @@ import {
   Hourglass,
   UserPlus,
 } from '@phosphor-icons/react/dist/ssr';
+import { motion, useReducedMotion } from 'framer-motion';
+import { DURATIONS, EASE } from '@/lib/motion';
 import { Card } from '@/components/ui/card';
 import { CardBanner, CardContentSection } from '@/components/rides/ride-card-parts';
 import { appContent } from '@/content/app';
@@ -116,19 +120,31 @@ function ActionCard({
   bannerBorderClass?: string;
   children: React.ReactNode;
 }) {
+  const shouldReduce = useReducedMotion();
   return (
-    <Link href={href} className="group block">
-      <Card className={cn('overflow-clip p-0', borderClass)}>
-        <CardBanner
-          icon={icon}
-          label={label}
-          bgClass={bgClass}
-          textClass={textClass}
-          borderClass={bannerBorderClass}
-        />
-        <div className="px-5 pt-3 pb-4">{children}</div>
-      </Card>
-    </Link>
+    <motion.div
+      variants={{
+        hidden: shouldReduce ? { opacity: 0 } : { opacity: 0, y: 14 },
+        visible: {
+          opacity: 1,
+          y: 0,
+          transition: { duration: DURATIONS.normal, ease: EASE.out },
+        },
+      }}
+    >
+      <Link href={href} className="group block">
+        <Card className={cn('overflow-clip p-0', borderClass)}>
+          <CardBanner
+            icon={icon}
+            label={label}
+            bgClass={bgClass}
+            textClass={textClass}
+            borderClass={bannerBorderClass}
+          />
+          <div className="px-5 pt-3 pb-4">{children}</div>
+        </Card>
+      </Link>
+    </motion.div>
   );
 }
 
@@ -157,7 +173,15 @@ export function ActionBar({
   if (!hasItems) return null;
 
   return (
-    <div className="flex flex-col gap-6">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: {},
+        visible: { transition: { staggerChildren: 0.07, delayChildren: 0.04 } },
+      }}
+      className="flex flex-col gap-6"
+    >
       {/* Rider: your next confirmed ride */}
       {nextSignup &&
         (() => {
@@ -341,6 +365,6 @@ export function ActionBar({
           />
         </ActionCard>
       )}
-    </div>
+    </motion.div>
   );
 }

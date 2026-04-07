@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { FloatingField } from '@/components/ui/floating-field';
+import { StatusCallout } from '@/components/ui/status-callout';
 import { Textarea } from '@/components/ui/textarea';
 import { cancelRide } from '@/lib/rides/actions';
 import { appContent } from '@/content/app';
@@ -39,21 +40,20 @@ export function CancelRideButton({ rideId, rideTitle }: CancelRideButtonProps) {
 
   if (!showConfirm) {
     return (
-      <button
-        type="button"
-        className="text-sm text-destructive transition-colors hover:text-destructive/80"
+      <Button
+        variant="link"
+        size="sm"
+        className="text-destructive hover:text-destructive/80"
         onClick={() => setShowConfirm(true)}
       >
         {ridesContent.edit.cancelRide}
-      </button>
+      </Button>
     );
   }
 
   return (
-    <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-5 space-y-4">
-      <p className="text-sm font-semibold text-destructive">
-        {ridesContent.edit.cancelConfirm(rideTitle)}
-      </p>
+    <StatusCallout tone="error" className="space-y-4 p-5">
+      <p className="text-sm font-semibold">{ridesContent.edit.cancelConfirm(rideTitle)}</p>
       <FloatingField
         label={ridesContent.edit.cancelReasonLabel}
         htmlFor="cancel-reason"
@@ -69,7 +69,7 @@ export function CancelRideButton({ rideId, rideTitle }: CancelRideButtonProps) {
           maxLength={300}
         />
       </FloatingField>
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-sm">{error}</p>}
       <div className="flex gap-3">
         <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
           {isPending ? common.loading : ridesContent.edit.confirmCancel}
@@ -78,6 +78,6 @@ export function CancelRideButton({ rideId, rideTitle }: CancelRideButtonProps) {
           {ridesContent.edit.keepRide}
         </Button>
       </div>
-    </div>
+    </StatusCallout>
   );
 }

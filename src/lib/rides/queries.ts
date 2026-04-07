@@ -944,6 +944,7 @@ function aggregateReactions(
 export interface RideLeader {
   user_id: string;
   name: string;
+  avatar_url: string | null;
   added_at: string;
 }
 
@@ -955,7 +956,7 @@ export async function getRideCoLeaders(rideId: string): Promise<RideLeader[]> {
 
   const { data, error } = await supabase
     .from('ride_leaders')
-    .select('user_id, added_at, user:users!ride_leaders_user_id_fkey(full_name)')
+    .select('user_id, added_at, user:users!ride_leaders_user_id_fkey(full_name, avatar_url)')
     .eq('ride_id', rideId)
     .order('added_at', { ascending: true });
 
@@ -965,10 +966,11 @@ export async function getRideCoLeaders(rideId: string): Promise<RideLeader[]> {
   }
 
   return (data ?? []).map((row) => {
-    const user = row.user as unknown as { full_name: string };
+    const user = row.user as unknown as { full_name: string; avatar_url: string | null };
     return {
       user_id: row.user_id,
       name: user?.full_name ?? '',
+      avatar_url: user?.avatar_url ?? null,
       added_at: row.added_at,
     };
   });

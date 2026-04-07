@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRef, useState, useTransition } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ChatCircle, PaperPlaneTilt } from '@phosphor-icons/react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useMotionPresets } from '@/lib/motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { Button } from '@/components/ui/button';
@@ -56,15 +58,17 @@ export function RideComments({
 
       {comments.length > 0 && (
         <div className="space-y-0.5">
-          {comments.map((comment) => (
-            <CommentRow
-              key={comment.id}
-              comment={comment}
-              reactions={commentReactions.get(comment.id) ?? []}
-              currentUserId={currentUserId}
-              isAdmin={userRole === 'admin'}
-            />
-          ))}
+          <AnimatePresence initial={false}>
+            {comments.map((comment) => (
+              <CommentRow
+                key={comment.id}
+                comment={comment}
+                reactions={commentReactions.get(comment.id) ?? []}
+                currentUserId={currentUserId}
+                isAdmin={userRole === 'admin'}
+              />
+            ))}
+          </AnimatePresence>
         </div>
       )}
 
@@ -95,6 +99,7 @@ function CommentRow({
   const [isPending, startTransition] = useTransition();
   const editRef = useRef<HTMLTextAreaElement>(null);
 
+  const { listItem } = useMotionPresets();
   const isOwn = currentUserId === comment.user_id;
   const canModify = isOwn || isAdmin;
   const wasEdited = comment.updated_at !== comment.created_at;
@@ -115,7 +120,14 @@ function CommentRow({
   }
 
   return (
-    <div className="flex gap-2 rounded-lg px-2 py-1.5">
+    <motion.div
+      layout
+      variants={listItem}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="flex gap-2 rounded-lg px-2 py-1.5"
+    >
       <Avatar className="h-6 w-6 shrink-0">
         {comment.avatar_url && <AvatarImage src={comment.avatar_url} alt={comment.user_name} />}
         <AvatarFallback
@@ -176,20 +188,24 @@ function CommentRow({
         {canModify && !isEditing && (
           <div className="mt-0.5 flex gap-3">
             {isOwn && (
-              <button
+              <Button
+                variant="link"
+                size="xs"
                 onClick={() => setIsEditing(true)}
-                className="text-overline text-muted-foreground transition-colors hover:text-foreground"
+                className="text-overline text-muted-foreground hover:text-foreground"
               >
                 {content.edit}
-              </button>
+              </Button>
             )}
-            <button
+            <Button
+              variant="link"
+              size="xs"
               onClick={() => setDeleteOpen(true)}
               disabled={isPending}
-              className="text-overline text-muted-foreground transition-colors hover:text-destructive"
+              className="text-overline text-muted-foreground hover:text-destructive"
             >
               {content.delete}
-            </button>
+            </Button>
           </div>
         )}
 
@@ -226,7 +242,7 @@ function CommentRow({
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -281,7 +297,7 @@ function AddCommentForm({ rideId }: { rideId: string }) {
         <Button
           size="icon"
           variant="ghost"
-          className="absolute bottom-0 right-0 shrink-0 rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
+          className="absolute bottom-0 right-0 shrink-0 text-muted-foreground hover:bg-action-primary-subtle-bg hover:text-primary"
           disabled={isPending || !body.trim()}
           onClick={handleSubmit}
           aria-label={content.sendAriaLabel}

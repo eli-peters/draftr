@@ -2,6 +2,8 @@
 
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Bicycle } from '@phosphor-icons/react/dist/ssr';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { DURATIONS, EASE } from '@/lib/motion';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FilterChip, FilterChipGroup } from '@/components/ui/filter-chip';
 import { RideCard } from '@/components/rides/ride-card';
@@ -14,7 +16,6 @@ const { rides: ridesContent } = appContent;
 interface FilterableRideFeedProps {
   rides: RideWithDetails[];
   paceGroups: { id: string; name: string; sort_order: number }[];
-  toolbarLabel: string;
   emptyTitle: string;
   emptyDescription: string;
   cardVariant?: 'home' | 'rides';
@@ -24,7 +25,6 @@ interface FilterableRideFeedProps {
 export function FilterableRideFeed({
   rides,
   paceGroups,
-  toolbarLabel,
   emptyTitle,
   emptyDescription,
   cardVariant = 'rides',
@@ -33,6 +33,7 @@ export function FilterableRideFeed({
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const shouldReduce = useReducedMotion();
 
   const activePaceIds = searchParams.getAll('pace');
   const hasFilter = activePaceIds.length > 0;
@@ -63,9 +64,31 @@ export function FilterableRideFeed({
 
       {filtered.length > 0 ? (
         <div className="flex flex-col gap-6">
-          {filtered.map((ride) => (
-            <RideCard key={ride.id} ride={ride} variant={cardVariant} timezone={timezone} />
-          ))}
+          <AnimatePresence initial={false} mode="popLayout">
+            {filtered.map((ride) => (
+              <motion.div
+                key={ride.id}
+                layout
+                initial={shouldReduce ? { opacity: 0 } : { opacity: 0, y: 12 }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: DURATIONS.normal, ease: EASE.out },
+                }}
+                exit={
+                  shouldReduce
+                    ? { opacity: 0 }
+                    : {
+                        opacity: 0,
+                        x: -16,
+                        transition: { duration: DURATIONS.fast, ease: EASE.out },
+                      }
+                }
+              >
+                <RideCard ride={ride} variant={cardVariant} timezone={timezone} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       ) : (
         <EmptyState

@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { PushPin, Plus, CaretUp, CaretDown, DotsThree } from '@phosphor-icons/react/dist/ssr';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useMotionPresets } from '@/lib/motion';
 import { Button } from '@/components/ui/button';
 import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
@@ -149,6 +151,7 @@ function SortableHeader({
 /* ------------------------------------------------------------------ */
 
 export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanelProps) {
+  const { listItem } = useMotionPresets();
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -292,82 +295,90 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                 </tr>
               </thead>
               <tbody>
-                {paginatedAnnouncements.map((a) => (
-                  <tr
-                    key={a.id}
-                    onClick={() => handleEdit(a)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleEdit(a);
-                      }
-                    }}
-                    tabIndex={0}
-                    role="button"
-                    className="group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-sunken) hover:bg-muted/50"
-                  >
-                    {/* Type dot + label */}
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={cn(
-                            'h-2 w-2 shrink-0 rounded-full',
-                            typeDotColors[a.announcement_type],
-                          )}
-                        />
-                        <span className="truncate font-mono text-body-sm text-(--text-tertiary)">
-                          {content.announcements.typeOptions[a.announcement_type]}
+                <AnimatePresence initial={false}>
+                  {paginatedAnnouncements.map((a) => (
+                    <motion.tr
+                      key={a.id}
+                      layout
+                      variants={listItem}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      onClick={() => handleEdit(a)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleEdit(a);
+                        }
+                      }}
+                      tabIndex={0}
+                      role="button"
+                      className="group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-sunken) hover:bg-muted/50"
+                    >
+                      {/* Type dot + label */}
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={cn(
+                              'h-2 w-2 shrink-0 rounded-full',
+                              typeDotColors[a.announcement_type],
+                            )}
+                          />
+                          <span className="truncate font-mono text-body-sm text-(--text-tertiary)">
+                            {content.announcements.typeOptions[a.announcement_type]}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Title */}
+                      <td className="min-w-0 p-3">
+                        <p className="truncate font-mono text-body-sm font-semibold text-(--text-primary)">
+                          {a.title}
+                        </p>
+                      </td>
+
+                      {/* Published */}
+                      <td className="p-3">
+                        <span className="whitespace-nowrap font-mono text-body-sm text-(--text-tertiary)">
+                          {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
                         </span>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* Title */}
-                    <td className="min-w-0 p-3">
-                      <p className="truncate font-mono text-body-sm font-semibold text-(--text-primary)">
-                        {a.title}
-                      </p>
-                    </td>
+                      {/* Pinned — clickable toggle */}
+                      <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleTogglePin(a.id, a.is_pinned)}
+                          className="text-(--text-tertiary) hover:text-(--text-primary)"
+                        >
+                          <PushPin className="size-4" weight={a.is_pinned ? 'fill' : 'light'} />
+                        </Button>
+                      </td>
 
-                    {/* Published */}
-                    <td className="p-3">
-                      <span className="whitespace-nowrap font-mono text-body-sm text-(--text-tertiary)">
-                        {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
-                      </span>
-                    </td>
-
-                    {/* Pinned — clickable toggle */}
-                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        onClick={() => handleTogglePin(a.id, a.is_pinned)}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)"
-                      >
-                        <PushPin className="h-4 w-4" weight={a.is_pinned ? 'fill' : 'light'} />
-                      </button>
-                    </td>
-
-                    {/* Actions — kebab menu */}
-                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
-                          <DotsThree className="h-4 w-4" weight="bold" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEdit(a)}>
-                            {content.announcements.edit}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => handleDelete(a.id)}
-                          >
-                            {content.announcements.delete}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))}
+                      {/* Actions — kebab menu */}
+                      <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
+                            <DotsThree className="h-4 w-4" weight="bold" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEdit(a)}>
+                              {content.announcements.edit}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onClick={() => handleDelete(a.id)}
+                            >
+                              {content.announcements.delete}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
               </tbody>
             </table>
             <TablePagination
@@ -381,9 +392,11 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
 
           {/* Mobile condensed rows — all filtered results, no pagination */}
           <div className="min-w-0 overflow-hidden rounded-md border border-(--border-subtle) divide-y divide-(--border-subtle) [&>*:nth-child(even)]:bg-(--surface-sunken) md:hidden">
-            {visibleAnnouncements.map((a) => (
-              <MobileAnnouncementRow key={a.id} announcement={a} onEdit={handleEdit} />
-            ))}
+            <AnimatePresence initial={false}>
+              {visibleAnnouncements.map((a) => (
+                <MobileAnnouncementRow key={a.id} announcement={a} onEdit={handleEdit} />
+              ))}
+            </AnimatePresence>
           </div>
         </>
       )}
@@ -666,8 +679,14 @@ function MobileAnnouncementRow({
   announcement: AnnouncementData;
   onEdit: (a: AnnouncementData) => void;
 }) {
+  const { listItem } = useMotionPresets();
   return (
-    <div
+    <motion.div
+      layout
+      variants={listItem}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
       onClick={() => onEdit(a)}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -698,6 +717,6 @@ function MobileAnnouncementRow({
           {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
         </span>
       </div>
-    </div>
+    </motion.div>
   );
 }

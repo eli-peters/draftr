@@ -19,7 +19,7 @@ const filterChipVariants = cva(
     'border border-accent-primary-muted outline-none',
     'transition-[background-color,color,box-shadow,transform] duration-160 ease-out',
     'focus-ring',
-    'active:scale-[0.97]',
+    'active:scale-90',
     'disabled:pointer-events-none disabled:bg-action-disabled-bg disabled:text-action-disabled-text',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ].join(' '),

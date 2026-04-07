@@ -136,35 +136,38 @@ export function AvatarMenu({ userName, userInitials, avatarUrl, userRole }: Avat
             </DrawerHeader>
             <div className="flex flex-col gap-1 px-4 pb-6">
               <DrawerClose asChild>
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  className="w-full justify-start gap-3"
                   onClick={() => handleNavigate(routes.profile)}
-                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-accent"
                 >
                   <UserCircle className="size-5 text-muted-foreground" />
                   {content.myProfile}
-                </button>
+                </Button>
               </DrawerClose>
               <DrawerClose asChild>
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  className="w-full justify-start gap-3"
                   onClick={() => handleNavigate(routes.settings)}
-                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-accent"
                 >
                   <GearSix className="size-5 text-muted-foreground" />
                   {content.settings}
-                </button>
+                </Button>
               </DrawerClose>
               <div className="my-1 h-px bg-border" />
               <DrawerClose asChild>
-                <button
-                  type="button"
+                <Button
+                  variant="destructive"
+                  size="lg"
+                  className="w-full justify-start gap-3"
                   onClick={handleSignOut}
-                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
                 >
                   <SignOut className="size-5" />
                   {content.signOut}
-                </button>
+                </Button>
               </DrawerClose>
             </div>
           </DrawerContent>

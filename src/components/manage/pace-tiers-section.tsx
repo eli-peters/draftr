@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { routes } from '@/config/routes';
 import { Plus, Check, X, ArrowCounterClockwise, DotsThree } from '@phosphor-icons/react/dist/ssr';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useMotionPresets } from '@/lib/motion';
+import { InlineEditTransition } from '@/components/motion/inline-edit-transition';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SectionHeading } from '@/components/ui/section-heading';
@@ -77,6 +80,7 @@ interface PaceTiersSectionProps {
 }
 
 export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps) {
+  const { listItem } = useMotionPresets();
   const [tiers, setTiers] = useState(initialTiers);
   const [isPending, startTransition] = useTransition();
   const [isAdding, setIsAdding] = useState(false);
@@ -247,211 +251,227 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
             </tr>
           </thead>
           <tbody>
-            {tiers.map((tier, index) => {
-              const swatchClass = PACE_SWATCH_CLASSES[Math.min(index, MAX_PACE_TIERS - 1)];
-              const isEditing = editingTierId === tier.id;
+            <AnimatePresence initial={false}>
+              {tiers.map((tier, index) => {
+                const swatchClass = PACE_SWATCH_CLASSES[Math.min(index, MAX_PACE_TIERS - 1)];
+                const isEditing = editingTierId === tier.id;
 
-              if (isEditing) {
+                if (isEditing) {
+                  return (
+                    <motion.tr
+                      key={tier.id}
+                      layout
+                      variants={listItem}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      className="border-b border-(--border-subtle) last:border-b-0 bg-muted/30"
+                      onKeyDown={handleKeyDown}
+                    >
+                      <td className="p-3">
+                        <div className={`h-4 w-4 rounded-full ${swatchClass}`} />
+                      </td>
+                      <td className="p-3">
+                        <Input
+                          value={edit.name}
+                          onChange={(e) => setEdit({ ...edit, name: e.target.value })}
+                          className="h-7 w-32 font-mono text-sm"
+                          autoFocus
+                        />
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-1.5">
+                          <Input
+                            type="number"
+                            value={edit.movingPaceMin}
+                            onChange={(e) => setEdit({ ...edit, movingPaceMin: e.target.value })}
+                            className="h-7 w-16 font-mono text-sm"
+                            placeholder={content.minPlaceholder}
+                            min={content.paceRange.min}
+                            max={content.paceRange.max}
+                            step={content.paceRange.step}
+                          />
+                          <span className="text-xs text-(--text-tertiary)">–</span>
+                          <Input
+                            type="number"
+                            value={edit.movingPaceMax}
+                            onChange={(e) => setEdit({ ...edit, movingPaceMax: e.target.value })}
+                            className="h-7 w-16 font-mono text-sm"
+                            placeholder={content.maxPlaceholder}
+                            min={content.paceRange.min}
+                            max={content.paceRange.max}
+                            step={content.paceRange.step}
+                          />
+                          <span className="text-xs text-(--text-tertiary)">
+                            {content.rangeUnit}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-1.5">
+                          <Input
+                            type="number"
+                            value={edit.distanceMin}
+                            onChange={(e) => setEdit({ ...edit, distanceMin: e.target.value })}
+                            className="h-7 w-16 font-mono text-sm"
+                            placeholder={content.minPlaceholder}
+                            min={content.distanceRange.min}
+                            max={content.distanceRange.max}
+                            step={content.distanceRange.step}
+                          />
+                          <span className="text-xs text-(--text-tertiary)">–</span>
+                          <Input
+                            type="number"
+                            value={edit.distanceMax}
+                            onChange={(e) => setEdit({ ...edit, distanceMax: e.target.value })}
+                            className="h-7 w-16 font-mono text-sm"
+                            placeholder={content.maxPlaceholder}
+                            min={content.distanceRange.min}
+                            max={content.distanceRange.max}
+                            step={content.distanceRange.step}
+                          />
+                          <span className="text-xs text-(--text-tertiary)">
+                            {content.distanceUnit}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-3 font-mono text-body-sm text-(--text-primary)">
+                        {tier.upcoming_ride_count}
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-0.5">
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={handleSaveEdit}
+                            disabled={isPending}
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon-sm" onClick={cancelEdit}>
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  );
+                }
+
+                // Static display row
+                const paceRange = formatRange(
+                  tier.moving_pace_min,
+                  tier.moving_pace_max,
+                  content.rangeUnit,
+                );
+                const distanceRange = formatRange(
+                  tier.typical_distance_min,
+                  tier.typical_distance_max,
+                  content.distanceUnit,
+                );
+
                 return (
-                  <tr
+                  <motion.tr
                     key={tier.id}
-                    className="border-b border-(--border-subtle) last:border-b-0 bg-muted/30"
-                    onKeyDown={handleKeyDown}
+                    layout
+                    variants={listItem}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="group border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-sunken) hover:bg-muted/50"
                   >
                     <td className="p-3">
                       <div className={`h-4 w-4 rounded-full ${swatchClass}`} />
                     </td>
-                    <td className="p-3">
-                      <Input
-                        value={edit.name}
-                        onChange={(e) => setEdit({ ...edit, name: e.target.value })}
-                        className="h-7 w-32 font-mono text-sm"
-                        autoFocus
-                      />
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-1.5">
-                        <Input
-                          type="number"
-                          value={edit.movingPaceMin}
-                          onChange={(e) => setEdit({ ...edit, movingPaceMin: e.target.value })}
-                          className="h-7 w-16 font-mono text-sm"
-                          placeholder={content.minPlaceholder}
-                          min={content.paceRange.min}
-                          max={content.paceRange.max}
-                          step={content.paceRange.step}
-                        />
-                        <span className="text-xs text-(--text-tertiary)">–</span>
-                        <Input
-                          type="number"
-                          value={edit.movingPaceMax}
-                          onChange={(e) => setEdit({ ...edit, movingPaceMax: e.target.value })}
-                          className="h-7 w-16 font-mono text-sm"
-                          placeholder={content.maxPlaceholder}
-                          min={content.paceRange.min}
-                          max={content.paceRange.max}
-                          step={content.paceRange.step}
-                        />
-                        <span className="text-xs text-(--text-tertiary)">{content.rangeUnit}</span>
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-1.5">
-                        <Input
-                          type="number"
-                          value={edit.distanceMin}
-                          onChange={(e) => setEdit({ ...edit, distanceMin: e.target.value })}
-                          className="h-7 w-16 font-mono text-sm"
-                          placeholder={content.minPlaceholder}
-                          min={content.distanceRange.min}
-                          max={content.distanceRange.max}
-                          step={content.distanceRange.step}
-                        />
-                        <span className="text-xs text-(--text-tertiary)">–</span>
-                        <Input
-                          type="number"
-                          value={edit.distanceMax}
-                          onChange={(e) => setEdit({ ...edit, distanceMax: e.target.value })}
-                          className="h-7 w-16 font-mono text-sm"
-                          placeholder={content.maxPlaceholder}
-                          min={content.distanceRange.min}
-                          max={content.distanceRange.max}
-                          step={content.distanceRange.step}
-                        />
-                        <span className="text-xs text-(--text-tertiary)">
-                          {content.distanceUnit}
-                        </span>
-                      </div>
+                    <td className="p-3 font-mono text-body-sm font-medium text-(--text-primary)">
+                      {tier.name}
                     </td>
                     <td className="p-3 font-mono text-body-sm text-(--text-primary)">
-                      {tier.upcoming_ride_count}
+                      {paceRange}
+                    </td>
+                    <td className="p-3 font-mono text-body-sm text-(--text-primary)">
+                      {distanceRange}
+                    </td>
+                    <td className="p-3 font-mono text-body-sm text-(--text-primary)">
+                      {tier.upcoming_ride_count > 0 ? (
+                        <Link href={`${routes.manageRides}?pace=${tier.id}`}>
+                          <Button variant="ghost" size="xs" className="text-(--text-tertiary)">
+                            {tier.upcoming_ride_count}
+                          </Button>
+                        </Link>
+                      ) : (
+                        '0'
+                      )}
                     </td>
                     <td className="p-3">
-                      <div className="flex items-center gap-0.5">
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={handleSaveEdit}
-                          disabled={isPending}
-                        >
-                          <Check className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="icon-sm" onClick={cancelEdit}>
-                          <X className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
+                          <DotsThree className="h-4 w-4" weight="bold" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => startEdit(tier)}>
+                            {content.edit}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleMove(index, 'up')}
+                            disabled={index === 0}
+                          >
+                            {content.moveUp}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleMove(index, 'down')}
+                            disabled={index === tiers.length - 1}
+                          >
+                            {content.moveDown}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => handleDelete(tier)}
+                          >
+                            {content.delete}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
-                  </tr>
+                  </motion.tr>
                 );
-              }
-
-              // Static display row
-              const paceRange = formatRange(
-                tier.moving_pace_min,
-                tier.moving_pace_max,
-                content.rangeUnit,
-              );
-              const distanceRange = formatRange(
-                tier.typical_distance_min,
-                tier.typical_distance_max,
-                content.distanceUnit,
-              );
-
-              return (
-                <tr
-                  key={tier.id}
-                  className="group border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-sunken) hover:bg-muted/50"
-                >
-                  <td className="p-3">
-                    <div className={`h-4 w-4 rounded-full ${swatchClass}`} />
-                  </td>
-                  <td className="p-3 font-mono text-body-sm font-medium text-(--text-primary)">
-                    {tier.name}
-                  </td>
-                  <td className="p-3 font-mono text-body-sm text-(--text-primary)">{paceRange}</td>
-                  <td className="p-3 font-mono text-body-sm text-(--text-primary)">
-                    {distanceRange}
-                  </td>
-                  <td className="p-3 font-mono text-body-sm text-(--text-primary)">
-                    {tier.upcoming_ride_count > 0 ? (
-                      <Link href={`${routes.manageRides}?pace=${tier.id}`}>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto px-2 py-1 text-xs text-muted-foreground"
-                        >
-                          {tier.upcoming_ride_count}
-                        </Button>
-                      </Link>
-                    ) : (
-                      '0'
-                    )}
-                  </td>
-                  <td className="p-3">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
-                        <DotsThree className="h-4 w-4" weight="bold" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => startEdit(tier)}>
-                          {content.edit}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleMove(index, 'up')}
-                          disabled={index === 0}
-                        >
-                          {content.moveUp}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleMove(index, 'down')}
-                          disabled={index === tiers.length - 1}
-                        >
-                          {content.moveDown}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive"
-                          onClick={() => handleDelete(tier)}
-                        >
-                          {content.delete}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                </tr>
-              );
-            })}
+              })}
+            </AnimatePresence>
           </tbody>
         </table>
       </div>
 
-      {isAdding ? (
-        <div className="flex items-center gap-3 rounded-md border border-(--border-subtle) px-3 py-2">
-          <Input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder={content.namePlaceholder}
-            className="h-8 flex-1 font-mono"
-            autoFocus
-            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-          />
-          <Button variant="ghost" size="icon-sm" onClick={handleAdd} disabled={isPending}>
-            <Check className="h-4 w-4" />
+      <InlineEditTransition
+        editing={isAdding}
+        edit={
+          <div className="flex items-center gap-3 rounded-md border border-(--border-subtle) px-3 py-2">
+            <Input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder={content.namePlaceholder}
+              className="h-8 flex-1 font-mono"
+              autoFocus
+              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+            />
+            <Button variant="ghost" size="icon-sm" onClick={handleAdd} disabled={isPending}>
+              <Check className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon-sm" onClick={() => setIsAdding(false)}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        }
+        view={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsAdding(true)}
+            disabled={tiers.length >= MAX_PACE_TIERS}
+          >
+            <Plus className="mr-1.5 h-4 w-4" />
+            {content.addButton}
           </Button>
-          <Button variant="ghost" size="icon-sm" onClick={() => setIsAdding(false)}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      ) : (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsAdding(true)}
-          disabled={tiers.length >= MAX_PACE_TIERS}
-        >
-          <Plus className="mr-1.5 h-4 w-4" />
-          {content.addButton}
-        </Button>
-      )}
+        }
+      />
     </div>
   );
 }
