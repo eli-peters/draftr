@@ -250,6 +250,12 @@
   --card-padding: 1rem;
   --card-padding-md: 1.25rem;
 
+  /* Card stack gap — canonical vertical spacing between stacked cards.
+   * Registered as --spacing-card-stack so gap-card-stack, space-y-card-stack,
+   * mt-card-stack etc. are available as Tailwind utilities.
+   */
+  --spacing-card-stack: var(--card-stack-gap);
+
   /* ── Floating bar tokens ── */
   --bar-radius: 9999px;
   --bar-radius-desktop: var(--radius-2xl);
@@ -393,11 +399,19 @@
   --drawer-height-lg: 85dvh;
   --drawer-width-sidebar: 28rem;
   --drawer-inset: 0.5rem;
+  /* Vertical gap between stacked cards — single value used on every page.
+   * 1.5rem (24px) matches the dominant existing usage (gap-6) and gives clear
+   * card separation across all viewports without wasting space.
+   * Alternative: 1rem (16px) for denser layouts — swap this one value. */
+  --card-stack-gap: 1.5rem;
   --overlay: color-mix(in srgb, var(--color-neutral-950) 10%, transparent);
   --overlay-heavy: color-mix(in srgb, var(--color-neutral-950) 40%, transparent);
 
   /* ── Radius ── */
   --radius: 0.625rem;
+  /* iPhone screen corner radius minus --drawer-inset, so the sheet's
+     bottom corners sit visually concentric with the device bezel. */
+  --radius-device-bottom: 2.75rem;
 
   /* ── Elevation system ──
    * Canonical mapping of shadow level → surface role. If you're adding a

@@ -132,11 +132,32 @@ export interface RecentRide {
   id: string;
   title: string;
   ride_date: string;
+  start_time: string;
   distance_km: number | null;
+  elevation_m: number | null;
+  route_polyline: string | null;
+  pace_group: { name: string; sort_order: number } | null;
+}
+
+interface RawRecentRideRow {
+  ride: {
+    id: string;
+    title: string;
+    ride_date: string;
+    start_time: string;
+    distance_km: number | null;
+    elevation_m: number | null;
+    route_polyline: string | null;
+    pace_group:
+      | { name: string; sort_order: number }
+      | { name: string; sort_order: number }[]
+      | null;
+  };
 }
 
 /**
- * Fetch the user's recent past rides.
+ * Fetch the user's recent past rides — enriched with the data needed by the
+ * shared ride card visual language (pace badge, metadata row, map thumbnail).
  */
 export async function getUserRecentRides(userId: string, limit = 5): Promise<RecentRide[]> {
   const supabase = await createClient();
@@ -146,7 +167,16 @@ export async function getUserRecentRides(userId: string, limit = 5): Promise<Rec
     .from('ride_signups')
     .select(
       `
-      ride:rides!inner(id, title, ride_date, distance_km)
+      ride:rides!inner(
+        id,
+        title,
+        ride_date,
+        start_time,
+        distance_km,
+        elevation_m,
+        route_polyline,
+        pace_group:pace_groups(name, sort_order)
+      )
     `,
     )
     .eq('user_id', userId)
@@ -160,8 +190,20 @@ export async function getUserRecentRides(userId: string, limit = 5): Promise<Rec
     return [];
   }
 
-  return (data ?? []).map((signup) => {
-    const ride = signup.ride as unknown as RecentRide;
-    return ride;
+  return ((data ?? []) as unknown as RawRecentRideRow[]).map((signup) => {
+    const raw = signup.ride;
+    // Supabase foreign-table joins return either an object or a single-item array
+    // depending on the schema hint; normalize to a flat object.
+    const paceGroup = Array.isArray(raw.pace_group) ? (raw.pace_group[0] ?? null) : raw.pace_group;
+    return {
+      id: raw.id,
+      title: raw.title,
+      ride_date: raw.ride_date,
+      start_time: raw.start_time,
+      distance_km: raw.distance_km,
+      elevation_m: raw.elevation_m,
+      route_polyline: raw.route_polyline,
+      pace_group: paceGroup,
+    };
   });
 }

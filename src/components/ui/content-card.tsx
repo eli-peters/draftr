@@ -2,27 +2,32 @@ import * as React from 'react';
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 
 import { cn } from '@/lib/utils';
+import { CardIconHeader } from '@/components/ui/card-icon-header';
 
 /* ────────────────────────────────────────────────────────────────────────────
  * ContentCard — canonical content container for non-ride content.
  *
  * Variants control visual treatment:
- *   outlined  — border, no shadow (default)
- *   elevated  — shadow, no border
+ *   outlined  — shadow only (default; --card-border-width is 0px so no visible border)
+ *   elevated  — shadow only, no border token reference
  *   flat      — no border, no shadow (blends with page)
  *
  * Padding presets:
- *   compact   — p-3 md:p-4
- *   default   — p-4 md:p-5
+ *   compact   — p-[--card-padding] md:p-[--card-padding-md]
+ *   default   — p-[--card-padding-md] md:p-6
  *   spacious  — p-5 md:p-6
  *   none      — no padding (for custom internal layout)
+ *
+ * Icon + heading hero: when both props are present, delegates to CardIconHeader
+ * (the single canonical centred icon-above-title component). When heading is
+ * present without an icon, the heading renders inline without an icon.
  *
  * Interactive adds hover/press micro-interactions for clickable cards.
  * ──────────────────────────────────────────────────────────────────────── */
 
 const variantStyles = {
   outlined: 'border-(length:--card-border-width) border-border bg-card shadow-(--card-shadow)',
-  elevated: 'bg-card shadow-sm',
+  elevated: 'bg-card shadow-(--card-shadow)',
   flat: 'bg-card',
 } as const;
 
@@ -40,14 +45,12 @@ interface ContentCardProps extends React.ComponentProps<'div'> {
   variant?: ContentCardVariant;
   padding?: ContentCardPadding;
   interactive?: boolean;
-  /** Phosphor icon component rendered centered above the heading */
+  /** Phosphor icon component rendered centred above the heading via CardIconHeader */
   icon?: PhosphorIcon;
-  /** Heading text rendered centered inside the card at top */
+  /** Heading text rendered centred inside the card at top */
   heading?: string;
-  /** Subtitle text rendered below the heading */
+  /** Subtitle text rendered below the heading (below icon+heading pair) */
   subtitle?: string;
-  /** Additional class names applied to the heading element */
-  headingClassName?: string;
 }
 
 function ContentCard({
@@ -58,7 +61,6 @@ function ContentCard({
   icon,
   heading,
   subtitle,
-  headingClassName,
   children,
   ...props
 }: ContentCardProps) {
@@ -84,18 +86,25 @@ function ContentCard({
           data-slot="content-card-hero"
           className={cn('text-center', children && 'mb-3 md:mb-4')}
         >
-          {icon && (
-            <div className="mb-2 flex justify-center">
-              {React.createElement(icon, { weight: 'duotone', className: 'size-8 text-primary' })}
-            </div>
-          )}
-          {heading && (
-            <h3
-              data-slot="content-card-heading"
-              className={cn('text-lg font-semibold leading-snug', headingClassName)}
-            >
-              {heading}
-            </h3>
+          {icon && heading ? (
+            // Both icon and heading: use the single canonical header component.
+            <CardIconHeader icon={icon} title={heading} />
+          ) : (
+            <>
+              {icon && (
+                <div className="mb-2 flex justify-center">
+                  {React.createElement(icon, {
+                    weight: 'duotone',
+                    className: 'size-8 text-primary',
+                  })}
+                </div>
+              )}
+              {heading && (
+                <h3 data-slot="content-card-heading" className="text-lg font-semibold leading-snug">
+                  {heading}
+                </h3>
+              )}
+            </>
           )}
           {subtitle && (
             <p data-slot="content-card-subtitle" className="mt-1 text-sm text-muted-foreground">
@@ -133,5 +142,21 @@ function ContentCardDescription({ className, ...props }: React.ComponentProps<'p
   );
 }
 
-export { ContentCard, ContentCardHeader, ContentCardTitle, ContentCardDescription };
+function ContentCardFooter({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="content-card-footer"
+      className={cn('mt-6 border-t border-border/30 pt-4', className)}
+      {...props}
+    />
+  );
+}
+
+export {
+  ContentCard,
+  ContentCardHeader,
+  ContentCardTitle,
+  ContentCardDescription,
+  ContentCardFooter,
+};
 export type { ContentCardVariant, ContentCardPadding, ContentCardProps };

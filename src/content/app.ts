@@ -522,8 +522,29 @@ export const appContent = {
   profile: {
     heading: 'Profile',
     signOut: 'Sign Out',
-    recentRides: 'Recent Rides',
+    recentRides: 'Recent rides',
+    recentRidesLimit: 'Last 5',
     noRidesYet: 'No rides yet — sign up for your first one!',
+    headlineStat: {
+      label: 'club rides',
+    },
+    editProfile: 'Edit profile',
+    saveChanges: 'Save changes',
+    saved: 'Profile updated',
+    bioPlaceholder: 'Add a short bio',
+    noBio: 'No bio yet',
+    bioSaved: 'Bio updated',
+    paceSaved: 'Pace preference updated',
+    sections: {
+      about: 'About',
+      contact: 'Contact',
+      contactInfo: 'Contact information',
+      preferences: 'Preferences',
+      paceGroup: 'Preferred Pace',
+      memberSince: (since: string) => `Member since ${since}`,
+      role: 'Role',
+      emergencyContact: 'Emergency contact',
+    },
     stats: {
       totalRides: 'Total Rides',
       thisMonth: 'This Month',
@@ -531,17 +552,9 @@ export const appContent = {
       elevation: 'Elevation',
       delta: (change: number) => `${change > 0 ? '+' : ''}${change} vs last month`,
     },
-    noBio: 'No bio yet',
-    bioSaved: 'Bio updated',
-    paceSaved: 'Pace preference updated',
-    sections: {
-      about: 'About',
-      contactInfo: 'Contact information',
-      preferences: 'Preferences',
-      paceGroup: 'Preferred Pace',
-      memberSince: 'Member since',
-      role: 'Role',
-      emergencyContact: 'Emergency Contact',
+    statsBento: {
+      totalRides: 'Total rides',
+      thisMonth: 'This month',
     },
     contactInfo: {
       nameLabel: 'Name',
@@ -563,6 +576,8 @@ export const appContent = {
       noContact: 'No emergency contact set',
       saved: 'Emergency contact updated',
       visibilityNote: 'Only visible to ride leaders and admins',
+      visibilityFootnote:
+        'Visible to admins, and to ride leaders within 12 hours of a ride they lead with this rider.',
     },
     emergencyAccess: {
       banner: (rideName: string, expiresTime: string) =>

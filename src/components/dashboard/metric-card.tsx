@@ -1,6 +1,7 @@
-import { ArrowUp, ArrowDown } from '@phosphor-icons/react/dist/ssr';
-import type { IconProps } from '@phosphor-icons/react';
+import { ArrowUpIcon, ArrowDownIcon } from '@phosphor-icons/react/dist/ssr';
+import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 import { AnimatedCounter } from '@/components/motion/animated-counter';
+import { CardIconHeader } from '@/components/ui/card-icon-header';
 import { cn } from '@/lib/utils';
 
 type TrendSentiment = 'positive' | 'neutral' | 'negative';
@@ -13,7 +14,7 @@ interface TrendVisualization {
 }
 
 export interface MetricCardProps {
-  icon: React.ComponentType<IconProps>;
+  icon: PhosphorIcon;
   title: string;
   value: number;
   suffix?: string;
@@ -29,7 +30,7 @@ const trendBadgeBg: Record<TrendSentiment, string> = {
 };
 
 function TrendBadge({ direction, label, sentiment }: TrendVisualization) {
-  const Arrow = direction === 'up' ? ArrowUp : ArrowDown;
+  const Arrow = direction === 'up' ? ArrowUpIcon : ArrowDownIcon;
   return (
     <div
       className={cn(
@@ -44,7 +45,7 @@ function TrendBadge({ direction, label, sentiment }: TrendVisualization) {
 }
 
 export function MetricCard({
-  icon: Icon,
+  icon,
   title,
   value,
   suffix,
@@ -55,16 +56,11 @@ export function MetricCard({
   return (
     <div
       className={cn(
-        'flex min-w-0 flex-col items-center justify-center gap-2 rounded-[20px] border border-border bg-card p-3 text-card-foreground',
+        'flex min-w-0 flex-col items-center justify-center gap-2 rounded-(--card-radius) bg-card shadow-(--card-shadow) p-(--card-padding) text-card-foreground',
         className,
       )}
     >
-      <div className="flex flex-col items-center gap-2">
-        <Icon className="size-8 text-(--color-accent-primary-default)" weight="duotone" />
-        <p className="w-full font-display text-base font-semibold tracking-[-0.0288px] text-center text-foreground">
-          {title}
-        </p>
-      </div>
+      <CardIconHeader icon={icon} title={title} />
 
       <div className="flex w-full flex-col items-center gap-3">
         <AnimatedCounter

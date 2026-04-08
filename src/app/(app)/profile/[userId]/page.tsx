@@ -1,19 +1,15 @@
 import { notFound, redirect } from 'next/navigation';
-import Link from 'next/link';
 import { format } from 'date-fns';
-import { Bicycle, Path, CaretRight, FirstAidKit } from '@phosphor-icons/react/dist/ssr';
 import { createClient, getUser } from '@/lib/supabase/server';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { ContentCard } from '@/components/ui/content-card';
-import { appContent } from '@/content/app';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { routes } from '@/config/routes';
 import { MemberStatus } from '@/config/statuses';
 import { getInitials } from '@/lib/utils';
-import { formatPhoneDisplay } from '@/lib/phone';
-import { dateFormats, units } from '@/config/formatting';
-import { DashboardShell } from '@/components/dashboard/dashboard-shell';
+import { dateFormats } from '@/config/formatting';
 import { getUserProfile, getUserProfileStats, getUserRecentRides } from '@/lib/profile/queries';
+import { getProfileViewerAccess } from '@/lib/profile/access';
+import { ProfilePage } from '@/components/profile/profile-page';
+import { appContent } from '@/content/app';
 import type { UserRole } from '@/config/navigation';
 
 const { profile: content } = appContent;
@@ -25,16 +21,15 @@ export default async function PublicProfilePage({
 }) {
   const { userId } = await params;
 
-  // Ensure the viewer is authenticated
   const authUser = await getUser();
   if (!authUser) redirect(routes.signIn);
 
-  const supabase = await createClient();
-
-  // If viewing your own profile, redirect to the main profile page
+  // Self → redirect to own profile route.
   if (authUser.id === userId) redirect(routes.profile);
 
-  // Fetch the viewer's role and the subject's membership status in parallel
+  const supabase = await createClient();
+
+  // Viewer role + subject membership status in parallel.
   const [{ data: viewerMembership }, { data: membership }] = await Promise.all([
     supabase
       .from('club_memberships')
@@ -46,10 +41,8 @@ export default async function PublicProfilePage({
   ]);
 
   const viewerRole: UserRole = (viewerMembership?.role as UserRole) ?? 'rider';
-  const isLeaderOrAbove = viewerRole === 'ride_leader' || viewerRole === 'admin';
-  const isAdmin = viewerRole === 'admin';
 
-  // Deactivated member state
+  // Deactivated member placeholder.
   if (membership?.status === MemberStatus.INACTIVE) {
     const { data: basicUser } = await supabase
       .from('users')
@@ -64,7 +57,7 @@ export default async function PublicProfilePage({
       <div className="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
         <Avatar className="h-24 w-24 opacity-muted">
           {basicUser?.avatar_url && <AvatarImage src={basicUser.avatar_url} alt={name} />}
-          <AvatarFallback className="bg-muted text-muted-foreground text-2xl font-bold">
+          <AvatarFallback className="bg-muted text-2xl font-bold text-muted-foreground">
             {initials}
           </AvatarFallback>
         </Avatar>
@@ -74,144 +67,46 @@ export default async function PublicProfilePage({
     );
   }
 
-  // Fetch public profile data
-  const [profile, stats, recentRides] = await Promise.all([
+  const [profile, stats, recentRides, { data: paceGroups }] = await Promise.all([
     getUserProfile(userId),
     getUserProfileStats(userId),
     getUserRecentRides(userId),
+    supabase
+      .from('pace_groups')
+      .select('id, name, sort_order')
+      .order('sort_order', { ascending: true }),
   ]);
 
   if (!profile) notFound();
 
-  const displayName = profile.full_name;
-  const initials = getInitials(profile.full_name);
-  const memberSince = format(new Date(profile.created_at), dateFormats.monthYear);
-  const role = profile.role as keyof typeof content.roles;
+  const access = await getProfileViewerAccess({
+    viewerId: authUser.id,
+    viewerRole,
+    subjectId: userId,
+    now: new Date(),
+  });
 
   return (
-    <DashboardShell>
-      {/* Hero: Centered avatar */}
-      <div className="flex flex-col items-center text-center">
-        <Avatar className="h-24 w-24 ring-2 ring-primary/20">
-          {profile.avatar_url && <AvatarImage src={profile.avatar_url} alt={profile.full_name} />}
-          <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-        <h1 className="mt-4 text-2xl font-bold tracking-tight text-foreground">{displayName}</h1>
-        {isAdmin && <p className="text-base text-muted-foreground">{profile.email}</p>}
-        <Badge variant="default" className="mt-2">
-          {content.roles[role] ?? role}
-        </Badge>
-      </div>
-
-      {/* Stat Strip */}
-      <ContentCard padding="spacious" className="mt-8">
-        <div className="grid grid-cols-2 divide-x divide-border">
-          <div className="flex flex-col items-center px-2">
-            <span className="font-mono text-xl font-bold tabular-nums text-foreground">
-              {stats.totalRides}
-            </span>
-            <p className="text-sm font-medium text-muted-foreground mt-1.5 text-center">
-              {content.stats.totalRides}
-            </p>
-          </div>
-          <div className="flex flex-col items-center px-2">
-            <span className="font-mono text-xl font-bold tabular-nums text-foreground">
-              {memberSince}
-            </span>
-            <p className="text-sm font-medium text-muted-foreground mt-1.5 text-center">
-              {content.sections.memberSince}
-            </p>
-          </div>
-        </div>
-      </ContentCard>
-
-      {/* About */}
-      {profile.bio && (
-        <ContentCard padding="spacious" className="mt-8" heading={content.sections.about}>
-          <p className="text-base text-foreground/75 leading-relaxed">{profile.bio}</p>
-        </ContentCard>
-      )}
-
-      {/* Preferences */}
-      {profile.preferred_pace_group && (
-        <ContentCard
-          padding="spacious"
-          className="mt-8 flex items-center gap-3"
-          heading={content.sections.preferences}
-        >
-          <Bicycle className="h-5 w-5 text-primary" />
-          <div>
-            <p className="text-sm text-muted-foreground">{content.sections.paceGroup}</p>
-            <p className="font-medium text-foreground text-base">{profile.preferred_pace_group}</p>
-          </div>
-        </ContentCard>
-      )}
-
-      {/* Emergency Contact — visible to ride leaders and admins */}
-      {isLeaderOrAbove && (
-        <ContentCard
-          padding="spacious"
-          className="mt-8"
-          heading={content.sections.emergencyContact}
-        >
-          <p className="text-xs text-muted-foreground mb-3">
-            {content.publicProfile.emergencyContactNote}
-          </p>
-          {profile.emergency_contact_name ? (
-            <div className="flex items-center gap-3">
-              <FirstAidKit className="h-5 w-5 text-destructive" />
-              <div>
-                <p className="font-medium text-foreground text-base">
-                  {profile.emergency_contact_name}
-                </p>
-                {profile.emergency_contact_phone && (
-                  <p className="text-sm text-muted-foreground">
-                    {formatPhoneDisplay(profile.emergency_contact_phone)}
-                  </p>
-                )}
-              </div>
-            </div>
-          ) : (
-            <p className="text-base text-muted-foreground italic">
-              {content.emergencyContact.noContact}
-            </p>
-          )}
-        </ContentCard>
-      )}
-
-      {/* Recent Rides */}
-      {recentRides.length > 0 && (
-        <ContentCard heading={content.recentRides} className="mt-8">
-          <div className="divide-y divide-border">
-            {recentRides.map((ride) => (
-              <Link
-                key={ride.id}
-                href={routes.ride(ride.id)}
-                className="flex items-center justify-between py-3 first:pt-0 last:pb-0 group"
-              >
-                <div className="min-w-0">
-                  <p className="text-base font-medium text-foreground truncate group-hover:text-primary transition-colors">
-                    {ride.title}
-                  </p>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                    <span>{format(new Date(ride.ride_date), dateFormats.monthDay)}</span>
-                    {ride.distance_km != null && (
-                      <span className="flex items-center gap-1 text-info">
-                        <Path className="h-3.5 w-3.5" />
-                        {ride.distance_km}
-                        {units.km}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <CaretRight className="h-4 w-4 text-muted-foreground/50" />
-              </Link>
-            ))}
-          </div>
-        </ContentCard>
-      )}
-    </DashboardShell>
+    <ProfilePage
+      subject={{
+        id: profile.id,
+        fullName: profile.full_name,
+        email: profile.email,
+        avatarUrl: profile.avatar_url,
+        role: profile.role as UserRole,
+        memberSince: format(new Date(profile.created_at), dateFormats.monthYear),
+        totalRides: stats.totalRides,
+        ridesThisMonth: stats.ridesThisMonth,
+        bio: profile.bio ?? '',
+        preferredPaceGroup: profile.preferred_pace_group ?? '',
+        phoneNumber: profile.phone_number ?? '',
+        emergencyContactName: profile.emergency_contact_name ?? '',
+        emergencyContactPhone: profile.emergency_contact_phone ?? '',
+        emergencyContactRelationship: profile.emergency_contact_relationship ?? '',
+      }}
+      access={access}
+      paceGroups={paceGroups ?? []}
+      recentRides={recentRides}
+    />
   );
 }
