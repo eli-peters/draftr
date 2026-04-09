@@ -89,7 +89,7 @@ export function RideKebabMenu({ rideId, canCancel, signupCount }: RideKebabMenuP
           <AlertDialogFooter>
             <AlertDialogClose
               render={
-                <Button variant="outline" size="sm" disabled={isPending}>
+                <Button variant="ghost" size="sm" disabled={isPending}>
                   {actionBar.confirmCancel}
                 </Button>
               }

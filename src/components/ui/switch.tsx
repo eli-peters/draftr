@@ -1,32 +1,73 @@
 'use client';
 
 import { Switch as SwitchPrimitive } from '@base-ui/react/switch';
+import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
-function Switch({
-  className,
-  size = 'default',
-  ...props
-}: SwitchPrimitive.Root.Props & {
-  size?: 'sm' | 'default';
-}) {
+/* ---------------------------------------------------------------------------
+ * Toggle
+ *
+ * Stretched on/off switch inspired by iOS 26's elongated toggle — wider
+ * track, capsule-shaped thumb rather than a perfect circle. Uses Draftr's
+ * semantic tokens and Tailwind scale, not copied iOS specs.
+ *
+ * - Track: 2:1 stretched stadium (h-7 w-14)
+ * - Thumb: 1.33:1 horizontal capsule (h-6 w-8) with 2px inset
+ * - White thumb in both modes (consistent identity cue)
+ *
+ * Built on Base UI Switch so focus, keyboard, and form submission come for
+ * free. Use this for boolean state. For mutually-exclusive value picking,
+ * use SegmentedControl instead.
+ * -------------------------------------------------------------------------*/
+
+const toggleTrackVariants = cva(
+  [
+    'peer group/toggle relative inline-flex h-7 w-14 shrink-0 items-center rounded-full',
+    'border border-transparent outline-none',
+    'transition-[background-color,border-color,box-shadow] duration-(--duration-normal) ease-(--ease-out)',
+    'focus-ring invalid-ring',
+    // Expand hit target without affecting layout
+    'after:absolute after:-inset-x-3 after:-inset-y-2',
+    'data-unchecked:bg-input dark:data-unchecked:bg-input/80',
+    'data-disabled:cursor-not-allowed data-disabled:opacity-50',
+    'dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
+  ].join(' '),
+  {
+    variants: {
+      colorScheme: {
+        primary: 'data-checked:bg-action-primary',
+        secondary: 'data-checked:bg-action-secondary',
+      },
+    },
+    defaultVariants: { colorScheme: 'primary' },
+  },
+);
+
+// Capsule thumb: fully-rounded rectangle, white in both modes (iOS-inspired
+// identity cue). Travel = 20px: off at 2px left inset, on at 22px.
+const TOGGLE_THUMB_CLASS = [
+  'pointer-events-none block h-6 w-8 translate-x-0.5 rounded-full bg-white ring-0 shadow-md',
+  'transition-transform duration-(--duration-normal) ease-(--ease-out)',
+  'data-checked:translate-x-[22px]',
+  'motion-reduce:duration-100',
+].join(' ');
+
+export interface ToggleProps
+  extends SwitchPrimitive.Root.Props, VariantProps<typeof toggleTrackVariants> {}
+
+function Toggle({ className, colorScheme = 'primary', ...props }: ToggleProps) {
   return (
     <SwitchPrimitive.Root
-      data-slot="switch"
-      data-size={size}
-      className={cn(
-        'peer group/switch relative inline-flex shrink-0 items-center rounded-full border border-transparent transition-[background-color,border-color,box-shadow] duration-160 ease-out outline-none after:absolute after:-inset-x-3 after:-inset-y-2 focus-ring invalid-ring data-[size=default]:h-[18.4px] data-[size=default]:w-[32px] data-[size=sm]:h-[14px] data-[size=sm]:w-[24px] dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 data-checked:bg-primary data-unchecked:bg-input dark:data-unchecked:bg-input/80 data-disabled:cursor-not-allowed data-disabled:opacity-50',
-        className,
-      )}
+      data-slot="toggle"
+      className={cn(toggleTrackVariants({ colorScheme }), className)}
       {...props}
     >
-      <SwitchPrimitive.Thumb
-        data-slot="switch-thumb"
-        className="pointer-events-none block rounded-full bg-background ring-0 transition-transform group-data-[size=default]/switch:size-4 group-data-[size=sm]/switch:size-3 group-data-[size=default]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=sm]/switch:data-checked:translate-x-[calc(100%-2px)] dark:data-checked:bg-primary-foreground group-data-[size=default]/switch:data-unchecked:translate-x-0 group-data-[size=sm]/switch:data-unchecked:translate-x-0 dark:data-unchecked:bg-foreground"
-      />
+      <SwitchPrimitive.Thumb data-slot="toggle-thumb" className={TOGGLE_THUMB_CLASS} />
     </SwitchPrimitive.Root>
   );
 }
 
-export { Switch };
+export { Toggle };
+// Alias so legacy `Switch` imports resolve without touching every call site.
+export { Toggle as Switch };

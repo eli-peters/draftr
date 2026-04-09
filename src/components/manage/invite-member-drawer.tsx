@@ -209,7 +209,7 @@ export function InviteMemberDrawer({ clubId, trigger, onSuccess }: InviteMemberD
               </Button>
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 className="w-full"
                 onClick={() => setOpen(false)}
               >

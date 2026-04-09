@@ -206,11 +206,11 @@ function SignupRow({
 
       {canRemove && onRemove && (
         <Button
-          variant="link"
+          variant="muted"
           size="xs"
           onClick={() => onRemove(signup.user_id, signup.user_name)}
           aria-label={ridesContent.roster.removeConfirmTitle(signup.user_name)}
-          className="text-muted-foreground hover:text-destructive"
+          className="hover:text-destructive"
         >
           {ridesContent.roster.removeRider}
         </Button>

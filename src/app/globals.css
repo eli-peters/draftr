@@ -79,6 +79,7 @@
   --color-tabs-trigger-active-border: var(--tabs-trigger-active-border);
   --color-tabs-trigger-active-text: var(--tabs-trigger-active-text);
   --color-destructive-focus-bg: var(--destructive-focus-bg);
+  --color-destructive-hover-bg: var(--destructive-hover-bg);
 
   /* Semantic tokens → Tailwind (new vocabulary) */
   --color-surface-default: var(--surface-default);
@@ -201,6 +202,15 @@
   --color-badge-notification-bg: var(--badge-notification-bg);
   --color-badge-notification-text: var(--badge-notification-text);
 
+  /* Chip component tokens → Tailwind */
+  --color-chip-primary-hover-bg: var(--chip-primary-hover-bg);
+  --color-chip-primary-disabled-bg: var(--chip-primary-disabled-bg);
+  --color-chip-primary-disabled-border: var(--chip-primary-disabled-border);
+  --color-chip-primary-disabled-text: var(--chip-primary-disabled-text);
+  --color-chip-secondary-disabled-bg: var(--chip-secondary-disabled-bg);
+  --color-chip-secondary-disabled-text: var(--chip-secondary-disabled-text);
+  --color-chip-focus-border: var(--chip-focus-border);
+
   /* Card border tokens → Tailwind (muted status borders for card outlines) */
   --color-card-border-success: var(--card-border-success);
   --color-card-border-warning: var(--card-border-warning);
@@ -260,7 +270,7 @@
   --bar-radius: 9999px;
   --bar-radius-desktop: var(--radius-2xl);
   --bar-padding-x: 0.8rem;
-  --bar-padding-x-action: 2rem;
+  --bar-padding-x-action: clamp(1.25rem, 1rem + 1vw, 2rem);
   --bar-padding-x-desktop: 2rem;
   --bar-padding-y: 1.5rem;
   --bar-padding-y-desktop: 1.5rem;
@@ -270,8 +280,10 @@
   --bar-shadow-desktop: var(--shadow-md);
   --bar-bg-opacity: 40%;
   --bar-backdrop-blur: 12px;
-  --bar-inset-x: 1rem;
+  --bar-inset-x: 0.5rem;
+  --bar-inset-bottom: 0.5rem;
   --bar-fade-height: 8rem;
+  --bar-min-height: 5rem;
 
   /* ── Fluid typography scale ──
    * Sizes scale smoothly between 375px (mobile floor) and 1280px (desktop
@@ -386,6 +398,7 @@
   --tabs-trigger-active-border: transparent;
   --tabs-trigger-active-text: var(--text-on-primary);
   --destructive-focus-bg: color-mix(in srgb, var(--action-danger-default) 10%, transparent);
+  --destructive-hover-bg: color-mix(in srgb, var(--action-danger-default) 8%, transparent);
   --fills-primary: color-mix(in srgb, var(--color-neutral-500) 20%, transparent);
 
   /* ── Toast — opaque feedback backgrounds ── */
@@ -487,6 +500,7 @@
   --tabs-trigger-active-border: transparent;
   --tabs-trigger-active-text: var(--text-on-primary);
   --destructive-focus-bg: color-mix(in srgb, var(--action-danger-default) 20%, transparent);
+  --destructive-hover-bg: color-mix(in srgb, var(--action-danger-default) 16%, transparent);
   --fills-primary: color-mix(in srgb, var(--color-neutral-400) 20%, transparent);
 
   /* ── Layout ── */

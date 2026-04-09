@@ -4,6 +4,11 @@ import { revalidatePath } from 'next/cache';
 import { createClient, getUser } from '@/lib/supabase/server';
 import { appContent } from '@/content/app';
 import { toE164 } from '@/lib/phone';
+import type { UserPreferences } from '@/types/user-preferences';
+import {
+  readNotificationPreferences,
+  type NotificationChannel,
+} from '@/types/notification-preferences';
 
 const { common, errors, profile: profileContent } = appContent;
 
@@ -70,28 +75,74 @@ export async function updateProfile(data: UpdateProfileData) {
   return { success: true };
 }
 
+/* ---------------------------------------------------------------------------
+ * User preferences
+ * ---------------------------------------------------------------------------*/
+
 /**
- * Toggle push notification preference.
+ * Merge partial updates into the user_preferences JSONB column.
+ * Existing keys are preserved; only the provided keys are overwritten.
  */
-export async function updateNotificationPreference(pushEnabled: boolean) {
+export async function updateUserPreferences(prefs: Partial<UserPreferences>) {
   const supabase = await createClient();
   const user = await getUser();
 
   if (!user) return { error: common.notAuthenticated };
 
-  // Fetch current preferences to preserve other fields
+  const { data: current } = await supabase
+    .from('users')
+    .select('user_preferences')
+    .eq('id', user.id)
+    .single();
+
+  const existing = (current?.user_preferences as Record<string, unknown>) ?? {};
+
+  const { error } = await supabase
+    .from('users')
+    .update({
+      user_preferences: { ...existing, ...prefs },
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', user.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/settings');
+  return { success: true };
+}
+
+/* ---------------------------------------------------------------------------
+ * Notification preferences
+ * ---------------------------------------------------------------------------*/
+
+/**
+ * Update a delivery channel in notification_preferences.
+ * Normalises legacy flat shape into the nested { channels, events } form on
+ * write so the column implicitly migrates the first time a user toggles
+ * anything after Round 2 lands.
+ */
+export async function updateNotificationChannel(channel: NotificationChannel, enabled: boolean) {
+  const supabase = await createClient();
+  const user = await getUser();
+
+  if (!user) return { error: common.notAuthenticated };
+
   const { data: current } = await supabase
     .from('users')
     .select('notification_preferences')
     .eq('id', user.id)
     .single();
 
-  const prefs = (current?.notification_preferences as Record<string, unknown>) ?? {};
+  const normalised = readNotificationPreferences(current?.notification_preferences);
+  const next = {
+    ...normalised,
+    channels: { ...normalised.channels, [channel]: enabled },
+  };
 
   const { error } = await supabase
     .from('users')
     .update({
-      notification_preferences: { ...prefs, push: pushEnabled },
+      notification_preferences: next,
       updated_at: new Date().toISOString(),
     })
     .eq('id', user.id);

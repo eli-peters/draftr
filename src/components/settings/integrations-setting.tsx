@@ -3,17 +3,17 @@
 import { useState, useTransition, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { LinkSimple, SignOut } from '@phosphor-icons/react/dist/ssr';
+import { LinkBreak, LinkSimple, PlugsConnected } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ContentCard } from '@/components/ui/content-card';
-import { appContent } from '@/content/app';
+import { settingsContent } from '@/content/settings';
 import { integrations, serviceIcons } from '@/config/integrations';
 import { initiateConnect, disconnectService } from '@/lib/integrations/actions';
 import type { ConnectionInfo } from '@/lib/integrations/queries';
 import type { IntegrationService } from '@/types/database';
 
-const content = appContent.settings.integrations;
+const content = settingsContent.connections;
 
 interface IntegrationsSettingProps {
   connections: ConnectionInfo[];
@@ -48,7 +48,12 @@ export function IntegrationsSetting({ connections }: IntegrationsSettingProps) {
   const services = Object.values(integrations);
 
   return (
-    <ContentCard heading={content.heading} subtitle={content.description}>
+    <ContentCard
+      icon={PlugsConnected}
+      heading={content.title}
+      subtitle={content.subtitle}
+      padding="spacious"
+    >
       <div className="divide-y divide-border">
         {services.map((config) => {
           const connection = connections.find((c) => c.service === config.service);
@@ -141,7 +146,7 @@ function ServiceRow({ service, displayName, brandColor, connection }: ServiceRow
           disabled={isLoading}
           className="text-muted-foreground hover:text-destructive shrink-0"
         >
-          <SignOut className="h-4 w-4" />
+          <LinkBreak className="h-4 w-4" />
           {isLoading ? content.disconnecting : content.disconnectButton}
         </Button>
       </div>

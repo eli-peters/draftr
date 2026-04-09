@@ -437,7 +437,7 @@ function DesktopRideRow({ ride, isLeader }: { ride: ManageRideData; isLeader: bo
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogClose>
-                <Button variant="outline">{common.cancel}</Button>
+                <Button variant="ghost">{common.cancel}</Button>
               </AlertDialogClose>
               <Button variant="destructive" onClick={handleCancel}>
                 {ridesContent.actionBar.confirmCancelRide}

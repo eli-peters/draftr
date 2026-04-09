@@ -236,6 +236,15 @@
   --badge-notification-bg: var(--color-secondary-500);
   --badge-notification-text: var(--color-neutral-0);
 
+  /* chip */
+  --chip-primary-hover-bg: var(--color-primary-100);
+  --chip-primary-disabled-bg: var(--color-neutral-100);
+  --chip-primary-disabled-border: var(--color-neutral-400);
+  --chip-primary-disabled-text: var(--color-neutral-400);
+  --chip-secondary-disabled-bg: var(--color-primary-100);
+  --chip-secondary-disabled-text: var(--color-primary-300);
+  --chip-focus-border: var(--color-primary-200);
+
   /* avatar */
   --avatar-1-bg: var(--color-primary-50);
   --avatar-1-fg: var(--color-primary-700);
@@ -385,6 +394,15 @@
   --badge-count-text: var(--color-neutral-50);
   --badge-notification-bg: var(--color-secondary-500);
   --badge-notification-text: var(--color-neutral-0);
+
+  /* chip */
+  --chip-primary-hover-bg: var(--color-primary-900);
+  --chip-primary-disabled-bg: var(--color-neutral-800);
+  --chip-primary-disabled-border: var(--color-neutral-600);
+  --chip-primary-disabled-text: var(--color-neutral-600);
+  --chip-secondary-disabled-bg: var(--color-primary-900);
+  --chip-secondary-disabled-text: var(--color-primary-700);
+  --chip-focus-border: var(--color-primary-800);
 
   /* avatar */
   --avatar-1-bg: var(--color-primary-950);

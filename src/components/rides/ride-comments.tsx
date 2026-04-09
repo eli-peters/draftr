@@ -171,7 +171,7 @@ function CommentRow({
               </Button>
               <Button
                 size="sm"
-                variant="ghost"
+                variant="muted"
                 onClick={() => {
                   setIsEditing(false);
                   setEditBody(comment.body);
@@ -189,20 +189,20 @@ function CommentRow({
           <div className="mt-0.5 flex gap-3">
             {isOwn && (
               <Button
-                variant="link"
+                variant="muted"
                 size="xs"
                 onClick={() => setIsEditing(true)}
-                className="text-overline text-muted-foreground hover:text-foreground"
+                className="text-overline"
               >
                 {content.edit}
               </Button>
             )}
             <Button
-              variant="link"
+              variant="muted"
               size="xs"
               onClick={() => setDeleteOpen(true)}
               disabled={isPending}
-              className="text-overline text-muted-foreground hover:text-destructive"
+              className="text-overline hover:text-destructive"
             >
               {content.delete}
             </Button>
@@ -230,7 +230,7 @@ function CommentRow({
             <AlertDialogFooter>
               <AlertDialogClose
                 render={
-                  <Button variant="outline" size="sm" disabled={isPending}>
+                  <Button variant="ghost" size="sm" disabled={isPending}>
                     {content.cancelEdit}
                   </Button>
                 }

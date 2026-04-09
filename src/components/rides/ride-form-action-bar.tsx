@@ -1,7 +1,7 @@
 'use client';
 
+import { ActionBar } from '@/components/ui/action-bar';
 import { Button } from '@/components/ui/button';
-import { FloatingActionBar } from '@/components/ui/floating-action-bar';
 import { appContent } from '@/content/app';
 
 const { rides: ridesContent, common } = appContent;
@@ -14,20 +14,16 @@ interface RideFormActionBarProps {
 
 export function RideFormActionBar({ isEdit, isPending, error }: RideFormActionBarProps) {
   return (
-    <FloatingActionBar>
-      {error && <p className="text-sm text-destructive">{error}</p>}
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-          onClick={() => history.back()}
-        >
+    <ActionBar>
+      {error && <p className="mb-2 text-sm text-destructive">{error}</p>}
+      <div className="flex items-center justify-between gap-3">
+        <Button type="button" variant="muted" size="sm" onClick={() => history.back()}>
           {isEdit ? common.discard : common.cancel}
-        </button>
+        </Button>
         <Button type="submit" disabled={isPending}>
           {isPending ? common.loading : isEdit ? common.save : ridesContent.create.submitButton}
         </Button>
       </div>
-    </FloatingActionBar>
+    </ActionBar>
   );
 }

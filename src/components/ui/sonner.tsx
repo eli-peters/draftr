@@ -19,36 +19,39 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group"
       richColors
       icons={{
-        success: <CheckCircle weight="fill" className="size-4" />,
-        info: <Info weight="fill" className="size-4" />,
-        warning: <WarningCircle weight="fill" className="size-4" />,
-        error: <XCircle weight="fill" className="size-4" />,
-        loading: <SpinnerGap className="size-4 animate-spin" />,
+        success: <CheckCircle weight="fill" className="size-7" />,
+        info: <Info weight="fill" className="size-7" />,
+        warning: <WarningCircle weight="fill" className="size-7" />,
+        error: <XCircle weight="fill" className="size-7" />,
+        loading: <SpinnerGap className="size-7 animate-spin" />,
       }}
       style={
         {
-          '--normal-bg': 'var(--surface-default)',
-          '--normal-text': 'var(--text-primary)',
-          '--normal-border': 'var(--border-subtle)',
-          '--success-bg': 'var(--toast-success-bg)',
-          '--success-text': 'var(--feedback-success-text)',
-          '--success-border': 'color-mix(in srgb, var(--feedback-success-text) 20%, transparent)',
-          '--error-bg': 'var(--toast-error-bg)',
-          '--error-text': 'var(--feedback-error-text)',
-          '--error-border': 'color-mix(in srgb, var(--feedback-error-text) 20%, transparent)',
-          '--warning-bg': 'var(--toast-warning-bg)',
-          '--warning-text': 'var(--feedback-warning-text)',
-          '--warning-border': 'color-mix(in srgb, var(--feedback-warning-text) 20%, transparent)',
-          '--info-bg': 'var(--toast-info-bg)',
-          '--info-text': 'var(--feedback-info-text)',
-          '--info-border': 'color-mix(in srgb, var(--feedback-info-text) 20%, transparent)',
-          '--border-radius': 'var(--radius-lg)',
+          '--normal-bg': 'var(--text-primary)',
+          '--normal-text': 'var(--surface-default)',
+          '--normal-border': 'transparent',
+          '--success-bg': 'var(--feedback-success-default)',
+          '--success-text': 'var(--surface-default)',
+          '--success-border': 'transparent',
+          '--error-bg': 'var(--action-danger-default)',
+          '--error-text': 'var(--surface-default)',
+          '--error-border': 'transparent',
+          '--warning-bg': 'var(--feedback-warning-default)',
+          '--warning-text': 'var(--text-primary)',
+          '--warning-border': 'transparent',
+          '--info-bg': 'var(--accent-secondary-default)',
+          '--info-text': 'var(--surface-default)',
+          '--info-border': 'transparent',
+          '--border-radius': 'var(--radius-2xl)',
         } as React.CSSProperties
       }
       toastOptions={{
         classNames: {
-          toast: 'font-sans !shadow-md',
-          title: '!font-medium',
+          toast: 'font-sans !shadow-md !items-start !gap-3 !px-4 !py-3',
+          // Sonner's default [data-icon] container is 16×16 — force it to
+          // match the 28px Phosphor icons so they don't overflow into the
+          // flex gap and jam against the text.
+          icon: '!m-0 !size-7 !self-start',
         },
       }}
       {...props}

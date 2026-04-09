@@ -113,12 +113,7 @@ export function NotificationBell({ notifications, unreadCount }: NotificationBel
               <div className="flex items-center justify-between px-4 py-3">
                 <h3 className="text-sm font-semibold text-foreground">{notifContent.heading}</h3>
                 {unreadCount > 0 && (
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="text-xs text-muted-foreground"
-                    onClick={handleMarkAllRead}
-                  >
+                  <Button variant="muted" size="sm" className="text-xs" onClick={handleMarkAllRead}>
                     {notifContent.markAllRead}
                   </Button>
                 )}

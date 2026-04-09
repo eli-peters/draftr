@@ -55,6 +55,30 @@ export async function signOut() {
   redirect('/sign-in');
 }
 
+/**
+ * Send a password reset email to the currently signed-in user.
+ * Uses Supabase's built-in password recovery flow — the email links back to
+ * /auth/callback with a recovery token.
+ */
+export async function sendPasswordResetEmail() {
+  const supabase = await createClient();
+  const user = await getUser();
+
+  if (!user?.email) {
+    return { error: appContent.common.notAuthenticated };
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
+  const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+    redirectTo: `${siteUrl}/auth/callback?type=recovery`,
+  });
+
+  if (error) return { error: error.message };
+
+  return { success: true };
+}
+
 export async function setupProfile(formData: FormData) {
   const supabase = await createClient();
   const user = await getUser();

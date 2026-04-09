@@ -1432,6 +1432,91 @@
       }
     }
   },
+  "chip": {
+    "$description": "Chip component — Primary (light) and Secondary (filled) styles × Default/Hover/Focus/Disabled states. Only non-primitive slots are defined here; Default states reuse existing accent/action tokens.",
+    "primary": {
+      "hover": {
+        "bg": {
+          "$type": "color",
+          "$description": "Primary chip hover — slightly deeper pink tint",
+          "$value": "{color.primary.100}",
+          "$extensions": {
+            "com.figma": {
+              "modes": { "Light": "{color.primary.100}", "Dark": "{color.primary.900}" }
+            }
+          }
+        }
+      },
+      "disabled": {
+        "bg": {
+          "$type": "color",
+          "$description": "Primary chip disabled — neutral tint",
+          "$value": "{color.neutral.100}",
+          "$extensions": {
+            "com.figma": {
+              "modes": { "Light": "{color.neutral.100}", "Dark": "{color.neutral.800}" }
+            }
+          }
+        },
+        "border": {
+          "$type": "color",
+          "$description": "Primary chip disabled — neutral border",
+          "$value": "{color.neutral.400}",
+          "$extensions": {
+            "com.figma": {
+              "modes": { "Light": "{color.neutral.400}", "Dark": "{color.neutral.600}" }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$description": "Primary chip disabled — neutral text",
+          "$value": "{color.neutral.400}",
+          "$extensions": {
+            "com.figma": {
+              "modes": { "Light": "{color.neutral.400}", "Dark": "{color.neutral.600}" }
+            }
+          }
+        }
+      }
+    },
+    "secondary": {
+      "disabled": {
+        "bg": {
+          "$type": "color",
+          "$description": "Secondary chip disabled — pale pink fill",
+          "$value": "{color.primary.100}",
+          "$extensions": {
+            "com.figma": {
+              "modes": { "Light": "{color.primary.100}", "Dark": "{color.primary.900}" }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$description": "Secondary chip disabled — muted pink text",
+          "$value": "{color.primary.300}",
+          "$extensions": {
+            "com.figma": {
+              "modes": { "Light": "{color.primary.300}", "Dark": "{color.primary.700}" }
+            }
+          }
+        }
+      }
+    },
+    "focus": {
+      "border": {
+        "$type": "color",
+        "$description": "Chip focus — pink halo border (both Primary and Secondary styles)",
+        "$value": "{color.primary.200}",
+        "$extensions": {
+          "com.figma": {
+            "modes": { "Light": "{color.primary.200}", "Dark": "{color.primary.800}" }
+          }
+        }
+      }
+    }
+  },
   "weather": {
     "clear": {
       "$type": "color",

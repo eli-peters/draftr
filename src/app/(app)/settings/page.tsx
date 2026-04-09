@@ -1,19 +1,16 @@
 import { redirect } from 'next/navigation';
-import { SignOut } from '@phosphor-icons/react/dist/ssr';
 import { createClient, getUser } from '@/lib/supabase/server';
-import { signOut } from '@/lib/auth/actions';
-import { Button } from '@/components/ui/button';
-import { SectionHeading } from '@/components/ui/section-heading';
-import { AppearanceSetting } from '@/components/settings/appearance-setting';
-import { IntegrationsSetting } from '@/components/settings/integrations-setting';
-import { NotificationsSetting } from '@/components/settings/notifications-setting';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { appContent } from '@/content/app';
+import { PreferencesCard } from '@/components/settings/preferences-card';
+import { NotificationsCard } from '@/components/settings/notifications-card';
+import { IntegrationsSetting } from '@/components/settings/integrations-setting';
+import { AccountCard } from '@/components/settings/account-card';
+import { settingsContent } from '@/content/settings';
 import { routes } from '@/config/routes';
 import { getUserConnections } from '@/lib/integrations/queries';
-
-const { settings: content } = appContent;
+import { defaultUserPreferences, type UserPreferences } from '@/types/user-preferences';
+import { readNotificationPreferences } from '@/types/notification-preferences';
 
 export default async function SettingsPage() {
   const authUser = await getUser();
@@ -28,7 +25,11 @@ export default async function SettingsPage() {
       .eq('user_id', authUser.id)
       .eq('status', 'active')
       .maybeSingle(),
-    supabase.from('users').select('notification_preferences').eq('id', authUser.id).single(),
+    supabase
+      .from('users')
+      .select('notification_preferences, user_preferences')
+      .eq('id', authUser.id)
+      .single(),
     getUserConnections(authUser.id),
   ]);
 
@@ -38,36 +39,29 @@ export default async function SettingsPage() {
 
   const role = membership?.role ?? 'rider';
   const isLeaderOrAbove = role === 'ride_leader' || role === 'admin';
-  const prefs = user?.notification_preferences as Record<string, unknown> | null;
-  const pushEnabled = prefs?.push !== false;
+
+  // Merge DB values over defaults so missing keys fall back gracefully
+  const userPrefs: UserPreferences = {
+    ...defaultUserPreferences,
+    ...((user?.user_preferences as Partial<UserPreferences>) ?? {}),
+  };
+
+  // Normalise legacy/new JSONB into the canonical { channels, events } shape
+  const notifPrefs = readNotificationPreferences(user?.notification_preferences);
 
   return (
     <DashboardShell>
-      <PageHeader title={content.heading} />
+      <PageHeader title={settingsContent.heading} />
 
-      {/* Preferences Group */}
-      <div className="space-y-4">
-        <SectionHeading as="h3">{content.preferencesGroup}</SectionHeading>
-        <AppearanceSetting />
-        <NotificationsSetting pushEnabled={pushEnabled} />
-      </div>
+      <div className="flex flex-col gap-card-stack">
+        <PreferencesCard userPrefs={userPrefs} />
 
-      {/* Connections Group — only for leaders and admins */}
-      {isLeaderOrAbove && (
-        <div className="mt-8 space-y-4">
-          <SectionHeading as="h3">{content.connectionsGroup}</SectionHeading>
-          <IntegrationsSetting connections={connections} />
-        </div>
-      )}
+        <NotificationsCard initialPrefs={notifPrefs} email={authUser.email ?? ''} />
 
-      {/* Sign Out (secondary placement) */}
-      <div className="mt-12 border-t border-border pt-6 flex justify-center">
-        <form action={signOut}>
-          <Button type="submit" variant="outline" size="sm" className="text-muted-foreground">
-            <SignOut className="h-4 w-4" />
-            {content.signOut}
-          </Button>
-        </form>
+        {/* Connections — only for ride leaders and admins */}
+        {isLeaderOrAbove && <IntegrationsSetting connections={connections} />}
+
+        <AccountCard email={authUser.email ?? ''} />
       </div>
     </DashboardShell>
   );

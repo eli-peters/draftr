@@ -5,7 +5,7 @@ import { X } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { Button } from '@/components/ui/button';
-import { FloatingActionBar } from '@/components/ui/floating-action-bar';
+import { ActionBar } from '@/components/ui/action-bar';
 import { ProfileIdentityHero } from '@/components/profile/profile-identity-hero';
 import { ProfileStatsBento } from '@/components/profile/profile-stats-bento';
 import { ProfileRecentRides } from '@/components/profile/profile-recent-rides';
@@ -189,8 +189,8 @@ export function ProfilePage({ subject, access, paceGroups, recentRides }: Profil
       </DashboardShell>
 
       {isEditing && (
-        <FloatingActionBar>
-          <div className="flex items-center justify-between gap-6">
+        <ActionBar
+          left={
             <button
               type="button"
               onClick={cancelEdit}
@@ -200,11 +200,13 @@ export function ProfilePage({ subject, access, paceGroups, recentRides }: Profil
               <X className="h-4 w-4" />
               {common.cancel}
             </button>
+          }
+          right={
             <Button type="button" onClick={handleSave} disabled={isPending}>
               {isPending ? common.loading : content.saveChanges}
             </Button>
-          </div>
-        </FloatingActionBar>
+          }
+        />
       )}
     </ProfileFormContext.Provider>
   );

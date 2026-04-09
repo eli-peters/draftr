@@ -103,7 +103,7 @@ export function CardSignupButton({ rideId, rideName, isFull, userStatus }: CardS
       toast.info(card.undone(rideName), {
         duration: 4000,
         description: card.undoneDescription,
-        icon: <ArrowCounterClockwise weight="fill" className="size-4" />,
+        icon: <ArrowCounterClockwise weight="fill" className="size-7" />,
       });
     });
   }

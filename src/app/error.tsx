@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
 import { appContent } from '@/content/app';
 
 const { common } = appContent;
@@ -18,12 +19,9 @@ export default function RootError({
         <p className="mt-2 text-base text-muted-foreground max-w-80 mx-auto">
           {error.message || common.errorDescription}
         </p>
-        <button
-          onClick={reset}
-          className="mt-6 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-        >
+        <Button onClick={reset} className="mt-6">
           {common.retry}
-        </button>
+        </Button>
       </div>
     </div>
   );

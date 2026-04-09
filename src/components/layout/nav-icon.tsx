@@ -8,6 +8,7 @@ import {
   UsersThree,
   Megaphone,
   Sliders,
+  ShieldChevron,
 } from '@phosphor-icons/react/dist/ssr';
 import type { IconName } from '@/config/navigation';
 
@@ -27,6 +28,7 @@ const iconMap: Record<
   'users-three': UsersThree,
   megaphone: Megaphone,
   sliders: Sliders,
+  'shield-chevron': ShieldChevron,
 };
 
 interface NavIconProps {

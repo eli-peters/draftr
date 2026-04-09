@@ -8,12 +8,11 @@ import { integrations, OAUTH_STATE_COOKIE, OAUTH_STATE_MAX_AGE } from '@/config/
 import { deauthorize as stravaDeauthorize } from '@/lib/strava/api';
 import { deauthorize as rwgpsDeauthorize } from '@/lib/ridewithgps/api';
 import { appContent } from '@/content/app';
+import { settingsContent } from '@/content/settings';
 import type { IntegrationService } from '@/types/database';
 
-const {
-  common,
-  settings: { integrations: content },
-} = appContent;
+const { common } = appContent;
+const content = settingsContent.connections;
 
 /**
  * Initiate OAuth connection for a service.

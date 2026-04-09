@@ -10,8 +10,7 @@ import {
 } from '@/lib/rides/queries';
 import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { RideSignupSection } from '@/components/rides/ride-signup-section';
-import { RideActionBar } from '@/components/rides/ride-action-bar';
-import { RideActionStrip } from '@/components/rides/ride-action-strip';
+import { RideSignupActionBar } from '@/components/rides/ride-signup-action-bar';
 import { RideComments } from '@/components/rides/ride-comments';
 import { RideDetailCard } from '@/components/rides/ride-detail-card';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
@@ -109,17 +108,6 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         }
       />
 
-      {/* Desktop action strip — sticky below header (hidden for cancelled rides) */}
-      {!availability.isCancelled && (
-        <RideActionStrip
-          rideId={ride.id}
-          state={actionBarState}
-          avatars={actionBarAvatars}
-          totalCount={confirmedSignups.length}
-          signupCount={activeSignupCount}
-        />
-      )}
-
       {/* Main ride detail card */}
       <RideDetailCard
         ride={ride}
@@ -171,12 +159,12 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         />
       </div>
 
-      {/* Bottom spacer for action bar on mobile */}
-      {!availability.isCancelled && <div className="h-24 md:h-0" />}
+      {/* Mobile spacer — ActionBar is fixed on mobile so content needs room. */}
+      {!availability.isCancelled && <div className="h-32 md:hidden" />}
 
-      {/* Mobile action bar — fixed to bottom (hidden for cancelled rides) */}
+      {/* Signup action bar — pinned to viewport bottom on both breakpoints. */}
       {!availability.isCancelled && (
-        <RideActionBar
+        <RideSignupActionBar
           rideId={ride.id}
           state={actionBarState}
           avatars={actionBarAvatars}

@@ -199,7 +199,7 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
                 setTiers((prev) => [...prev, { ...tier, id: crypto.randomUUID() }]);
                 toast.info(content.restored, {
                   duration: 3000,
-                  icon: <ArrowCounterClockwise weight="fill" className="size-4" />,
+                  icon: <ArrowCounterClockwise weight="fill" className="size-7" />,
                 });
               }
             });

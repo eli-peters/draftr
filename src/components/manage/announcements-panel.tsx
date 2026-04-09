@@ -597,7 +597,7 @@ function AnnouncementFormDrawer({
         <Button onClick={handleSubmit} disabled={isPending || !title.trim() || !body.trim()}>
           {submitText}
         </Button>
-        <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <Button variant="ghost" onClick={() => onOpenChange(false)}>
           {common.cancel}
         </Button>
       </DrawerFooter>

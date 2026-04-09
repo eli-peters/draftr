@@ -2,7 +2,7 @@
 
 import { Toggle } from '@base-ui/react/toggle';
 import { ToggleGroup } from '@base-ui/react/toggle-group';
-import { XIcon } from '@phosphor-icons/react/dist/ssr/X';
+import { XCircleIcon } from '@phosphor-icons/react/dist/ssr/XCircle';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
@@ -15,30 +15,32 @@ import { cn } from '@/lib/utils';
 
 const filterChipVariants = cva(
   [
-    'inline-flex items-center gap-1.5 shrink-0 rounded-full font-medium whitespace-nowrap select-none',
-    'border border-accent-primary-muted outline-none',
-    'transition-[background-color,color,box-shadow,transform] duration-160 ease-out',
+    'inline-flex items-center gap-1.5 shrink-0 rounded-3xl font-medium whitespace-nowrap select-none',
+    'border border-text-primary outline-none',
+    'transition-[background-color,color,border-color,box-shadow,transform] duration-160 ease-out',
     'focus-ring',
     'active:scale-90',
-    'disabled:pointer-events-none disabled:bg-action-disabled-bg disabled:text-action-disabled-text',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ].join(' '),
   {
     variants: {
       variant: {
         filter: [
-          // Default (unpressed)
+          // Unpressed — Figma "Primary" chip: pink-subtle bg, text-primary border + text
           'bg-accent-primary-subtle text-text-primary',
-          'hover:bg-accent-primary-muted hover:text-text-primary',
-          // Pressed — shows X icon for deselect affordance
-          'data-[pressed]:bg-accent-primary-default data-[pressed]:text-text-on-primary data-[pressed]:border-accent-primary-default',
+          'hover:bg-chip-primary-hover-bg',
+          'disabled:bg-chip-primary-disabled-bg disabled:border-chip-primary-disabled-border disabled:text-chip-primary-disabled-text',
+          // Pressed — Figma "Secondary" chip: filled pink, white text, no visible border
+          'data-[pressed]:bg-accent-primary-default data-[pressed]:text-text-on-primary data-[pressed]:border-transparent',
           'data-[pressed]:hover:bg-action-primary-hover',
+          'data-[pressed]:disabled:bg-chip-secondary-disabled-bg data-[pressed]:disabled:text-chip-secondary-disabled-text',
+          'disabled:pointer-events-none',
         ].join(' '),
         display: 'bg-accent-primary-subtle text-action-primary-subtle-text',
       },
       size: {
-        default: 'px-3 py-1.5 text-sm',
-        compact: "px-2.5 py-1 text-xs [&_svg:not([class*='size-'])]:size-3.5",
+        default: 'px-4 py-1.5 text-sm',
+        compact: "px-3 py-1 text-xs [&_svg:not([class*='size-'])]:size-3.5",
       },
     },
     defaultVariants: {
@@ -78,7 +80,9 @@ function FilterChip<Value extends string = string>({
       {Icon && <Icon data-icon="inline-start" />}
       <span>{label}</span>
       {count != null && <span className="opacity-70 tabular-nums">{count}</span>}
-      {variant === 'filter' && <XIcon className="hidden size-3.5 in-data-pressed:block" />}
+      {variant === 'filter' && (
+        <XCircleIcon weight="fill" className="hidden size-4 in-data-pressed:block" />
+      )}
     </Toggle>
   );
 }
@@ -108,3 +112,5 @@ function FilterChipGroup<Value extends string = string>({
 }
 
 export { FilterChip, FilterChipGroup, filterChipVariants };
+// Aliases for canonical Chip API
+export { FilterChip as Chip, FilterChipGroup as ChipGroup, filterChipVariants as chipVariants };

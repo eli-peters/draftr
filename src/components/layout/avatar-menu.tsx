@@ -21,18 +21,9 @@ import {
   DrawerDescription,
   DrawerClose,
 } from '@/components/ui/drawer';
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogClose,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { SignOutConfirmDialog } from '@/components/auth/sign-out-confirm-dialog';
 import { useIsMobile } from '@/hooks/use-is-mobile';
-import { signOut } from '@/lib/auth/actions';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 
@@ -93,24 +84,7 @@ export function AvatarMenu({ userName, userInitials, avatarUrl, userRole }: Avat
   }
 
   const signOutConfirmDialog = (
-    <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{content.signOutConfirm}</AlertDialogTitle>
-          <AlertDialogDescription>{appContent.settings.signOutDescription}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogClose>
-            <Button variant="outline">{appContent.common.cancel}</Button>
-          </AlertDialogClose>
-          <form action={signOut}>
-            <Button type="submit" variant="destructive">
-              {content.signOutConfirmAction}
-            </Button>
-          </form>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <SignOutConfirmDialog open={confirmOpen} onOpenChange={setConfirmOpen} />
   );
 
   // Mobile: bottom sheet drawer

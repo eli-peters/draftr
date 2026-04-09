@@ -1,4 +1,4 @@
-import { Switch } from '@/components/ui/switch';
+import { Toggle } from '@/components/ui/switch';
 import { appContent } from '@/content/app';
 
 const form = appContent.rides.form;
@@ -29,7 +29,7 @@ export function PillToggle({
       <span className="text-sm text-foreground">
         {label}: <strong>{checked ? form.toggleOn : form.toggleOff}</strong>
       </span>
-      <Switch id={id} checked={checked} tabIndex={-1} className="pointer-events-none" />
+      <Toggle id={id} checked={checked} tabIndex={-1} className="pointer-events-none" />
     </button>
   );
 }

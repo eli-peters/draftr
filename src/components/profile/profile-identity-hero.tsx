@@ -64,22 +64,36 @@ export function ProfileIdentityHero({
 
       {/* Right — name/pace/member since/bio + top-right Edit CTA */}
       <div className="flex min-w-0 flex-1 flex-col items-center gap-4 md:items-stretch">
-        {/* Top row: name + Edit CTA (desktop top-right) */}
-        <div className="flex w-full flex-col items-center gap-3 md:flex-row md:items-start md:justify-between md:gap-6">
+        {/* Top row: name + Edit CTA (desktop top-right, mobile below name) */}
+        <div className="flex w-full flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-6">
           <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
             {fullName}
           </h1>
           {access.canEdit && !isEditing && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={beginEdit}
-              className="hidden shrink-0 text-primary hover:text-primary md:inline-flex"
-            >
-              <PencilSimple weight="regular" />
-              {content.editProfile}
-            </Button>
+            <>
+              {/* Mobile: directly below name, before pace/bio */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={beginEdit}
+                className="shrink-0 self-center text-primary hover:text-primary md:hidden"
+              >
+                <PencilSimple weight="regular" />
+                {content.editProfile}
+              </Button>
+              {/* Desktop: top-right, vertically centred against name */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={beginEdit}
+                className="hidden shrink-0 text-primary hover:text-primary md:inline-flex"
+              >
+                <PencilSimple weight="regular" />
+                {content.editProfile}
+              </Button>
+            </>
           )}
         </div>
 
@@ -110,20 +124,6 @@ export function ProfileIdentityHero({
               onChange={(v) => setField('bio', v)}
             />
           </div>
-        )}
-
-        {/* Mobile edit CTA — reflowed below bio */}
-        {access.canEdit && !isEditing && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={beginEdit}
-            className="self-center text-primary hover:text-primary md:hidden"
-          >
-            <PencilSimple weight="regular" />
-            {content.editProfile}
-          </Button>
         )}
       </div>
     </section>

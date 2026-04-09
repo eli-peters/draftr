@@ -40,8 +40,6 @@ export const appContent = {
     myProfile: 'My Profile',
     settings: 'Settings',
     signOut: 'Sign Out',
-    signOutConfirm: 'Sign out of Draftr?',
-    signOutConfirmAction: 'Sign Out',
   },
 
   auth: {
@@ -233,8 +231,8 @@ export const appContent = {
       youreInSpots: (confirmed: number, capacity: number | null) =>
         capacity ? `You're in · ${confirmed} of ${capacity}` : `You're in · ${confirmed} signed up`,
       confirmLeaveTitle: 'Leave this ride?',
-      confirmLeave: 'Confirm Leave',
-      confirmCancel: 'Never mind',
+      confirmLeave: 'Leave',
+      confirmCancel: 'Cancel',
       soleLeaderTitle: "You're the only leader",
       soleLeaderDescription:
         'Every ride needs a leader. Cancel the ride, or add a co-leader first so they can take over.',
@@ -490,6 +488,7 @@ export const appContent = {
     },
     statusFilter: {
       label: 'View',
+      ariaLabel: 'Filter schedule by status',
       upcoming: 'Active rides',
       past: 'Past rides',
     },
@@ -600,47 +599,6 @@ export const appContent = {
       rider: 'Rider',
       ride_leader: 'Ride Leader',
       admin: 'Admin',
-    },
-  },
-
-  settings: {
-    heading: 'Settings',
-    preferencesGroup: 'Preferences',
-    connectionsGroup: 'Connections',
-    signOut: 'Sign Out',
-    signOutDescription: 'You can always sign back in later.',
-    notifications: {
-      heading: 'Notifications',
-      description: 'Ride reminders on',
-      descriptionOff: 'Ride reminders off',
-    },
-    account: {
-      heading: 'Account',
-    },
-    appearance: {
-      heading: 'Appearance',
-      options: {
-        system: 'System',
-        light: 'Light',
-        dark: 'Dark',
-      },
-      systemDescription: 'Matches your device setting',
-    },
-    integrations: {
-      heading: 'Connected Services',
-      description: 'Link your accounts to import routes when creating rides.',
-      connectButton: (name: string) => `Connect ${name}`,
-      disconnectButton: 'Disconnect',
-      connected: 'Connected',
-      connectedAs: (name: string) => `Connected as ${name}`,
-      disconnectConfirm: (name: string) =>
-        `Disconnect your ${name} account? Your imported routes will remain.`,
-      connecting: 'Connecting...',
-      disconnecting: 'Disconnecting...',
-      connectError: (name: string) => `Failed to connect ${name}. Please try again.`,
-      disconnectError: (name: string) => `Failed to disconnect ${name}. Please try again.`,
-      connectSuccess: (name: string) => `${name} connected successfully!`,
-      disconnectSuccess: (name: string) => `${name} disconnected.`,
     },
   },
 

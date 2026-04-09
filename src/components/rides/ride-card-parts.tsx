@@ -360,7 +360,7 @@ export function RiderAvatarGroup({
           {overflowCount > 0 && <RiderAvatarOverflow count={overflowCount} />}
         </RiderAvatarStack>
       )}
-      <span className={cn(BODY_SM, 'font-medium text-foreground')}>
+      <span className={cn(BODY_SM, 'min-w-0 truncate font-medium text-foreground')}>
         {countNumber} {ridesContent.card.riding}
       </span>
     </div>

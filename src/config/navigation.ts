@@ -11,7 +11,8 @@ export type IconName =
   | 'settings'
   | 'users-three'
   | 'megaphone'
-  | 'sliders';
+  | 'sliders'
+  | 'shield-chevron';
 
 export interface NavItem {
   /** Route path */
@@ -50,7 +51,7 @@ export const primaryNav: NavItem[] = [
   {
     href: '/manage',
     label: appContent.nav.manage,
-    icon: 'settings',
+    icon: 'shield-chevron',
     requiredRole: 'ride_leader',
   },
 ];

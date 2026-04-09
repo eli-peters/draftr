@@ -5,7 +5,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-  'group/badge inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-clip rounded-full font-medium whitespace-nowrap has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&>svg]:pointer-events-none [&>svg]:size-3!',
+  'group/badge inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-clip rounded-md font-semibold whitespace-nowrap has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&>svg]:pointer-events-none [&>svg]:size-3!',
   {
     variants: {
       variant: {
@@ -17,17 +17,16 @@ const badgeVariants = cva(
           'bg-warning/10 text-warning border-warning/50 focus-visible:ring-warning/20 [a]:hover:bg-warning/20',
         outline: 'border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground',
         'pace-1':
-          'border border-badge-pace-1-border bg-badge-pace-1-bg text-foreground font-semibold',
+          'rounded-md! border border-accent-primary-muted bg-accent-primary-subtle text-text-primary',
         'pace-2':
-          'border border-badge-pace-2-border bg-badge-pace-2-bg text-foreground font-semibold',
+          'rounded-md! border border-feedback-success-default bg-feedback-success-bg text-text-primary',
         'pace-3':
-          'border border-badge-pace-3-border bg-badge-pace-3-bg text-foreground font-semibold',
+          'rounded-md! border border-feedback-success-default bg-feedback-success-bg text-text-primary',
         'pace-4':
-          'border border-badge-pace-4-border bg-badge-pace-4-bg text-foreground font-semibold',
+          'rounded-md! border border-accent-secondary-muted bg-accent-secondary-subtle text-text-primary',
         'pace-5':
-          'border border-badge-pace-5-border bg-badge-pace-5-bg text-foreground font-semibold',
-        'pace-6':
-          'border border-badge-pace-6-border bg-badge-pace-6-bg text-foreground font-semibold',
+          'rounded-md! border border-accent-secondary-muted bg-accent-secondary-subtle text-text-primary',
+        'pace-6': 'rounded-md! bg-text-primary text-surface-default',
         'status-cancelled': 'bg-badge-status-cancelled-bg text-badge-status-cancelled-text',
         'status-full': 'bg-badge-status-full-bg text-badge-status-full-text',
         'status-confirmed': 'bg-badge-status-confirmed-bg text-badge-status-confirmed-text',
@@ -40,10 +39,9 @@ const badgeVariants = cva(
       shape: {
         pill: 'rounded-full',
         rounded: 'rounded-md',
-        subtle: 'rounded',
       },
       size: {
-        default: 'px-3 py-1 text-xs',
+        default: 'px-3 py-1 text-caption-sm',
         sm: 'px-2 py-1 text-caption-sm leading-tight',
         lg: 'px-3 py-1 text-sm',
       },
@@ -51,7 +49,7 @@ const badgeVariants = cva(
     defaultVariants: {
       variant: 'default',
       size: 'default',
-      shape: 'pill',
+      shape: 'rounded',
     },
   },
 );

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Bicycle, ClockCountdown } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SegmentedControl } from '@/components/ui/segmented-control';
 import { ScheduleCard } from '@/components/rides/schedule-card';
 import { cancelSignUp } from '@/lib/rides/actions';
 import { appContent } from '@/content/app';
@@ -38,18 +38,17 @@ export function MyScheduleSections({ upcoming, past, timezone }: MyScheduleSecti
 
   return (
     <div>
-      <Tabs
-        value={statusFilter}
-        onValueChange={(value) => setStatusFilter(value as StatusFilter)}
-        className="mt-2 mb-6 md:mt-0 md:mb-8"
-      >
-        <div className="flex justify-center">
-          <TabsList>
-            <TabsTrigger value="upcoming">{schedule.statusFilter.upcoming}</TabsTrigger>
-            <TabsTrigger value="past">{schedule.statusFilter.past}</TabsTrigger>
-          </TabsList>
-        </div>
-      </Tabs>
+      <div className="mt-2 mb-6 flex justify-center md:mt-0 md:mb-8">
+        <SegmentedControl<StatusFilter>
+          ariaLabel={schedule.statusFilter.ariaLabel}
+          value={statusFilter}
+          onValueChange={setStatusFilter}
+          options={[
+            { value: 'upcoming', label: schedule.statusFilter.upcoming },
+            { value: 'past', label: schedule.statusFilter.past },
+          ]}
+        />
+      </div>
 
       {visibleRides.length > 0 ? (
         <div className="flex flex-col gap-6">
