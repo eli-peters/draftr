@@ -284,8 +284,8 @@
   --bar-backdrop-blur: 18px;
   --bar-backdrop-saturate: 180%;
   --bar-border-opacity: 12%;
-  --bar-inset-x: 0.5rem;
-  --bar-inset-bottom: 0.5rem;
+  --bar-inset-x: 0.875rem;
+  --bar-inset-bottom: 0.625rem;
   --bar-fade-height: 8rem;
   --bar-min-height: 5rem;
 
