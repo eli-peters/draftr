@@ -19,7 +19,6 @@ import {
   DrawerBody,
   DrawerTitle,
   DrawerDescription,
-  DrawerClose,
 } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { SignOutConfirmDialog } from '@/components/auth/sign-out-confirm-dialog';
@@ -110,40 +109,34 @@ export function AvatarMenu({ userName, userInitials, avatarUrl, userRole }: Avat
               {headerBlock}
             </DrawerHeader>
             <DrawerBody className="flex flex-col gap-1 pb-5">
-              <DrawerClose asChild>
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  className="w-full justify-start gap-3"
-                  onClick={() => handleNavigate(routes.profile)}
-                >
-                  <UserCircle className="size-5 text-muted-foreground" />
-                  {content.myProfile}
-                </Button>
-              </DrawerClose>
-              <DrawerClose asChild>
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  className="w-full justify-start gap-3"
-                  onClick={() => handleNavigate(routes.settings)}
-                >
-                  <GearSix className="size-5 text-muted-foreground" />
-                  {content.settings}
-                </Button>
-              </DrawerClose>
+              <Button
+                variant="ghost"
+                size="lg"
+                className="w-full justify-start gap-3"
+                onClick={() => handleNavigate(routes.profile)}
+              >
+                <UserCircle className="size-5 text-muted-foreground" />
+                {content.myProfile}
+              </Button>
+              <Button
+                variant="ghost"
+                size="lg"
+                className="w-full justify-start gap-3"
+                onClick={() => handleNavigate(routes.settings)}
+              >
+                <GearSix className="size-5 text-muted-foreground" />
+                {content.settings}
+              </Button>
               <div className="my-1 h-px bg-border" />
-              <DrawerClose asChild>
-                <Button
-                  variant="destructive"
-                  size="lg"
-                  className="w-full justify-start gap-3"
-                  onClick={handleSignOut}
-                >
-                  <SignOut className="size-5" />
-                  {content.signOut}
-                </Button>
-              </DrawerClose>
+              <Button
+                variant="destructive"
+                size="lg"
+                className="w-full justify-start gap-3"
+                onClick={handleSignOut}
+              >
+                <SignOut className="size-5" />
+                {content.signOut}
+              </Button>
             </DrawerBody>
           </DrawerContent>
         </Drawer>
