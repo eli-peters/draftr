@@ -285,7 +285,7 @@
   --bar-backdrop-saturate: 180%;
   --bar-border-opacity: 12%;
   --bar-inset-x: 0.875rem;
-  --bar-inset-bottom: 0.875rem;
+  --bar-inset-bottom: max(0.875rem, calc(env(safe-area-inset-bottom, 0px) - 0.5rem));
   --bar-fade-height: 8rem;
   --bar-min-height: 5rem;
 
