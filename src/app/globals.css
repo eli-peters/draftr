@@ -266,7 +266,7 @@
    */
   --spacing-card-stack: var(--card-stack-gap);
 
-  /* ── Floating bar tokens ── */
+  /* ── Floating bar tokens (iOS 26 Liquid Glass) ── */
   --bar-radius: 9999px;
   --bar-radius-desktop: var(--radius-2xl);
   --bar-padding-x: 0.8rem;
@@ -274,12 +274,16 @@
   --bar-padding-x-desktop: 2rem;
   --bar-padding-y: 1.5rem;
   --bar-padding-y-desktop: 1.5rem;
-  /* Mobile floating bars use --shadow-floating (omni-directional);
+  /* Mobile floating bars use a soft Liquid Glass shadow with inset rim light;
    * desktop sticky bars sit inline so they get a normal directional shadow. */
-  --bar-shadow: var(--shadow-floating);
+  --bar-shadow:
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.25), 0 4px 20px rgba(0, 0, 0, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.04);
   --bar-shadow-desktop: var(--shadow-md);
-  --bar-bg-opacity: 40%;
-  --bar-backdrop-blur: 12px;
+  --bar-bg-opacity: 20%;
+  --bar-backdrop-blur: 18px;
+  --bar-backdrop-saturate: 180%;
+  --bar-border-opacity: 12%;
   --bar-inset-x: 0.5rem;
   --bar-inset-bottom: 0.5rem;
   --bar-fade-height: 8rem;
@@ -539,6 +543,13 @@
   --card-border-warning: var(--color-warning-700);
   --card-border-error: var(--color-error-700);
   --card-border-info: var(--color-info-700);
+
+  /* ── Floating bar — Liquid Glass dark overrides ── */
+  --bar-shadow:
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.06), 0 4px 24px rgba(0, 0, 0, 0.25),
+    0 1px 4px rgba(0, 0, 0, 0.18);
+  --bar-bg-opacity: 22%;
+  --bar-border-opacity: 8%;
 
   /* ── shadcn bridge overrides ── */
   --warning-foreground: var(--color-neutral-900);

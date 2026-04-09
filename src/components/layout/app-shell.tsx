@@ -56,12 +56,6 @@ export function AppShell({
       ] as string[]
     ).includes(pathname);
 
-  /* Pages that render a fixed/floating action bar at the bottom. */
-  const hasActionBar =
-    /^\/rides\/[^/]+$/.test(pathname) ||
-    pathname === routes.manageNewRide ||
-    /^\/manage\/rides\/[^/]+\/edit$/.test(pathname);
-
   return (
     <div className="flex min-h-screen flex-col md:bg-surface-page">
       <HeaderBar
@@ -92,9 +86,7 @@ export function AppShell({
             <PageTransitionWrapper>{children}</PageTransitionWrapper>
           </main>
 
-          {hasActionBar && (
-            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-(--bar-fade-height) bg-linear-to-t from-surface-page to-transparent" />
-          )}
+          <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-(--bar-fade-height) bg-linear-to-t from-surface-page to-transparent" />
           {(!isChild || isManageSection) && <BottomNav items={navItems} />}
         </div>
       </div>

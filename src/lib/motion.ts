@@ -24,6 +24,14 @@ export const EASE = {
   drawer: [0.32, 0.72, 0, 1] as const,
 };
 
+// Spring presets — physical spring configs for layout animations.
+// "snappy" is for tab indicators and segmented-control pills.
+// "gentle" is for press/hover micro-interactions.
+export const SPRINGS = {
+  snappy: { type: 'spring' as const, stiffness: 380, damping: 28 },
+  gentle: { type: 'spring' as const, stiffness: 400, damping: 34 },
+} as const;
+
 const baseTransition: Transition = {
   duration: DURATIONS.normal,
   ease: EASE.out,
