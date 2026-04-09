@@ -57,7 +57,7 @@ export function ActionBar({
     <div
       className={cn(
         // Mobile: fixed to viewport bottom, pill, max-w-lg centered, safe area.
-        'fixed left-(--bar-inset-x) right-(--bar-inset-x) bottom-[max(var(--bar-inset-bottom),env(safe-area-inset-bottom,0px))] z-40 mx-auto max-w-lg',
+        'fixed left-(--bar-inset-x) right-(--bar-inset-x) bottom-(--bar-inset-bottom) z-40 mx-auto max-w-lg',
         // Desktop: sticky at bottom of content column, full container width.
         'md:sticky md:inset-x-auto md:bottom-(--bar-inset-x) md:mx-0 md:max-w-none',
         className,
