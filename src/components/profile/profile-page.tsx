@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState, useTransition } from 'react';
-import { X } from '@phosphor-icons/react';
+
 import { toast } from 'sonner';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { Button } from '@/components/ui/button';
@@ -141,7 +141,7 @@ export function ProfilePage({ subject, access, paceGroups, recentRides }: Profil
 
   return (
     <ProfileFormContext.Provider value={formContextValue}>
-      <DashboardShell>
+      <DashboardShell className={isEditing ? 'pb-32 md:pb-24' : undefined}>
         <ProfileIdentityHero
           fullName={subject.fullName}
           avatarUrl={subject.avatarUrl}
@@ -195,9 +195,8 @@ export function ProfilePage({ subject, access, paceGroups, recentRides }: Profil
               type="button"
               onClick={cancelEdit}
               disabled={isPending}
-              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
             >
-              <X className="h-4 w-4" />
               {common.cancel}
             </button>
           }

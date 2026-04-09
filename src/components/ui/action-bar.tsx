@@ -66,7 +66,7 @@ export function ActionBar({
       <div
         className={cn(
           // Body chrome — fixed-height pill so the bar never shifts between states.
-          'flex h-(--bar-min-height) items-center rounded-(--bar-radius) border border-border/20 bg-surface-default/(--bar-bg-opacity) px-(--bar-padding-x-action) shadow-(--bar-shadow) backdrop-blur-(--bar-backdrop-blur)',
+          'flex h-(--bar-min-height) items-center rounded-(--bar-radius) border border-border/(--bar-border-opacity) bg-surface-default/(--bar-bg-opacity) px-(--bar-padding-x-action) shadow-(--bar-shadow) backdrop-blur-(--bar-backdrop-blur) backdrop-saturate-(--bar-backdrop-saturate)',
           'md:px-(--bar-padding-x-desktop) md:shadow-(--bar-shadow-desktop)',
           transitioning &&
             'transition-[background-color] duration-[--duration-normal] ease-[--ease-out]',
