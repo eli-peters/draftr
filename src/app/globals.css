@@ -269,7 +269,7 @@
   /* ── Floating bar tokens (iOS 26 Liquid Glass) ── */
   --bar-radius: 9999px;
   --bar-radius-desktop: var(--radius-2xl);
-  --bar-padding-x: 0.8rem;
+  --bar-padding-x: 0.5rem;
   --bar-padding-x-action: clamp(1.25rem, 1rem + 1vw, 2rem);
   --bar-padding-x-desktop: 2rem;
   --bar-padding-y: 1.5rem;
@@ -287,11 +287,14 @@
   --bar-inset-x: 0.875rem;
   --bar-inset-bottom: max(0.875rem, calc(env(safe-area-inset-bottom, 0px) - 0.5rem));
   --bar-fade-height: 8rem;
-  --bar-min-height: 5rem;
-  /* Clearance for pages with a fixed ActionBar — content bottom padding and
-   * the explicit mobile spacer div both reference this value.
-   * 6rem ≈ bar height (5rem) + ~1rem breathing room above it. */
-  --bar-clearance: 6rem;
+  --bar-min-height: 4rem;
+  /* Clearance for pages with a fixed ActionBar — content bottom padding
+   * so the bar never occludes the last section.
+   * = bar height + viewport inset + 1.5rem breathing room. */
+  --bar-clearance: calc(var(--bar-min-height) + var(--bar-inset-bottom) + 1.5rem);
+  /* Clearance for top-level pages where only the BottomNav floats —
+   * bar height + viewport inset + breathing room above it. */
+  --nav-clearance: calc(var(--bar-min-height) + var(--bar-inset-bottom) + 1.5rem);
 
   /* ── Fluid typography scale ──
    * Sizes scale smoothly between 375px (mobile floor) and 1280px (desktop

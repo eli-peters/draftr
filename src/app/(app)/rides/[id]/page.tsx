@@ -93,7 +93,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const showManageActions = hasEditRole && !availability.isCancelled;
 
   return (
-    <DashboardShell>
+    <DashboardShell className={!availability.isCancelled ? 'pb-(--bar-clearance)' : undefined}>
       <PageHeader
         title={ride.title}
         centered={!showManageActions}
@@ -158,9 +158,6 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           isCancelled={availability.isCancelled}
         />
       </div>
-
-      {/* Spacer — fixed on mobile (overlaps content, needs full clearance); sticky on desktop (in flow, small gap). */}
-      {!availability.isCancelled && <div className="h-(--bar-clearance) md:h-8" />}
 
       {/* Signup action bar — pinned to viewport bottom on both breakpoints. */}
       {!availability.isCancelled && (

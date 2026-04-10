@@ -43,16 +43,16 @@ export function BottomNav({ items }: BottomNavProps) {
                   whileTap={shouldReduce ? undefined : { scale: 0.91 }}
                   transition={SPRINGS.gentle}
                   className={cn(
-                    'relative flex flex-1 flex-col items-center gap-1 py-3 text-sm font-medium transition-colors',
+                    'relative flex flex-1 flex-col items-center gap-0.5 py-2 text-sm font-medium transition-colors',
                     isActive
                       ? 'font-semibold text-primary'
-                      : 'text-muted-foreground before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-1 before:rounded-full before:bg-primary/0 before:transition-colors hover:before:bg-primary/[0.07] active:text-foreground',
+                      : 'text-muted-foreground before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-0.5 before:rounded-full before:bg-primary/0 before:transition-colors hover:before:bg-primary/[0.07] active:text-foreground',
                   )}
                 >
                   {isActive && (
                     <motion.span
                       layoutId="bottom-nav-pill"
-                      className="absolute inset-x-0 inset-y-1 -z-10 rounded-full bg-primary/12"
+                      className="absolute inset-x-0 inset-y-0.5 -z-10 rounded-full bg-primary/12"
                       transition={shouldReduce ? { duration: 0 } : SPRINGS.snappy}
                     />
                   )}
