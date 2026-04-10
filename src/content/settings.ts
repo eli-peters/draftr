@@ -74,6 +74,7 @@ export const settingsContent = {
     disconnectButton: 'Disconnect',
     connected: 'Connected',
     connectedAs: (name: string) => `Connected as ${name}`,
+    disconnectConfirmTitle: (name: string) => `Disconnect ${name}?`,
     disconnectConfirm: (name: string) =>
       `Disconnect your ${name} account? Your imported routes will remain.`,
     connecting: 'Connecting...',
@@ -82,6 +83,7 @@ export const settingsContent = {
     disconnectError: (name: string) => `Failed to disconnect ${name}. Please try again.`,
     connectSuccess: (name: string) => `${name} connected successfully!`,
     disconnectSuccess: (name: string) => `${name} disconnected.`,
+    cancel: 'Cancel',
   },
 
   account: {

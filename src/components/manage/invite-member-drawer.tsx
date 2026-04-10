@@ -1,18 +1,20 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { CheckCircle, EnvelopeSimple, Copy, Check } from '@phosphor-icons/react/dist/ssr';
+import { CheckCircle, EnvelopeSimple, Copy, Check, UserPlus } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
+import { CardIconHeader } from '@/components/ui/card-icon-header';
+import { SegmentedControl } from '@/components/ui/segmented-control';
 import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@/components/ui/select';
-import { DrawerBody, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+  DrawerBody,
+  DrawerClose,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+} from '@/components/ui/drawer';
 import { ResponsiveDrawer } from '@/components/ui/responsive-drawer';
 import { inviteMember } from '@/lib/auth/actions';
 import { appContent } from '@/content/app';
@@ -20,30 +22,55 @@ import { appContent } from '@/content/app';
 const { manage: content, common } = appContent;
 const inviteContent = content.members.invite;
 
+const roleOptions = [
+  { value: 'rider' as const, label: content.members.roles.rider },
+  { value: 'ride_leader' as const, label: content.members.roles.ride_leader },
+  { value: 'admin' as const, label: content.members.roles.admin },
+];
+
 interface InviteMemberDrawerProps {
   clubId: string;
   trigger?: React.ReactNode;
+  /** Controlled open state — when provided, the component renders only the drawer (no trigger). */
+  open?: boolean;
+  /** Controlled open-change handler — required when `open` is provided. */
+  onOpenChange?: (open: boolean) => void;
   onSuccess?: () => void;
 }
 
-export function InviteMemberDrawer({ clubId, trigger, onSuccess }: InviteMemberDrawerProps) {
-  const [open, setOpen] = useState(false);
+export function InviteMemberDrawer({
+  clubId,
+  trigger,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+  onSuccess,
+}: InviteMemberDrawerProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [, setSentEmail] = useState('');
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [role, setRole] = useState<'rider' | 'ride_leader' | 'admin'>('rider');
   const formRef = useRef<HTMLFormElement>(null);
 
   function handleOpenChange(isOpen: boolean) {
-    setOpen(isOpen);
-    if (!isOpen) {
+    if (isOpen) {
       setError(null);
       setSuccess(false);
       setSentEmail('');
       setInviteLink(null);
       setCopied(false);
+      setRole('rider');
+    }
+    if (isControlled) {
+      controlledOnOpenChange?.(isOpen);
+    } else {
+      setInternalOpen(isOpen);
     }
   }
 
@@ -55,6 +82,7 @@ export function InviteMemberDrawer({ clubId, trigger, onSuccess }: InviteMemberD
 
     const formData = new FormData(e.currentTarget);
     formData.set('club_id', clubId);
+    formData.set('role', role);
     const email = formData.get('email') as string;
 
     const result = await inviteMember(formData);
@@ -78,29 +106,34 @@ export function InviteMemberDrawer({ clubId, trigger, onSuccess }: InviteMemberD
 
   return (
     <>
-      {trigger ? (
-        <span
-          onClick={() => setOpen(true)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && setOpen(true)}
-        >
-          {trigger}
-        </span>
-      ) : (
-        <Button size="sm" onClick={() => setOpen(true)}>
-          <EnvelopeSimple className="mr-1.5 h-4 w-4" />
-          {content.members.inviteButton}
-        </Button>
-      )}
+      {!isControlled &&
+        (trigger ? (
+          <span
+            onClick={() => setInternalOpen(true)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && setInternalOpen(true)}
+          >
+            {trigger}
+          </span>
+        ) : (
+          <Button size="sm" onClick={() => setInternalOpen(true)}>
+            <EnvelopeSimple className="mr-1.5 h-4 w-4" />
+            {content.members.inviteButton}
+          </Button>
+        ))}
 
-      <ResponsiveDrawer open={open} onOpenChange={handleOpenChange} size="auto">
-        <DrawerHeader>
-          <DrawerTitle>{content.members.inviteButton}</DrawerTitle>
-        </DrawerHeader>
-
+      <ResponsiveDrawer
+        open={open}
+        onOpenChange={handleOpenChange}
+        size="auto"
+        className="overflow-clip"
+      >
         {success ? (
           <>
+            <DrawerHeader>
+              <DrawerTitle className="sr-only">{inviteContent.successTitle}</DrawerTitle>
+            </DrawerHeader>
             <DrawerBody>
               <div className="flex flex-col items-center pt-2 text-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
@@ -149,51 +182,37 @@ export function InviteMemberDrawer({ clubId, trigger, onSuccess }: InviteMemberD
                 >
                   {inviteContent.inviteAnother}
                 </Button>
-                <Button className="flex-1" onClick={() => setOpen(false)}>
-                  {inviteContent.done}
-                </Button>
+                <DrawerClose asChild>
+                  <Button className="flex-1">{inviteContent.done}</Button>
+                </DrawerClose>
               </div>
             </DrawerFooter>
           </>
         ) : (
           <>
-            <DrawerBody className="space-y-6 pt-2">
+            <DrawerHeader>
+              <DrawerTitle className="sr-only">{content.members.inviteButton}</DrawerTitle>
+              <DrawerDescription className="sr-only">{inviteContent.emailLabel}</DrawerDescription>
+              <CardIconHeader icon={UserPlus} title={content.members.inviteButton} />
+            </DrawerHeader>
+            <DrawerBody className="pt-2">
               <form
                 ref={formRef}
                 id="invite-member-form"
                 onSubmit={handleSubmit}
-                className="space-y-6"
+                className="space-y-8"
               >
                 <FloatingField label={inviteContent.emailLabel} htmlFor="invite-email">
                   <Input id="invite-email" name="email" type="email" required placeholder=" " />
                 </FloatingField>
 
-                <FloatingField
-                  label={inviteContent.roleLabel}
-                  htmlFor="invite-role"
-                  hasValue={true}
-                >
-                  <Select
-                    name="role"
-                    defaultValue="rider"
-                    items={{
-                      rider: content.members.roles.rider,
-                      ride_leader: content.members.roles.ride_leader,
-                      admin: content.members.roles.admin,
-                    }}
-                  >
-                    <SelectTrigger id="invite-role">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="rider">{content.members.roles.rider}</SelectItem>
-                      <SelectItem value="ride_leader">
-                        {content.members.roles.ride_leader}
-                      </SelectItem>
-                      <SelectItem value="admin">{content.members.roles.admin}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FloatingField>
+                <SegmentedControl
+                  value={role}
+                  onValueChange={setRole}
+                  options={roleOptions}
+                  ariaLabel={inviteContent.roleLabel}
+                  className="w-full"
+                />
 
                 {error && <p className="text-sm text-destructive">{error}</p>}
               </form>
@@ -203,18 +222,16 @@ export function InviteMemberDrawer({ clubId, trigger, onSuccess }: InviteMemberD
                 type="submit"
                 form="invite-member-form"
                 disabled={isPending}
+                size="lg"
                 className="w-full"
               >
                 {isPending ? common.loading : inviteContent.sendButton}
               </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full"
-                onClick={() => setOpen(false)}
-              >
-                {common.cancel}
-              </Button>
+              <DrawerClose asChild>
+                <Button variant="ghost" size="lg" className="w-full">
+                  {common.cancel}
+                </Button>
+              </DrawerClose>
             </DrawerFooter>
           </>
         )}

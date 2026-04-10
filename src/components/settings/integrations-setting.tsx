@@ -7,6 +7,15 @@ import { LinkBreak, LinkSimple, PlugsConnected } from '@phosphor-icons/react/dis
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ContentCard } from '@/components/ui/content-card';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogClose,
+} from '@/components/ui/alert-dialog';
 import { settingsContent } from '@/content/settings';
 import { integrations, serviceIcons } from '@/config/integrations';
 import { initiateConnect, disconnectService } from '@/lib/integrations/actions';
@@ -86,6 +95,7 @@ interface ServiceRowProps {
 function ServiceRow({ service, displayName, brandColor, connection }: ServiceRowProps) {
   const [isPending, startTransition] = useTransition();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [disconnectOpen, setDisconnectOpen] = useState(false);
 
   const isLoading = isPending || isRedirecting;
   const ServiceIcon = serviceIcons[service];
@@ -102,9 +112,8 @@ function ServiceRow({ service, displayName, brandColor, connection }: ServiceRow
     });
   }
 
-  function handleDisconnect() {
-    if (!window.confirm(content.disconnectConfirm(displayName))) return;
-
+  function handleConfirmDisconnect() {
+    setDisconnectOpen(false);
     startTransition(async () => {
       const result = await disconnectService(service);
       if ('error' in result) {
@@ -117,39 +126,59 @@ function ServiceRow({ service, displayName, brandColor, connection }: ServiceRow
 
   if (connection) {
     return (
-      <div className="flex items-center justify-between py-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <Avatar className="h-9 w-9">
-            {connection.avatar_url && (
-              <AvatarImage src={connection.avatar_url} alt={connection.display_name ?? ''} />
-            )}
-            <AvatarFallback
-              className="flex items-center justify-center"
-              style={{ backgroundColor: brandColor, color: 'white' }}
-            >
-              <ServiceIcon className="h-5 w-5" />
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
-            <p className="text-xs text-muted-foreground truncate">
-              {connection.display_name
-                ? content.connectedAs(connection.display_name)
-                : content.connected}
-            </p>
+      <>
+        <div className="flex items-center justify-between py-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <Avatar className="h-9 w-9">
+              {connection.avatar_url && (
+                <AvatarImage src={connection.avatar_url} alt={connection.display_name ?? ''} />
+              )}
+              <AvatarFallback
+                className="flex items-center justify-center"
+                style={{ backgroundColor: brandColor, color: 'white' }}
+              >
+                <ServiceIcon className="h-5 w-5" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {connection.display_name
+                  ? content.connectedAs(connection.display_name)
+                  : content.connected}
+              </p>
+            </div>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setDisconnectOpen(true)}
+            disabled={isLoading}
+            className="text-muted-foreground hover:text-destructive shrink-0"
+          >
+            <LinkBreak className="h-4 w-4" />
+            {isLoading ? content.disconnecting : content.disconnectButton}
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleDisconnect}
-          disabled={isLoading}
-          className="text-muted-foreground hover:text-destructive shrink-0"
-        >
-          <LinkBreak className="h-4 w-4" />
-          {isLoading ? content.disconnecting : content.disconnectButton}
-        </Button>
-      </div>
+        <AlertDialog open={disconnectOpen} onOpenChange={setDisconnectOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{content.disconnectConfirmTitle(displayName)}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {content.disconnectConfirm(displayName)}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogClose render={<Button variant="ghost" />}>
+                {content.cancel}
+              </AlertDialogClose>
+              <Button variant="destructive" onClick={handleConfirmDisconnect}>
+                {content.disconnectButton}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
     );
   }
 

@@ -51,6 +51,7 @@
   --color-neutral-975: #110e0f;
   --color-neutral-0-alpha-92: #ffffffeb;
   --color-neutral-950-alpha-92: #1a1517eb;
+  --color-neutral-900-alpha-60: #27212399;
 
   /* success — Warm green — shifted slightly warm to harmonize with the palette */
   --color-success-50: #edfcf2;
@@ -117,7 +118,7 @@
   --surface-page: var(--color-neutral-50);
   --surface-raised: var(--color-neutral-50);
   --surface-sunken: var(--color-neutral-100);
-  --surface-overlay: var(--color-neutral-0-alpha-92);
+  --surface-overlay: var(--color-neutral-900-alpha-60);
   --surface-card-footer: var(--color-info-50);
 
   /* text */
@@ -276,7 +277,7 @@
   --surface-page: var(--color-neutral-950);
   --surface-raised: var(--color-neutral-800);
   --surface-sunken: var(--color-neutral-975);
-  --surface-overlay: var(--color-neutral-950-alpha-92);
+  --surface-overlay: var(--color-neutral-900-alpha-60);
   --surface-card-footer: var(--color-info-950);
 
   /* text */

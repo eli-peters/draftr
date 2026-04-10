@@ -117,22 +117,18 @@ export async function createAnnouncement(
     body: string;
     announcement_type?: AnnouncementType;
     is_dismissible?: boolean;
-    is_pinned?: boolean;
-    expires_at?: string | null;
   },
 ) {
   const supabase = await createClient();
   const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
-  // Enforce one-pinned-max: unpin all others in this club first
-  if (data.is_pinned) {
-    await supabase
-      .from('announcements')
-      .update({ is_pinned: false })
-      .eq('club_id', clubId)
-      .eq('is_pinned', true);
-  }
+  // New announcements are always pinned — unpin any existing pinned announcement first
+  await supabase
+    .from('announcements')
+    .update({ is_pinned: false })
+    .eq('club_id', clubId)
+    .eq('is_pinned', true);
 
   const { data: announcement, error } = await supabase
     .from('announcements')
@@ -141,10 +137,9 @@ export async function createAnnouncement(
       created_by: user.id,
       title: data.title,
       body: data.body,
-      announcement_type: data.announcement_type ?? 'info',
+      announcement_type: data.announcement_type ?? 'general',
       is_dismissible: data.is_dismissible ?? true,
-      is_pinned: data.is_pinned ?? false,
-      expires_at: data.expires_at ?? null,
+      is_pinned: true,
     })
     .select('id')
     .single();
@@ -177,6 +172,7 @@ export async function createAnnouncement(
 
   revalidatePath('/manage');
   revalidatePath('/notifications');
+  revalidatePath('/', 'layout');
   return { success: true, id: announcement?.id };
 }
 
@@ -191,7 +187,6 @@ export async function updateAnnouncement(
     announcement_type?: AnnouncementType;
     is_dismissible?: boolean;
     is_pinned?: boolean;
-    expires_at?: string | null;
   },
 ) {
   const supabase = await createClient();
@@ -203,10 +198,9 @@ export async function updateAnnouncement(
     .update({
       title: data.title,
       body: data.body,
-      announcement_type: data.announcement_type ?? 'info',
+      announcement_type: data.announcement_type ?? 'general',
       is_dismissible: data.is_dismissible ?? true,
       is_pinned: data.is_pinned ?? false,
-      expires_at: data.expires_at ?? null,
     })
     .eq('id', announcementId);
 
@@ -251,7 +245,7 @@ export async function dismissAnnouncement(announcementId: string) {
 
   if (error) return { error: error.message };
 
-  revalidatePath('/');
+  revalidatePath('/', 'layout');
   return { success: true };
 }
 
@@ -285,7 +279,7 @@ export async function toggleAnnouncementPin(
   if (error) return { error: error.message };
 
   revalidatePath('/manage');
-  revalidatePath('/');
+  revalidatePath('/', 'layout');
   return { success: true };
 }
 
@@ -527,7 +521,7 @@ export async function createRecurringRide(
 
   revalidatePath('/manage');
   revalidatePath('/rides');
-  revalidatePath('/');
+  revalidatePath('/', 'layout');
   return { success: true };
 }
 
@@ -724,7 +718,7 @@ export async function generateRidesFromRecurring(templateId: string) {
 
   revalidatePath('/manage');
   revalidatePath('/rides');
-  revalidatePath('/');
+  revalidatePath('/', 'layout');
   return { success: true, count: datesToCreate.length };
 }
 
@@ -770,6 +764,6 @@ export async function deleteRecurringRide(templateId: string) {
 
   revalidatePath('/manage');
   revalidatePath('/rides');
-  revalidatePath('/');
+  revalidatePath('/', 'layout');
   return { success: true };
 }

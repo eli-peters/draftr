@@ -4,6 +4,17 @@ import { useRef, useTransition, useState } from 'react';
 import { Camera } from '@phosphor-icons/react/dist/ssr';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogClose,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { PhotoPickerSheet } from '@/components/profile/photo-picker-sheet';
 import { uploadAvatar, removeAvatar } from '@/lib/profile/actions';
 import { appContent } from '@/content/app';
 import { DURATIONS, EASE } from '@/lib/motion';
@@ -20,7 +31,22 @@ export function ProfileAvatarEditor({ avatarUrl, fullName, initials }: ProfileAv
   const [avatarPreview, setAvatarPreview] = useState(avatarUrl);
   const [avatarError, setAvatarError] = useState<string | null>(null);
   const [isUploading, startUpload] = useTransition();
+  const [removeOpen, setRemoveOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  function handleConfirmRemove() {
+    setRemoveOpen(false);
+    startUpload(async () => {
+      const result = await removeAvatar();
+      if (result.error) {
+        setAvatarError(result.error);
+      } else {
+        setAvatarPreview(null);
+      }
+    });
+  }
 
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -48,7 +74,7 @@ export function ProfileAvatarEditor({ avatarUrl, fullName, initials }: ProfileAv
       <motion.button
         type="button"
         className="relative group cursor-pointer"
-        onClick={() => fileInputRef.current?.click()}
+        onClick={() => setPickerOpen(true)}
         disabled={isUploading}
         whileTap={{ scale: 0.94 }}
         transition={{ duration: DURATIONS.fast, ease: EASE.out }}
@@ -83,29 +109,44 @@ export function ProfileAvatarEditor({ avatarUrl, fullName, initials }: ProfileAv
         className="hidden"
         onChange={handleAvatarChange}
       />
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleAvatarChange}
+      />
       {isUploading && (
         <p className="mt-2 text-sm text-muted-foreground">{content.avatar.uploading}</p>
       )}
-      {avatarPreview && !isUploading && (
-        <button
-          type="button"
-          className="mt-2 text-sm text-destructive hover:underline"
-          onClick={() => {
-            if (!window.confirm(content.avatar.removeConfirm)) return;
-            startUpload(async () => {
-              const result = await removeAvatar();
-              if (result.error) {
-                setAvatarError(result.error);
-              } else {
-                setAvatarPreview(null);
-              }
-            });
-          }}
-        >
-          {content.avatar.removeButton}
-        </button>
-      )}
       {avatarError && <p className="mt-1 text-sm text-destructive">{avatarError}</p>}
+
+      <PhotoPickerSheet
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        hasPhoto={!!avatarPreview}
+        onChooseFromLibrary={() => fileInputRef.current?.click()}
+        onTakePhoto={() => cameraInputRef.current?.click()}
+        onRemovePhoto={() => setRemoveOpen(true)}
+      />
+
+      <AlertDialog open={removeOpen} onOpenChange={setRemoveOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{content.avatar.removeConfirmTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{content.avatar.removeConfirm}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogClose render={<Button variant="ghost" />}>
+              {appContent.common.cancel}
+            </AlertDialogClose>
+            <Button variant="destructive" onClick={handleConfirmRemove}>
+              {content.avatar.removeButton}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

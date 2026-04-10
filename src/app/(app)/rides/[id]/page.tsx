@@ -159,8 +159,8 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         />
       </div>
 
-      {/* Mobile spacer — ActionBar is fixed on mobile so content needs room. */}
-      {!availability.isCancelled && <div className="h-32 md:hidden" />}
+      {/* Spacer — fixed on mobile (overlaps content, needs full clearance); sticky on desktop (in flow, small gap). */}
+      {!availability.isCancelled && <div className="h-(--bar-clearance) md:h-8" />}
 
       {/* Signup action bar — pinned to viewport bottom on both breakpoints. */}
       {!availability.isCancelled && (

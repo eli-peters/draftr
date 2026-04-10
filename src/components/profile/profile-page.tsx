@@ -141,7 +141,7 @@ export function ProfilePage({ subject, access, paceGroups, recentRides }: Profil
 
   return (
     <ProfileFormContext.Provider value={formContextValue}>
-      <DashboardShell className={isEditing ? 'pb-32 md:pb-24' : undefined}>
+      <DashboardShell className={isEditing ? 'pb-(--bar-clearance)' : undefined}>
         <ProfileIdentityHero
           fullName={subject.fullName}
           avatarUrl={subject.avatarUrl}

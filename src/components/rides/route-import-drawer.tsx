@@ -29,17 +29,17 @@ export function RouteImportDrawer({
 
   return (
     <ResponsiveDrawer open={open} onOpenChange={onOpenChange} size="lg" className="overflow-clip">
-      <DrawerHeader className="flex flex-row items-center gap-3 group-data-[vaul-drawer-direction=right]/drawer-content:pr-12 group-data-[vaul-drawer-direction=left]/drawer-content:pr-12">
-        <div className="flex size-8 items-center justify-center" style={{ color: brandColor }}>
-          <Icon className="size-5" />
+      <DrawerHeader className="flex flex-col items-center gap-1.5 group-data-[vaul-drawer-direction=right]/drawer-content:items-start group-data-[vaul-drawer-direction=right]/drawer-content:pr-12">
+        <DrawerTitle className="sr-only">{serviceLabels[service]}</DrawerTitle>
+        <div className="flex items-center justify-center" style={{ color: brandColor }}>
+          <Icon className="h-8 w-auto" />
         </div>
-        <DrawerTitle>{serviceLabels[service]}</DrawerTitle>
+        <DrawerDescription className="text-sm text-muted-foreground">
+          {content.modes[service].connected}
+        </DrawerDescription>
       </DrawerHeader>
 
       <DrawerBody className="flex flex-col">
-        <DrawerDescription className="shrink-0 pb-3 text-xs text-muted-foreground">
-          {content.modes[service].connected}
-        </DrawerDescription>
         <ServiceRouteList
           key={service}
           service={service}

@@ -162,7 +162,7 @@ export interface RideComment {
   updated_at: string;
 }
 
-export type AnnouncementType = 'info' | 'warning' | 'danger' | 'success';
+export type AnnouncementType = 'general' | 'event' | 'urgent';
 
 export interface Announcement {
   id: string;
@@ -171,12 +171,9 @@ export interface Announcement {
   title: string;
   body: string;
   is_pinned: boolean;
-  pinned_to_ride_id: string | null;
   published_at: string;
-  expires_at: string | null;
   announcement_type: AnnouncementType;
   is_dismissible: boolean;
-  max_duration_days: number;
 }
 
 export interface Notification {

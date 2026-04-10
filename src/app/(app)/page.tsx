@@ -79,7 +79,7 @@ export default async function HomePage() {
   );
 
   return (
-    <DashboardShell>
+    <DashboardShell className="pb-(--bar-clearance)">
       <GreetingSection firstName={firstName} className="mb-8 mt-0 md:mt-0 md:mb-10" />
 
       {/* Current weather widget — client component, uses browser geolocation */}

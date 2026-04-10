@@ -13,9 +13,9 @@ const buttonVariants = cva(
         default:
           'bg-primary text-primary-foreground hover:bg-action-primary-hover active:bg-action-primary-active',
         outline:
-          'border-accent-primary-muted bg-accent-primary-subtle text-primary hover:bg-[var(--color-primary-100)] hover:border-action-primary-hover hover:text-action-primary-hover aria-expanded:bg-[var(--color-primary-100)] aria-expanded:border-action-primary-hover aria-expanded:text-action-primary-hover',
+          'border-accent-primary-muted bg-accent-primary-subtle text-primary hover:bg-chip-primary-hover-bg hover:border-action-primary-hover hover:text-action-primary-hover aria-expanded:bg-chip-primary-hover-bg aria-expanded:border-action-primary-hover aria-expanded:text-action-primary-hover',
         secondary:
-          'border-action-primary bg-accent-primary-subtle text-action-primary hover:bg-[var(--color-primary-100)] hover:border-action-primary-hover hover:text-action-primary-hover aria-expanded:bg-[var(--color-primary-100)] aria-expanded:border-action-primary-hover aria-expanded:text-action-primary-hover',
+          'border-action-primary bg-accent-primary-subtle text-action-primary hover:bg-chip-primary-hover-bg hover:border-action-primary-hover hover:text-action-primary-hover aria-expanded:bg-chip-primary-hover-bg aria-expanded:border-action-primary-hover aria-expanded:text-action-primary-hover',
         ghost: 'text-primary hover:bg-accent-primary-subtle aria-expanded:bg-accent-primary-subtle',
         muted: 'text-muted-foreground hover:text-foreground aria-expanded:text-foreground',
         destructive:

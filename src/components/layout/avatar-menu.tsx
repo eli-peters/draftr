@@ -20,7 +20,6 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from '@/components/ui/drawer';
-import { Button } from '@/components/ui/button';
 import { SignOutConfirmDialog } from '@/components/auth/sign-out-confirm-dialog';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { appContent } from '@/content/app';
@@ -106,37 +105,48 @@ export function AvatarMenu({ userName, userInitials, avatarUrl, userRole }: Avat
               <DrawerDescription className="sr-only">
                 {appContent.header.profileMenu}
               </DrawerDescription>
-              {headerBlock}
+              {/* Centered avatar + name + role */}
+              <div className="flex flex-col items-center gap-4">
+                <Avatar className="size-[60px]">
+                  {avatarUrl && <AvatarImage src={avatarUrl} alt={userName} />}
+                  <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold">
+                    {userInitials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="text-center">
+                  <p className="font-display text-xl font-semibold tracking-tight text-foreground">
+                    {userName}
+                  </p>
+                  <p className="text-sm text-muted-foreground">{roleLabel}</p>
+                </div>
+              </div>
             </DrawerHeader>
             <DrawerBody className="flex flex-col gap-1 pb-5">
-              <Button
-                variant="ghost"
-                size="lg"
-                className="w-full justify-start gap-3"
+              <button
+                type="button"
+                className="flex h-12 w-full items-center gap-3 rounded-lg px-3 text-[15px] font-medium text-foreground transition-colors hover:bg-muted/50"
                 onClick={() => handleNavigate(routes.profile)}
               >
-                <UserCircle className="size-5 text-muted-foreground" />
+                <UserCircle className="size-6 text-foreground" />
                 {content.myProfile}
-              </Button>
-              <Button
-                variant="ghost"
-                size="lg"
-                className="w-full justify-start gap-3"
+              </button>
+              <button
+                type="button"
+                className="flex h-12 w-full items-center gap-3 rounded-lg px-3 text-[15px] font-medium text-foreground transition-colors hover:bg-muted/50"
                 onClick={() => handleNavigate(routes.settings)}
               >
-                <GearSix className="size-5 text-muted-foreground" />
+                <GearSix className="size-6 text-foreground" />
                 {content.settings}
-              </Button>
+              </button>
               <div className="my-1 h-px bg-border" />
-              <Button
-                variant="destructive"
-                size="lg"
-                className="w-full justify-start gap-3"
+              <button
+                type="button"
+                className="flex h-12 w-full items-center gap-3 rounded-lg px-3 text-[15px] font-medium text-foreground transition-colors hover:bg-muted/50"
                 onClick={handleSignOut}
               >
-                <SignOut className="size-5" />
+                <SignOut className="size-6 text-foreground" />
                 {content.signOut}
-              </Button>
+              </button>
             </DrawerBody>
           </DrawerContent>
         </Drawer>

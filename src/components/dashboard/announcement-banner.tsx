@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { Megaphone, Warning, Siren, Confetti, X } from '@phosphor-icons/react/dist/ssr';
+import { Megaphone, Confetti, Warning, X } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { appContent } from '@/content/app';
 import { dismissAnnouncement } from '@/lib/manage/actions';
@@ -12,47 +12,38 @@ const { dashboard: content } = appContent;
 
 /**
  * Static class map — Tailwind v4 requires full class strings to be scannable.
- * "danger" maps to the "error" feedback token family.
  */
 const typeStyles: Record<
   AnnouncementType,
   { container: string; icon: string; title: string; body: string; meta: string }
 > = {
-  info: {
+  general: {
     container: 'bg-(--feedback-info-bg)',
     icon: 'text-(--feedback-info-default)',
     title: 'text-(--feedback-info-text)',
     body: 'text-(--feedback-info-text)/75',
     meta: 'text-(--feedback-info-text)/50',
   },
-  warning: {
-    container: 'bg-(--feedback-warning-bg)',
-    icon: 'text-(--feedback-warning-default)',
-    title: 'text-(--feedback-warning-text)',
-    body: 'text-(--feedback-warning-text)/75',
-    meta: 'text-(--feedback-warning-text)/50',
-  },
-  danger: {
-    container: 'bg-(--feedback-error-bg)',
-    icon: 'text-(--feedback-error-default)',
-    title: 'text-(--feedback-error-text)',
-    body: 'text-(--feedback-error-text)/75',
-    meta: 'text-(--feedback-error-text)/50',
-  },
-  success: {
+  event: {
     container: 'bg-(--feedback-success-bg)',
     icon: 'text-(--feedback-success-default)',
     title: 'text-(--feedback-success-text)',
     body: 'text-(--feedback-success-text)/75',
     meta: 'text-(--feedback-success-text)/50',
   },
+  urgent: {
+    container: 'bg-(--feedback-warning-bg)',
+    icon: 'text-(--feedback-warning-default)',
+    title: 'text-(--feedback-warning-text)',
+    body: 'text-(--feedback-warning-text)/75',
+    meta: 'text-(--feedback-warning-text)/50',
+  },
 };
 
 const typeIcons: Record<AnnouncementType, typeof Megaphone> = {
-  info: Megaphone,
-  warning: Warning,
-  danger: Siren,
-  success: Confetti,
+  general: Megaphone,
+  event: Confetti,
+  urgent: Warning,
 };
 
 interface AnnouncementBannerProps {

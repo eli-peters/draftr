@@ -56,12 +56,12 @@
     "overlay": {
       "$type": "color",
       "$description": "Modal backdrop, scrim behind drawers",
-      "$value": "{color.neutral.0-alpha-92}",
+      "$value": "{color.neutral.900-alpha-60}",
       "$extensions": {
         "com.figma": {
           "modes": {
-            "Light": "{color.neutral.0-alpha-92}",
-            "Dark": "{color.neutral.950-alpha-92}"
+            "Light": "{color.neutral.900-alpha-60}",
+            "Dark": "{color.neutral.900-alpha-60}"
           }
         }
       }

@@ -50,9 +50,6 @@ export function ResponsiveDrawer({
 
   const contentClassName = cn(
     isMobile ? MOBILE_HEIGHT_CLASS[size] : 'w-(--drawer-width-sidebar)',
-    // In `auto` mode the drawer hugs its content; if content exceeds the base
-    // max-h cap, the whole drawer scrolls (no internal scroll region).
-    isMobile && size === 'auto' && 'overflow-y-auto',
     className,
   );
 

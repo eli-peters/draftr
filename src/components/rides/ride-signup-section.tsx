@@ -76,8 +76,8 @@ export function RideSignupSection({
             <AlertDialogDescription>{roster.removeConfirmDescription}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogClose>
-              <Button variant="ghost">{roster.removeConfirmKeep}</Button>
+            <AlertDialogClose render={<Button variant="ghost" />}>
+              {roster.removeConfirmKeep}
             </AlertDialogClose>
             <Button variant="destructive" onClick={handleRemoveConfirm} disabled={isRemoving}>
               {isRemoving ? appContent.common.loading : roster.removeRider}

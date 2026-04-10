@@ -255,7 +255,7 @@ function RouteListFetcher({
             {content.noSearchResults}
           </p>
         ) : (
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-2">
             {filteredRoutes.map((route) => (
               <RouteListItem
                 key={route.id}
@@ -302,22 +302,22 @@ function RouteListItem({
   return (
     <button
       type="button"
-      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-transform hover:bg-action-primary-subtle-bg active:scale-[0.98]"
+      className="flex w-full items-center gap-3.5 rounded-xl px-3 py-2.5 text-left transition-transform hover:bg-action-primary-subtle-bg active:scale-[0.98]"
       onClick={() => onSelect(route)}
     >
-      <RoutePolylineThumbnail encodedPolyline={route.polyline} />
+      <RoutePolylineThumbnail encodedPolyline={route.polyline} className="size-14 rounded-2xl" />
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground">{route.name}</p>
-        <div className="mt-1 flex items-center gap-3 text-muted-foreground">
-          <span className={`flex items-center gap-1 ${DATA_SM}`}>
-            <Path className="size-3" />
+        <p className="truncate text-base font-bold text-foreground">{route.name}</p>
+        <div className="mt-2 flex items-center gap-3 text-muted-foreground">
+          <span className={`flex items-center gap-2 ${DATA_SM}`}>
+            <Path className="size-4" />
             {(route.distance_m / 1000).toFixed(1)}
             {units.km}
           </span>
           {route.elevation_m > 0 && (
-            <span className={`flex items-center gap-1 ${DATA_SM}`}>
-              <Mountains className="size-3" />
+            <span className={`flex items-center gap-2 ${DATA_SM}`}>
+              <Mountains className="size-4" />
               {Math.round(route.elevation_m)}
               {units.m}
             </span>

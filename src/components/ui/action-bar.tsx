@@ -30,7 +30,7 @@ import { cn } from '@/lib/utils';
  *
  * 6. **Content padding** — pages rendering an ActionBar are responsible for
  *    adding bottom padding to their content so the bar never occludes the
- *    last section. Use `pb-32 md:pb-24` (≈ `--bar-min-height` + insets).
+ *    last section. Use `pb-(--bar-clearance)` (defined in globals.css).
  *
  * All styling is driven by `--bar-*` custom properties in globals.css.
  */
@@ -54,31 +54,35 @@ export function ActionBar({
   className,
 }: ActionBarProps) {
   return (
-    <div
-      className={cn(
-        // Mobile: fixed to viewport bottom, pill, max-w-lg centered, safe area.
-        'fixed left-(--bar-inset-x) right-(--bar-inset-x) bottom-(--bar-inset-bottom) z-40 mx-auto max-w-lg',
-        // Desktop: sticky at bottom of content column, full container width.
-        'md:sticky md:inset-x-auto md:bottom-(--bar-inset-x) md:mx-0 md:max-w-none',
-        className,
-      )}
-    >
+    <>
+      {/* Fade gradient — mirrors the nav fade on child routes where BottomNav is hidden. */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-(--bar-fade-height) bg-linear-to-t from-surface-page to-transparent" />
       <div
         className={cn(
-          // Body chrome — fixed-height pill so the bar never shifts between states.
-          'flex h-(--bar-min-height) items-center rounded-(--bar-radius) border border-border/(--bar-border-opacity) bg-surface-default/(--bar-bg-opacity) px-(--bar-padding-x-action) shadow-(--bar-shadow) backdrop-blur-(--bar-backdrop-blur) backdrop-saturate-(--bar-backdrop-saturate)',
-          'md:px-(--bar-padding-x-desktop) md:shadow-(--bar-shadow-desktop)',
-          transitioning &&
-            'transition-[background-color] duration-[--duration-normal] ease-[--ease-out]',
+          // Mobile: fixed to viewport bottom, pill, max-w-lg centered, safe area.
+          'fixed left-(--bar-inset-x) right-(--bar-inset-x) bottom-(--bar-inset-bottom) z-40 mx-auto max-w-lg',
+          // Desktop: sticky at bottom of content column, full container width.
+          'md:sticky md:inset-x-auto md:bottom-(--bar-inset-x) md:mx-0 md:max-w-none',
+          className,
         )}
       >
-        {children ?? (
-          <div className="flex w-full items-center justify-between gap-3">
-            <div className="min-w-0 flex-1">{left}</div>
-            {right && <div className="flex shrink-0 items-center gap-2">{right}</div>}
-          </div>
-        )}
+        <div
+          className={cn(
+            // Body chrome — fixed-height pill so the bar never shifts between states.
+            'flex h-(--bar-min-height) items-center rounded-(--bar-radius) border border-border/(--bar-border-opacity) bg-surface-default/(--bar-bg-opacity) px-(--bar-padding-x-action) shadow-(--bar-shadow) backdrop-blur-(--bar-backdrop-blur) backdrop-saturate-(--bar-backdrop-saturate)',
+            'md:px-(--bar-padding-x-desktop) md:shadow-(--bar-shadow-desktop)',
+            transitioning &&
+              'transition-[background-color] duration-[--duration-normal] ease-[--ease-out]',
+          )}
+        >
+          {children ?? (
+            <div className="flex w-full items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">{left}</div>
+              {right && <div className="flex shrink-0 items-center gap-2">{right}</div>}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

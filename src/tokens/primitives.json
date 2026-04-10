@@ -67,6 +67,11 @@
         "$type": "color",
         "$value": "#1A1517EB",
         "$description": "Off-black at 92% opacity — dark mode overlay/scrim"
+      },
+      "900-alpha-60": {
+        "$type": "color",
+        "$value": "#27212399",
+        "$description": "neutral/900 at 60% opacity — modal scrim overlay"
       }
     },
     "success": {

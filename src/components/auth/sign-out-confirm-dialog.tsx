@@ -34,9 +34,7 @@ export function SignOutConfirmDialog({ open, onOpenChange }: SignOutConfirmDialo
           <AlertDialogDescription>{content.rows.signOut.description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogClose>
-            <Button variant="ghost">{content.cancel}</Button>
-          </AlertDialogClose>
+          <AlertDialogClose render={<Button variant="ghost" />}>{content.cancel}</AlertDialogClose>
           <form action={signOut}>
             <Button type="submit" variant="destructive">
               {content.signOutConfirmAction}

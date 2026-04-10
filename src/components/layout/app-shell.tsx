@@ -86,8 +86,12 @@ export function AppShell({
             <PageTransitionWrapper>{children}</PageTransitionWrapper>
           </main>
 
-          <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-(--bar-fade-height) bg-linear-to-t from-surface-page to-transparent" />
-          {(!isChild || isManageSection) && <BottomNav items={navItems} />}
+          {(!isChild || isManageSection) && (
+            <>
+              <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-(--bar-fade-height) bg-linear-to-t from-surface-page to-transparent md:hidden" />
+              <BottomNav items={navItems} />
+            </>
+          )}
         </div>
       </div>
     </div>

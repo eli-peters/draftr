@@ -60,6 +60,7 @@ function Toggle({ className, colorScheme = 'primary', ...props }: ToggleProps) {
   return (
     <SwitchPrimitive.Root
       data-slot="toggle"
+      data-vaul-no-drag
       className={cn(toggleTrackVariants({ colorScheme }), className)}
       {...props}
     >

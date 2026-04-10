@@ -44,7 +44,7 @@ const segmentedControlListVariants = cva(
 
 const segmentedControlItemVariants = cva(
   [
-    'relative inline-flex items-center justify-center whitespace-nowrap select-none',
+    'relative inline-flex flex-1 min-w-0 items-center justify-center whitespace-nowrap select-none',
     'font-semibold text-foreground',
     'rounded-lg',
     'transition-colors duration-(--duration-fast) ease-(--ease-out)',
@@ -102,6 +102,7 @@ export function SegmentedControl<V extends string>({
   return (
     <ToggleGroup<V>
       data-slot="segmented-control"
+      data-vaul-no-drag
       aria-label={ariaLabel}
       value={[value]}
       onValueChange={(next) => {

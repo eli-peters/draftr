@@ -39,7 +39,7 @@ export function RideFormPage({
   const isEdit = !!rideId;
 
   return (
-    <DashboardShell>
+    <DashboardShell className="pb-(--bar-clearance)">
       <PageHeader title={isEdit ? ridesContent.edit.heading : ridesContent.create.heading} />
 
       <RideForm

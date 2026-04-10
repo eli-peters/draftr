@@ -16,7 +16,7 @@ export function RideFormActionBar({ isEdit, isPending, error }: RideFormActionBa
   return (
     <ActionBar>
       {error && <p className="mb-2 text-sm text-destructive">{error}</p>}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex w-full items-center justify-between gap-3">
         <Button type="button" variant="muted" size="sm" onClick={() => history.back()}>
           {isEdit ? common.discard : common.cancel}
         </Button>

@@ -256,7 +256,7 @@
   --card-radius: var(--radius-2xl);
   --card-radius-lg: var(--radius-3xl);
   --card-border-width: 0px;
-  --card-shadow: var(--shadow-xs);
+  --card-shadow: var(--shadow-sm);
   --card-padding: 1rem;
   --card-padding-md: 1.25rem;
 
@@ -288,6 +288,10 @@
   --bar-inset-bottom: max(0.875rem, calc(env(safe-area-inset-bottom, 0px) - 0.5rem));
   --bar-fade-height: 8rem;
   --bar-min-height: 5rem;
+  /* Clearance for pages with a fixed ActionBar — content bottom padding and
+   * the explicit mobile spacer div both reference this value.
+   * 6rem ≈ bar height (5rem) + ~1rem breathing room above it. */
+  --bar-clearance: 6rem;
 
   /* ── Fluid typography scale ──
    * Sizes scale smoothly between 375px (mobile floor) and 1280px (desktop
@@ -421,7 +425,7 @@
    * card separation across all viewports without wasting space.
    * Alternative: 1rem (16px) for denser layouts — swap this one value. */
   --card-stack-gap: 1.5rem;
-  --overlay: color-mix(in srgb, var(--color-neutral-950) 10%, transparent);
+  --overlay: var(--color-neutral-900-alpha-60);
   --overlay-heavy: color-mix(in srgb, var(--color-neutral-950) 40%, transparent);
 
   /* ── Radius ── */
@@ -508,7 +512,7 @@
   --fills-primary: color-mix(in srgb, var(--color-neutral-400) 20%, transparent);
 
   /* ── Layout ── */
-  --overlay: color-mix(in srgb, var(--color-neutral-0) 5%, transparent);
+  --overlay: var(--color-neutral-900-alpha-60);
   --overlay-heavy: color-mix(in srgb, var(--color-neutral-950) 60%, transparent);
 
   /* ── Shadows — layered, higher opacities for dark backgrounds ── */
@@ -588,6 +592,30 @@
   h6 {
     font-family: var(--font-display);
   }
+}
+
+/* ── Vaul animation overrides ─────────────────────────────────────────────
+   Vaul injects hardcoded 500ms animations via a runtime <style> tag.
+   Doubled attribute selectors win specificity regardless of source order.
+   Close is faster than open, matching iOS dismiss convention. */
+[data-vaul-drawer][data-vaul-drawer] {
+  transition: transform var(--duration-slow) var(--ease-drawer);
+  animation-duration: var(--duration-slow);
+  animation-timing-function: var(--ease-drawer);
+}
+
+[data-vaul-drawer][data-vaul-drawer][data-state='closed'] {
+  animation-duration: var(--duration-normal);
+  animation-timing-function: var(--ease-out);
+}
+
+[data-vaul-overlay][data-vaul-overlay][data-vaul-snap-points='false'] {
+  animation-duration: var(--duration-slow);
+  animation-timing-function: var(--ease-drawer);
+}
+
+[data-vaul-overlay][data-vaul-overlay][data-state='closed'] {
+  animation-duration: var(--duration-normal);
 }
 
 /* Mobile page transitions — directional slide animations */
