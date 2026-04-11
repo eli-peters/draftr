@@ -41,10 +41,10 @@ export function SidebarNav({ items, isAdmin = false }: SidebarNavProps) {
                   className={cn(
                     'relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                     isManageExact
-                      ? 'text-primary bg-primary/10'
+                      ? 'font-semibold text-primary bg-primary/10'
                       : isManageActive
-                        ? 'text-primary hover:bg-muted/50'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                        ? 'font-semibold text-primary hover:bg-muted/50'
+                        : 'text-foreground hover:text-foreground hover:bg-muted/50',
                   )}
                 >
                   <NavIcon name={item.icon} className="relative h-5 w-5" active={isManageActive} />
@@ -65,8 +65,8 @@ export function SidebarNav({ items, isAdmin = false }: SidebarNavProps) {
                           className={cn(
                             'flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors',
                             isChildActive
-                              ? 'text-primary font-medium bg-primary/10'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                              ? 'font-semibold text-primary bg-primary/10'
+                              : 'text-foreground hover:text-foreground hover:bg-muted/50',
                           )}
                         >
                           <NavIcon name={child.icon} className="h-4 w-4" active={isChildActive} />
@@ -94,8 +94,8 @@ export function SidebarNav({ items, isAdmin = false }: SidebarNavProps) {
               className={cn(
                 'relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                 isActive
-                  ? 'text-primary bg-primary/10'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                  ? 'font-semibold text-primary bg-primary/10'
+                  : 'text-foreground hover:text-foreground hover:bg-muted/50',
               )}
             >
               <NavIcon name={item.icon} className="relative h-5 w-5" active={isActive} />
