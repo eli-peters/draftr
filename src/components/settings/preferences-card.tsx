@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useOptimistic, useState, useTransition } from 'react';
 import { SlidersHorizontal } from '@phosphor-icons/react/dist/ssr';
 import { toast } from 'sonner';
 import { ContentCard } from '@/components/ui/content-card';
@@ -26,12 +26,14 @@ export function PreferencesCard({ userPrefs }: PreferencesCardProps) {
   const { colorMode, setColorMode } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [, startTransition] = useTransition();
+  const [optimisticPrefs, setOptimisticPrefs] = useOptimistic(userPrefs);
 
   // Hydration guard — colorMode reads localStorage, unavailable on server
   // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration guard
   useEffect(() => setMounted(true), []);
 
   function save(patch: Partial<UserPreferences>) {
+    setOptimisticPrefs({ ...optimisticPrefs, ...patch });
     startTransition(async () => {
       const result = await updateUserPreferences(patch);
       if (result && 'error' in result) {
@@ -50,7 +52,7 @@ export function PreferencesCard({ userPrefs }: PreferencesCardProps) {
           <SegmentedControl
             size="compact"
             ariaLabel={content.rows.distance.label}
-            value={userPrefs.distance_unit}
+            value={optimisticPrefs.distance_unit}
             onValueChange={(v) => save({ distance_unit: v as UserPreferences['distance_unit'] })}
             options={Object.entries(content.rows.distance.options).map(([value, label]) => ({
               value,
@@ -64,7 +66,7 @@ export function PreferencesCard({ userPrefs }: PreferencesCardProps) {
           <SegmentedControl
             size="compact"
             ariaLabel={content.rows.elevation.label}
-            value={userPrefs.elevation_unit}
+            value={optimisticPrefs.elevation_unit}
             onValueChange={(v) => save({ elevation_unit: v as UserPreferences['elevation_unit'] })}
             options={Object.entries(content.rows.elevation.options).map(([value, label]) => ({
               value,
@@ -78,7 +80,7 @@ export function PreferencesCard({ userPrefs }: PreferencesCardProps) {
           <SegmentedControl
             size="compact"
             ariaLabel={content.rows.temperature.label}
-            value={userPrefs.temperature_unit}
+            value={optimisticPrefs.temperature_unit}
             onValueChange={(v) =>
               save({ temperature_unit: v as UserPreferences['temperature_unit'] })
             }
@@ -94,7 +96,7 @@ export function PreferencesCard({ userPrefs }: PreferencesCardProps) {
           <SegmentedControl
             size="compact"
             ariaLabel={content.rows.timeFormat.label}
-            value={userPrefs.time_format}
+            value={optimisticPrefs.time_format}
             onValueChange={(v) => save({ time_format: v as UserPreferences['time_format'] })}
             options={Object.entries(content.rows.timeFormat.options).map(([value, label]) => ({
               value,
