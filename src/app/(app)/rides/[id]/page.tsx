@@ -1,21 +1,21 @@
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import {
   getRideById,
   getUserSignupStatus,
   getRideSignups,
   getUserClubMembership,
-  getRideComments,
   getRideCoLeaders,
-  getCommentReactions,
 } from '@/lib/rides/queries';
 import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { RideSignupSection } from '@/components/rides/ride-signup-section';
 import { RideSignupActionBar } from '@/components/rides/ride-signup-action-bar';
-import { RideComments } from '@/components/rides/ride-comments';
 import { RideDetailCard } from '@/components/rides/ride-detail-card';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { RideKebabMenu } from '@/components/rides/ride-kebab-menu';
+import { RideCommentsSection } from './_components/ride-comments-section';
+import { CommentsSkeleton } from './_components/comments-skeleton';
 
 import { Users } from '@phosphor-icons/react/dist/ssr';
 import { ContentCard } from '@/components/ui/content-card';
@@ -34,17 +34,14 @@ interface RideDetailPageProps {
 
 export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const { id } = await params;
-  const [ride, signup, signups, membership, comments, coLeaders] = await Promise.all([
+  const [ride, signup, signups, membership, coLeaders] = await Promise.all([
     getRideById(id),
     getUserSignupStatus(id),
     getRideSignups(id),
     getUserClubMembership(),
-    getRideComments(id),
     getRideCoLeaders(id),
   ]);
   if (!ride) notFound();
-
-  const commentReactions = await getCommentReactions(comments.map((c) => c.id));
 
   const isSignedUp =
     signup?.status === SignupStatus.CONFIRMED || signup?.status === SignupStatus.WAITLISTED;
@@ -147,16 +144,16 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         </ContentCard>
       )}
 
-      {/* Comments */}
+      {/* Comments — streamed via Suspense to avoid blocking initial paint */}
       <div className="mt-card-stack">
-        <RideComments
-          rideId={ride.id}
-          comments={comments}
-          commentReactions={commentReactions}
-          currentUserId={currentUserId}
-          userRole={userRole}
-          isCancelled={availability.isCancelled}
-        />
+        <Suspense fallback={<CommentsSkeleton />}>
+          <RideCommentsSection
+            rideId={ride.id}
+            currentUserId={currentUserId}
+            userRole={userRole}
+            isCancelled={availability.isCancelled}
+          />
+        </Suspense>
       </div>
 
       {/* Signup action bar — pinned to viewport bottom on both breakpoints. */}

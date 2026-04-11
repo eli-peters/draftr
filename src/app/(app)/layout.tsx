@@ -5,7 +5,8 @@ import { getNavForRole, type UserRole } from '@/config/navigation';
 import { routes } from '@/config/routes';
 import { getInitials } from '@/lib/utils';
 import { getUserClubMembership } from '@/lib/rides/queries';
-import { createClient, getUser } from '@/lib/supabase/server';
+import { getUser } from '@/lib/supabase/server';
+import { getLayoutProfile } from '@/lib/profile/queries';
 import { getUserNotifications } from '@/lib/notifications/queries';
 import { getPinnedAnnouncement } from '@/lib/manage/queries';
 import { AnnouncementBanner } from '@/components/dashboard/announcement-banner';
@@ -27,14 +28,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const userRole: UserRole = (membership?.role as UserRole) ?? 'rider';
   const navItems = getNavForRole(userRole);
 
-  // Fetch profile, notifications, and announcement in parallel
-  const supabase = await createClient();
-  const [{ data: profile }, notifications, pinnedAnnouncement] = await Promise.all([
-    supabase
-      .from('users')
-      .select('full_name, email, avatar_url, onboarding_completed, user_preferences')
-      .eq('id', authUser.id)
-      .single(),
+  // Fetch profile, notifications, and announcement in parallel (all cached)
+  const [profile, notifications, pinnedAnnouncement] = await Promise.all([
+    getLayoutProfile(authUser.id),
     getUserNotifications(authUser.id),
     membership ? getPinnedAnnouncement(membership.club_id, authUser.id) : null,
   ]);

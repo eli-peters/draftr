@@ -3,6 +3,32 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { tagProfile } from '@/lib/cache-tags';
 
+/**
+ * Lightweight profile for the app layout shell (nav avatar, preferences, onboarding check).
+ * Cached per user; invalidated via tagProfile(userId).
+ */
+export async function getLayoutProfile(userId: string) {
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
+      const { data, error } = await supabase
+        .from('users')
+        .select('full_name, email, avatar_url, onboarding_completed, user_preferences')
+        .eq('id', userId)
+        .single();
+
+      if (error?.message) {
+        console.error('[profile] Error fetching layout profile:', error.message);
+        return null;
+      }
+
+      return data;
+    },
+    ['layout-profile', userId],
+    { tags: [tagProfile(userId)], revalidate: 300 },
+  )();
+}
+
 export interface UserProfile {
   id: string;
   full_name: string;

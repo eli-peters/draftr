@@ -211,36 +211,43 @@ export async function getRideById(rideId: string): Promise<RideWithDetails | nul
 
 /**
  * Check if the current user is signed up for a ride.
+ * Cached per user+ride; invalidated via tagRideSignups + tagUserRides.
  */
 export async function getUserSignupStatus(rideId: string) {
   const user = await getUser();
   if (!user) return null;
 
-  const supabase = await createClient();
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
 
-  const { data } = await supabase
-    .from('ride_signups')
-    .select('id, status, signed_up_at')
-    .eq('ride_id', rideId)
-    .eq('user_id', user.id)
-    .neq('status', 'cancelled')
-    .maybeSingle();
+      const { data } = await supabase
+        .from('ride_signups')
+        .select('id, status, signed_up_at')
+        .eq('ride_id', rideId)
+        .eq('user_id', user.id)
+        .neq('status', 'cancelled')
+        .maybeSingle();
 
-  if (!data) return null;
+      if (!data) return null;
 
-  // Derive waitlist position from signed_up_at order
-  let waitlist_position: number | null = null;
-  if (data.status === 'waitlisted' && data.signed_up_at) {
-    const { count } = await supabase
-      .from('ride_signups')
-      .select('*', { count: 'exact', head: true })
-      .eq('ride_id', rideId)
-      .eq('status', 'waitlisted')
-      .lte('signed_up_at', data.signed_up_at);
-    waitlist_position = count ?? null;
-  }
+      // Derive waitlist position from signed_up_at order
+      let waitlist_position: number | null = null;
+      if (data.status === 'waitlisted' && data.signed_up_at) {
+        const { count } = await supabase
+          .from('ride_signups')
+          .select('*', { count: 'exact', head: true })
+          .eq('ride_id', rideId)
+          .eq('status', 'waitlisted')
+          .lte('signed_up_at', data.signed_up_at);
+        waitlist_position = count ?? null;
+      }
 
-  return { id: data.id, status: data.status, waitlist_position };
+      return { id: data.id, status: data.status, waitlist_position };
+    },
+    ['user-signup-status', rideId, user.id],
+    { tags: [tagRideSignups(rideId), tagUserRides(user.id)], revalidate: 300 },
+  )();
 }
 
 /**
@@ -877,40 +884,46 @@ export async function getUserRideSignups(
  * Fetch comments for a ride with user info, ordered oldest first.
  */
 export async function getRideComments(rideId: string): Promise<CommentWithUser[]> {
-  const supabase = await createClient();
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
 
-  const { data, error } = await supabase
-    .from('ride_comments')
-    .select(
-      `
-      id, ride_id, user_id, body, created_at, updated_at,
-      user:users!inner(full_name, avatar_url)
-    `,
-    )
-    .eq('ride_id', rideId)
-    .order('created_at', { ascending: true });
+      const { data, error } = await supabase
+        .from('ride_comments')
+        .select(
+          `
+          id, ride_id, user_id, body, created_at, updated_at,
+          user:users!inner(full_name, avatar_url)
+        `,
+        )
+        .eq('ride_id', rideId)
+        .order('created_at', { ascending: true });
 
-  if (error?.message) {
-    console.error('Error fetching ride comments:', error.message, error.code, error.details);
-    return [];
-  }
+      if (error?.message) {
+        console.error('Error fetching ride comments:', error.message, error.code, error.details);
+        return [];
+      }
 
-  return (data ?? []).map((comment) => {
-    const user = comment.user as unknown as {
-      full_name: string;
-      avatar_url: string | null;
-    };
-    return {
-      id: comment.id,
-      ride_id: comment.ride_id,
-      user_id: comment.user_id,
-      body: comment.body,
-      created_at: comment.created_at,
-      updated_at: comment.updated_at,
-      user_name: user.full_name,
-      avatar_url: user.avatar_url,
-    };
-  });
+      return (data ?? []).map((comment) => {
+        const user = comment.user as unknown as {
+          full_name: string;
+          avatar_url: string | null;
+        };
+        return {
+          id: comment.id,
+          ride_id: comment.ride_id,
+          user_id: comment.user_id,
+          body: comment.body,
+          created_at: comment.created_at,
+          updated_at: comment.updated_at,
+          user_name: user.full_name,
+          avatar_url: user.avatar_url,
+        };
+      });
+    },
+    ['ride-comments', rideId],
+    { tags: [tagRide(rideId)], revalidate: 300 },
+  )();
 }
 
 // ---------------------------------------------------------------------------
@@ -941,38 +954,50 @@ export async function getRideReactions(rideId: string): Promise<ReactionSummary[
 /**
  * Batch-fetch reaction summaries for multiple comments.
  * Returns a Map keyed by comment_id.
+ * Raw reaction data is cached per ride; hasReacted is derived from currentUserId.
  */
 export async function getCommentReactions(
+  rideId: string,
   commentIds: string[],
+  currentUserId?: string | null,
 ): Promise<Map<string, ReactionSummary[]>> {
   const result = new Map<string, ReactionSummary[]>();
   if (commentIds.length === 0) return result;
 
-  const supabase = await createClient();
-  const user = await getUser();
-  const currentUserId = user?.id ?? null;
+  // Resolve current user if not provided
+  const userId = currentUserId ?? (await getUser())?.id ?? null;
 
-  const { data, error } = await supabase
-    .from('comment_reactions')
-    .select('comment_id, reaction, user_id, user:users!inner(full_name)')
-    .in('comment_id', commentIds);
+  // Fetch raw reaction data (cached per ride)
+  const rawRows = await unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
 
-  if (error?.message) {
-    console.error('Error fetching comment reactions:', error.message);
-    return result;
-  }
+      const { data, error } = await supabase
+        .from('comment_reactions')
+        .select('comment_id, reaction, user_id, user:users!inner(full_name)')
+        .in('comment_id', commentIds);
 
-  // Group by comment_id first, then aggregate each group
-  const rows = data ?? [];
-  const byComment = new Map<string, typeof rows>();
-  for (const row of rows) {
+      if (error?.message) {
+        console.error('Error fetching comment reactions:', error.message);
+        return [];
+      }
+
+      return data ?? [];
+    },
+    ['comment-reactions', rideId],
+    { tags: [tagRide(rideId)], revalidate: 300 },
+  )();
+
+  // Group by comment_id and aggregate with user-specific hasReacted
+  const byComment = new Map<string, typeof rawRows>();
+  for (const row of rawRows) {
     const existing = byComment.get(row.comment_id) ?? [];
     existing.push(row);
     byComment.set(row.comment_id, existing);
   }
 
   for (const [commentId, rows] of byComment) {
-    result.set(commentId, aggregateReactions(rows, currentUserId));
+    result.set(commentId, aggregateReactions(rows, userId));
   }
 
   return result;
@@ -1020,28 +1045,35 @@ export interface RideLeader {
 
 /**
  * Fetch co-leaders for a ride (not including the ride creator).
+ * Cached per ride; invalidated via tagRide(rideId).
  */
 export async function getRideCoLeaders(rideId: string): Promise<RideLeader[]> {
-  const supabase = await createClient();
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
 
-  const { data, error } = await supabase
-    .from('ride_leaders')
-    .select('user_id, added_at, user:users!ride_leaders_user_id_fkey(full_name, avatar_url)')
-    .eq('ride_id', rideId)
-    .order('added_at', { ascending: true });
+      const { data, error } = await supabase
+        .from('ride_leaders')
+        .select('user_id, added_at, user:users!ride_leaders_user_id_fkey(full_name, avatar_url)')
+        .eq('ride_id', rideId)
+        .order('added_at', { ascending: true });
 
-  if (error?.message) {
-    console.error('Error fetching ride co-leaders:', error.message);
-    return [];
-  }
+      if (error?.message) {
+        console.error('Error fetching ride co-leaders:', error.message);
+        return [];
+      }
 
-  return (data ?? []).map((row) => {
-    const user = row.user as unknown as { full_name: string; avatar_url: string | null };
-    return {
-      user_id: row.user_id,
-      name: user?.full_name ?? '',
-      avatar_url: user?.avatar_url ?? null,
-      added_at: row.added_at,
-    };
-  });
+      return (data ?? []).map((row) => {
+        const user = row.user as unknown as { full_name: string; avatar_url: string | null };
+        return {
+          user_id: row.user_id,
+          name: user?.full_name ?? '',
+          avatar_url: user?.avatar_url ?? null,
+          added_at: row.added_at,
+        };
+      });
+    },
+    ['ride-co-leaders', rideId],
+    { tags: [tagRide(rideId)], revalidate: 300 },
+  )();
 }
