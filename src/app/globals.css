@@ -624,14 +624,21 @@
     textarea {
       font-size: max(1rem, inherit);
     }
-    /* Disable text selection on UI chrome, keep on content */
+    /* Disable text selection and suppress long-press callout on UI chrome.
+       -webkit-touch-callout: none prevents iOS Safari's "Open in New Tab" /
+       "Copy Link" sheet on buttons, cards, and nav — keeps the native app
+       illusion intact. Text content areas are intentionally excluded so users
+       can still select and copy body copy. External links (Strava, Maps) that
+       are not wrapped by these selectors retain their default callout. */
     nav,
     [data-slot='button'],
     [data-slot='filter-chip'],
     [data-slot='toggle'],
     [data-slot='segmented-control'],
+    [data-slot='card'],
     [data-slot='card-header'],
     [data-slot='card-footer'] {
+      -webkit-touch-callout: none;
       -webkit-user-select: none;
       user-select: none;
     }
