@@ -73,6 +73,8 @@ interface CardStateStyle {
   bannerText: string | null;
   bannerIcon: PhosphorIcon | null;
   bannerLabel: string | null;
+  /** Dark-mode colored glow shadow (subtle halo around status cards) */
+  glowClass: string | null;
 }
 
 export function getCardStateStyle(state: CardState): CardStateStyle {
@@ -85,6 +87,7 @@ export function getCardStateStyle(state: CardState): CardStateStyle {
         bannerText: 'text-banner-soft-success-text',
         bannerIcon: SealCheck,
         bannerLabel: ridesContent.card.signedUp,
+        glowClass: 'dark:shadow-[shadow:var(--card-shadow),var(--card-glow-success)]',
       };
     case 'waitlisted':
       return {
@@ -94,6 +97,7 @@ export function getCardStateStyle(state: CardState): CardStateStyle {
         bannerText: 'text-banner-soft-warning-text',
         bannerIcon: Hourglass,
         bannerLabel: ridesContent.card.waitlisted,
+        glowClass: 'dark:shadow-[shadow:var(--card-shadow),var(--card-glow-warning)]',
       };
     case 'weather_watch':
       return {
@@ -103,6 +107,7 @@ export function getCardStateStyle(state: CardState): CardStateStyle {
         bannerText: 'text-banner-soft-warning-text',
         bannerIcon: CloudWarning,
         bannerLabel: ridesContent.status.weatherWatch,
+        glowClass: 'dark:shadow-[shadow:var(--card-shadow),var(--card-glow-warning)]',
       };
     case 'cancelled':
       return {
@@ -112,6 +117,7 @@ export function getCardStateStyle(state: CardState): CardStateStyle {
         bannerText: 'text-banner-soft-error-text',
         bannerIcon: Prohibit,
         bannerLabel: ridesContent.status.cancelled,
+        glowClass: 'dark:shadow-[shadow:var(--card-shadow),var(--card-glow-error)]',
       };
     case 'in_progress':
       return {
@@ -121,6 +127,7 @@ export function getCardStateStyle(state: CardState): CardStateStyle {
         bannerText: 'text-banner-soft-info-text',
         bannerIcon: Bicycle,
         bannerLabel: ridesContent.status.inProgress,
+        glowClass: 'dark:shadow-[shadow:var(--card-shadow),var(--card-glow-info)]',
       };
     case 'about_to_start':
       return {
@@ -130,6 +137,7 @@ export function getCardStateStyle(state: CardState): CardStateStyle {
         bannerText: 'text-banner-soft-info-text',
         bannerIcon: ClockCountdown,
         bannerLabel: ridesContent.status.aboutToStart,
+        glowClass: 'dark:shadow-[shadow:var(--card-shadow),var(--card-glow-info)]',
       };
     case 'completed':
       return {
@@ -139,6 +147,7 @@ export function getCardStateStyle(state: CardState): CardStateStyle {
         bannerText: 'text-banner-muted-text',
         bannerIcon: SealCheck,
         bannerLabel: ridesContent.status.completed,
+        glowClass: null,
       };
     case 'default':
     default:
@@ -149,6 +158,7 @@ export function getCardStateStyle(state: CardState): CardStateStyle {
         bannerText: null,
         bannerIcon: null,
         bannerLabel: null,
+        glowClass: null,
       };
   }
 }
@@ -263,7 +273,7 @@ export function DateTimeRow({ date, time }: DateTimeRowProps) {
   return (
     <div className="flex items-center gap-1.5">
       <span className={cn(OVERLINE, 'text-primary')}>{date}</span>
-      <span className={cn(BODY_SM, 'font-bold leading-5 text-muted-foreground/40')}>
+      <span className={cn(BODY_SM, 'font-bold leading-5 text-(--text-tertiary)')}>
         {separators.dot.trim()}
       </span>
       <span className={cn(OVERLINE, 'text-muted-foreground')}>{time}</span>
@@ -544,7 +554,7 @@ export function CardContentSection({
       {/* Top row: date/time · weather */}
       <div className="flex items-center gap-1.5">
         <DateTimeRow date={date} time={time} />
-        <span className={cn(BODY_SM, 'font-bold leading-5 text-muted-foreground/40')}>
+        <span className={cn(BODY_SM, 'font-bold leading-5 text-(--text-tertiary)')}>
           {separators.dot.trim()}
         </span>
         <RideWeatherBadge weather={weather ?? null} layout="inline" />
@@ -592,14 +602,5 @@ interface CardFooterSectionProps {
 }
 
 export function CardFooterSection({ children, className }: CardFooterSectionProps) {
-  return (
-    <div
-      className={cn(
-        'bg-[color-mix(in_oklab,var(--surface-card-footer)_40%,transparent)] px-5 py-3.5',
-        className,
-      )}
-    >
-      {children}
-    </div>
-  );
+  return <div className={cn('bg-surface-card-footer-soft px-5 py-3.5', className)}>{children}</div>;
 }

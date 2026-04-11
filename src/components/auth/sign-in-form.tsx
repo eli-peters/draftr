@@ -21,7 +21,16 @@ export function SignInForm() {
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <FloatingField label={content.emailLabel} htmlFor="email">
-        <Input id="email" name="email" type="email" required autoComplete="email" placeholder=" " />
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+          inputMode="email"
+          enterKeyHint="next"
+          placeholder=" "
+        />
       </FloatingField>
 
       <FloatingField label={content.passwordLabel} htmlFor="password">
@@ -31,6 +40,7 @@ export function SignInForm() {
           type="password"
           required
           autoComplete="current-password"
+          enterKeyHint="go"
           placeholder=" "
         />
       </FloatingField>

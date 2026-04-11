@@ -45,11 +45,15 @@ export function RideCard({ ride, variant = 'rides', timezone }: RideCardProps) {
   const isBannerSuppressed = isHome && homeSuppressed.includes(cardState);
 
   return (
-    <Link href={routes.ride(ride.id)} className="group block rounded-(--card-radius) focus-ring">
+    <Link
+      href={routes.ride(ride.id)}
+      className="group block rounded-(--card-radius) focus-ring transition-transform duration-(--duration-fast) ease-(--ease-out) active:scale-[0.98]"
+    >
       <Card
         className={cn(
           'overflow-clip p-0',
           isBannerSuppressed ? 'border-border-default' : stateStyle.borderClass,
+          !isBannerSuppressed && stateStyle.glowClass,
         )}
       >
         <StateCardBanner
@@ -151,7 +155,7 @@ function RidesLayout({
             avatars={ride.signup_avatars}
             totalCount={ride.signup_count}
             cancelled={ride.status === 'cancelled'}
-            surface="color-mix(in oklab, var(--surface-card-footer) 40%, var(--surface-default))"
+            surface="var(--surface-card-footer-soft)"
           />
           {availability.canSignUp && (
             <CardSignupButton

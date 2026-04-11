@@ -3,7 +3,7 @@
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Bicycle } from '@phosphor-icons/react/dist/ssr';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { DURATIONS, EASE } from '@/lib/motion';
+import { DURATIONS, EASE, staggerContainer, listItem } from '@/lib/motion';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FilterChip, FilterChipGroup } from '@/components/ui/filter-chip';
 import { RideCard } from '@/components/rides/ride-card';
@@ -63,18 +63,20 @@ export function FilterableRideFeed({
       )}
 
       {filtered.length > 0 ? (
-        <div className="flex flex-col gap-6">
+        <motion.div
+          className="flex flex-col gap-6"
+          variants={shouldReduce ? undefined : staggerContainer()}
+          initial="hidden"
+          animate="visible"
+        >
           <AnimatePresence initial={false} mode="popLayout">
             {filtered.map((ride) => (
               <motion.div
                 key={ride.id}
                 layout
-                initial={shouldReduce ? { opacity: 0 } : { opacity: 0, y: 12 }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                  transition: { duration: DURATIONS.normal, ease: EASE.out },
-                }}
+                variants={shouldReduce ? undefined : listItem}
+                initial={shouldReduce ? { opacity: 0 } : undefined}
+                animate={shouldReduce ? { opacity: 1 } : undefined}
                 exit={
                   shouldReduce
                     ? { opacity: 0 }
@@ -89,7 +91,7 @@ export function FilterableRideFeed({
               </motion.div>
             ))}
           </AnimatePresence>
-        </div>
+        </motion.div>
       ) : (
         <EmptyState
           title={hasFilter ? ridesContent.filter.noResults.title : emptyTitle}

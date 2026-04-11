@@ -17,7 +17,7 @@ const filterChipVariants = cva(
   [
     'inline-flex items-center gap-1.5 shrink-0 rounded-3xl font-medium whitespace-nowrap select-none',
     'border border-text-primary outline-none',
-    'transition-[background-color,color,border-color,box-shadow,transform] duration-160 ease-out',
+    'transition-[background-color,color,border-color,box-shadow,transform] duration-(--duration-fast) ease-out',
     'focus-ring',
     'active:scale-90',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",

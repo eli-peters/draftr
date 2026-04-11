@@ -81,7 +81,9 @@ function FloatingField({
           {helperText && !error ? (
             <p className="text-xs text-muted-foreground">{helperText}</p>
           ) : error ? (
-            <p className="text-sm text-destructive">{error}</p>
+            <p data-slot="field-error" className="text-sm text-destructive">
+              {error}
+            </p>
           ) : (
             <span />
           )}

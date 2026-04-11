@@ -56,7 +56,16 @@ export function BottomNav({ items }: BottomNavProps) {
                       transition={shouldReduce ? { duration: 0 } : SPRINGS.snappy}
                     />
                   )}
-                  <NavIcon name={item.icon} className="h-6 w-6" active={isActive} />
+                  <motion.div
+                    animate={isActive && !shouldReduce ? { y: [0, -2, 0] } : { y: 0 }}
+                    transition={
+                      shouldReduce
+                        ? { duration: 0 }
+                        : { duration: 0.35, ease: [0.175, 0.885, 0.32, 1.275] }
+                    }
+                  >
+                    <NavIcon name={item.icon} className="h-6 w-6" active={isActive} />
+                  </motion.div>
                   <span>{item.label}</span>
                 </MotionLink>
               );

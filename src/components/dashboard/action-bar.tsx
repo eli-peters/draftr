@@ -133,7 +133,10 @@ function ActionCard({
         },
       }}
     >
-      <Link href={href} className="group block">
+      <Link
+        href={href}
+        className="group block rounded-(--card-radius) focus-ring transition-transform duration-(--duration-fast) ease-(--ease-out) active:scale-[0.98]"
+      >
         <Card className={cn('overflow-clip p-0', borderClass)}>
           <CardBanner
             icon={icon}

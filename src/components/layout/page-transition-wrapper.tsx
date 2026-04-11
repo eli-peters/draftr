@@ -26,7 +26,7 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
     const cls = direction === 'forward' ? 'page-transition-forward' : 'page-transition-back';
     setAnimClass(cls);
 
-    const timer = setTimeout(() => setAnimClass(''), 250);
+    const timer = setTimeout(() => setAnimClass(''), 350);
     return () => clearTimeout(timer);
   }, [pathname, direction, isMobile]);
   /* eslint-enable react-hooks/set-state-in-effect */

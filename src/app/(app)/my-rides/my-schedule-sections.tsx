@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Bicycle, ClockCountdown } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { ScheduleCard } from '@/components/rides/schedule-card';
+import { DURATIONS, EASE, staggerContainer, listItem } from '@/lib/motion';
 import { cancelSignUp } from '@/lib/rides/actions';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
@@ -25,6 +27,7 @@ interface MyScheduleSectionsProps {
 
 export function MyScheduleSections({ upcoming, past, timezone }: MyScheduleSectionsProps) {
   const router = useRouter();
+  const shouldReduce = useReducedMotion();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('upcoming');
 
   const visibleRides = statusFilter === 'upcoming' ? upcoming : past;
@@ -51,11 +54,36 @@ export function MyScheduleSections({ upcoming, past, timezone }: MyScheduleSecti
       </div>
 
       {visibleRides.length > 0 ? (
-        <div className="flex flex-col gap-6">
-          {visibleRides.map((ride) => (
-            <ScheduleCard key={ride.id} ride={ride} onAction={handleAction} timezone={timezone} />
-          ))}
-        </div>
+        <motion.div
+          className="flex flex-col gap-6"
+          variants={shouldReduce ? undefined : staggerContainer()}
+          initial="hidden"
+          animate="visible"
+          key={statusFilter}
+        >
+          <AnimatePresence initial={false} mode="popLayout">
+            {visibleRides.map((ride) => (
+              <motion.div
+                key={ride.id}
+                layout
+                variants={shouldReduce ? undefined : listItem}
+                initial={shouldReduce ? { opacity: 0 } : undefined}
+                animate={shouldReduce ? { opacity: 1 } : undefined}
+                exit={
+                  shouldReduce
+                    ? { opacity: 0 }
+                    : {
+                        opacity: 0,
+                        x: -16,
+                        transition: { duration: DURATIONS.fast, ease: EASE.out },
+                      }
+                }
+              >
+                <ScheduleCard ride={ride} onAction={handleAction} timezone={timezone} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
       ) : (
         <EmptyState
           title={

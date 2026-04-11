@@ -82,10 +82,8 @@ export function StepRoute({
             /* Link-only preview */
             <div className="rounded-xl bg-surface-sunken p-4 space-y-3">
               <div className="rounded-lg bg-surface-page flex flex-col items-center justify-center gap-1.5 py-6">
-                <MapTrifold weight="duotone" className="size-8 text-muted-foreground/40" />
-                <span className="text-xs text-muted-foreground/60">
-                  {form.linkOnlyPreviewLabel}
-                </span>
+                <MapTrifold weight="duotone" className="size-8 text-(--text-tertiary)" />
+                <span className="text-xs text-(--text-tertiary)">{form.linkOnlyPreviewLabel}</span>
                 <span className="flex items-center gap-1 text-xs font-medium text-info">
                   {form.linkOnlyViewRoute(serviceLabels[detectedService])}
                   <ArrowSquareOut className="size-3" />
@@ -254,6 +252,11 @@ export function StepRoute({
                   <Input
                     ref={pasteUrlRef}
                     type="url"
+                    inputMode="url"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    enterKeyHint="go"
                     placeholder={form.pasteRoutePlaceholder}
                     disabled={isFetchingRoute}
                     className="pr-10"

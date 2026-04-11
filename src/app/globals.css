@@ -88,6 +88,7 @@
   --color-surface-sunken: var(--surface-sunken);
   --color-surface-overlay: var(--surface-overlay);
   --color-surface-card-footer: var(--surface-card-footer);
+  --color-surface-card-footer-soft: var(--surface-card-footer-soft);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-tertiary: var(--text-tertiary);
@@ -411,6 +412,7 @@
   --destructive-focus-bg: color-mix(in srgb, var(--action-danger-default) 10%, transparent);
   --destructive-hover-bg: color-mix(in srgb, var(--action-danger-default) 8%, transparent);
   --fills-primary: color-mix(in srgb, var(--color-neutral-500) 20%, transparent);
+  --surface-card-footer-soft: color-mix(in oklab, var(--surface-card-footer) 40%, transparent);
 
   /* ── Toast — opaque feedback backgrounds ── */
   --toast-success-bg: var(--feedback-success-bg);
@@ -485,6 +487,7 @@
     0 2px 4px color-mix(in srgb, var(--color-neutral-950) 6%, transparent);
 
   /* ── Motion ── */
+  --duration-instant: 100ms;
   --duration-fast: 150ms;
   --duration-normal: 250ms;
   --duration-slow: 350ms;
@@ -513,6 +516,7 @@
   --destructive-focus-bg: color-mix(in srgb, var(--action-danger-default) 20%, transparent);
   --destructive-hover-bg: color-mix(in srgb, var(--action-danger-default) 16%, transparent);
   --fills-primary: color-mix(in srgb, var(--color-neutral-400) 20%, transparent);
+  --surface-card-footer-soft: color-mix(in oklab, var(--surface-card-footer) 40%, transparent);
 
   /* ── Layout ── */
   --overlay: var(--color-neutral-900-alpha-60);
@@ -558,6 +562,12 @@
   --bar-bg-opacity: 22%;
   --bar-border-opacity: 8%;
 
+  /* ── Status card glow — subtle colored halo on status-accented cards ── */
+  --card-glow-success: 0 0 20px color-mix(in srgb, var(--color-success-500) 8%, transparent);
+  --card-glow-warning: 0 0 20px color-mix(in srgb, var(--color-warning-500) 8%, transparent);
+  --card-glow-error: 0 0 20px color-mix(in srgb, var(--color-error-500) 8%, transparent);
+  --card-glow-info: 0 0 20px color-mix(in srgb, var(--color-info-500) 8%, transparent);
+
   /* ── shadcn bridge overrides ── */
   --warning-foreground: var(--color-neutral-900);
   --success-foreground: var(--color-neutral-900);
@@ -569,7 +579,52 @@
   }
   body {
     @apply bg-background text-foreground;
+    text-rendering: optimizeLegibility;
   }
+
+  /* ── Mobile touch behavior ──────────────────────────────────────────────
+     Kill default tap highlight (we provide intentional :active states),
+     eliminate 300ms tap-delay perception, prevent iOS auto-zoom on focus,
+     and disable text selection on UI chrome while keeping it on content. */
+
+  *,
+  *::before,
+  *::after {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  a,
+  button,
+  [role='button'],
+  [data-slot='filter-chip'],
+  [data-slot='toggle'],
+  [data-slot='segmented-control'],
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+  }
+
+  @media (pointer: coarse) {
+    /* 16px minimum prevents iOS auto-zoom on input focus */
+    input,
+    select,
+    textarea {
+      font-size: max(1rem, inherit);
+    }
+    /* Disable text selection on UI chrome, keep on content */
+    nav,
+    [data-slot='button'],
+    [data-slot='filter-chip'],
+    [data-slot='toggle'],
+    [data-slot='segmented-control'],
+    [data-slot='card-header'],
+    [data-slot='card-footer'] {
+      -webkit-user-select: none;
+      user-select: none;
+    }
+  }
+
   /* Vaul renders an ::after pseudo-element extending 200% below bottom drawers
      to provide a rubber-band overscroll background. With our iOS-style inset
      margins the drawer no longer sits flush against the viewport edge, so this
@@ -581,15 +636,29 @@
   html {
     @apply font-sans scroll-smooth;
   }
-  /* Prevent overscroll color flash in iOS standalone PWA mode */
+  /* Prevent pull-to-refresh and overscroll bounce on mobile */
+  @media (pointer: coarse) {
+    html {
+      overscroll-behavior-y: none;
+    }
+  }
+  /* Redundant standalone fallback for browsers that don't support pointer: coarse */
   @media (display-mode: standalone) {
     html {
       overscroll-behavior-y: none;
     }
   }
   h1,
-  h2,
-  h3,
+  h2 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
   h4,
   h5,
   h6 {
@@ -621,11 +690,11 @@
   animation-duration: var(--duration-normal);
 }
 
-/* Mobile page transitions — directional slide animations */
+/* Mobile page transitions — iOS-style parallax slide animations */
 @keyframes page-slide-in-from-right {
   from {
-    transform: translateX(100%);
-    opacity: 0.8;
+    transform: translateX(30%);
+    opacity: 0.85;
   }
   to {
     transform: translateX(0);
@@ -636,7 +705,7 @@
 @keyframes page-slide-in-from-left {
   from {
     transform: translateX(-30%);
-    opacity: 0.8;
+    opacity: 0.85;
   }
   to {
     transform: translateX(0);
@@ -645,11 +714,11 @@
 }
 
 .page-transition-forward {
-  animation: page-slide-in-from-right var(--duration-normal) var(--ease-out);
+  animation: page-slide-in-from-right var(--duration-slow) var(--ease-out);
 }
 
 .page-transition-back {
-  animation: page-slide-in-from-left var(--duration-normal) var(--ease-out);
+  animation: page-slide-in-from-left var(--duration-slow) var(--ease-out);
 }
 
 /*
@@ -760,6 +829,23 @@
   border-bottom-color: var(--input-border-invalid);
 }
 
+/* Validation error message entrance animation */
+@keyframes field-error-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-slot='field-error'],
+.field-error-message {
+  animation: field-error-in var(--duration-fast) var(--ease-out);
+}
+
 /* Reduced motion: disable transform/position animations, preserve opacity/color */
 @media (prefers-reduced-motion: reduce) {
   .page-transition-forward,
@@ -786,6 +872,29 @@
   display: none;
 }
 
+/* Auto-hide scrollbars on touch devices — native apps don't show them */
+@media (pointer: coarse) {
+  .overflow-x-auto,
+  .overflow-y-auto,
+  [data-slot='drawer-body'] {
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+}
+
+/* Horizontal snap-scroll for carousels (filter chips, date strips) */
+@utility snap-scroll-x {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  & > * {
+    scroll-snap-align: start;
+  }
+}
+
 /* ── Focus ring utilities ──
  * Uses CSS outline (not box-shadow ring) so focus indicators
  * are never clipped by overflow-hidden parent containers.
@@ -794,6 +903,39 @@
   &:focus-visible {
     outline: var(--focus-ring-width) solid var(--ring);
     outline-offset: var(--focus-ring-offset);
+  }
+}
+
+/* Shimmer skeleton loader — premium alternative to opacity pulse */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@utility skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--surface-sunken) 25%,
+    var(--surface-raised) 50%,
+    var(--surface-sunken) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+/* Expand hit target to 44×44pt minimum (Apple HIG) via invisible ::after.
+   Apply to small icon-only controls where the visual size is < 44px. */
+@utility touch-target {
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: min(0px, calc((44px - 100%) / -2));
   }
 }
 

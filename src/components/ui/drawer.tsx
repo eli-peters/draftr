@@ -136,7 +136,7 @@ function DrawerBody({ className, ...props }: React.ComponentProps<'div'>) {
       data-slot="drawer-body"
       className={cn(
         // Default: scroll region inside a fixed-height drawer
-        'min-h-0 flex-1 overflow-y-auto px-4',
+        'min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4',
         // Auto-sized drawers: body flows naturally; the whole drawer scrolls
         // when content exceeds the max-height cap
         'group-data-[drawer-size=auto]/drawer-content:min-h-fit group-data-[drawer-size=auto]/drawer-content:flex-none group-data-[drawer-size=auto]/drawer-content:overflow-visible',

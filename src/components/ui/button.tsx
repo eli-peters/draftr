@@ -6,7 +6,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-3xl border border-transparent bg-clip-padding font-bold whitespace-nowrap transition-[transform,background-color,border-color,box-shadow] duration-160 ease-out outline-none select-none focus-ring active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 invalid-ring [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-3xl border border-transparent bg-clip-padding font-bold whitespace-nowrap transition-[transform,background-color,border-color,box-shadow] duration-(--duration-fast) ease-out outline-none select-none focus-ring active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 invalid-ring [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
   {
     variants: {
       variant: {
@@ -30,7 +30,7 @@ const buttonVariants = cva(
         sm: "h-8 gap-1.5 px-4 text-xs has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3 [&_svg:not([class*='size-'])]:size-3.5",
         lg: 'h-11 gap-1.5 px-4 text-base has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3',
         icon: 'size-10 active:scale-90',
-        'icon-sm': 'size-8 active:scale-90',
+        'icon-sm': 'size-8 active:scale-90 touch-target',
       },
     },
     defaultVariants: {

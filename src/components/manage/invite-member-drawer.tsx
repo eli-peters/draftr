@@ -203,7 +203,16 @@ export function InviteMemberDrawer({
                 className="space-y-8"
               >
                 <FloatingField label={inviteContent.emailLabel} htmlFor="invite-email">
-                  <Input id="invite-email" name="email" type="email" required placeholder=" " />
+                  <Input
+                    id="invite-email"
+                    name="email"
+                    type="email"
+                    required
+                    inputMode="email"
+                    autoComplete="email"
+                    enterKeyHint="send"
+                    placeholder=" "
+                  />
                 </FloatingField>
 
                 <SegmentedControl

@@ -10,8 +10,9 @@ import { useReducedMotion, type Transition, type Variants } from 'framer-motion'
  * Always import from here — never inline ms values or bezier curves.
  */
 
-// Durations in seconds — mirror --duration-fast/normal/slow in globals.css
+// Durations in seconds — mirror --duration-instant/fast/normal/slow in globals.css
 export const DURATIONS = {
+  instant: 0.1,
   fast: 0.15,
   normal: 0.25,
   slow: 0.35,
@@ -27,9 +28,11 @@ export const EASE = {
 // Spring presets — physical spring configs for layout animations.
 // "snappy" is for tab indicators and segmented-control pills.
 // "gentle" is for press/hover micro-interactions.
+// "bouncy" is for visible overshoot (tab icon bounce, toggle snap).
 export const SPRINGS = {
   snappy: { type: 'spring' as const, stiffness: 380, damping: 28 },
   gentle: { type: 'spring' as const, stiffness: 400, damping: 34 },
+  bouncy: { type: 'spring' as const, stiffness: 600, damping: 22 },
 } as const;
 
 const baseTransition: Transition = {

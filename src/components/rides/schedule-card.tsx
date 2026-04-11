@@ -112,7 +112,10 @@ export function ScheduleCard({ ride, onAction, timezone }: ScheduleCardProps) {
       />
 
       {/* Content — tappable, links to ride detail */}
-      <Link href={routes.ride(ride.id)} className="block">
+      <Link
+        href={routes.ride(ride.id)}
+        className="block transition-transform duration-(--duration-fast) ease-(--ease-out) active:scale-[0.98]"
+      >
         <CardContentSection
           className="px-5 pt-4 pb-5"
           date={getRelativeDay(rideDate, dateFormats.dayShort, true)}

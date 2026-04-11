@@ -60,6 +60,8 @@ export function StepDetails({
             id="title"
             name="title"
             required
+            autoCapitalize="words"
+            enterKeyHint="next"
             aria-invalid={!!fieldErrors?.title}
             value={title}
             onChange={(e) => onFieldChange('title', e.target.value)}
@@ -77,6 +79,8 @@ export function StepDetails({
             id="description"
             name="description"
             rows={3}
+            spellCheck
+            enterKeyHint="next"
             value={description}
             onChange={(e) => onFieldChange('description', e.target.value)}
             placeholder=" "
