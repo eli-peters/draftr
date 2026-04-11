@@ -124,7 +124,7 @@ function SortableHeader({
   return (
     <th
       className={cn(
-        'cursor-pointer select-none p-3 text-overline font-mono text-(--text-secondary) hover:text-(--text-primary)',
+        'cursor-pointer select-none p-3 text-overline font-sans text-(--text-secondary) hover:text-(--text-primary)',
         className,
       )}
       onClick={() => onSort(sortKey)}
@@ -232,7 +232,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
       />
 
       {visibleAnnouncements.length === 0 ? (
-        <p className="font-mono text-body-sm text-(--text-secondary)">
+        <p className="font-sans text-xs text-(--text-secondary)">
           {content.announcements.noAnnouncements}
         </p>
       ) : (
@@ -253,7 +253,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                     sortKey="published"
                     {...sortProps}
                   />
-                  <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                  <th className="p-3 text-overline font-sans text-(--text-secondary)">
                     {content.announcements.pinned}
                   </th>
                   <th className="w-10 p-3" />
@@ -289,14 +289,14 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
 
                       {/* Title */}
                       <td className="min-w-0 p-3">
-                        <p className="truncate font-mono text-body-sm font-semibold text-(--text-primary)">
+                        <p className="truncate font-sans text-xs font-semibold text-(--text-primary)">
                           {a.title}
                         </p>
                       </td>
 
                       {/* Published */}
                       <td className="p-3">
-                        <span className="whitespace-nowrap font-mono text-body-sm text-(--text-tertiary)">
+                        <span className="whitespace-nowrap font-sans text-xs text-(--text-tertiary)">
                           {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
                         </span>
                       </td>
@@ -624,14 +624,12 @@ function MobileAnnouncementRow({
       className="min-w-0 cursor-pointer overflow-hidden px-3 py-2.5 hover:bg-muted/50"
     >
       <div className="flex items-center gap-2">
-        <p className="truncate font-mono text-body-sm font-semibold text-(--text-primary)">
-          {a.title}
-        </p>
+        <p className="truncate font-sans text-xs font-semibold text-(--text-primary)">{a.title}</p>
         {a.is_pinned && (
           <PushPin className="h-3.5 w-3.5 shrink-0 text-(--text-tertiary)" weight="fill" />
         )}
       </div>
-      <div className="mt-1.5 font-mono text-xs">
+      <div className="mt-1.5 font-sans text-xs">
         <span className="text-(--text-secondary)">
           {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
         </span>

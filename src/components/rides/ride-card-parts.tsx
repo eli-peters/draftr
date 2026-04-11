@@ -39,16 +39,16 @@ const { rides: ridesContent } = appContent;
 export const OVERLINE = 'font-sans text-overline font-semibold uppercase tracking-[0.06em]';
 
 /** body/sm token: 13→14 px fluid, regular weight */
-export const BODY_SM = 'font-sans text-body-sm';
+export const BODY_SM = 'font-sans text-xs';
 
 /** label/sm token: same size as overline, without uppercase */
 export const LABEL_SM = 'font-sans text-overline';
 
 /** caption/sm token: 10→11 px fluid, mono for small data labels */
-export const CAPTION_SM = 'font-mono text-caption-sm';
+export const CAPTION_SM = 'font-sans text-caption-sm';
 
 /** data/sm token: 12→13 px fluid, mono, regular weight */
-export const DATA_SM = 'font-mono text-xs';
+export const DATA_SM = 'font-sans text-xs';
 
 // ---------------------------------------------------------------------------
 // Card state style — unified visual state for all card types
@@ -316,7 +316,7 @@ export function MetadataStats({ distanceKm, elevationM }: MetadataStatsProps) {
           <span className="font-sans text-overline font-normal leading-5 text-muted-foreground">
             {item.label}
           </span>
-          <span className="font-mono text-xs font-bold leading-4.25 text-foreground">
+          <span className="font-sans text-xs font-bold leading-4.25 text-foreground">
             {item.value}
           </span>
         </div>

@@ -235,16 +235,16 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
           <thead>
             <tr className="border-b border-(--border-subtle) bg-(--surface-sunken)">
               <th className="w-8 p-3" />
-              <th className="p-3 text-overline font-mono text-(--text-secondary)">
+              <th className="p-3 text-overline font-sans text-(--text-secondary)">
                 {content.nameColumn}
               </th>
-              <th className="p-3 text-overline font-mono text-(--text-secondary)">
+              <th className="p-3 text-overline font-sans text-(--text-secondary)">
                 {content.paceRangeColumn}
               </th>
-              <th className="p-3 text-overline font-mono text-(--text-secondary)">
+              <th className="p-3 text-overline font-sans text-(--text-secondary)">
                 {content.distanceColumn}
               </th>
-              <th className="p-3 text-overline font-mono text-(--text-secondary)">
+              <th className="p-3 text-overline font-sans text-(--text-secondary)">
                 {content.ridesColumn}
               </th>
               <th className="w-10 p-3" />
@@ -275,7 +275,7 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
                         <Input
                           value={edit.name}
                           onChange={(e) => setEdit({ ...edit, name: e.target.value })}
-                          className="h-7 w-32 font-mono text-sm"
+                          className="h-7 w-32 font-sans text-sm"
                           autoFocus
                         />
                       </td>
@@ -285,7 +285,7 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
                             type="number"
                             value={edit.movingPaceMin}
                             onChange={(e) => setEdit({ ...edit, movingPaceMin: e.target.value })}
-                            className="h-7 w-16 font-mono text-sm"
+                            className="h-7 w-16 font-sans text-sm"
                             placeholder={content.minPlaceholder}
                             min={content.paceRange.min}
                             max={content.paceRange.max}
@@ -296,7 +296,7 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
                             type="number"
                             value={edit.movingPaceMax}
                             onChange={(e) => setEdit({ ...edit, movingPaceMax: e.target.value })}
-                            className="h-7 w-16 font-mono text-sm"
+                            className="h-7 w-16 font-sans text-sm"
                             placeholder={content.maxPlaceholder}
                             min={content.paceRange.min}
                             max={content.paceRange.max}
@@ -313,7 +313,7 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
                             type="number"
                             value={edit.distanceMin}
                             onChange={(e) => setEdit({ ...edit, distanceMin: e.target.value })}
-                            className="h-7 w-16 font-mono text-sm"
+                            className="h-7 w-16 font-sans text-sm"
                             placeholder={content.minPlaceholder}
                             min={content.distanceRange.min}
                             max={content.distanceRange.max}
@@ -324,7 +324,7 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
                             type="number"
                             value={edit.distanceMax}
                             onChange={(e) => setEdit({ ...edit, distanceMax: e.target.value })}
-                            className="h-7 w-16 font-mono text-sm"
+                            className="h-7 w-16 font-sans text-sm"
                             placeholder={content.maxPlaceholder}
                             min={content.distanceRange.min}
                             max={content.distanceRange.max}
@@ -335,7 +335,7 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
                           </span>
                         </div>
                       </td>
-                      <td className="p-3 font-mono text-body-sm text-(--text-primary)">
+                      <td className="p-3 font-sans text-xs text-(--text-primary)">
                         {tier.upcoming_ride_count}
                       </td>
                       <td className="p-3">
@@ -382,16 +382,12 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
                     <td className="p-3">
                       <div className={`h-4 w-4 rounded-full ${swatchClass}`} />
                     </td>
-                    <td className="p-3 font-mono text-body-sm font-medium text-(--text-primary)">
+                    <td className="p-3 font-sans text-xs font-medium text-(--text-primary)">
                       {tier.name}
                     </td>
-                    <td className="p-3 font-mono text-body-sm text-(--text-primary)">
-                      {paceRange}
-                    </td>
-                    <td className="p-3 font-mono text-body-sm text-(--text-primary)">
-                      {distanceRange}
-                    </td>
-                    <td className="p-3 font-mono text-body-sm text-(--text-primary)">
+                    <td className="p-3 font-sans text-xs text-(--text-primary)">{paceRange}</td>
+                    <td className="p-3 font-sans text-xs text-(--text-primary)">{distanceRange}</td>
+                    <td className="p-3 font-sans text-xs text-(--text-primary)">
                       {tier.upcoming_ride_count > 0 ? (
                         <Link href={`${routes.manageRides}?pace=${tier.id}`}>
                           <Button variant="ghost" size="xs" className="text-(--text-tertiary)">
@@ -448,7 +444,7 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder={content.namePlaceholder}
-              className="h-8 flex-1 font-mono"
+              className="h-8 flex-1 font-sans"
               autoFocus
               onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
             />

@@ -207,34 +207,34 @@ export function RecurringRidesPanel({
       {message && <p className="text-sm text-success">{message}</p>}
 
       {visibleRides.length === 0 ? (
-        <p className="font-mono text-body-sm text-(--text-secondary)">{rc.noRecurring}</p>
+        <p className="font-sans text-xs text-(--text-secondary)">{rc.noRecurring}</p>
       ) : (
         <div className="overflow-x-auto rounded-md border border-(--border-subtle)">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-(--border-subtle) bg-(--surface-sunken)">
-                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                <th className="p-3 text-overline font-sans text-(--text-secondary)">
                   {rc.dayColumn}
                 </th>
-                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                <th className="p-3 text-overline font-sans text-(--text-secondary)">
                   {rc.timeColumn}
                 </th>
-                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                <th className="p-3 text-overline font-sans text-(--text-secondary)">
                   {rc.titleColumn}
                 </th>
-                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                <th className="p-3 text-overline font-sans text-(--text-secondary)">
                   {rc.paceColumn}
                 </th>
-                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                <th className="p-3 text-overline font-sans text-(--text-secondary)">
                   {rc.recurrenceColumn}
                 </th>
-                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                <th className="p-3 text-overline font-sans text-(--text-secondary)">
                   {rc.seasonColumn}
                 </th>
-                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                <th className="p-3 text-overline font-sans text-(--text-secondary)">
                   {rc.statusColumn}
                 </th>
-                <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                <th className="p-3 text-overline font-sans text-(--text-secondary)">
                   {rc.actionsColumn}
                 </th>
               </tr>
@@ -248,22 +248,22 @@ export function RecurringRidesPanel({
                     !r.is_active && 'opacity-muted',
                   )}
                 >
-                  <td className="p-3 font-mono text-body-sm text-(--text-primary)">
+                  <td className="p-3 font-sans text-xs text-(--text-primary)">
                     {r.day_of_week != null ? rc.dayOfWeek[r.day_of_week].slice(0, 3) : '—'}
                   </td>
-                  <td className="p-3 font-mono text-body-sm text-(--text-primary)">
+                  <td className="p-3 font-sans text-xs text-(--text-primary)">
                     {r.start_time.slice(0, 5)}
                   </td>
-                  <td className="p-3 font-mono text-body-sm font-semibold text-(--text-primary)">
+                  <td className="p-3 font-sans text-xs font-semibold text-(--text-primary)">
                     {r.title}
                   </td>
-                  <td className="p-3 font-mono text-body-sm text-(--text-primary)">
+                  <td className="p-3 font-sans text-xs text-(--text-primary)">
                     {r.pace_group_name ?? '—'}
                   </td>
-                  <td className="p-3 font-mono text-body-sm text-(--text-primary)">
+                  <td className="p-3 font-sans text-xs text-(--text-primary)">
                     {r.recurrence ? rc.recurrence[r.recurrence as keyof typeof rc.recurrence] : '—'}
                   </td>
-                  <td className="p-3 font-mono text-body-sm text-(--text-secondary)">
+                  <td className="p-3 font-sans text-xs text-(--text-secondary)">
                     {formatSeason(r.season_start_date, r.season_end_date)}
                   </td>
                   <td className="p-3">

@@ -143,7 +143,7 @@ export function RideDetailCard({
 
         {/* Description — full text, reads as prose after the metadata */}
         {ride.description && (
-          <p className="whitespace-pre-line text-body-lg leading-relaxed text-muted-foreground">
+          <p className="whitespace-pre-line text-base leading-relaxed text-muted-foreground">
             {ride.description}
           </p>
         )}

@@ -60,7 +60,7 @@ export function RideWeatherDetail({ weather }: RideWeatherDetailProps) {
             )}
           </p>
         </div>
-        <span className="ml-auto font-mono text-2xl font-bold text-foreground">
+        <span className="ml-auto font-display text-2xl font-bold text-foreground">
           {formatTemperature(weather.temperature_c, prefs.temperature_unit)}
         </span>
       </div>

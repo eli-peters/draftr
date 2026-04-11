@@ -129,7 +129,7 @@ export default function ButtonAuditPage() {
           <h1 className="text-2xl font-bold tracking-tight">Button Audit — Draftr</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Every{' '}
-            <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">{'<Button>'}</code> in
+            <code className="rounded bg-muted px-1 py-0.5 font-sans text-xs">{'<Button>'}</code> in
             the codebase · variant · size · mobile &amp; desktop context · live preview
           </p>
         </header>
@@ -208,7 +208,7 @@ export default function ButtonAuditPage() {
           </table>
         </div>
 
-        <p className="mt-8 text-center font-mono text-[11px] text-muted-foreground/60">
+        <p className="mt-8 text-center font-sans text-[11px] text-muted-foreground/60">
           src/app/button-audit/page.tsx · {sections.reduce((sum, s) => sum + s.rows.length, 0)}{' '}
           buttons catalogued
         </p>
@@ -255,7 +255,7 @@ function RowItem({ row }: { row: Row }) {
         </span>
       </td>
       <td className="px-4 py-3 align-middle">
-        <span className="font-mono text-[11px] text-muted-foreground">{row.file}</span>
+        <span className="font-sans text-[11px] text-muted-foreground">{row.file}</span>
       </td>
       <td className="px-4 py-3 align-middle">
         <div className="font-medium text-foreground">{row.label}</div>

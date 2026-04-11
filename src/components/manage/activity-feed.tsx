@@ -74,14 +74,14 @@ export function ActivityFeed({ events }: ActivityFeedProps) {
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <p className="truncate font-mono text-body-sm font-medium text-(--text-primary)">
+              <p className="truncate font-sans text-xs font-medium text-(--text-primary)">
                 {event.userName}
               </p>
-              <p className="mt-0.5 truncate font-mono text-xs text-(--text-secondary)">
+              <p className="mt-0.5 truncate font-sans text-xs text-(--text-secondary)">
                 {getActionDescription(event)}
               </p>
             </div>
-            <span className="mt-0.5 shrink-0 font-mono text-xs text-(--text-tertiary)">
+            <span className="mt-0.5 shrink-0 font-sans text-xs text-(--text-tertiary)">
               {formatRelativeTime(event.timestamp)}
             </span>
           </Link>

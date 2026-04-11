@@ -185,9 +185,7 @@ export function StepRoute({
         ) : (
           /* No route yet — service pills + paste input on demand */
           <div className="space-y-3">
-            <p className="text-center text-body-sm text-muted-foreground">
-              {form.importDescription}
-            </p>
+            <p className="text-center text-xs text-muted-foreground">{form.importDescription}</p>
 
             {/* Service pills — horizontal row */}
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">

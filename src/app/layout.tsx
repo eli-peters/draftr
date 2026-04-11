@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Outfit, DM_Sans, JetBrains_Mono } from 'next/font/google';
+import { Outfit, DM_Sans } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { COLOR_MODE_SCRIPT } from '@/lib/color-mode-script';
@@ -17,12 +17,6 @@ const dmSans = DM_Sans({
   variable: '--font-dm-sans',
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: '--font-jetbrains-mono',
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
 });
 
 export const viewport: Viewport = {
@@ -62,11 +56,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${outfit.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
-    >
+    <html lang="en" suppressHydrationWarning className={`${outfit.variable} ${dmSans.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: COLOR_MODE_SCRIPT }} />
       </head>

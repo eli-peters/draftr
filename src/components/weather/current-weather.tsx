@@ -105,7 +105,7 @@ export function CurrentWeather() {
 
       <div className="flex flex-col">
         <div className="flex items-baseline gap-1.5">
-          <span className="font-mono text-lg font-bold leading-tight text-foreground">
+          <span className="font-display text-lg font-bold leading-tight text-foreground">
             {formatTemperature(weather.temperature_c, prefs.temperature_unit)}
           </span>
           <span className="text-sm text-muted-foreground">{condition.label}</span>

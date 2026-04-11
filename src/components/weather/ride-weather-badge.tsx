@@ -55,13 +55,13 @@ export function RideWeatherBadge({
             getWeatherIconColorClass(weather.weather_code, weather.is_day, severity),
           )}
         />
-        <span className="font-mono text-compact font-semibold leading-4 text-muted-foreground">
+        <span className="font-sans text-compact font-semibold leading-4 text-muted-foreground">
           {formatTemperature(weather.temperature_c, prefs.temperature_unit)}
         </span>
         {showPop && (
           <span
             className={cn(
-              'flex items-center gap-0.5 font-mono text-compact font-medium leading-4',
+              'flex items-center gap-0.5 font-sans text-compact font-medium leading-4',
               getSeverityColorClass(severity),
             )}
           >
@@ -85,7 +85,7 @@ export function RideWeatherBadge({
             getWeatherIconColorClass(weather.weather_code, weather.is_day, severity),
           )}
         />
-        <span className="font-mono text-compact font-semibold leading-4 text-muted-foreground">
+        <span className="font-sans text-compact font-semibold leading-4 text-muted-foreground">
           {formatTemperature(weather.temperature_c, prefs.temperature_unit)}
         </span>
       </div>
@@ -93,7 +93,7 @@ export function RideWeatherBadge({
       {showPop && (
         <span
           className={cn(
-            'flex items-center gap-0.5 font-mono text-xs font-medium leading-3',
+            'flex items-center gap-0.5 font-sans text-xs font-medium leading-3',
             getSeverityColorClass(severity),
           )}
         >

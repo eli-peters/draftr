@@ -321,26 +321,46 @@
 
   /* Display tier — aggressive scaling */
   --text-5xl: clamp(3rem, 2.793rem + 0.884vw, 3.5rem); /* 48 → 56 px */
-  --text-4xl: clamp(2.25rem, 2.095rem + 0.663vw, 2.625rem); /* 36 → 42 px */
-  --text-3xl: clamp(1.875rem, 1.771rem + 0.442vw, 2.125rem); /* 30 → 34 px */
+  --text-5xl--line-height: 3.75rem; /* 60px */
+  --text-5xl--letter-spacing: -0.04em; /* -1.92px at 48px */
+  --text-4xl: clamp(2.5rem, 2.345rem + 0.663vw, 2.875rem); /* 40 → 46 px */
+  --text-4xl--line-height: 3.125rem; /* 50px */
+  --text-4xl--letter-spacing: -0.03em; /* -1.2px at 40px */
+  --text-3xl: clamp(2rem, 1.871rem + 0.552vw, 2.3125rem); /* 32 → 37 px */
+  --text-3xl--line-height: 2.5rem; /* 40px */
+  --text-3xl--letter-spacing: -0.025em; /* -0.8px at 32px */
 
-  /* Heading tier — moderate scaling */
-  --text-2xl: clamp(1.5rem, 1.422rem + 0.331vw, 1.6875rem); /* 24 → 27 px */
-  --text-xl: clamp(1.25rem, 1.198rem + 0.221vw, 1.375rem); /* 20 → 22 px */
+  /* Display tier — moderate scaling */
+  --text-2xl: clamp(1.625rem, 1.521rem + 0.442vw, 1.875rem); /* 26 → 30 px */
+  --text-2xl--line-height: 2.25rem; /* 36px */
+  --text-2xl--letter-spacing: -0.031em; /* -0.8px at 26px */
+  --text-xl: clamp(1.375rem, 1.297rem + 0.331vw, 1.5625rem); /* 22 → 25 px */
+  --text-xl--line-height: 2rem; /* 32px */
+  --text-xl--letter-spacing: -0.036em; /* -0.8px at 22px */
   --text-lg: clamp(1.125rem, 1.073rem + 0.221vw, 1.25rem); /* 18 → 20 px */
+  --text-lg--line-height: 1.75rem; /* 28px */
+  --text-lg--letter-spacing: -0.044em; /* -0.8px at 18px */
+
+  /* Heading tier — dedicated heading sizes */
+  --text-h1: clamp(1.75rem, 1.646rem + 0.442vw, 2rem); /* 28 → 32 px */
+  --text-h1--line-height: 2.125rem; /* 34px */
+  --text-h1--letter-spacing: -0.017em; /* -0.48px at 28px */
+  --text-h2: clamp(1.4375rem, 1.36rem + 0.331vw, 1.625rem); /* 23 → 26 px */
+  --text-h2--line-height: 2rem; /* 32px */
+  --text-h2--letter-spacing: -0.021em; /* -0.48px at 23px */
+  --text-h3: clamp(1.125rem, 1.073rem + 0.221vw, 1.25rem); /* 18 → 20 px */
+  --text-h3--line-height: 1.75rem; /* 28px */
+  --text-h3--letter-spacing: -0.027em; /* -0.48px at 18px */
 
   /* Body tier — gentle scaling */
   --text-base: clamp(1rem, 0.974rem + 0.11vw, 1.0625rem); /* 16 → 17 px */
+  --text-base--line-height: 1.5rem; /* 24px */
   --text-sm: clamp(0.875rem, 0.849rem + 0.11vw, 0.9375rem); /* 14 → 15 px */
-
-  /* Caption tier — gentle scaling */
+  --text-sm--line-height: 1.3125rem; /* 21px */
   --text-xs: clamp(0.75rem, 0.724rem + 0.11vw, 0.8125rem); /* 12 → 13 px */
+  --text-xs--line-height: 1.125rem; /* 18px */
 
   /* Custom tokens (no Tailwind default equivalent) */
-  --text-body-sm: clamp(0.8125rem, 0.787rem + 0.11vw, 0.875rem); /* 13 → 14 px */
-  --text-body-sm--line-height: 1.25rem;
-  --text-body-lg: clamp(0.9375rem, 0.912rem + 0.11vw, 1rem); /* 15 → 16 px */
-  --text-body-lg--line-height: 1.5rem;
   --text-caption-sm: clamp(0.625rem, 0.599rem + 0.11vw, 0.6875rem); /* 10 → 11 px */
   --text-caption-sm--line-height: 0.875rem;
   --text-overline: clamp(0.6875rem, 0.662rem + 0.11vw, 0.75rem); /* 11 → 12 px */
@@ -364,7 +384,7 @@
   /* Fonts */
   --font-display: var(--font-outfit);
   --font-sans: var(--font-dm-sans);
-  --font-mono: var(--font-jetbrains-mono);
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 }
 
 /*
@@ -670,13 +690,13 @@
   h1,
   h2 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
-    line-height: 1.15;
+    letter-spacing: -0.017em;
+    line-height: 1.2;
   }
   h3 {
     font-family: var(--font-display);
-    letter-spacing: -0.01em;
-    line-height: 1.2;
+    letter-spacing: -0.027em;
+    line-height: 1.55;
   }
   h4,
   h5,

@@ -35,7 +35,7 @@ export function RideWeatherSummary({ weather }: RideWeatherSummaryProps) {
       <span className="font-display text-lg font-semibold text-foreground">
         {formatTemperature(weather.temperature_c, prefs.temperature_unit)}
       </span>
-      <span className="text-body-sm text-muted-foreground">
+      <span className="text-xs text-muted-foreground">
         {weatherContent.feelsLike(formatTemperature(feelsLike, prefs.temperature_unit))}
         {popPercent != null && (
           <>

@@ -51,7 +51,7 @@ export function SeasonDatesSection({ clubId, seasonStart, seasonEnd }: SeasonDat
   return (
     <div className="space-y-3">
       <SectionHeading as="h3">{season.heading}</SectionHeading>
-      <p className="font-mono text-xs text-(--text-tertiary)">{season.description}</p>
+      <p className="font-sans text-xs text-(--text-tertiary)">{season.description}</p>
 
       <InlineEditTransition
         editing={isEditing}
@@ -75,13 +75,11 @@ export function SeasonDatesSection({ clubId, seasonStart, seasonEnd }: SeasonDat
         view={
           <div className="flex items-center gap-2">
             {hasSeasonDates ? (
-              <span className="font-mono text-body-sm text-(--text-primary)">
+              <span className="font-sans text-xs text-(--text-primary)">
                 {formatSeasonDate(seasonStart)} – {formatSeasonDate(seasonEnd)}
               </span>
             ) : (
-              <span className="font-mono text-body-sm text-(--text-tertiary)">
-                {season.noSeason}
-              </span>
+              <span className="font-sans text-xs text-(--text-tertiary)">{season.noSeason}</span>
             )}
             <Button variant="ghost" size="icon-sm" onClick={() => setIsEditing(true)}>
               <PencilSimple className="h-3.5 w-3.5" />

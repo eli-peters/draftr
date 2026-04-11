@@ -114,7 +114,7 @@ function SortableHeader({
   const isActive = sortKey === currentKey;
   return (
     <th
-      className="cursor-pointer select-none p-3 text-overline font-mono text-(--text-secondary) hover:text-(--text-primary)"
+      className="cursor-pointer select-none p-3 text-overline font-sans text-(--text-secondary) hover:text-(--text-primary)"
       onClick={() => onSort(sortKey)}
     >
       <span className="inline-flex items-center gap-1">
@@ -382,7 +382,7 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                          <p className="font-mono text-body-sm font-medium text-(--text-primary) truncate">
+                          <p className="font-sans text-xs font-medium text-(--text-primary) truncate">
                             {name}
                             {isSelf && (
                               <span className="ml-1 text-xs font-normal text-(--text-tertiary)">
@@ -390,7 +390,7 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                               </span>
                             )}
                           </p>
-                          <p className="font-mono text-xs text-(--text-tertiary) truncate">
+                          <p className="font-sans text-xs text-(--text-tertiary) truncate">
                             {member.email}
                           </p>
                         </div>
@@ -420,7 +420,7 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                           </SelectContent>
                         </Select>
                       ) : (
-                        <span className="font-mono text-body-sm text-(--text-secondary)">
+                        <span className="font-sans text-xs text-(--text-secondary)">
                           {content.members.roles[roleKey] ?? member.role}
                         </span>
                       )}
@@ -433,17 +433,17 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                           {member.preferred_pace_group}
                         </Badge>
                       ) : (
-                        <span className="font-mono text-body-sm text-(--text-tertiary)">—</span>
+                        <span className="font-sans text-xs text-(--text-tertiary)">—</span>
                       )}
                     </td>
 
                     {/* Joined */}
-                    <td className="p-3 font-mono text-body-sm text-(--text-primary)">
+                    <td className="p-3 font-sans text-xs text-(--text-primary)">
                       {joinedFormatted}
                     </td>
 
                     {/* Status */}
-                    <td className={cn('p-3 font-mono text-body-sm', statusClass)}>{statusText}</td>
+                    <td className={cn('p-3 font-sans text-xs', statusClass)}>{statusText}</td>
 
                     {/* Kebab menu — always visible */}
                     <td className="p-3" onClick={(e) => e.stopPropagation()}>
@@ -551,7 +551,7 @@ function MobileMemberRow({ member, isSelf }: { member: MemberData; isSelf: boole
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-mono text-body-sm font-medium text-(--text-primary)">
+          <p className="truncate font-sans text-xs font-medium text-(--text-primary)">
             {name}
             {isSelf && (
               <span className="ml-1 text-xs font-normal text-(--text-tertiary)">
@@ -559,7 +559,7 @@ function MobileMemberRow({ member, isSelf }: { member: MemberData; isSelf: boole
               </span>
             )}
           </p>
-          <div className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 font-mono text-xs">
+          <div className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 font-sans text-xs">
             <span className="text-(--text-tertiary)">{content.memberActions.roleColumn}</span>
             <span className="text-(--text-secondary)">
               {content.members.roles[roleKey] ?? member.role}

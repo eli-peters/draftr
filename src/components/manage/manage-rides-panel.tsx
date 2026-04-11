@@ -108,7 +108,7 @@ function SortableHeader({
   const isActive = sortKey === currentKey;
   return (
     <th
-      className="cursor-pointer select-none p-3 text-overline font-mono text-(--text-secondary) hover:text-(--text-primary)"
+      className="cursor-pointer select-none p-3 text-overline font-sans text-(--text-secondary) hover:text-(--text-primary)"
       onClick={() => onSort(sortKey)}
     >
       <span className="inline-flex items-center gap-1">
@@ -283,7 +283,7 @@ export function ManageRidesPanel({
                       {...sortProps}
                     />
                   )}
-                  <th className="p-3 text-overline font-mono text-(--text-secondary)">
+                  <th className="p-3 text-overline font-sans text-(--text-secondary)">
                     {content.rides.statusColumn}
                   </th>
                   <th className="w-10 p-3" />
@@ -382,33 +382,29 @@ function DesktopRideRow({ ride, isLeader }: { ride: ManageRideData; isLeader: bo
         isPending && 'opacity-pending pointer-events-none',
       )}
     >
-      <td className="whitespace-nowrap p-3 font-mono text-body-sm text-(--text-primary)">
+      <td className="whitespace-nowrap p-3 font-sans text-xs text-(--text-primary)">
         {dateFormatted}, {timeFormatted}
       </td>
-      <td className="p-3 font-mono text-body-sm font-semibold text-(--text-primary)">
-        {ride.title}
-      </td>
+      <td className="p-3 font-sans text-xs font-semibold text-(--text-primary)">{ride.title}</td>
       <td className="p-3">
         {ride.pace_group_name && ride.pace_group_sort_order != null ? (
           <Badge variant={getPaceBadgeVariant(ride.pace_group_sort_order)} size="sm">
             {ride.pace_group_name}
           </Badge>
         ) : (
-          <span className="font-mono text-body-sm text-(--text-tertiary)">—</span>
+          <span className="font-sans text-xs text-(--text-tertiary)">—</span>
         )}
       </td>
-      <td className="whitespace-nowrap p-3 font-mono text-body-sm text-(--text-primary)">
-        {spotsText}
-      </td>
-      <td className="max-w-[180px] truncate p-3 font-mono text-body-sm text-(--text-secondary)">
+      <td className="whitespace-nowrap p-3 font-sans text-xs text-(--text-primary)">{spotsText}</td>
+      <td className="max-w-[180px] truncate p-3 font-sans text-xs text-(--text-secondary)">
         {ride.start_location_name ?? '—'}
       </td>
       {!isLeader && (
-        <td className="max-w-[140px] truncate p-3 font-mono text-body-sm text-(--text-tertiary)">
+        <td className="max-w-[140px] truncate p-3 font-sans text-xs text-(--text-tertiary)">
           {ride.created_by_name ?? '—'}
         </td>
       )}
-      <td className={cn('p-3 font-mono text-body-sm', statusClass)}>{statusLabel}</td>
+      <td className={cn('p-3 font-sans text-xs', statusClass)}>{statusLabel}</td>
       <td className="p-3" onClick={(e) => e.stopPropagation()}>
         <DropdownMenu>
           <DropdownMenuTrigger className={buttonVariants({ variant: 'ghost', size: 'icon-sm' })}>
@@ -496,10 +492,10 @@ function MobileRideRow({ ride, isLeader }: { ride: ManageRideData; isLeader: boo
         isCancelled && 'opacity-disabled',
       )}
     >
-      <p className="min-w-0 truncate font-mono text-body-sm font-semibold text-(--text-primary)">
+      <p className="min-w-0 truncate font-sans text-xs font-semibold text-(--text-primary)">
         {ride.title}
       </p>
-      <div className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 font-mono text-xs">
+      <div className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 font-sans text-xs">
         <span className="text-(--text-tertiary)">{content.rides.dateColumn}</span>
         <span className="truncate text-(--text-secondary)">{dateFormatted}</span>
 

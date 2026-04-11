@@ -91,7 +91,7 @@ export function TablePagination({
       </div>
 
       {/* Row count */}
-      <span className="font-mono text-xs text-(--text-tertiary)">
+      <span className="font-sans text-xs text-(--text-tertiary)">
         {start}–{end} {manageContent.paginationOf} {totalItems}
       </span>
 
