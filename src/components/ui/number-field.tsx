@@ -100,7 +100,7 @@ function NumberField({
   return (
     <div
       className={cn(
-        'flex items-center gap-0 rounded-none border-0 border-b border-input bg-transparent transition-colors focus-within:border-ring',
+        'flex items-center gap-0 rounded-none border-0 border-b border-input bg-transparent transition-[color,border-color] duration-(--duration-fast) hover:border-ring focus-within:border-ring',
         ariaInvalid && 'border-input-border-invalid',
         className,
       )}
@@ -112,7 +112,7 @@ function NumberField({
         disabled={atMin}
         onClick={decrement}
         aria-label={appContent.common.decrease}
-        className="flex h-12 w-10 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30"
+        className="flex h-12 w-10 shrink-0 cursor-pointer items-center justify-center text-muted-foreground transition-colors duration-(--duration-fast) hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
       >
         <Minus className="size-4" weight="bold" />
       </button>
@@ -140,7 +140,7 @@ function NumberField({
         disabled={atMax}
         onClick={increment}
         aria-label={appContent.common.increase}
-        className="flex h-12 w-10 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30"
+        className="flex h-12 w-10 shrink-0 cursor-pointer items-center justify-center text-muted-foreground transition-colors duration-(--duration-fast) hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
       >
         <Plus className="size-4" weight="bold" />
       </button>

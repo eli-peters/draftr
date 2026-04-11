@@ -102,7 +102,7 @@ export function NotificationItem({ notification, compact }: NotificationItemProp
           </p>
         )}
         <p
-          className={`${compact ? 'mt-1' : 'mt-2'} text-xs font-medium uppercase tracking-wide text-muted-foreground/70`}
+          className={`${compact ? 'mt-1' : 'mt-2'} text-xs font-medium uppercase tracking-wide text-muted-foreground`}
         >
           {timeAgo}
         </p>

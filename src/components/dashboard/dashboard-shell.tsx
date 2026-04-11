@@ -12,7 +12,7 @@ export function DashboardShell({ children, className }: DashboardShellProps) {
   return (
     <div
       className={cn(
-        'flex min-w-0 flex-1 flex-col px-5 pt-8 pb-(--nav-clearance) md:px-6 md:pt-10 md:pb-16',
+        'flex min-w-0 flex-1 flex-col px-5 pt-8 pb-(--nav-clearance) md:px-6 md:pt-10',
         className,
       )}
     >

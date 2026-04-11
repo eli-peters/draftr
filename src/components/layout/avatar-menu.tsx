@@ -93,7 +93,7 @@ export function AvatarMenu({ userName, userInitials, avatarUrl, userRole }: Avat
           <DrawerTrigger asChild>
             <button
               type="button"
-              className="flex items-center justify-center rounded-full p-0.5 ring-offset-primary transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="flex cursor-pointer items-center justify-center rounded-full p-0.5 ring-offset-primary transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               aria-label={appContent.header.profileMenu}
             >
               {avatarElement}
@@ -160,7 +160,7 @@ export function AvatarMenu({ userName, userInitials, avatarUrl, userRole }: Avat
     <>
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger
-          className="flex items-center justify-center rounded-full p-0.5 ring-offset-primary transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="flex cursor-pointer items-center justify-center rounded-full p-0.5 ring-offset-primary transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           render={<button type="button" aria-label={appContent.header.profileMenu} />}
         >
           {avatarElement}

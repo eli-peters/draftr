@@ -44,10 +44,11 @@ const segmentedControlListVariants = cva(
 
 const segmentedControlItemVariants = cva(
   [
-    'relative inline-flex flex-1 min-w-0 items-center justify-center whitespace-nowrap select-none',
+    'relative inline-flex flex-1 min-w-0 cursor-pointer items-center justify-center whitespace-nowrap select-none',
     'font-semibold text-foreground',
     'rounded-lg',
-    'transition-colors duration-(--duration-fast) ease-(--ease-out)',
+    'transition-[color,background-color] duration-(--duration-fast) ease-(--ease-out)',
+    'not-data-[pressed]:hover:bg-black/5 not-data-[pressed]:dark:hover:bg-white/8',
     'focus-ring',
     'disabled:pointer-events-none disabled:opacity-50',
   ].join(' '),

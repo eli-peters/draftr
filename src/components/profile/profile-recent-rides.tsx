@@ -57,7 +57,7 @@ function RecentRideRow({ ride, first, last }: { ride: RecentRide; first: boolean
           )}
         </div>
       </div>
-      <CaretRight className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+      <CaretRight className="h-4 w-4 shrink-0 text-muted-foreground/70" />
     </Link>
   );
 }

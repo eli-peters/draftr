@@ -20,14 +20,14 @@ export function RouteMapPlaceholder({ routeUrl }: RouteMapPlaceholderProps) {
 
   const content = (
     <div className="flex h-32 flex-col items-center justify-center gap-2 rounded-xl bg-surface-sunken">
-      <MapTrifold weight="duotone" className="size-6 text-muted-foreground/40" />
+      <MapTrifold weight="duotone" className="size-6 text-(--text-tertiary)" />
       {routeUrl ? (
         <span className="flex items-center gap-1.5 text-sm font-medium text-info">
           {serviceName ? detail.viewRouteOn(serviceName) : detail.viewRoute}
           <ArrowSquareOut className="size-3.5" />
         </span>
       ) : (
-        <span className="text-body-sm text-muted-foreground/60">{detail.routeMapPlaceholder}</span>
+        <span className="text-body-sm text-(--text-tertiary)">{detail.routeMapPlaceholder}</span>
       )}
     </div>
   );

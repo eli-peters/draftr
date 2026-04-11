@@ -62,7 +62,9 @@ export function ActionBar({
           // Mobile: fixed to viewport bottom, pill, max-w-lg centered, safe area.
           'fixed left-(--bar-inset-x) right-(--bar-inset-x) bottom-(--bar-inset-bottom) z-40 mx-auto max-w-lg',
           // Desktop: sticky at bottom of content column, full container width.
-          'md:sticky md:inset-x-auto md:bottom-(--bar-inset-x) md:mx-0 md:max-w-none',
+          // mt-card-stack on desktop only — bar is in-flow (sticky), needs gap from content above.
+          // On mobile the bar is fixed (out of flow) so margin has no effect.
+          'md:sticky md:inset-x-auto md:bottom-(--bar-inset-x) md:mx-0 md:mt-card-stack md:max-w-none',
           className,
         )}
       >

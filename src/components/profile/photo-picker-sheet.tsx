@@ -30,7 +30,7 @@ export function PhotoPickerSheet({
         <DrawerTitle className="sr-only">{content.avatar.uploadButton}</DrawerTitle>
         <DrawerDescription className="sr-only">{content.avatar.uploadButton}</DrawerDescription>
       </DrawerHeader>
-      <DrawerBody className="flex flex-col gap-2 pb-2">
+      <DrawerBody className="flex flex-col gap-3.5 pb-6">
         <Button
           size="lg"
           className="w-full"

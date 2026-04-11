@@ -296,7 +296,19 @@
   /* Clearance for top-level pages where only the BottomNav floats —
    * bar height + viewport inset + breathing room above it. */
   --nav-clearance: calc(var(--bar-min-height) + var(--bar-inset-bottom) + 1.5rem);
+}
 
+/* Desktop clearance overrides — no bottom nav, different bar positioning */
+@media (width >= 768px) {
+  :root {
+    /* No BottomNav on desktop — reduce baseline clearance */
+    --nav-clearance: 4rem;
+    /* Sticky bar: height + desktop bottom offset (mt-card-stack on ActionBar handles gap above) */
+    --bar-clearance: calc(var(--bar-min-height) + var(--bar-inset-x));
+  }
+}
+
+@theme inline {
   /* ── Fluid typography scale ──
    * Sizes scale smoothly between 375px (mobile floor) and 1280px (desktop
    * ceiling) via clamp(). The mobile value of every override exactly matches

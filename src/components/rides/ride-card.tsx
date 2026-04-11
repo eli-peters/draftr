@@ -47,7 +47,7 @@ export function RideCard({ ride, variant = 'rides', timezone }: RideCardProps) {
   return (
     <Link
       href={routes.ride(ride.id)}
-      className="group block rounded-(--card-radius) focus-ring transition-transform duration-(--duration-fast) ease-(--ease-out) active:scale-[0.98]"
+      className="group block cursor-pointer rounded-(--card-radius) focus-ring transition-[transform,box-shadow] duration-(--duration-normal) ease-(--ease-in-out) hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]"
     >
       <Card
         className={cn(

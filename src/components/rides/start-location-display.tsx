@@ -53,7 +53,7 @@ export function StartLocationDisplay({
   if (hasRoute) {
     return (
       <div className="flex items-start gap-2">
-        <MapPin weight="duotone" className="mt-0.5 size-6 shrink-0 text-muted-foreground/50" />
+        <MapPin weight="duotone" className="mt-0.5 size-6 shrink-0 text-muted-foreground/70" />
         <p className="text-sm text-muted-foreground">{form.startLocationUnavailable}</p>
       </div>
     );

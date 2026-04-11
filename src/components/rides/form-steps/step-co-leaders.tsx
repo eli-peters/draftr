@@ -43,7 +43,7 @@ export function StepCoLeaders({
                   key={leader.user_id}
                   type="button"
                   onClick={() => onToggleCoLeader(leader.user_id)}
-                  className="flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-accent/50"
+                  className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 transition-colors duration-(--duration-fast) hover:bg-accent/50"
                 >
                   <div className="relative">
                     <RiderAvatar

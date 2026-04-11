@@ -23,9 +23,10 @@ import { cn } from '@/lib/utils';
 
 const toggleTrackVariants = cva(
   [
-    'peer group/toggle relative inline-flex h-7 w-14 shrink-0 items-center rounded-full',
+    'peer group/toggle relative inline-flex h-7 w-14 shrink-0 cursor-pointer items-center rounded-full',
     'border border-transparent outline-none',
-    'transition-[background-color,border-color,box-shadow] duration-(--duration-normal) ease-(--ease-out)',
+    'transition-[background-color,border-color,box-shadow,filter] duration-(--duration-normal) ease-(--ease-out)',
+    'hover:brightness-[0.97]',
     'focus-ring invalid-ring',
     // Expand hit target without affecting layout
     'after:absolute after:-inset-x-3 after:-inset-y-2',

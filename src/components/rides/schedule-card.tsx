@@ -96,84 +96,86 @@ export function ScheduleCard({ ride, onAction, timezone }: ScheduleCardProps) {
   const hasFooter = statusKey !== 'completed' && statusKey !== 'cancelled';
 
   return (
-    <Card
-      className={cn(
-        'overflow-clip p-0',
-        cardState === 'confirmed' ? 'border-border-default' : stateStyle.borderClass,
-        isCompleted && 'opacity-completed',
-      )}
-    >
-      {/* Banner — suppressed for confirmed (card presence implies it) */}
-      <StateCardBanner
-        style={stateStyle}
-        state={cardState}
-        suppressStates={scheduleSuppressed}
-        labelOverride={bannerLabel}
-      />
-
-      {/* Content — tappable, links to ride detail */}
-      <Link
-        href={routes.ride(ride.id)}
-        className="block transition-transform duration-(--duration-fast) ease-(--ease-out) active:scale-[0.98]"
+    <div className="rounded-(--card-radius) transition-[transform,box-shadow] duration-(--duration-normal) ease-(--ease-in-out) hover:-translate-y-0.5 hover:shadow-md">
+      <Card
+        className={cn(
+          'overflow-clip p-0',
+          cardState === 'confirmed' ? 'border-border-default' : stateStyle.borderClass,
+          isCompleted && 'opacity-completed',
+        )}
       >
-        <CardContentSection
-          className="px-5 pt-4 pb-5"
-          date={getRelativeDay(rideDate, dateFormats.dayShort, true)}
-          time={formatTime(ride.start_time, prefs.time_format)}
-          title={ride.title}
-          paceGroupName={ride.pace_group_name}
-          paceGroupSortOrder={ride.pace_group_sort_order}
-          distanceKm={ride.distance_km}
-          locationName={ride.start_location_name}
-          weather={ride.weather}
+        {/* Banner — suppressed for confirmed (card presence implies it) */}
+        <StateCardBanner
+          style={stateStyle}
+          state={cardState}
+          suppressStates={scheduleSuppressed}
+          labelOverride={bannerLabel}
         />
-      </Link>
 
-      {/* Footer — context-dependent actions */}
-      {hasFooter && (
-        <CardFooterSection>
-          <div className="flex items-center justify-between gap-3">
-            {statusKey === 'confirmed' && (
-              <>
-                {availability.canCancel && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:text-foreground"
-                    onClick={() => onAction?.('cancel-signup', ride.id)}
-                  >
-                    {schedule.actions.cancelSignup}
-                  </Button>
-                )}
-                {directionsUrl && (
-                  <a
-                    href={directionsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cn(buttonVariants({ variant: 'default', size: 'sm' }), 'ml-auto')}
-                  >
-                    {schedule.actions.getDirections}
-                  </a>
-                )}
-              </>
-            )}
-            {statusKey === 'waitlisted' && (
-              <>
-                {availability.canCancel && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-warning hover:text-warning"
-                    onClick={() => onAction?.('leave-waitlist', ride.id)}
-                  >
-                    {schedule.actions.leaveWaitlist}
-                  </Button>
-                )}
-              </>
-            )}
-          </div>
-        </CardFooterSection>
-      )}
-    </Card>
+        {/* Content — tappable, links to ride detail */}
+        <Link
+          href={routes.ride(ride.id)}
+          className="block cursor-pointer focus-ring active:scale-[0.98]"
+        >
+          <CardContentSection
+            className="px-5 pt-4 pb-5"
+            date={getRelativeDay(rideDate, dateFormats.dayShort, true)}
+            time={formatTime(ride.start_time, prefs.time_format)}
+            title={ride.title}
+            paceGroupName={ride.pace_group_name}
+            paceGroupSortOrder={ride.pace_group_sort_order}
+            distanceKm={ride.distance_km}
+            locationName={ride.start_location_name}
+            weather={ride.weather}
+          />
+        </Link>
+
+        {/* Footer — context-dependent actions */}
+        {hasFooter && (
+          <CardFooterSection>
+            <div className="flex items-center justify-between gap-3">
+              {statusKey === 'confirmed' && (
+                <>
+                  {availability.canCancel && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-foreground"
+                      onClick={() => onAction?.('cancel-signup', ride.id)}
+                    >
+                      {schedule.actions.cancelSignup}
+                    </Button>
+                  )}
+                  {directionsUrl && (
+                    <a
+                      href={directionsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(buttonVariants({ variant: 'default', size: 'sm' }), 'ml-auto')}
+                    >
+                      {schedule.actions.getDirections}
+                    </a>
+                  )}
+                </>
+              )}
+              {statusKey === 'waitlisted' && (
+                <>
+                  {availability.canCancel && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-warning hover:text-warning"
+                      onClick={() => onAction?.('leave-waitlist', ride.id)}
+                    >
+                      {schedule.actions.leaveWaitlist}
+                    </Button>
+                  )}
+                </>
+              )}
+            </div>
+          </CardFooterSection>
+        )}
+      </Card>
+    </div>
   );
 }

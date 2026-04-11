@@ -124,7 +124,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           <p className="text-sm font-medium text-muted-foreground">
             {appContent.rides.status.signupClosed}
           </p>
-          <p className="mt-1 text-xs text-muted-foreground/70">{detail.signupClosedContact}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{detail.signupClosedContact}</p>
         </div>
       )}
 

@@ -84,7 +84,7 @@ export function ReactionPills({ reactions, onToggle, currentUserId }: ReactionPi
           disabled={isPending}
           title={content.reactedBy(r.userNames)}
           className={cn(
-            'inline-flex h-7 items-center gap-1 rounded-full border px-3 transition-colors',
+            'inline-flex h-7 cursor-pointer items-center gap-1 rounded-full border px-3 transition-colors duration-(--duration-fast) active:scale-95',
             r.hasReacted
               ? 'border-primary bg-action-primary-subtle-bg text-primary'
               : 'border-border bg-muted/50 text-muted-foreground hover:border-primary/30 hover:bg-action-primary-subtle-bg/50',
@@ -113,7 +113,7 @@ function ReactionPicker({
       <PopoverTrigger
         disabled={disabled}
         aria-label={content.addReaction}
-        className="inline-flex h-7 items-center justify-center rounded-full border border-dashed border-border px-3 text-muted-foreground transition-colors hover:border-primary hover:bg-action-primary-subtle-bg hover:text-primary"
+        className="inline-flex h-7 cursor-pointer items-center justify-center rounded-full border border-dashed border-border px-3 text-muted-foreground transition-colors duration-(--duration-fast) hover:border-primary hover:bg-action-primary-subtle-bg hover:text-primary"
       >
         <Smiley className="size-4 opacity-50" weight="regular" />
       </PopoverTrigger>
@@ -127,7 +127,7 @@ function ReactionPicker({
                 requestAnimationFrame(() => onSelect(reaction));
               }}
               aria-label={REACTION_CONFIG[reaction].label}
-              className="rounded-md p-2 text-xl transition-transform hover:scale-110 hover:bg-accent active:scale-95"
+              className="cursor-pointer rounded-md p-2 text-xl transition-[transform,background-color] duration-(--duration-fast) hover:bg-accent active:scale-95"
             >
               {REACTION_CONFIG[reaction].emoji}
             </button>

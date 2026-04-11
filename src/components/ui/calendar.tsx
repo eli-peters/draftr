@@ -91,10 +91,10 @@ function Calendar({
           defaultClassNames.today,
         ),
         outside: cn(
-          'text-muted-foreground/40 aria-selected:text-muted-foreground/40',
+          'text-(--text-tertiary) aria-selected:text-(--text-tertiary)',
           defaultClassNames.outside,
         ),
-        disabled: cn('text-muted-foreground/30 pointer-events-none', defaultClassNames.disabled),
+        disabled: cn('text-muted-foreground/40 pointer-events-none', defaultClassNames.disabled),
         hidden: cn('invisible', defaultClassNames.hidden),
         ...classNames,
       }}

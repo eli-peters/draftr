@@ -97,11 +97,11 @@
     "secondary": {
       "$type": "color",
       "$description": "Captions, metadata, labels, supporting copy",
-      "$value": "{color.neutral.500}",
+      "$value": "{color.neutral.600}",
       "$extensions": {
         "com.figma": {
           "modes": {
-            "Light": "{color.neutral.500}",
+            "Light": "{color.neutral.600}",
             "Dark": "{color.neutral.400}"
           }
         }

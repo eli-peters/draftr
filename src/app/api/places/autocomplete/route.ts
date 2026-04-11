@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     const data = await res.json();
 
     if (data.error) {
-      return NextResponse.json({ error: data.error.message }, { status: 502 });
+      return NextResponse.json({ error: data.error?.message ?? 'Unknown error' }, { status: 502 });
     }
 
     const predictions = (data.suggestions ?? [])

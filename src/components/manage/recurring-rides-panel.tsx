@@ -278,7 +278,7 @@ export function RecurringRidesPanel({
                         variant="ghost"
                         size="icon-sm"
                         onClick={() => handleGenerate(r.id)}
-                        className="text-muted-foreground/50 hover:text-primary"
+                        className="text-muted-foreground/70 hover:text-primary"
                         title={rc.generateNow}
                       >
                         <ArrowClockwise className="h-4 w-4" />
@@ -287,7 +287,7 @@ export function RecurringRidesPanel({
                         variant="ghost"
                         size="icon-sm"
                         onClick={() => handleDelete(r.id)}
-                        className="text-muted-foreground/50 hover:text-destructive"
+                        className="text-muted-foreground/70 hover:text-destructive"
                         title={rc.delete}
                       >
                         <Trash className="h-4 w-4" />

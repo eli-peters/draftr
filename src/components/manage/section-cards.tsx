@@ -70,7 +70,7 @@ const sections: SectionCard[] = [
 ];
 
 const footerClass =
-  'relative z-10 block bg-[color-mix(in_oklab,var(--surface-card-footer)_40%,transparent)] px-4 py-2.5 text-xs font-semibold text-primary hover:underline';
+  'relative z-10 block bg-surface-card-footer-soft px-4 py-2.5 text-xs font-semibold text-primary hover:underline';
 
 interface SectionCardsProps {
   stats: SectionCardStats;
@@ -108,7 +108,7 @@ export function SectionCards({ stats, clubId }: SectionCardsProps) {
                   <section.icon className="h-[1.125rem] w-[1.125rem] text-muted-foreground" />
                 </div>
                 <CaretRight
-                  className="h-4 w-4 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5"
+                  className="h-4 w-4 text-muted-foreground/70 transition-transform group-hover:translate-x-0.5"
                   weight="bold"
                 />
               </div>
@@ -124,7 +124,7 @@ export function SectionCards({ stats, clubId }: SectionCardsProps) {
                   </p>
                 )}
                 {section.mobileHint && (
-                  <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground/70 md:hidden">
+                  <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground md:hidden">
                     <Laptop className="h-3 w-3" />
                     {section.mobileHint}
                   </p>

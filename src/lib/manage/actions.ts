@@ -737,11 +737,11 @@ export async function generateRidesFromRecurring(templateId: string) {
     maxForecastDate.setDate(maxForecastDate.getDate() + FORECAST_MAX_DAYS);
     const maxDateStr = maxForecastDate.toISOString().split('T')[0];
 
-    for (const ride of insertedRides) {
-      if (ride.ride_date <= maxDateStr) {
-        await syncWeatherForRide(ride.id);
-      }
-    }
+    await Promise.all(
+      insertedRides
+        .filter((ride) => ride.ride_date <= maxDateStr)
+        .map((ride) => syncWeatherForRide(ride.id)),
+    );
   }
 
   // Update last_generated_date

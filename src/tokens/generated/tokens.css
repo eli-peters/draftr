@@ -123,7 +123,7 @@
 
   /* text */
   --text-primary: var(--color-neutral-900);
-  --text-secondary: var(--color-neutral-500);
+  --text-secondary: var(--color-neutral-600);
   --text-tertiary: var(--color-neutral-400);
   --text-on-primary: var(--color-neutral-0);
   --text-on-secondary: var(--color-neutral-0);

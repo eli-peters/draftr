@@ -202,7 +202,7 @@ export function StepRoute({
                       key={service}
                       type="button"
                       onClick={() => setDrawerService(service)}
-                      className="inline-flex items-center gap-2 rounded-full bg-surface-page px-4 py-2 text-sm font-medium transition-colors hover:bg-accent/50 active:scale-[0.97]"
+                      className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-surface-page px-4 py-2 text-sm font-medium transition-colors duration-(--duration-fast) hover:bg-accent/50 active:scale-[0.97]"
                     >
                       <Icon className="size-4" style={{ color: brandColor }} />
                       {serviceLabels[service]}
@@ -214,7 +214,7 @@ export function StepRoute({
                   <Link
                     key={service}
                     href={routes.profile}
-                    className="inline-flex items-center gap-2 rounded-full border border-dashed border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent/30"
+                    className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-dashed border-border px-4 py-2 text-sm text-muted-foreground transition-colors duration-(--duration-fast) hover:bg-accent/30"
                   >
                     <Icon className="size-4 opacity-50" />
                     {serviceLabels[service]}
@@ -229,7 +229,7 @@ export function StepRoute({
               <button
                 type="button"
                 onClick={() => setShowPasteInput((prev) => !prev)}
-                className="inline-flex items-center gap-2 rounded-full bg-surface-page px-4 py-2 text-sm font-medium transition-colors hover:bg-accent/50 active:scale-[0.97]"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-surface-page px-4 py-2 text-sm font-medium transition-colors duration-(--duration-fast) hover:bg-accent/50 active:scale-[0.97]"
               >
                 <LinkSimple className="size-4 text-muted-foreground" />
                 {importContent.modes.paste.heading}

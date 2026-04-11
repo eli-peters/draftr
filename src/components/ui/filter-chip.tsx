@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 
 const filterChipVariants = cva(
   [
-    'inline-flex items-center gap-1.5 shrink-0 rounded-3xl font-medium whitespace-nowrap select-none',
+    'inline-flex items-center gap-1.5 shrink-0 cursor-pointer rounded-3xl font-medium whitespace-nowrap select-none',
     'border border-text-primary outline-none',
     'transition-[background-color,color,border-color,box-shadow,transform] duration-(--duration-fast) ease-out',
     'focus-ring',

@@ -75,7 +75,7 @@ function ContentCard({
         paddingStyles[padding],
         interactive && [
           'cursor-pointer',
-          'transition-[transform,box-shadow] duration-(--duration-fast) ease-(--ease-out)',
+          'transition-[transform,box-shadow] duration-(--duration-normal) ease-(--ease-in-out)',
           'hover:-translate-y-0.5 hover:shadow-md',
           'active:scale-[0.98]',
         ],

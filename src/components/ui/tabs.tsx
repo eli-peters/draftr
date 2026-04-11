@@ -51,7 +51,7 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(
-        'relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-full border border-transparent px-4 py-1.5 text-sm font-medium whitespace-nowrap text-tabs-trigger-text transition-[color,background-color,border-color,box-shadow] duration-(--duration-normal) ease-(--ease-out) group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start',
+        'relative inline-flex h-[calc(100%-1px)] flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full border border-transparent px-4 py-1.5 text-sm font-medium whitespace-nowrap text-tabs-trigger-text transition-[color,background-color,border-color,box-shadow] duration-(--duration-normal) ease-(--ease-out) group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start',
         'hover:bg-black/5 hover:text-foreground data-active:hover:bg-tabs-trigger-active-bg data-active:hover:text-tabs-trigger-active-text dark:hover:bg-white/8',
         'focus-ring disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
         'group-data-[variant=line]/tabs-list:data-active:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-4',

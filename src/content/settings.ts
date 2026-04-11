@@ -22,18 +22,7 @@ export const settingsContent = {
       },
       appearance: {
         label: 'Appearance',
-        options: { system: 'System', light: 'Light', dark: 'Dark' },
-      },
-    },
-  },
-
-  rideDefaults: {
-    title: 'Ride Defaults',
-    rows: {
-      paceGroup: {
-        label: 'Default pace group',
-        placeholder: 'No default',
-        description: 'Pre-fills your pace group when signing up for rides',
+        options: { system: 'Auto', light: 'Light', dark: 'Dark' },
       },
     },
   },
@@ -48,21 +37,6 @@ export const settingsContent = {
       email: {
         label: 'Email notifications',
         descriptionTemplate: (email: string) => `Receive alerts at ${email}`,
-      },
-    },
-  },
-
-  privacy: {
-    title: 'Privacy',
-    rows: {
-      showOnRoster: {
-        label: 'Show me on club roster',
-        description:
-          'Your profile stays hidden from the public roster — leaders still see your signups',
-      },
-      showLastRide: {
-        label: 'Show my last ride on profile',
-        description: 'Controls whether other members can see your recent rides',
       },
     },
   },

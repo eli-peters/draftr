@@ -186,22 +186,22 @@ export function ProfilePage({ subject, access, paceGroups, recentRides }: Profil
             <ProfileRecentRides rides={recentRides} />
           </div>
         )}
-      </DashboardShell>
 
-      {isEditing && (
-        <ActionBar
-          left={
-            <Button variant="muted" size="sm" onClick={cancelEdit} disabled={isPending}>
-              {common.cancel}
-            </Button>
-          }
-          right={
-            <Button type="button" onClick={handleSave} disabled={isPending}>
-              {isPending ? common.loading : content.saveChanges}
-            </Button>
-          }
-        />
-      )}
+        {isEditing && (
+          <ActionBar
+            left={
+              <Button variant="muted" size="sm" onClick={cancelEdit} disabled={isPending}>
+                {common.cancel}
+              </Button>
+            }
+            right={
+              <Button type="button" onClick={handleSave} disabled={isPending}>
+                {isPending ? common.loading : content.saveChanges}
+              </Button>
+            }
+          />
+        )}
+      </DashboardShell>
     </ProfileFormContext.Provider>
   );
 }
