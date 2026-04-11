@@ -1,14 +1,14 @@
+import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { createClient, getUser } from '@/lib/supabase/server';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { PreferencesCard } from '@/components/settings/preferences-card';
 import { NotificationsCard } from '@/components/settings/notifications-card';
-import { IntegrationsSetting } from '@/components/settings/integrations-setting';
+import { IntegrationsSettingLoader } from '@/components/settings/integrations-setting-loader';
 import { AccountCard } from '@/components/settings/account-card';
 import { settingsContent } from '@/content/settings';
 import { routes } from '@/config/routes';
-import { getUserConnections } from '@/lib/integrations/queries';
 import { defaultUserPreferences, type UserPreferences } from '@/types/user-preferences';
 import { readNotificationPreferences } from '@/types/notification-preferences';
 
@@ -18,7 +18,7 @@ export default async function SettingsPage() {
 
   const supabase = await createClient();
 
-  const [{ data: membership }, { data: user, error: userError }, connections] = await Promise.all([
+  const [{ data: membership }, { data: user, error: userError }] = await Promise.all([
     supabase
       .from('club_memberships')
       .select('role')
@@ -30,7 +30,6 @@ export default async function SettingsPage() {
       .select('notification_preferences, user_preferences')
       .eq('id', authUser.id)
       .single(),
-    getUserConnections(authUser.id),
   ]);
 
   if (userError?.message) {
@@ -58,8 +57,12 @@ export default async function SettingsPage() {
 
         <NotificationsCard initialPrefs={notifPrefs} email={authUser.email ?? ''} />
 
-        {/* Connections — only for ride leaders and admins */}
-        {isLeaderOrAbove && <IntegrationsSetting connections={connections} />}
+        {/* Connections — only for ride leaders and admins; streams independently */}
+        {isLeaderOrAbove && (
+          <Suspense fallback={<div className="h-32 skeleton-shimmer rounded-(--card-radius)" />}>
+            <IntegrationsSettingLoader userId={authUser.id} />
+          </Suspense>
+        )}
 
         <AccountCard email={authUser.email ?? ''} />
       </div>

@@ -131,17 +131,26 @@ export async function getPendingMemberCount(clubId: string): Promise<number> {
 
 /**
  * Count announcements published in the last 7 days.
+ * Cached per club; invalidated via tagAnnouncements(clubId).
  */
 export async function getRecentAnnouncementCount(clubId: string): Promise<number> {
-  const supabase = await createClient();
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 7);
-  const { count } = await supabase
-    .from('announcements')
-    .select('*', { count: 'exact', head: true })
-    .eq('club_id', clubId)
-    .gte('published_at', weekAgo.toISOString());
-  return count ?? 0;
+  const weekAgoStr = weekAgo.toISOString();
+
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
+      const { count } = await supabase
+        .from('announcements')
+        .select('*', { count: 'exact', head: true })
+        .eq('club_id', clubId)
+        .gte('published_at', weekAgoStr);
+      return count ?? 0;
+    },
+    ['recent-announcement-count', clubId],
+    { tags: [tagAnnouncements(clubId)], revalidate: 300 },
+  )();
 }
 
 /**

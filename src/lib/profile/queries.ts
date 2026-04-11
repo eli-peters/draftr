@@ -47,42 +47,52 @@ export interface UserProfile {
 
 /**
  * Fetch the user's profile joined with their club membership.
+ * Cached per user; invalidated via tagProfile(userId).
+ * Both queries run in parallel inside the cache to eliminate the sequential waterfall.
  */
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
-  const supabase = await createClient();
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
 
-  const { data: user, error: userError } = await supabase
-    .from('users')
-    .select(
-      'id, full_name, email, avatar_url, bio, phone_number, emergency_contact_name, emergency_contact_phone, emergency_contact_relationship, preferred_pace_group, created_at',
-    )
-    .eq('id', userId)
-    .single();
+      const [{ data: user, error: userError }, { data: membership, error: membershipError }] =
+        await Promise.all([
+          supabase
+            .from('users')
+            .select(
+              'id, full_name, email, avatar_url, bio, phone_number, emergency_contact_name, emergency_contact_phone, emergency_contact_relationship, preferred_pace_group, created_at',
+            )
+            .eq('id', userId)
+            .single(),
+          supabase
+            .from('club_memberships')
+            .select('role, club:clubs(name)')
+            .eq('user_id', userId)
+            .eq('status', 'active')
+            .single(),
+        ]);
 
-  if (userError?.message) {
-    console.error('[profile] Error fetching user:', userError.message);
-  }
+      if (userError?.message) {
+        console.error('[profile] Error fetching user:', userError.message);
+      }
 
-  if (!user) return null;
+      if (!user) return null;
 
-  const { data: membership, error: membershipError } = await supabase
-    .from('club_memberships')
-    .select('role, club:clubs(name)')
-    .eq('user_id', userId)
-    .eq('status', 'active')
-    .single();
+      if (membershipError?.message && membershipError.code !== 'PGRST116') {
+        console.error('[profile] Error fetching membership:', membershipError.message);
+      }
 
-  if (membershipError?.message && membershipError.code !== 'PGRST116') {
-    console.error('[profile] Error fetching membership:', membershipError.message);
-  }
+      const club = membership?.club as unknown as { name: string } | null;
 
-  const club = membership?.club as unknown as { name: string } | null;
-
-  return {
-    ...user,
-    role: membership?.role ?? 'rider',
-    club_name: club?.name ?? null,
-  };
+      return {
+        ...user,
+        role: membership?.role ?? 'rider',
+        club_name: club?.name ?? null,
+      };
+    },
+    ['user-profile', userId],
+    { tags: [tagProfile(userId)], revalidate: 300 },
+  )();
 }
 
 export interface ProfileStats {

@@ -1,22 +1,21 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { CaretLeft } from '@phosphor-icons/react';
-import { NotificationBell } from './notification-bell';
 import { AvatarMenu } from './avatar-menu';
 import { AppLogo } from './app-logo';
 import { routes, isChildRoute, getParentRoute } from '@/config/routes';
 import { getParentRouteLabel } from '@/config/navigation';
 import { useIsMobile } from '@/hooks/use-is-mobile';
-import type { Notification } from '@/components/notifications/notification-item';
 
 interface HeaderBarProps {
   userName: string;
   userInitials: string;
   avatarUrl: string | null;
-  notifications: Notification[];
-  unreadNotificationCount: number;
+  /** Streaming slot — pass a Suspense-wrapped NotificationsLoader from the layout. */
+  notificationsSlot: ReactNode;
   isAdmin?: boolean;
   userRole?: string;
 }
@@ -30,8 +29,7 @@ export function HeaderBar({
   userName,
   userInitials,
   avatarUrl,
-  notifications,
-  unreadNotificationCount,
+  notificationsSlot,
   isAdmin = false,
   userRole = 'rider',
 }: HeaderBarProps) {
@@ -59,9 +57,9 @@ export function HeaderBar({
         </Link>
       )}
 
-      {/* Right: notification bell + avatar */}
+      {/* Right: notification bell (streaming slot) + avatar */}
       <div className="flex items-center gap-3">
-        <NotificationBell notifications={notifications} unreadCount={unreadNotificationCount} />
+        {notificationsSlot}
         <AvatarMenu
           userName={userName}
           userInitials={userInitials}

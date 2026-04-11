@@ -1,4 +1,6 @@
+import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
+import { Bell } from '@phosphor-icons/react/dist/ssr';
 import { AppShell } from '@/components/layout/app-shell';
 import { UserPrefsProvider } from '@/components/user-prefs-provider';
 import { getNavForRole, type UserRole } from '@/config/navigation';
@@ -7,9 +9,9 @@ import { getInitials } from '@/lib/utils';
 import { getUserClubMembership } from '@/lib/rides/queries';
 import { getUser } from '@/lib/supabase/server';
 import { getLayoutProfile } from '@/lib/profile/queries';
-import { getUserNotifications } from '@/lib/notifications/queries';
 import { getPinnedAnnouncement } from '@/lib/manage/queries';
 import { AnnouncementBanner } from '@/components/dashboard/announcement-banner';
+import { NotificationsLoader } from '@/components/layout/notifications-loader';
 import { defaultUserPreferences, type UserPreferences } from '@/types/user-preferences';
 
 /**
@@ -28,10 +30,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const userRole: UserRole = (membership?.role as UserRole) ?? 'rider';
   const navItems = getNavForRole(userRole);
 
-  // Fetch profile, notifications, and announcement in parallel (all cached)
-  const [profile, notifications, pinnedAnnouncement] = await Promise.all([
+  // Fetch profile and announcement in parallel (notifications stream separately)
+  const [profile, pinnedAnnouncement] = await Promise.all([
     getLayoutProfile(authUser.id),
-    getUserNotifications(authUser.id),
     membership ? getPinnedAnnouncement(membership.club_id, authUser.id) : null,
   ]);
 
@@ -45,8 +46,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ...((profile.user_preferences as Partial<UserPreferences>) ?? {}),
   };
 
-  const recentNotifications = notifications.slice(0, 5);
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
+  // Notifications stream into the header after the shell renders.
+  const notificationsSlot = (
+    <Suspense
+      fallback={
+        <Bell weight="duotone" className="h-7 w-7 text-primary-foreground opacity-60" aria-hidden />
+      }
+    >
+      <NotificationsLoader userId={authUser.id} />
+    </Suspense>
+  );
 
   return (
     <UserPrefsProvider initialPrefs={userPrefs}>
@@ -59,8 +68,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           initials: getInitials(userName),
           avatarUrl: profile?.avatar_url ?? null,
         }}
-        notifications={recentNotifications}
-        unreadNotificationCount={unreadCount}
+        notificationsSlot={notificationsSlot}
         banner={
           pinnedAnnouncement ? <AnnouncementBanner announcement={pinnedAnnouncement} /> : undefined
         }

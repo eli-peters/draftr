@@ -1,9 +1,9 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import type { NavItem } from '@/config/navigation';
 import { routes, isChildRoute } from '@/config/routes';
-import type { Notification } from '@/components/notifications/notification-item';
 import { BottomNav } from './bottom-nav';
 import { HeaderBar } from './header-bar';
 import { SidebarNav } from './sidebar-nav';
@@ -18,12 +18,12 @@ interface AppShellUser {
 }
 
 interface AppShellProps {
-  children: React.ReactNode;
+  children: ReactNode;
   navItems: NavItem[];
   user: AppShellUser;
-  notifications?: Notification[];
-  unreadNotificationCount?: number;
-  banner?: React.ReactNode;
+  /** Streaming slot — pass a Suspense-wrapped NotificationsLoader from the layout. */
+  notificationsSlot: ReactNode;
+  banner?: ReactNode;
   /** When true, the sidebar shows expandable admin sub-navigation. */
   isAdmin?: boolean;
   /** User's role label for the avatar menu. */
@@ -34,8 +34,7 @@ export function AppShell({
   children,
   navItems,
   user,
-  notifications,
-  unreadNotificationCount,
+  notificationsSlot,
   banner,
   isAdmin = false,
   userRole = 'rider',
@@ -62,8 +61,7 @@ export function AppShell({
         userName={user.name}
         userInitials={user.initials}
         avatarUrl={user.avatarUrl}
-        notifications={notifications ?? []}
-        unreadNotificationCount={unreadNotificationCount ?? 0}
+        notificationsSlot={notificationsSlot}
         isAdmin={isAdmin}
         userRole={userRole}
       />

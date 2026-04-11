@@ -1,11 +1,11 @@
+import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { ManageStatsBento } from '@/components/manage/manage-stats-bento';
-import { SectionCards } from '@/components/manage/section-cards';
+import { AdminStatsBentoSection } from '@/components/manage/admin-stats-bento-section';
+import { SectionCardsSection } from '@/components/manage/section-cards-section';
 
 import { getUserClubMembership } from '@/lib/rides/queries';
-import { getAdminDashboardStats, getSectionCardStats } from '@/lib/manage/queries';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import type { UserRole } from '@/config/navigation';
@@ -20,23 +20,34 @@ export default async function AdminDashboardPage() {
   if (userRole === 'ride_leader') redirect(routes.manageRides);
   if (userRole !== 'admin') redirect(routes.signIn);
 
-  const [stats, sectionStats] = await Promise.all([
-    getAdminDashboardStats(membership.club_id),
-    getSectionCardStats(membership.club_id),
-  ]);
-
   return (
     <DashboardShell>
       <PageHeader centered={false} title={content.heading} />
       <div className="mt-6 min-w-0 space-y-card-stack">
-        <ManageStatsBento
-          fillRate={stats.fillRate}
-          fillRateChange={stats.fillRateChange}
-          cancellationRate={stats.cancellationRate}
-          cancellationsThisMonth={stats.cancellationsThisMonth}
-          activeMembers={sectionStats.activeMembers}
-        />
-        <SectionCards stats={sectionStats} clubId={membership.club_id} />
+        {/* Stats bento and section cards stream independently */}
+        <Suspense
+          fallback={
+            <div className="grid grid-cols-3 gap-card-stack">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="h-28 skeleton-shimmer rounded-(--card-radius)" />
+              ))}
+            </div>
+          }
+        >
+          <AdminStatsBentoSection clubId={membership.club_id} />
+        </Suspense>
+
+        <Suspense
+          fallback={
+            <div className="grid grid-cols-2 gap-card-stack md:grid-cols-4">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="h-32 skeleton-shimmer rounded-(--card-radius)" />
+              ))}
+            </div>
+          }
+        >
+          <SectionCardsSection clubId={membership.club_id} />
+        </Suspense>
       </div>
     </DashboardShell>
   );
