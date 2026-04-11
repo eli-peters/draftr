@@ -1,7 +1,10 @@
+'use client';
+
 import { WeatherIcon } from '@/components/weather/weather-icon';
+import { useUserPrefs } from '@/components/user-prefs-provider';
 import { appContent } from '@/content/app';
 import { getConditionColorClass } from '@/config/weather';
-import { units } from '@/config/formatting';
+import { units, formatTemperature } from '@/config/formatting';
 import { cn } from '@/lib/utils';
 import type { RideWeatherSnapshot } from '@/types/database';
 
@@ -16,10 +19,10 @@ interface RideWeatherSummaryProps {
  * Shows icon + temperature + feels-like + chance of rain.
  */
 export function RideWeatherSummary({ weather }: RideWeatherSummaryProps) {
+  const prefs = useUserPrefs();
   if (!weather || weather.temperature_c == null) return null;
 
-  const temp = Math.round(weather.temperature_c);
-  const feelsLike = Math.round(weather.feels_like_c ?? weather.temperature_c);
+  const feelsLike = weather.feels_like_c ?? weather.temperature_c;
   const popPercent = weather.pop != null ? Math.round(weather.pop * 100) : null;
 
   return (
@@ -30,11 +33,10 @@ export function RideWeatherSummary({ weather }: RideWeatherSummaryProps) {
         className={cn('size-5', getConditionColorClass(weather.weather_code, weather.is_day))}
       />
       <span className="font-display text-lg font-semibold text-foreground">
-        {temp}
-        {units.celsius}
+        {formatTemperature(weather.temperature_c, prefs.temperature_unit)}
       </span>
       <span className="text-body-sm text-muted-foreground">
-        {weatherContent.feelsLike(feelsLike)}
+        {weatherContent.feelsLike(formatTemperature(feelsLike, prefs.temperature_unit))}
         {popPercent != null && (
           <>
             <span className="mx-1.5">·</span>

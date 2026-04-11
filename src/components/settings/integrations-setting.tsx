@@ -57,12 +57,7 @@ export function IntegrationsSetting({ connections }: IntegrationsSettingProps) {
   const services = Object.values(integrations);
 
   return (
-    <ContentCard
-      icon={PlugsConnected}
-      heading={content.title}
-      subtitle={content.subtitle}
-      padding="spacious"
-    >
+    <ContentCard icon={PlugsConnected} heading={content.title} subtitle={content.subtitle}>
       <div className="divide-y divide-border">
         {services.map((config) => {
           const connection = connections.find((c) => c.service === config.service);

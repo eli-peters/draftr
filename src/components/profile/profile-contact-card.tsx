@@ -22,7 +22,7 @@ export function ProfileContactCard({ email, initialPhone, access }: ProfileConta
   const { isEditing, values, setField } = useProfileForm();
 
   return (
-    <ContentCard icon={AddressBook} heading={content.sections.contactInfo} padding="spacious">
+    <ContentCard icon={AddressBook} heading={content.sections.contactInfo}>
       <dl className="flex flex-col gap-3">
         <Row label={content.contactInfo.phoneLabel}>
           {isEditing ? (

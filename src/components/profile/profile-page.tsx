@@ -156,7 +156,7 @@ export function ProfilePage({ subject, access, paceGroups, recentRides }: Profil
           // Two-column layout: left sidebar (contact/emergency) + right primary column
           // (stats bento → recent rides). Stats live in the right column so all content
           // in that column shares one width, fixing the prior grid misalignment.
-          <div className="mt-8 grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
+          <div className="mt-card-stack grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
             <aside className="flex flex-col gap-card-stack">
               {access.canSeeContact && (
                 <ProfileContactCard
@@ -181,7 +181,7 @@ export function ProfilePage({ subject, access, paceGroups, recentRides }: Profil
         ) : (
           // Member-to-member bento view: no sidebar, stats expand to full width in a
           // 3-column grid, recent rides fills full width below.
-          <div className="mt-8 flex flex-col gap-card-stack">
+          <div className="mt-card-stack flex flex-col gap-card-stack">
             {statsBento}
             <ProfileRecentRides rides={recentRides} />
           </div>
@@ -191,14 +191,9 @@ export function ProfilePage({ subject, access, paceGroups, recentRides }: Profil
       {isEditing && (
         <ActionBar
           left={
-            <button
-              type="button"
-              onClick={cancelEdit}
-              disabled={isPending}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-            >
+            <Button variant="muted" size="sm" onClick={cancelEdit} disabled={isPending}>
               {common.cancel}
-            </button>
+            </Button>
           }
           right={
             <Button type="button" onClick={handleSave} disabled={isPending}>

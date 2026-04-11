@@ -1,3 +1,5 @@
+'use client';
+
 import { format } from 'date-fns';
 import { CalendarBlank, Clock, Gauge, Mountains, Path } from '@phosphor-icons/react/dist/ssr';
 import { Badge } from '@/components/ui/badge';
@@ -11,8 +13,16 @@ import { RouteMapLoader } from '@/components/rides/route-map-loader';
 import { RouteMapPlaceholder } from '@/components/rides/route-map-placeholder';
 import { StartLocationDisplay } from '@/components/rides/start-location-display';
 import { RideWeatherSummary } from '@/components/weather/ride-weather-summary';
+import { useUserPrefs } from '@/components/user-prefs-provider';
 import { appContent } from '@/content/app';
-import { dateFormats, formatTime, separators, units, parseLocalDate } from '@/config/formatting';
+import {
+  dateFormats,
+  formatTime,
+  formatDistance,
+  formatElevation,
+  separators,
+  parseLocalDate,
+} from '@/config/formatting';
 import { cn } from '@/lib/utils';
 import type { RideLifecycle } from '@/lib/rides/lifecycle';
 import type { RideWithDetails, RideWeatherSnapshot } from '@/types/database';
@@ -40,6 +50,7 @@ export function RideDetailCard({
   lifecycle,
   weather,
 }: RideDetailCardProps) {
+  const prefs = useUserPrefs();
   const rideDate = parseLocalDate(ride.ride_date);
 
   // Resolve unified card state
@@ -90,11 +101,11 @@ export function RideDetailCard({
           <div className="flex items-center gap-2 text-base text-foreground">
             <Clock className="size-4 shrink-0 text-muted-foreground" />
             <span className="tabular-nums">
-              {formatTime(ride.start_time)}
+              {formatTime(ride.start_time, prefs.time_format)}
               {ride.end_time && (
                 <>
                   {separators.dash}
-                  {formatTime(ride.end_time)}
+                  {formatTime(ride.end_time, prefs.time_format)}
                 </>
               )}
             </span>
@@ -103,8 +114,7 @@ export function RideDetailCard({
             <div className="flex items-center gap-2 text-base text-foreground">
               <Path className="size-4 shrink-0 text-muted-foreground" />
               <span className="tabular-nums">
-                {ride.distance_km}
-                {units.km}
+                {formatDistance(ride.distance_km, prefs.distance_unit)}
               </span>
             </div>
           )}
@@ -112,8 +122,7 @@ export function RideDetailCard({
             <div className="flex items-center gap-2 text-base text-foreground">
               <Mountains className="size-4 shrink-0 text-muted-foreground" />
               <span className="tabular-nums">
-                {ride.elevation_m}
-                {units.m}
+                {formatElevation(ride.elevation_m, prefs.elevation_unit)}
               </span>
             </div>
           )}

@@ -132,7 +132,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       {signups.length > 0 && (
         <ContentCard
           padding="compact"
-          className="mt-8"
+          className="mt-card-stack"
           icon={Users}
           heading={`${detail.spotsCount(riderConfirmedCount, ride.capacity)}${waitlistedCount > 0 ? ` · ${detail.waitlistedCount(waitlistedCount)}` : ''}`}
         >
@@ -148,7 +148,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       )}
 
       {/* Comments */}
-      <div className="mt-8">
+      <div className="mt-card-stack">
         <RideComments
           rideId={ride.id}
           comments={comments}

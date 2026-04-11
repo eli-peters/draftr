@@ -79,7 +79,7 @@ export function AppShell({
           <main
             className={cn(
               'mx-auto flex w-full min-w-0 flex-1 flex-col',
-              isManageSection && isAdmin ? 'max-w-400' : 'max-w-3xl',
+              isManageSection ? 'max-w-400' : 'max-w-3xl',
             )}
           >
             <PageTransitionWrapper>{children}</PageTransitionWrapper>

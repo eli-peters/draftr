@@ -43,7 +43,7 @@ export function PreferencesCard({ userPrefs }: PreferencesCardProps) {
   const activeColorMode: ColorMode = mounted ? colorMode : 'system';
 
   return (
-    <ContentCard icon={SlidersHorizontal} heading={content.title} padding="spacious">
+    <ContentCard icon={SlidersHorizontal} heading={content.title}>
       <div className="divide-y divide-border">
         {/* Distance */}
         <SettingRow label={content.rows.distance.label}>

@@ -21,6 +21,7 @@ const buttonVariants = cva(
         destructive:
           'border-action-danger bg-background text-action-danger hover:bg-feedback-error-bg hover:border-action-danger-hover hover:text-action-danger-hover aria-expanded:bg-feedback-error-bg aria-expanded:border-action-danger-hover aria-expanded:text-action-danger-hover',
         link: 'text-primary underline-offset-4 hover:underline',
+        'link-destructive': 'text-action-danger underline-offset-4 hover:underline',
       },
       size: {
         default:

@@ -15,6 +15,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { DURATIONS, EASE } from '@/lib/motion';
 import { Card } from '@/components/ui/card';
 import { CardBanner, CardContentSection } from '@/components/rides/ride-card-parts';
+import { useUserPrefs } from '@/components/user-prefs-provider';
 import { appContent } from '@/content/app';
 import { formatTime, parseLocalDate } from '@/config/formatting';
 import { getRideLifecycle } from '@/lib/rides/lifecycle';
@@ -159,6 +160,7 @@ export function ActionBar({
   userRole,
   timezone,
 }: ActionBarProps) {
+  const prefs = useUserPrefs();
   const isAdmin = userRole === 'admin';
 
   const hasItems =
@@ -204,7 +206,7 @@ export function ActionBar({
             >
               <CardContentSection
                 date={getRelativeDay(parseLocalDate(nextSignup.ride_date))}
-                time={formatTime(nextSignup.start_time)}
+                time={formatTime(nextSignup.start_time, prefs.time_format)}
                 title={nextSignup.title}
                 paceGroupName={nextSignup.pace_group_name}
                 paceGroupSortOrder={nextSignup.pace_group_sort_order}
@@ -245,7 +247,7 @@ export function ActionBar({
             >
               <CardContentSection
                 date={getRelativeDay(parseLocalDate(nextWaitlistedRide.ride_date))}
-                time={formatTime(nextWaitlistedRide.start_time)}
+                time={formatTime(nextWaitlistedRide.start_time, prefs.time_format)}
                 title={nextWaitlistedRide.title}
                 paceGroupName={nextWaitlistedRide.pace_group_name}
                 paceGroupSortOrder={nextWaitlistedRide.pace_group_sort_order}
@@ -278,7 +280,7 @@ export function ActionBar({
             >
               <CardContentSection
                 date={getRelativeDay(parseLocalDate(nextLedRide.ride_date))}
-                time={formatTime(nextLedRide.start_time)}
+                time={formatTime(nextLedRide.start_time, prefs.time_format)}
                 title={nextLedRide.title}
                 paceGroupName={nextLedRide.pace_group_name}
                 paceGroupSortOrder={nextLedRide.pace_group_sort_order}
@@ -303,7 +305,7 @@ export function ActionBar({
         >
           <CardContentSection
             date={getRelativeDay(parseLocalDate(weatherWatchRide.ride_date))}
-            time={formatTime(weatherWatchRide.start_time)}
+            time={formatTime(weatherWatchRide.start_time, prefs.time_format)}
             title={weatherWatchRide.title}
             paceGroupName={weatherWatchRide.pace_group_name}
             paceGroupSortOrder={weatherWatchRide.pace_group_sort_order}
@@ -355,7 +357,7 @@ export function ActionBar({
         >
           <CardContentSection
             date={getRelativeDay(parseLocalDate(nextAvailableRide.ride_date))}
-            time={formatTime(nextAvailableRide.start_time)}
+            time={formatTime(nextAvailableRide.start_time, prefs.time_format)}
             title={nextAvailableRide.title}
             paceGroupName={nextAvailableRide.pace_group_name}
             paceGroupSortOrder={nextAvailableRide.pace_group_sort_order}

@@ -1,7 +1,10 @@
+'use client';
+
 import { Wind, Drop, CloudRain } from '@phosphor-icons/react/dist/ssr';
 import { ContentCard } from '@/components/ui/content-card';
 import { StatusCallout } from '@/components/ui/status-callout';
 import { WeatherIcon } from '@/components/weather/weather-icon';
+import { useUserPrefs } from '@/components/user-prefs-provider';
 import { appContent } from '@/content/app';
 import {
   getWeatherCondition,
@@ -9,7 +12,7 @@ import {
   getSeverityColorClass,
   getConditionColorClass,
 } from '@/config/weather';
-import { units } from '@/config/formatting';
+import { units, formatTemperature } from '@/config/formatting';
 import { cn } from '@/lib/utils';
 import type { RideWeatherSnapshot } from '@/types/database';
 
@@ -24,6 +27,7 @@ interface RideWeatherDetailProps {
  * Shows full forecast breakdown with condition, temperature, wind, humidity, and POP.
  */
 export function RideWeatherDetail({ weather }: RideWeatherDetailProps) {
+  const prefs = useUserPrefs();
   if (!weather || weather.temperature_c == null) return null;
 
   const condition = getWeatherCondition(weather.weather_code);
@@ -32,7 +36,7 @@ export function RideWeatherDetail({ weather }: RideWeatherDetailProps) {
   const severityClass = getSeverityColorClass(severity);
 
   return (
-    <ContentCard padding="spacious" className="mt-8" heading={weatherContent.detail.heading}>
+    <ContentCard className="mt-card-stack" heading={weatherContent.detail.heading}>
       {severity === 'severe' && (
         <StatusCallout tone="error" className="mb-3 flex items-center gap-2.5 px-5 py-4 text-base">
           <CloudRain className="h-5 w-5 shrink-0" />
@@ -48,12 +52,16 @@ export function RideWeatherDetail({ weather }: RideWeatherDetailProps) {
         <div>
           <span className="text-lg font-semibold text-foreground">{condition.label}</span>
           <p className="text-sm text-muted-foreground">
-            {weatherContent.feelsLike(Math.round(weather.feels_like_c ?? weather.temperature_c))}
+            {weatherContent.feelsLike(
+              formatTemperature(
+                weather.feels_like_c ?? weather.temperature_c,
+                prefs.temperature_unit,
+              ),
+            )}
           </p>
         </div>
         <span className="ml-auto font-mono text-2xl font-bold text-foreground">
-          {Math.round(weather.temperature_c)}
-          {units.celsius}
+          {formatTemperature(weather.temperature_c, prefs.temperature_unit)}
         </span>
       </div>
 

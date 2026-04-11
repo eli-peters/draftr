@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Bicycle,
   Clock,
@@ -14,9 +16,15 @@ import {
 import { RiderAvatar, RiderAvatarOverflow, RiderAvatarStack } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { RideWeatherBadge } from '@/components/weather/ride-weather-badge';
+import { useUserPrefs } from '@/components/user-prefs-provider';
 import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
-import { separators, units, getPaceBadgeVariant } from '@/config/formatting';
+import {
+  separators,
+  formatDistance,
+  formatElevation,
+  getPaceBadgeVariant,
+} from '@/config/formatting';
 import { RideStatus, SignupStatus } from '@/config/statuses';
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 import type { RideWeatherSnapshot, SignupAvatar } from '@/types/database';
@@ -273,12 +281,19 @@ interface MetadataStatsProps {
 }
 
 export function MetadataStats({ distanceKm, elevationM }: MetadataStatsProps) {
+  const prefs = useUserPrefs();
   const items = [
     distanceKm != null
-      ? { label: ridesContent.card.distance, value: `${distanceKm}${units.km}` }
+      ? {
+          label: ridesContent.card.distance,
+          value: formatDistance(distanceKm, prefs.distance_unit),
+        }
       : null,
     elevationM != null
-      ? { label: ridesContent.card.elevation, value: `${elevationM}${units.m}` }
+      ? {
+          label: ridesContent.card.elevation,
+          value: formatElevation(elevationM, prefs.elevation_unit),
+        }
       : null,
   ].filter(Boolean) as { label: string; value: string }[];
 
@@ -418,6 +433,7 @@ export function CardMetadataRow({
   locationName,
   className,
 }: CardMetadataRowProps) {
+  const prefs = useUserPrefs();
   const hasAny = distanceKm != null || elevationM != null || durationDisplay || locationName;
   if (!hasAny) return null;
 
@@ -428,8 +444,7 @@ export function CardMetadataRow({
     dataItems.push(
       <span key="dist" className="flex shrink-0 items-center gap-1">
         <Path className="size-3.5 shrink-0" />
-        {distanceKm}
-        {units.km}
+        {formatDistance(distanceKm, prefs.distance_unit)}
       </span>,
     );
   }
@@ -437,8 +452,7 @@ export function CardMetadataRow({
     dataItems.push(
       <span key="elev" className="flex shrink-0 items-center gap-1">
         <Mountains className="size-3.5 shrink-0" />
-        {elevationM}
-        {units.m}
+        {formatElevation(elevationM, prefs.elevation_unit)}
       </span>,
     );
   }

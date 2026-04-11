@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/layout/app-shell';
+import { UserPrefsProvider } from '@/components/user-prefs-provider';
 import { getNavForRole, type UserRole } from '@/config/navigation';
 import { routes } from '@/config/routes';
 import { getInitials } from '@/lib/utils';
@@ -8,6 +9,7 @@ import { createClient, getUser } from '@/lib/supabase/server';
 import { getUserNotifications } from '@/lib/notifications/queries';
 import { getPinnedAnnouncement } from '@/lib/manage/queries';
 import { AnnouncementBanner } from '@/components/dashboard/announcement-banner';
+import { defaultUserPreferences, type UserPreferences } from '@/types/user-preferences';
 
 /**
  * Authenticated app layout with navigation shell.
@@ -29,7 +31,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from('users')
-    .select('full_name, email, avatar_url, onboarding_completed')
+    .select('full_name, email, avatar_url, onboarding_completed, user_preferences')
     .eq('id', authUser.id)
     .single();
 
@@ -38,6 +40,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   const userName = profile.full_name ?? 'User';
+  const userPrefs: UserPreferences = {
+    ...defaultUserPreferences,
+    ...((profile.user_preferences as Partial<UserPreferences>) ?? {}),
+  };
+
   const [notifications, pinnedAnnouncement] = await Promise.all([
     getUserNotifications(authUser.id),
     membership ? getPinnedAnnouncement(membership.club_id, authUser.id) : null,
@@ -46,22 +53,24 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   return (
-    <AppShell
-      navItems={navItems}
-      isAdmin={userRole === 'admin'}
-      userRole={userRole}
-      user={{
-        name: userName,
-        initials: getInitials(userName),
-        avatarUrl: profile?.avatar_url ?? null,
-      }}
-      notifications={recentNotifications}
-      unreadNotificationCount={unreadCount}
-      banner={
-        pinnedAnnouncement ? <AnnouncementBanner announcement={pinnedAnnouncement} /> : undefined
-      }
-    >
-      {children}
-    </AppShell>
+    <UserPrefsProvider initialPrefs={userPrefs}>
+      <AppShell
+        navItems={navItems}
+        isAdmin={userRole === 'admin'}
+        userRole={userRole}
+        user={{
+          name: userName,
+          initials: getInitials(userName),
+          avatarUrl: profile?.avatar_url ?? null,
+        }}
+        notifications={recentNotifications}
+        unreadNotificationCount={unreadCount}
+        banner={
+          pinnedAnnouncement ? <AnnouncementBanner announcement={pinnedAnnouncement} /> : undefined
+        }
+      >
+        {children}
+      </AppShell>
+    </UserPrefsProvider>
   );
 }

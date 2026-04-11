@@ -40,12 +40,7 @@ export function CancelRideButton({ rideId, rideTitle }: CancelRideButtonProps) {
 
   if (!showConfirm) {
     return (
-      <Button
-        variant="link"
-        size="sm"
-        className="text-destructive hover:text-destructive/80"
-        onClick={() => setShowConfirm(true)}
-      >
+      <Button variant="link-destructive" size="sm" onClick={() => setShowConfirm(true)}>
         {ridesContent.edit.cancelRide}
       </Button>
     );

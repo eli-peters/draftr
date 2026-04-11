@@ -5,6 +5,7 @@ import { CardIconHeader } from '@/components/ui/card-icon-header';
 import { cn } from '@/lib/utils';
 
 type TrendSentiment = 'positive' | 'neutral' | 'negative';
+type MetricCardVariant = 'outlined' | 'admin';
 
 interface TrendVisualization {
   type: 'trend';
@@ -20,6 +21,8 @@ export interface MetricCardProps {
   suffix?: string;
   decimals?: number;
   visualization?: TrendVisualization;
+  /** Surface treatment: outlined (shadow, consumer pages) or admin (border, no shadow) */
+  variant?: MetricCardVariant;
   className?: string;
 }
 
@@ -44,6 +47,11 @@ function TrendBadge({ direction, label, sentiment }: TrendVisualization) {
   );
 }
 
+const metricVariantStyles: Record<MetricCardVariant, string> = {
+  outlined: 'bg-card shadow-(--card-shadow)',
+  admin: 'border border-(--border-default) bg-card',
+};
+
 export function MetricCard({
   icon,
   title,
@@ -51,12 +59,14 @@ export function MetricCard({
   suffix,
   decimals,
   visualization,
+  variant = 'outlined',
   className,
 }: MetricCardProps) {
   return (
     <div
       className={cn(
-        'flex min-w-0 flex-col items-center justify-center gap-2 rounded-(--card-radius) bg-card shadow-(--card-shadow) p-(--card-padding) text-card-foreground',
+        'flex min-w-0 flex-col items-center justify-center gap-2 rounded-(--card-radius) p-(--card-padding) text-card-foreground',
+        metricVariantStyles[variant],
         className,
       )}
     >

@@ -11,7 +11,8 @@ import {
   GEOLOCATION_TIMEOUT_MS,
   GEOLOCATION_MAX_AGE_MS,
 } from '@/config/weather';
-import { units } from '@/config/formatting';
+import { useUserPrefs } from '@/components/user-prefs-provider';
+import { units, formatTemperature } from '@/config/formatting';
 import { cn } from '@/lib/utils';
 import type { CurrentWeatherData } from '@/lib/weather/api';
 
@@ -22,6 +23,7 @@ const { weather: weatherContent } = appContent;
  * Client component — uses browser geolocation to fetch current weather.
  */
 export function CurrentWeather() {
+  const prefs = useUserPrefs();
   const [weather, setWeather] = useState<CurrentWeatherData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -81,15 +83,18 @@ export function CurrentWeather() {
       <div className="flex flex-col">
         <div className="flex items-baseline gap-1.5">
           <span className="font-mono text-lg font-bold leading-tight text-foreground">
-            {Math.round(weather.temperature_c)}
-            {units.celsius}
+            {formatTemperature(weather.temperature_c, prefs.temperature_unit)}
           </span>
           <span className="text-sm text-muted-foreground">{condition.label}</span>
         </div>
 
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           {weather.feels_like_c != null && (
-            <span>{weatherContent.feelsLike(Math.round(weather.feels_like_c))}</span>
+            <span>
+              {weatherContent.feelsLike(
+                formatTemperature(weather.feels_like_c, prefs.temperature_unit),
+              )}
+            </span>
           )}
           {weather.wind_speed_kmh != null && (
             <span className="flex items-center gap-0.5">

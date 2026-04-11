@@ -40,7 +40,7 @@ export function NotificationsCard({ initialPrefs, email }: NotificationsCardProp
   }
 
   return (
-    <ContentCard icon={Bell} heading={content.title} padding="spacious">
+    <ContentCard icon={Bell} heading={content.title}>
       <div className="divide-y divide-border">
         <SettingRow
           label={content.channels.push.label}

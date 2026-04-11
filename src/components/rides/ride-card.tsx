@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import {
@@ -10,6 +12,7 @@ import {
   type CardState,
 } from '@/components/rides/ride-card-parts';
 import { CardSignupButton } from '@/components/rides/card-signup-button';
+import { useUserPrefs } from '@/components/user-prefs-provider';
 import { appContent } from '@/content/app';
 import { cn, getRelativeDay } from '@/lib/utils';
 import { dateFormats, formatTime, parseLocalDate } from '@/config/formatting';
@@ -28,6 +31,7 @@ interface RideCardProps {
 }
 
 export function RideCard({ ride, variant = 'rides', timezone }: RideCardProps) {
+  const prefs = useUserPrefs();
   const lifecycle = getRideLifecycle(ride.ride_date, ride.start_time, ride.end_time, timezone);
   const cardState = resolveCardState({
     rideStatus: ride.status,
@@ -59,9 +63,18 @@ export function RideCard({ ride, variant = 'rides', timezone }: RideCardProps) {
           }
         />
         {isHome ? (
-          <HomeLayout ride={ride} hasBanner={!!stateStyle.bannerBg && !isBannerSuppressed} />
+          <HomeLayout
+            ride={ride}
+            hasBanner={!!stateStyle.bannerBg && !isBannerSuppressed}
+            timeFormat={prefs.time_format}
+          />
         ) : (
-          <RidesLayout ride={ride} hasBanner={!!stateStyle.bannerBg} timezone={timezone} />
+          <RidesLayout
+            ride={ride}
+            hasBanner={!!stateStyle.bannerBg}
+            timezone={timezone}
+            timeFormat={prefs.time_format}
+          />
         )}
       </Card>
     </Link>
@@ -72,14 +85,22 @@ export function RideCard({ ride, variant = 'rides', timezone }: RideCardProps) {
 // Home Layout — compact / glanceable
 // ---------------------------------------------------------------------------
 
-function HomeLayout({ ride, hasBanner }: { ride: RideWithDetails; hasBanner: boolean }) {
+function HomeLayout({
+  ride,
+  hasBanner,
+  timeFormat,
+}: {
+  ride: RideWithDetails;
+  hasBanner: boolean;
+  timeFormat: '12h' | '24h';
+}) {
   const rideDate = parseLocalDate(ride.ride_date);
 
   return (
     <CardContentSection
       className={cn('px-5 pt-5 pb-5', hasBanner && 'pt-4')}
       date={getRelativeDay(rideDate, dateFormats.dayShort, true)}
-      time={formatTime(ride.start_time)}
+      time={formatTime(ride.start_time, timeFormat)}
       title={ride.title}
       paceGroupName={ride.pace_group?.name ?? null}
       paceGroupSortOrder={ride.pace_group?.sort_order ?? null}
@@ -97,10 +118,12 @@ function RidesLayout({
   ride,
   hasBanner,
   timezone,
+  timeFormat,
 }: {
   ride: RideWithDetails;
   hasBanner: boolean;
   timezone: string;
+  timeFormat: '12h' | '24h';
 }) {
   const rideDate = parseLocalDate(ride.ride_date);
   const availability = getRideAvailability(ride, ride.rider_count, timezone);
@@ -111,7 +134,7 @@ function RidesLayout({
       <CardContentSection
         className={cn('px-5 pt-5 pb-5', hasBanner && 'pt-4')}
         date={getRelativeDay(rideDate, dateFormats.dayShort, true)}
-        time={formatTime(ride.start_time)}
+        time={formatTime(ride.start_time, timeFormat)}
         title={ride.title}
         description={ride.description}
         paceGroupName={ride.pace_group?.name ?? null}

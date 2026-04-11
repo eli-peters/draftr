@@ -34,6 +34,7 @@ export function ManageStatsBento({
           title: content.stats.fillRate,
           value: fillRate,
           suffix: '%',
+          variant: 'admin',
           visualization: {
             type: 'trend',
             direction: fillRateChange >= 0 ? 'up' : 'down',
@@ -47,6 +48,7 @@ export function ManageStatsBento({
           value: cancellationRate,
           suffix: '%',
           decimals: 1,
+          variant: 'admin',
           visualization: {
             type: 'trend',
             direction: 'up',
@@ -58,6 +60,7 @@ export function ManageStatsBento({
           icon: UsersThree,
           title: content.stats.activeMembers,
           value: activeMembers,
+          variant: 'admin',
           visualization: {
             type: 'trend',
             direction: 'up',

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { CaretUp, CaretDown, DotsThree } from '@phosphor-icons/react/dist/ssr';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
   DropdownMenu,
@@ -27,6 +27,7 @@ import {
 import { AdminFilterToolbar, type FilterDefinition } from './admin-filter-toolbar';
 import { TablePagination } from './table-pagination';
 import { cn } from '@/lib/utils';
+import { useUserPrefs } from '@/components/user-prefs-provider';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { RideStatus } from '@/config/statuses';
@@ -320,6 +321,7 @@ export function ManageRidesPanel({
 // ---------------------------------------------------------------------------
 
 function DesktopRideRow({ ride, isLeader }: { ride: ManageRideData; isLeader: boolean }) {
+  const prefs = useUserPrefs();
   const router = useRouter();
   const [cancelOpen, setCancelOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -331,7 +333,7 @@ function DesktopRideRow({ ride, isLeader }: { ride: ManageRideData; isLeader: bo
     ride.capacity != null ? `${ride.signup_count}/${ride.capacity}` : `${ride.signup_count}`;
 
   const dateFormatted = format(new Date(ride.ride_date), 'MMM d');
-  const timeFormatted = formatTime(ride.start_time);
+  const timeFormatted = formatTime(ride.start_time, prefs.time_format);
 
   function handleClick() {
     router.push(routes.manageEditRide(ride.id, routes.manageRides));
@@ -409,7 +411,7 @@ function DesktopRideRow({ ride, isLeader }: { ride: ManageRideData; isLeader: bo
       <td className={cn('p-3 font-mono text-body-sm', statusClass)}>{statusLabel}</td>
       <td className="p-3" onClick={(e) => e.stopPropagation()}>
         <DropdownMenu>
-          <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
+          <DropdownMenuTrigger className={buttonVariants({ variant: 'ghost', size: 'icon-sm' })}>
             <DotsThree className="h-4 w-4" weight="bold" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -455,13 +457,14 @@ function DesktopRideRow({ ride, isLeader }: { ride: ManageRideData; isLeader: bo
 // ---------------------------------------------------------------------------
 
 function MobileRideRow({ ride, isLeader }: { ride: ManageRideData; isLeader: boolean }) {
+  const prefs = useUserPrefs();
   const router = useRouter();
   const isCancelled = ride.status === RideStatus.CANCELLED;
   const isWeatherWatch = ride.status === RideStatus.WEATHER_WATCH;
   const spotsText =
     ride.capacity != null ? `${ride.signup_count}/${ride.capacity}` : `${ride.signup_count}`;
 
-  const dateFormatted = `${format(new Date(ride.ride_date), 'MMM d')}, ${formatTime(ride.start_time)}`;
+  const dateFormatted = `${format(new Date(ride.ride_date), 'MMM d')}, ${formatTime(ride.start_time, prefs.time_format)}`;
 
   let statusLabel = '';
   let statusClass = '';

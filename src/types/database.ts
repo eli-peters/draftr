@@ -6,6 +6,8 @@
  * For insert/update types, use Partial<> or Pick<> as needed.
  */
 
+import type { UserPreferences } from '@/types/user-preferences';
+
 export interface Club {
   id: string;
   name: string;
@@ -31,12 +33,8 @@ export interface User {
   emergency_contact_phone: string | null;
   emergency_contact_relationship: string | null;
   preferred_pace_group: string | null;
-  notification_preferences: {
-    push: boolean;
-    email: boolean;
-    quiet_start: string;
-    quiet_end: string;
-  };
+  notification_preferences: Record<string, unknown>;
+  user_preferences: UserPreferences;
   onboarding_completed: boolean;
   created_at: string;
   updated_at: string;

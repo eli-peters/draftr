@@ -11,6 +11,7 @@ import {
   resolveCardState,
   type CardState,
 } from '@/components/rides/ride-card-parts';
+import { useUserPrefs } from '@/components/user-prefs-provider';
 import { appContent } from '@/content/app';
 import { cn, getRelativeDay } from '@/lib/utils';
 import { RideStatus, SignupStatus } from '@/config/statuses';
@@ -39,6 +40,7 @@ interface ScheduleCardProps {
 // ---------------------------------------------------------------------------
 
 export function ScheduleCard({ ride, onAction, timezone }: ScheduleCardProps) {
+  const prefs = useUserPrefs();
   const rideDate = parseLocalDate(ride.ride_date);
   const isCompleted = ride.signup_status === SignupStatus.COMPLETED;
   const isCancelled = ride.signup_status === SignupStatus.CANCELLED;
@@ -114,7 +116,7 @@ export function ScheduleCard({ ride, onAction, timezone }: ScheduleCardProps) {
         <CardContentSection
           className="px-5 pt-4 pb-5"
           date={getRelativeDay(rideDate, dateFormats.dayShort, true)}
-          time={formatTime(ride.start_time)}
+          time={formatTime(ride.start_time, prefs.time_format)}
           title={ride.title}
           paceGroupName={ride.pace_group_name}
           paceGroupSortOrder={ride.pace_group_sort_order}

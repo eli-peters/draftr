@@ -28,7 +28,7 @@ export default async function AdminDashboardPage() {
   return (
     <DashboardShell>
       <PageHeader centered={false} title={content.heading} />
-      <div className="mt-6 min-w-0 space-y-8">
+      <div className="mt-6 min-w-0 space-y-card-stack">
         <ManageStatsBento
           fillRate={stats.fillRate}
           fillRateChange={stats.fillRateChange}

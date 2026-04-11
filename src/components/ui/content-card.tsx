@@ -11,12 +11,13 @@ import { CardIconHeader } from '@/components/ui/card-icon-header';
  *   outlined  — shadow only (default; --card-border-width is 0px so no visible border)
  *   elevated  — shadow only, no border token reference
  *   flat      — no border, no shadow (blends with page)
+ *   admin     — stroke-only (visible border, no shadow) for manage/admin pages
+ *   alert     — tinted background + shadow (e.g. emergency contact card)
  *
  * Padding presets:
- *   compact   — p-[--card-padding] md:p-[--card-padding-md]
- *   default   — p-[--card-padding-md] md:p-6
- *   spacious  — p-5 md:p-6
- *   none      — no padding (for custom internal layout)
+ *   none      — no padding (custom internal layout, footer sections, tabbed content)
+ *   compact   — dense data display (rosters, stats, small panels)
+ *   default   — standard content sections (settings, profile, forms, weather)
  *
  * Icon + heading hero: when both props are present, delegates to CardIconHeader
  * (the single canonical centred icon-above-title component). When heading is
@@ -29,12 +30,13 @@ const variantStyles = {
   outlined: 'border-(length:--card-border-width) border-border bg-card shadow-(--card-shadow)',
   elevated: 'bg-card shadow-(--card-shadow)',
   flat: 'bg-card',
+  admin: 'border border-(--border-default) bg-card',
+  alert: 'bg-feedback-error-bg shadow-(--card-shadow)',
 } as const;
 
 const paddingStyles = {
   compact: 'p-(--card-padding) md:p-(--card-padding-md)',
   default: 'p-(--card-padding-md) md:p-6',
-  spacious: 'p-5 md:p-6',
   none: '',
 } as const;
 

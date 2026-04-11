@@ -19,7 +19,7 @@ const { profile: content } = appContent;
  */
 export function ProfileRecentRides({ rides }: { rides: RecentRide[] }) {
   return (
-    <ContentCard icon={Bicycle} heading={content.recentRides} padding="spacious">
+    <ContentCard icon={Bicycle} heading={content.recentRides}>
       {rides.length === 0 ? (
         <p className="text-center text-base text-muted-foreground">{content.noRidesYet}</p>
       ) : (

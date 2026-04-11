@@ -27,9 +27,33 @@ export const separators = {
   emDash: ' — ',
 } as const;
 
-/** Format a time string (HH:MM:SS) to display format (HH:MM) */
-export function formatTime(time: string): string {
+/** Format a time string (HH:MM:SS) to display format. Defaults to 24h. */
+export function formatTime(time: string, format: '12h' | '24h' = '24h'): string {
+  const [h, m] = time.split(':').map(Number);
+  if (format === '12h') {
+    const period = h >= 12 ? 'PM' : 'AM';
+    const hour = h % 12 || 12;
+    return `${hour}:${String(m).padStart(2, '0')} ${period}`;
+  }
   return time.slice(0, 5);
+}
+
+/** Format a distance stored in km, converting to mi if requested. */
+export function formatDistance(km: number, unit: 'km' | 'mi'): string {
+  if (unit === 'mi') return `${Math.round(km * 0.621371 * 10) / 10} mi`;
+  return `${km} km`;
+}
+
+/** Format an elevation stored in metres, converting to ft if requested. */
+export function formatElevation(m: number, unit: 'm' | 'ft'): string {
+  if (unit === 'ft') return `${Math.round(m * 3.28084)} ft`;
+  return `${m} m`;
+}
+
+/** Format a temperature stored in °C, converting to °F if requested. */
+export function formatTemperature(celsius: number, unit: 'celsius' | 'fahrenheit'): string {
+  if (unit === 'fahrenheit') return `${Math.round((celsius * 9) / 5 + 32)}°F`;
+  return `${Math.round(celsius)}°C`;
 }
 
 /** Parse "YYYY-MM-DD" as local midnight (not UTC midnight). */

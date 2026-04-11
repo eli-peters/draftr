@@ -1,3 +1,5 @@
+'use client';
+
 import { CloudSlash, Drop } from '@phosphor-icons/react/dist/ssr';
 import { WeatherIcon } from '@/components/weather/weather-icon';
 import {
@@ -6,8 +8,9 @@ import {
   getWeatherIconColorClass,
   POP_DISPLAY_THRESHOLD,
 } from '@/config/weather';
+import { useUserPrefs } from '@/components/user-prefs-provider';
 import { appContent } from '@/content/app';
-import { units } from '@/config/formatting';
+import { units, formatTemperature } from '@/config/formatting';
 import { cn } from '@/lib/utils';
 import type { RideWeatherSnapshot } from '@/types/database';
 
@@ -28,6 +31,7 @@ export function RideWeatherBadge({
   layout = 'default',
   className,
 }: RideWeatherBadgeProps) {
+  const prefs = useUserPrefs();
   if (!weather || weather.temperature_c == null) {
     return (
       <div className={cn('flex items-center', className)} title={appContent.weather.unavailable}>
@@ -52,8 +56,7 @@ export function RideWeatherBadge({
           )}
         />
         <span className="font-mono text-compact font-semibold leading-4 text-muted-foreground">
-          {Math.round(weather.temperature_c)}
-          {units.celsius}
+          {formatTemperature(weather.temperature_c, prefs.temperature_unit)}
         </span>
         {showPop && (
           <span
@@ -83,8 +86,7 @@ export function RideWeatherBadge({
           )}
         />
         <span className="font-mono text-compact font-semibold leading-4 text-muted-foreground">
-          {Math.round(weather.temperature_c)}
-          {units.celsius}
+          {formatTemperature(weather.temperature_c, prefs.temperature_unit)}
         </span>
       </div>
 

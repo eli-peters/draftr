@@ -31,7 +31,7 @@ export function AccountCard({ email }: AccountCardProps) {
 
   return (
     <>
-      <ContentCard icon={UserCircle} heading={content.title} padding="spacious">
+      <ContentCard icon={UserCircle} heading={content.title}>
         <div className="divide-y divide-border">
           {/* Email — read-only, description explains why */}
           <div className="flex items-start justify-between gap-4 py-3">

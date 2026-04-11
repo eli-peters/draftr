@@ -71,11 +71,11 @@ export const appContent = {
   },
 
   dashboard: {
-    noRides: 'No upcoming rides',
+    noRides: 'No upcoming club rides',
     noRidesDescription: 'Check back soon — ride leaders will post new rides here.',
     myRides: {
-      emptyTitle: "You haven't signed up for any rides yet",
-      emptyDescription: 'Browse upcoming club rides and sign up for one that fits your schedule.',
+      emptyTitle: 'No rides on your schedule yet',
+      emptyDescription: 'Browse upcoming club rides and sign up for one that fits.',
       emptyCta: 'Browse Rides',
     },
     greeting: {
@@ -100,7 +100,7 @@ export const appContent = {
       weatherWatchDetail: 'This ride may be affected by weather conditions',
     },
     feed: {
-      heading: 'More upcoming rides for you',
+      heading: 'More Club Rides',
     },
     announcementBanner: {
       dismiss: 'Dismiss',
@@ -108,9 +108,9 @@ export const appContent = {
     nudge: {
       heading: 'Next Club Ride',
       browseCta: 'Browse Rides',
-      noSignupsTitle: 'No rides on your calendar',
+      noSignupsTitle: 'No rides on your schedule',
       noSignupsDescription: 'Browse upcoming rides and find one that fits your schedule.',
-      noRidesTitle: 'No rides scheduled yet',
+      noRidesTitle: 'No club rides scheduled yet',
       noRidesDescription: 'Check back soon — ride leaders will post new rides here.',
     },
   },
@@ -254,7 +254,7 @@ export const appContent = {
       cancelRideDialogDescription: 'This ride will be cancelled and removed from the schedule.',
     },
     create: {
-      heading: 'Create a Ride',
+      heading: 'New Ride',
       submitButton: 'Publish Ride',
     },
     recurring: {
@@ -481,21 +481,21 @@ export const appContent = {
   },
 
   schedule: {
-    heading: 'Your Schedule',
+    heading: 'My Rides',
     toolbar: {
-      upcoming: (count: number) => `${count} ride${count !== 1 ? 's' : ''} coming up`,
+      upcoming: (count: number) => `${count} upcoming`,
       past: (count: number) => `${count} past ride${count !== 1 ? 's' : ''}`,
     },
     statusFilter: {
       label: 'View',
       ariaLabel: 'Filter schedule by status',
-      upcoming: 'Active rides',
-      past: 'Past rides',
+      upcoming: 'Upcoming',
+      past: 'Past',
     },
     emptyState: {
       upcoming: {
-        title: 'No upcoming rides',
-        description: 'Browse the ride feed and sign up for your next one.',
+        title: 'No upcoming rides on your schedule',
+        description: 'Browse upcoming club rides and sign up for one that fits.',
         cta: 'Browse Rides',
       },
       past: {
@@ -521,9 +521,9 @@ export const appContent = {
   profile: {
     heading: 'Profile',
     signOut: 'Sign Out',
-    recentRides: 'Recent rides',
+    recentRides: 'Recent Rides',
     recentRidesLimit: 'Last 5',
-    noRidesYet: 'No rides yet — sign up for your first one!',
+    noRidesYet: 'No rides yet — sign up for your first one.',
     headlineStat: {
       label: 'club rides',
     },
@@ -631,8 +631,8 @@ export const appContent = {
   },
 
   manage: {
-    headingAdmin: 'Manage all rides',
-    headingLeader: 'Manage your Rides',
+    headingAdmin: 'All Rides',
+    headingLeader: 'Your Rides',
     mobileGateTitle: 'This is better on desktop',
     mobileGateDescription:
       'This section is optimized for desktop. Switch to a larger screen for the full experience.',
@@ -648,7 +648,7 @@ export const appContent = {
       club: 'Club Settings',
     },
     dashboard: {
-      heading: 'Manage your club',
+      heading: 'Club Dashboard',
       stats: {
         fillRate: 'Rider fill rate',
         cancellationRate: 'Cancellation rate',
@@ -707,7 +707,7 @@ export const appContent = {
       filterAll: 'All',
     },
     members: {
-      heading: 'Manage all members',
+      heading: 'All Members',
       inviteButton: 'Invite Member',
       totalMembers: (count: number) => `${count} members`,
       roles: {
@@ -902,7 +902,7 @@ export const appContent = {
 
   weather: {
     currentWeather: 'Current Weather',
-    feelsLike: (temp: number) => `Feels like ${temp}°C`,
+    feelsLike: (formattedTemp: string) => `Feels like ${formattedTemp}`,
     humidity: (pct: number) => `${pct}% humidity`,
     wind: (speed: number) => `${speed} km/h wind`,
     pop: (pct: number) => `${pct}% chance of rain`,
