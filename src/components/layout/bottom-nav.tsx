@@ -46,7 +46,7 @@ export function BottomNav({ items }: BottomNavProps) {
                     'relative flex flex-1 flex-col items-center gap-0.5 py-2 text-sm font-medium transition-colors',
                     isActive
                       ? 'font-semibold text-primary'
-                      : 'text-muted-foreground before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-0.5 before:rounded-full before:bg-primary/0 before:transition-colors hover:before:bg-primary/[0.07] active:text-foreground',
+                      : 'text-foreground before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-0.5 before:rounded-full before:bg-primary/0 before:transition-colors hover:before:bg-primary/[0.07] active:text-foreground',
                   )}
                 >
                   {isActive && (
