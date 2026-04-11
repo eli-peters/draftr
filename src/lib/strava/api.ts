@@ -50,6 +50,7 @@ export async function exchangeCodeForTokens(code: string): Promise<StravaTokenRe
     const res = await fetch(config.tokenUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(8000),
       body: JSON.stringify({
         client_id: process.env.STRAVA_CLIENT_ID,
         client_secret: process.env.STRAVA_CLIENT_SECRET,
@@ -81,6 +82,7 @@ export async function refreshAccessToken(
     const res = await fetch(config.tokenUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(8000),
       body: JSON.stringify({
         client_id: process.env.STRAVA_CLIENT_ID,
         client_secret: process.env.STRAVA_CLIENT_SECRET,
@@ -111,6 +113,7 @@ export async function deauthorize(accessToken: string): Promise<void> {
     await fetch(config.deauthorizeUrl, {
       method: 'POST',
       headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(8000),
     });
   } catch (error) {
     console.error('[strava] Failed to deauthorize:', error);
@@ -162,6 +165,7 @@ export async function getRoutes(
     const url = `${config.apiBase}/athlete/routes?page=${page}&per_page=${perPage}`;
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(8000),
     });
 
     if (!res.ok) {
@@ -191,6 +195,7 @@ export async function getActivities(
     const url = `${config.apiBase}/athlete/activities?page=${page}&per_page=${perPage}`;
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(8000),
     });
 
     if (!res.ok) {
@@ -217,6 +222,7 @@ export async function getRouteById(
   try {
     const res = await fetch(`${config.apiBase}/routes/${routeId}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(8000),
     });
 
     if (!res.ok) {
@@ -242,6 +248,7 @@ export async function getActivityById(
   try {
     const res = await fetch(`${config.apiBase}/activities/${activityId}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(8000),
     });
 
     if (!res.ok) {
@@ -264,6 +271,7 @@ export async function getAthlete(accessToken: string): Promise<StravaAthlete | n
   try {
     const res = await fetch(`${config.apiBase}/athlete`, {
       headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(8000),
     });
 
     if (!res.ok) {

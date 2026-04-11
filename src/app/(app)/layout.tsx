@@ -27,13 +27,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const userRole: UserRole = (membership?.role as UserRole) ?? 'rider';
   const navItems = getNavForRole(userRole);
 
-  // Fetch profile (includes onboarding check)
+  // Fetch profile, notifications, and announcement in parallel
   const supabase = await createClient();
-  const { data: profile } = await supabase
-    .from('users')
-    .select('full_name, email, avatar_url, onboarding_completed, user_preferences')
-    .eq('id', authUser.id)
-    .single();
+  const [{ data: profile }, notifications, pinnedAnnouncement] = await Promise.all([
+    supabase
+      .from('users')
+      .select('full_name, email, avatar_url, onboarding_completed, user_preferences')
+      .eq('id', authUser.id)
+      .single(),
+    getUserNotifications(authUser.id),
+    membership ? getPinnedAnnouncement(membership.club_id, authUser.id) : null,
+  ]);
 
   if (!profile || !profile.onboarding_completed) {
     redirect(routes.setupProfile);
@@ -45,10 +49,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ...((profile.user_preferences as Partial<UserPreferences>) ?? {}),
   };
 
-  const [notifications, pinnedAnnouncement] = await Promise.all([
-    getUserNotifications(authUser.id),
-    membership ? getPinnedAnnouncement(membership.club_id, authUser.id) : null,
-  ]);
   const recentNotifications = notifications.slice(0, 5);
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 

@@ -1,4 +1,7 @@
+import { unstable_cache } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { tagAnnouncements, tagManage } from '@/lib/cache-tags';
 import type { AnnouncementType } from '@/types/database';
 
 export interface ClubMember {
@@ -75,25 +78,24 @@ export async function getPaceTiersWithUsage(clubId: string): Promise<PaceTierWit
   const supabase = await createClient();
   const today = new Date().toISOString().split('T')[0];
 
-  const { data: tiers } = await supabase
-    .from('pace_groups')
-    .select(
-      'id, name, sort_order, moving_pace_min, moving_pace_max, strava_pace_min, strava_pace_max, typical_distance_min, typical_distance_max',
-    )
-    .eq('club_id', clubId)
-    .order('sort_order');
+  // Fetch pace groups and upcoming rides in parallel
+  const [{ data: tiers }, { data: rides }] = await Promise.all([
+    supabase
+      .from('pace_groups')
+      .select(
+        'id, name, sort_order, moving_pace_min, moving_pace_max, strava_pace_min, strava_pace_max, typical_distance_min, typical_distance_max',
+      )
+      .eq('club_id', clubId)
+      .order('sort_order'),
+    supabase
+      .from('rides')
+      .select('pace_group_id')
+      .eq('club_id', clubId)
+      .gte('ride_date', today)
+      .neq('status', 'cancelled'),
+  ]);
 
   if (!tiers || tiers.length === 0) return [];
-
-  // Count upcoming rides per pace group
-  const tierIds = tiers.map((t) => t.id);
-  const { data: rides } = await supabase
-    .from('rides')
-    .select('pace_group_id')
-    .eq('club_id', clubId)
-    .in('pace_group_id', tierIds)
-    .gte('ride_date', today)
-    .neq('status', 'cancelled');
 
   const countMap = new Map<string, number>();
   for (const r of rides ?? []) {
@@ -112,13 +114,19 @@ export async function getPaceTiersWithUsage(clubId: string): Promise<PaceTierWit
  * Count pending member approvals for a club.
  */
 export async function getPendingMemberCount(clubId: string): Promise<number> {
-  const supabase = await createClient();
-  const { count } = await supabase
-    .from('club_memberships')
-    .select('*', { count: 'exact', head: true })
-    .eq('club_id', clubId)
-    .eq('status', 'pending');
-  return count ?? 0;
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
+      const { count } = await supabase
+        .from('club_memberships')
+        .select('*', { count: 'exact', head: true })
+        .eq('club_id', clubId)
+        .eq('status', 'pending');
+      return count ?? 0;
+    },
+    ['pending-member-count', clubId],
+    { tags: [tagManage(clubId)], revalidate: 300 },
+  )();
 }
 
 /**
@@ -251,32 +259,36 @@ export async function getClubRideTemplates(clubId: string) {
  * Filters out announcements the user has already dismissed.
  */
 export async function getPinnedAnnouncement(clubId: string, userId: string) {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from('announcements')
-    .select(
-      `
-      id, title, body, published_at, announcement_type, is_dismissible,
-      creator:users!announcements_created_by_fkey(full_name)
-    `,
-    )
-    .eq('club_id', clubId)
-    .eq('is_pinned', true)
-    .order('published_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  // Cache the announcement fetch per club; dismissal filtering is per-user post-cache
+  const data = await unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
+      const { data } = await supabase
+        .from('announcements')
+        .select(
+          `
+          id, title, body, published_at, announcement_type, is_dismissible,
+          creator:users!announcements_created_by_fkey(full_name),
+          announcement_dismissals!left(id, user_id)
+        `,
+        )
+        .eq('club_id', clubId)
+        .eq('is_pinned', true)
+        .order('published_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      return data;
+    },
+    ['pinned-announcement', clubId],
+    { tags: [tagAnnouncements(clubId)], revalidate: 300 },
+  )();
 
   if (!data) return null;
 
-  // Check if this user has dismissed this announcement
-  const { data: dismissal } = await supabase
-    .from('announcement_dismissals')
-    .select('id')
-    .eq('announcement_id', data.id)
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (dismissal) return null;
+  // Filter out if this user has already dismissed it (per-user, not cached)
+  const dismissals = (data.announcement_dismissals ?? []) as { id: string; user_id: string }[];
+  if (dismissals.some((d) => d.user_id === userId)) return null;
 
   const creator = data.creator as unknown as {
     full_name: string;

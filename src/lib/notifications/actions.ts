@@ -1,7 +1,7 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { createClient, getUser } from '@/lib/supabase/server';
+import { invalidateNotifications } from '@/lib/cache-tags';
 import { appContent } from '@/content/app';
 
 /**
@@ -21,7 +21,7 @@ export async function markNotificationRead(notificationId: string) {
 
   if (error) return { error: error.message };
 
-  revalidatePath('/notifications');
+  invalidateNotifications(user.id);
   return { success: true };
 }
 
@@ -42,6 +42,6 @@ export async function markAllNotificationsRead() {
 
   if (error) return { error: error.message };
 
-  revalidatePath('/notifications');
+  invalidateNotifications(user.id);
   return { success: true };
 }

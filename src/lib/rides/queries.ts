@@ -1,8 +1,11 @@
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { createClient, getUser } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { SignupStatus } from '@/config/statuses';
 import { todayDateString, todayInTimezone } from '@/config/formatting';
 import { isRideCompleted } from '@/lib/rides/lifecycle';
+import { TAG_RIDES, tagRide, tagRideSignups, tagUserRides, tagPaceGroups } from '@/lib/cache-tags';
 import type {
   Ride,
   PaceGroup,
@@ -147,47 +150,62 @@ function toRideWithDetails(ride: RawRideRow, currentUserId?: string): RideWithDe
 
 /**
  * Fetch upcoming rides for a club, with joined relations.
+ * Cached across requests; invalidated via TAG_RIDES.
  */
 export async function getUpcomingRides(
   clubId: string,
   userId?: string,
   timezone?: string,
 ): Promise<RideWithDetails[]> {
-  const supabase = await createClient();
   const today = timezone ? todayInTimezone(timezone) : todayDateString();
 
-  const { data, error } = await supabase
-    .from('rides')
-    .select(RIDE_WITH_DETAILS_SELECT)
-    .eq('club_id', clubId)
-    .gte('ride_date', today)
-    .order('ride_date', { ascending: true })
-    .order('start_time', { ascending: true });
+  const data = await unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
+      const { data, error } = await supabase
+        .from('rides')
+        .select(RIDE_WITH_DETAILS_SELECT)
+        .eq('club_id', clubId)
+        .gte('ride_date', today)
+        .order('ride_date', { ascending: true })
+        .order('start_time', { ascending: true });
 
-  if (error?.message) {
-    console.error('Error fetching rides:', error.message, error.code, error.details);
-    return [];
-  }
+      if (error?.message) {
+        console.error('Error fetching rides:', error.message, error.code, error.details);
+        return [];
+      }
 
-  return (data ?? []).map((ride) => toRideWithDetails(ride, userId));
+      return data ?? [];
+    },
+    ['upcoming-rides', clubId, today],
+    { tags: [TAG_RIDES], revalidate: 300 },
+  )();
+
+  return data.map((ride) => toRideWithDetails(ride, userId));
 }
 
 /**
  * Fetch a single ride by ID with full details.
+ * Cached per ride; invalidated via tagRide(rideId).
  */
 export async function getRideById(rideId: string): Promise<RideWithDetails | null> {
-  const supabase = await createClient();
+  const data = await unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
+      const { data, error } = await supabase
+        .from('rides')
+        .select(RIDE_WITH_DETAILS_SELECT)
+        .eq('id', rideId)
+        .single();
 
-  const { data, error } = await supabase
-    .from('rides')
-    .select(RIDE_WITH_DETAILS_SELECT)
-    .eq('id', rideId)
-    .single();
+      if (error || !data) return null;
+      return data;
+    },
+    ['ride-by-id', rideId],
+    { tags: [tagRide(rideId)], revalidate: 300 },
+  )();
 
-  if (error || !data) {
-    return null;
-  }
-
+  if (!data) return null;
   return toRideWithDetails(data);
 }
 
@@ -227,290 +245,329 @@ export async function getUserSignupStatus(rideId: string) {
 
 /**
  * Fetch the user's next confirmed ride signup (for action bar).
+ * Cached per user; invalidated via tagUserRides(userId) or TAG_RIDES.
  */
 export async function getUserNextSignup(userId: string, clubId: string, timezone: string) {
-  const supabase = await createClient();
   const today = todayInTimezone(timezone);
 
-  // Fetch a small batch so we can skip completed same-day rides
-  const { data } = await supabase
-    .from('ride_signups')
-    .select(
-      `
-      id, status,
-      ride:rides!inner(
-        id, title, ride_date, start_time, end_time, status, capacity, distance_km, elevation_m,
-        start_location_name,
-        pace_group:pace_groups(name, sort_order),
-        ride_signups(status),
-        ride_weather_snapshots(*)
-      )
-    `,
-    )
-    .eq('user_id', userId)
-    .eq('status', 'confirmed')
-    .eq('ride.club_id', clubId)
-    .gte('ride.ride_date', today)
-    .neq('ride.status', 'cancelled')
-    .order('ride(ride_date)', { ascending: true })
-    .limit(5);
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
+      const { data } = await supabase
+        .from('ride_signups')
+        .select(
+          `
+          id, status,
+          ride:rides!inner(
+            id, title, ride_date, start_time, end_time, status, capacity, distance_km, elevation_m,
+            start_location_name,
+            pace_group:pace_groups(name, sort_order),
+            ride_signups(status),
+            ride_weather_snapshots(*)
+          )
+        `,
+        )
+        .eq('user_id', userId)
+        .eq('status', 'confirmed')
+        .eq('ride.club_id', clubId)
+        .gte('ride.ride_date', today)
+        .neq('ride.status', 'cancelled')
+        .order('ride(ride_date)', { ascending: true })
+        .limit(5);
 
-  if (!data?.length) return null;
+      if (!data?.length) return null;
 
-  type RideRow = {
-    id: string;
-    title: string;
-    ride_date: string;
-    start_time: string;
-    end_time: string | null;
-    capacity: number | null;
-    distance_km: number | null;
-    elevation_m: number | null;
-    start_location_name: string | null;
-    pace_group: { name: string; sort_order: number } | null;
-    ride_signups: JoinedSignupStatus;
-    ride_weather_snapshots: RideWeatherSnapshot | null;
-  };
+      type RideRow = {
+        id: string;
+        title: string;
+        ride_date: string;
+        start_time: string;
+        end_time: string | null;
+        capacity: number | null;
+        distance_km: number | null;
+        elevation_m: number | null;
+        start_location_name: string | null;
+        pace_group: { name: string; sort_order: number } | null;
+        ride_signups: JoinedSignupStatus;
+        ride_weather_snapshots: RideWeatherSnapshot | null;
+      };
 
-  for (const row of data) {
-    if (!row.ride) continue;
-    const ride = row.ride as unknown as RideRow;
-    if (isRideCompleted(ride.ride_date, ride.start_time, ride.end_time, timezone)) continue;
+      for (const row of data) {
+        if (!row.ride) continue;
+        const ride = row.ride as unknown as RideRow;
+        if (isRideCompleted(ride.ride_date, ride.start_time, ride.end_time, timezone)) continue;
 
-    return {
-      id: ride.id,
-      title: ride.title,
-      ride_date: ride.ride_date,
-      start_time: ride.start_time,
-      end_time: ride.end_time,
-      start_location_name: ride.start_location_name ?? null,
-      pace_group_name: ride.pace_group?.name ?? null,
-      pace_group_sort_order: ride.pace_group?.sort_order ?? null,
-      distance_km: ride.distance_km,
-      elevation_m: ride.elevation_m,
-      signup_count: countActiveSignups(ride.ride_signups ?? []),
-      capacity: ride.capacity,
-      weather: ride.ride_weather_snapshots ?? null,
-    };
-  }
+        return {
+          id: ride.id,
+          title: ride.title,
+          ride_date: ride.ride_date,
+          start_time: ride.start_time,
+          end_time: ride.end_time,
+          start_location_name: ride.start_location_name ?? null,
+          pace_group_name: ride.pace_group?.name ?? null,
+          pace_group_sort_order: ride.pace_group?.sort_order ?? null,
+          distance_km: ride.distance_km,
+          elevation_m: ride.elevation_m,
+          signup_count: countActiveSignups(ride.ride_signups ?? []),
+          capacity: ride.capacity,
+          weather: ride.ride_weather_snapshots ?? null,
+        };
+      }
 
-  return null;
+      return null;
+    },
+    ['user-next-signup', userId, clubId, today],
+    { tags: [tagUserRides(userId), TAG_RIDES], revalidate: 300 },
+  )();
 }
 
 /**
  * Fetch the leader's next upcoming led ride (for action bar).
+ * Cached per user; invalidated via tagUserRides(userId) or TAG_RIDES.
  */
 export async function getLeaderNextLedRide(userId: string, clubId: string, timezone: string) {
-  const supabase = await createClient();
   const today = todayInTimezone(timezone);
 
-  // Fetch a small batch so we can skip completed same-day rides
-  const { data } = await supabase
-    .from('rides')
-    .select(
-      `
-      id, title, ride_date, start_time, end_time, capacity, distance_km, elevation_m,
-      start_location_name,
-      pace_group:pace_groups(name, sort_order),
-      ride_signups(status),
-      ride_weather_snapshots(*)
-    `,
-    )
-    .eq('club_id', clubId)
-    .eq('created_by', userId)
-    .gte('ride_date', today)
-    .neq('status', 'cancelled')
-    .order('ride_date', { ascending: true })
-    .order('start_time', { ascending: true })
-    .limit(5);
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
+      const { data } = await supabase
+        .from('rides')
+        .select(
+          `
+          id, title, ride_date, start_time, end_time, capacity, distance_km, elevation_m,
+          start_location_name,
+          pace_group:pace_groups(name, sort_order),
+          ride_signups(status),
+          ride_weather_snapshots(*)
+        `,
+        )
+        .eq('club_id', clubId)
+        .eq('created_by', userId)
+        .gte('ride_date', today)
+        .neq('status', 'cancelled')
+        .order('ride_date', { ascending: true })
+        .order('start_time', { ascending: true })
+        .limit(5);
 
-  if (!data?.length) return null;
+      if (!data?.length) return null;
 
-  type LedRideRow = ActionBarRideRow & {
-    elevation_m: number | null;
-    capacity: number | null;
-    ride_signups: JoinedSignupStatus;
-  };
+      type LedRideRow = ActionBarRideRow & {
+        elevation_m: number | null;
+        capacity: number | null;
+        ride_signups: JoinedSignupStatus;
+      };
 
-  for (const row of data as unknown as LedRideRow[]) {
-    if (isRideCompleted(row.ride_date, row.start_time, row.end_time, timezone)) continue;
+      for (const row of data as unknown as LedRideRow[]) {
+        if (isRideCompleted(row.ride_date, row.start_time, row.end_time, timezone)) continue;
 
-    return {
-      ...toActionBarResult(row),
-      elevation_m: row.elevation_m,
-      signup_count: countActiveSignups(row.ride_signups ?? []),
-      capacity: row.capacity,
-    };
-  }
+        return {
+          ...toActionBarResult(row),
+          elevation_m: row.elevation_m,
+          signup_count: countActiveSignups(row.ride_signups ?? []),
+          capacity: row.capacity,
+        };
+      }
 
-  return null;
+      return null;
+    },
+    ['leader-next-led', userId, clubId, today],
+    { tags: [tagUserRides(userId), TAG_RIDES], revalidate: 300 },
+  )();
 }
 
 /**
  * Fetch the user's next waitlisted ride (for action bar).
+ * Cached per user; invalidated via tagUserRides(userId) or TAG_RIDES.
  */
 export async function getUserNextWaitlistedRide(userId: string, clubId: string, timezone: string) {
-  const supabase = await createClient();
   const today = todayInTimezone(timezone);
 
-  // Fetch a small batch so we can skip completed same-day rides
-  const { data } = await supabase
-    .from('ride_signups')
-    .select(
-      `
-      id, status, signed_up_at,
-      ride:rides!inner(
-        id, title, ride_date, start_time, end_time, status,
-        distance_km, elevation_m,
-        start_location_name,
-        pace_group:pace_groups(name, sort_order)
-      )
-    `,
-    )
-    .eq('user_id', userId)
-    .eq('status', 'waitlisted')
-    .eq('ride.club_id', clubId)
-    .gte('ride.ride_date', today)
-    .neq('ride.status', 'cancelled')
-    .order('ride(ride_date)', { ascending: true })
-    .limit(5);
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
+      const { data } = await supabase
+        .from('ride_signups')
+        .select(
+          `
+          id, status, signed_up_at,
+          ride:rides!inner(
+            id, title, ride_date, start_time, end_time, status,
+            distance_km, elevation_m,
+            start_location_name,
+            pace_group:pace_groups(name, sort_order)
+          )
+        `,
+        )
+        .eq('user_id', userId)
+        .eq('status', 'waitlisted')
+        .eq('ride.club_id', clubId)
+        .gte('ride.ride_date', today)
+        .neq('ride.status', 'cancelled')
+        .order('ride(ride_date)', { ascending: true })
+        .limit(5);
 
-  if (!data?.length) return null;
+      if (!data?.length) return null;
 
-  type RideRow = {
-    id: string;
-    title: string;
-    ride_date: string;
-    start_time: string;
-    end_time: string | null;
-    distance_km: number | null;
-    elevation_m: number | null;
-    start_location_name: string | null;
-    pace_group: { name: string; sort_order: number } | null;
-  };
+      type RideRow = {
+        id: string;
+        title: string;
+        ride_date: string;
+        start_time: string;
+        end_time: string | null;
+        distance_km: number | null;
+        elevation_m: number | null;
+        start_location_name: string | null;
+        pace_group: { name: string; sort_order: number } | null;
+      };
 
-  for (const row of data) {
-    if (!row.ride) continue;
-    const ride = row.ride as unknown as RideRow;
-    if (isRideCompleted(ride.ride_date, ride.start_time, ride.end_time, timezone)) continue;
+      for (const row of data) {
+        if (!row.ride) continue;
+        const ride = row.ride as unknown as RideRow;
+        if (isRideCompleted(ride.ride_date, ride.start_time, ride.end_time, timezone)) continue;
 
-    // Derive waitlist position from signed_up_at order
-    const { count } = await supabase
-      .from('ride_signups')
-      .select('*', { count: 'exact', head: true })
-      .eq('ride_id', ride.id)
-      .eq('status', 'waitlisted')
-      .lte('signed_up_at', row.signed_up_at);
+        // Derive waitlist position from signed_up_at order
+        const { count } = await supabase
+          .from('ride_signups')
+          .select('*', { count: 'exact', head: true })
+          .eq('ride_id', ride.id)
+          .eq('status', 'waitlisted')
+          .lte('signed_up_at', row.signed_up_at);
 
-    return {
-      id: ride.id,
-      title: ride.title,
-      ride_date: ride.ride_date,
-      start_time: ride.start_time,
-      end_time: ride.end_time,
-      distance_km: ride.distance_km,
-      elevation_m: ride.elevation_m,
-      start_location_name: ride.start_location_name ?? null,
-      pace_group_name: ride.pace_group?.name ?? null,
-      pace_group_sort_order: ride.pace_group?.sort_order ?? null,
-      waitlist_position: count ?? 1,
-    };
-  }
+        return {
+          id: ride.id,
+          title: ride.title,
+          ride_date: ride.ride_date,
+          start_time: ride.start_time,
+          end_time: ride.end_time,
+          distance_km: ride.distance_km,
+          elevation_m: ride.elevation_m,
+          start_location_name: ride.start_location_name ?? null,
+          pace_group_name: ride.pace_group?.name ?? null,
+          pace_group_sort_order: ride.pace_group?.sort_order ?? null,
+          waitlist_position: count ?? 1,
+        };
+      }
 
-  return null;
+      return null;
+    },
+    ['user-next-waitlisted', userId, clubId, today],
+    { tags: [tagUserRides(userId), TAG_RIDES], revalidate: 300 },
+  )();
 }
 
 /**
  * Count rides this week without a leader (created_by IS NULL).
+ * Cached per club; invalidated via TAG_RIDES.
  */
 export async function getRidesNeedingLeaderCount(clubId: string, timezone?: string) {
-  const supabase = await createClient();
   const todayStr = timezone ? todayInTimezone(timezone) : new Date().toISOString().split('T')[0];
-  const weekFromNow = new Date(todayStr + 'T00:00:00');
-  weekFromNow.setDate(weekFromNow.getDate() + 7);
-  const weekStr = weekFromNow.toISOString().split('T')[0];
 
-  const { count } = await supabase
-    .from('rides')
-    .select('*', { count: 'exact', head: true })
-    .eq('club_id', clubId)
-    .is('created_by', null)
-    .gte('ride_date', todayStr)
-    .lte('ride_date', weekStr)
-    .neq('status', 'cancelled');
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
+      const weekFromNow = new Date(todayStr + 'T00:00:00');
+      weekFromNow.setDate(weekFromNow.getDate() + 7);
+      const weekStr = weekFromNow.toISOString().split('T')[0];
 
-  return count ?? 0;
+      const { count } = await supabase
+        .from('rides')
+        .select('*', { count: 'exact', head: true })
+        .eq('club_id', clubId)
+        .is('created_by', null)
+        .gte('ride_date', todayStr)
+        .lte('ride_date', weekStr)
+        .neq('status', 'cancelled');
+
+      return count ?? 0;
+    },
+    ['rides-needing-leader', clubId, todayStr],
+    { tags: [TAG_RIDES], revalidate: 300 },
+  )();
 }
 
 /**
  * Get the leader's next led ride that's in weather_watch status (for action bar stub).
+ * Cached per user; invalidated via tagUserRides(userId) or TAG_RIDES.
  */
 export async function getLeaderWeatherWatchRide(userId: string, clubId: string, timezone: string) {
-  const supabase = await createClient();
   const today = todayInTimezone(timezone);
 
-  // Fetch a small batch so we can skip completed same-day rides
-  const { data } = await supabase
-    .from('rides')
-    .select(
-      `
-      id, title, ride_date, start_time, end_time, distance_km,
-      start_location_name,
-      pace_group:pace_groups(name, sort_order),
-      ride_weather_snapshots(*)
-    `,
-    )
-    .eq('club_id', clubId)
-    .eq('created_by', userId)
-    .eq('status', 'weather_watch')
-    .gte('ride_date', today)
-    .order('ride_date', { ascending: true })
-    .limit(5);
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
+      const { data } = await supabase
+        .from('rides')
+        .select(
+          `
+          id, title, ride_date, start_time, end_time, distance_km,
+          start_location_name,
+          pace_group:pace_groups(name, sort_order),
+          ride_weather_snapshots(*)
+        `,
+        )
+        .eq('club_id', clubId)
+        .eq('created_by', userId)
+        .eq('status', 'weather_watch')
+        .gte('ride_date', today)
+        .order('ride_date', { ascending: true })
+        .limit(5);
 
-  if (!data?.length) return null;
+      if (!data?.length) return null;
 
-  for (const row of data as unknown as ActionBarRideRow[]) {
-    if (isRideCompleted(row.ride_date, row.start_time, row.end_time, timezone)) continue;
-    return toActionBarResult(row);
-  }
+      for (const row of data as unknown as ActionBarRideRow[]) {
+        if (isRideCompleted(row.ride_date, row.start_time, row.end_time, timezone)) continue;
+        return toActionBarResult(row);
+      }
 
-  return null;
+      return null;
+    },
+    ['leader-weather-watch', userId, clubId, today],
+    { tags: [tagUserRides(userId), TAG_RIDES], revalidate: 300 },
+  )();
 }
 
 /**
  * Fetch the single next upcoming non-cancelled ride for a club.
  * Lightweight query for the homepage nudge — minimal fields, no joins beyond pace group.
+ * Cached per club; excludeIds filtering happens post-cache.
  */
 export async function getNextAvailableRide(
   clubId: string,
   timezone: string,
   excludeIds: string[] = [],
 ) {
-  const supabase = await createClient();
   const today = todayInTimezone(timezone);
 
-  // Fetch a small batch so we can skip completed same-day rides + user's personal rides
-  const { data } = await supabase
-    .from('rides')
-    .select(
-      `
-      id, title, ride_date, start_time, end_time, distance_km,
-      start_location_name,
-      pace_group:pace_groups(name, sort_order),
-      ride_weather_snapshots(*)
-    `,
-    )
-    .eq('club_id', clubId)
-    .gte('ride_date', today)
-    .neq('status', 'cancelled')
-    .order('ride_date', { ascending: true })
-    .order('start_time', { ascending: true })
-    .limit(5);
+  // Cache the small candidate batch; dedup filtering is client-side
+  const candidates = await unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
+      const { data } = await supabase
+        .from('rides')
+        .select(
+          `
+          id, title, ride_date, start_time, end_time, distance_km,
+          start_location_name,
+          pace_group:pace_groups(name, sort_order),
+          ride_weather_snapshots(*)
+        `,
+        )
+        .eq('club_id', clubId)
+        .gte('ride_date', today)
+        .neq('status', 'cancelled')
+        .order('ride_date', { ascending: true })
+        .order('start_time', { ascending: true })
+        .limit(10);
 
-  if (!data?.length) return null;
+      return (data ?? []) as unknown as ActionBarRideRow[];
+    },
+    ['next-available-ride', clubId, today],
+    { tags: [TAG_RIDES], revalidate: 300 },
+  )();
 
   const skipIds = new Set(excludeIds);
-  for (const row of data as unknown as ActionBarRideRow[]) {
+  for (const row of candidates) {
     if (isRideCompleted(row.ride_date, row.start_time, row.end_time, timezone)) continue;
     if (skipIds.has(row.id)) continue;
     return toActionBarResult(row);
@@ -542,15 +599,22 @@ export const getUserClubMembership = cache(async () => {
 
 /**
  * Fetch pace groups for a club (for ride creation form).
+ * Cached per club; invalidated via tagPaceGroups(clubId).
  */
 export async function getPaceGroups(clubId: string) {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from('pace_groups')
-    .select('id, name, sort_order')
-    .eq('club_id', clubId)
-    .order('sort_order');
-  return data ?? [];
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
+      const { data } = await supabase
+        .from('pace_groups')
+        .select('id, name, sort_order')
+        .eq('club_id', clubId)
+        .order('sort_order');
+      return data ?? [];
+    },
+    ['pace-groups', clubId],
+    { tags: [tagPaceGroups(clubId)], revalidate: 600 },
+  )();
 }
 
 /**
@@ -617,46 +681,52 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
 
 /**
  * Fetch signups for a ride (for the signup roster).
+ * Cached per ride; invalidated via tagRideSignups(rideId).
  */
 export async function getRideSignups(rideId: string) {
-  const supabase = await createClient();
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
 
-  const { data, error } = await supabase
-    .from('ride_signups')
-    .select(
-      `
-      id, status, signed_up_at, waitlist_position,
-      user:users!inner(id, full_name, avatar_url)
-    `,
-    )
-    .eq('ride_id', rideId)
-    .neq('status', 'cancelled')
-    .order('signed_up_at', { ascending: true });
+      const { data, error } = await supabase
+        .from('ride_signups')
+        .select(
+          `
+          id, status, signed_up_at, waitlist_position,
+          user:users!inner(id, full_name, avatar_url)
+        `,
+        )
+        .eq('ride_id', rideId)
+        .neq('status', 'cancelled')
+        .order('signed_up_at', { ascending: true });
 
-  if (error?.message) {
-    console.error('Error fetching ride signups:', error.message, error.code, error.details);
-    return [];
-  }
+      if (error?.message) {
+        console.error('Error fetching ride signups:', error.message, error.code, error.details);
+        return [];
+      }
 
-  // Derive waitlist positions from signed_up_at order (already sorted ascending)
-  let waitlistIndex = 0;
-  return (data ?? []).map((signup) => {
-    const user = signup.user as unknown as {
-      id: string;
-      full_name: string;
-      avatar_url: string | null;
-    };
-    const isWaitlisted = signup.status === 'waitlisted';
-    return {
-      id: signup.id,
-      status: signup.status,
-      signed_up_at: signup.signed_up_at,
-      waitlist_position: isWaitlisted ? ++waitlistIndex : null,
-      user_id: user.id,
-      user_name: user.full_name,
-      avatar_url: user.avatar_url,
-    };
-  });
+      let waitlistIndex = 0;
+      return (data ?? []).map((signup) => {
+        const user = signup.user as unknown as {
+          id: string;
+          full_name: string;
+          avatar_url: string | null;
+        };
+        const isWaitlisted = signup.status === 'waitlisted';
+        return {
+          id: signup.id,
+          status: signup.status,
+          signed_up_at: signup.signed_up_at,
+          waitlist_position: isWaitlisted ? ++waitlistIndex : null,
+          user_id: user.id,
+          user_name: user.full_name,
+          avatar_url: user.avatar_url,
+        };
+      });
+    },
+    ['ride-signups', rideId],
+    { tags: [tagRideSignups(rideId), tagRide(rideId)], revalidate: 300 },
+  )();
 }
 
 export type UserRideSignup = {

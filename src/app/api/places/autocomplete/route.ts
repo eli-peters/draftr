@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
       },
+      signal: AbortSignal.timeout(8000),
       body: JSON.stringify({
         input,
         includedPrimaryTypes: ['establishment', 'geocode'],

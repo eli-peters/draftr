@@ -1,6 +1,11 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import {
+  invalidateRideSignup,
+  invalidateRideMutation,
+  invalidateRideDetail,
+  invalidateNotifications,
+} from '@/lib/cache-tags';
 import { createClient, getUser } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { appContent } from '@/content/app';
@@ -164,11 +169,8 @@ export async function signUpForRide(rideId: string) {
     }
   }
 
-  revalidatePath(`/rides/${rideId}`);
-  revalidatePath('/rides');
-  revalidatePath('/my-rides');
-  revalidatePath('/notifications');
-  revalidatePath('/');
+  invalidateRideSignup(rideId, user.id);
+  if (isFull) invalidateNotifications(ride.created_by);
   return { success: true, status: isFull ? 'waitlisted' : 'confirmed' };
 }
 
@@ -186,7 +188,9 @@ export async function cancelSignUp(rideId: string) {
   // Fetch ride for timing gate + creator check
   const { data: ride } = await supabase
     .from('rides')
-    .select('ride_date, start_time, end_time, status, capacity, created_by, club:clubs(timezone)')
+    .select(
+      'title, ride_date, start_time, end_time, status, capacity, created_by, club:clubs(timezone)',
+    )
     .eq('id', rideId)
     .single();
 
@@ -209,19 +213,16 @@ export async function cancelSignUp(rideId: string) {
 
     let hasActiveCoLeader = false;
     if (coLeaders && coLeaders.length > 0) {
-      for (const cl of coLeaders) {
-        const { data: clSignup } = await supabase
-          .from('ride_signups')
-          .select('status')
-          .eq('ride_id', rideId)
-          .eq('user_id', cl.user_id)
-          .single();
+      const coLeaderIds = coLeaders.map((cl) => cl.user_id);
+      const { data: coLeaderSignups } = await supabase
+        .from('ride_signups')
+        .select('user_id, status')
+        .eq('ride_id', rideId)
+        .in('user_id', coLeaderIds);
 
-        if (clSignup?.status === 'confirmed' || clSignup?.status === 'checked_in') {
-          hasActiveCoLeader = true;
-          break;
-        }
-      }
+      hasActiveCoLeader =
+        coLeaderSignups?.some((s) => s.status === 'confirmed' || s.status === 'checked_in') ??
+        false;
     }
 
     if (!hasActiveCoLeader) {
@@ -267,22 +268,23 @@ export async function cancelSignUp(rideId: string) {
       .eq('ride_id', rideId)
       .order('added_at', { ascending: true });
 
-    // Filter to co-leaders with active signups
+    // Batch-fetch signups for all co-leaders, then find the first with an active status
     let firstCoLeader: { user_id: string } | null = null;
     if (activeCoLeaders && activeCoLeaders.length > 0) {
-      for (const cl of activeCoLeaders) {
-        const { data: clSignup } = await supabase
-          .from('ride_signups')
-          .select('status')
-          .eq('ride_id', rideId)
-          .eq('user_id', cl.user_id)
-          .single();
+      const coLeaderIds = activeCoLeaders.map((cl) => cl.user_id);
+      const { data: coLeaderSignups } = await supabase
+        .from('ride_signups')
+        .select('user_id, status')
+        .eq('ride_id', rideId)
+        .in('user_id', coLeaderIds);
 
-        if (clSignup?.status === 'confirmed' || clSignup?.status === 'checked_in') {
-          firstCoLeader = cl;
-          break;
-        }
-      }
+      const activeSet = new Set(
+        coLeaderSignups
+          ?.filter((s) => s.status === 'confirmed' || s.status === 'checked_in')
+          .map((s) => s.user_id),
+      );
+
+      firstCoLeader = activeCoLeaders.find((cl) => activeSet.has(cl.user_id)) ?? null;
     }
 
     if (firstCoLeader) {
@@ -298,23 +300,19 @@ export async function cancelSignUp(rideId: string) {
         .eq('ride_id', rideId)
         .eq('user_id', firstCoLeader.user_id);
 
-      // Notify the promoted leader
-      const { data: rideInfo } = await supabase
-        .from('rides')
-        .select('title')
-        .eq('id', rideId)
-        .single();
-
-      if (rideInfo) {
+      // Notify the promoted leader (ride.title already fetched above)
+      if (ride?.title) {
         await admin.from('notifications').insert({
           user_id: firstCoLeader.user_id,
           type: 'leader_promoted',
-          title: notif.leaderPromoted.title(rideInfo.title),
+          title: notif.leaderPromoted.title(ride.title),
           body: notif.leaderPromoted.body,
           ride_id: rideId,
           channel: 'push',
         });
       }
+
+      invalidateNotifications(firstCoLeader.user_id);
     }
   }
 
@@ -357,14 +355,12 @@ export async function cancelSignUp(rideId: string) {
           console.error('Failed to create waitlist promotion notification:', notifError.message);
         }
       }
+
+      invalidateNotifications(nextWaitlisted.user_id);
     }
   }
 
-  revalidatePath(`/rides/${rideId}`);
-  revalidatePath('/rides');
-  revalidatePath('/my-rides');
-  revalidatePath('/notifications');
-  revalidatePath('/');
+  invalidateRideSignup(rideId, user.id);
   return { success: true };
 }
 
@@ -484,11 +480,8 @@ export async function removeRiderFromRide(rideId: string, targetUserId: string) 
     });
   }
 
-  revalidatePath(`/rides/${rideId}`);
-  revalidatePath('/rides');
-  revalidatePath('/my-rides');
-  revalidatePath('/notifications');
-  revalidatePath('/');
+  invalidateRideSignup(rideId, targetUserId);
+  invalidateNotifications(targetUserId);
   return { success: true };
 }
 
@@ -717,10 +710,7 @@ export async function createRide(data: CreateRideData) {
   // Fetch weather for the new ride (errors swallowed internally by syncWeatherForRide)
   await syncWeatherForRide(ride.id);
 
-  revalidatePath('/rides');
-  revalidatePath('/manage');
-  revalidatePath('/notifications');
-  revalidatePath('/');
+  invalidateRideMutation(ride.id, data.club_id);
   return { success: true, rideId: ride.id };
 }
 
@@ -864,11 +854,7 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
   // Re-sync weather in case date/time/location changed (errors swallowed internally)
   await syncWeatherForRide(rideId);
 
-  revalidatePath(`/rides/${rideId}`);
-  revalidatePath('/rides');
-  revalidatePath('/manage');
-  revalidatePath('/notifications');
-  revalidatePath('/');
+  invalidateRideMutation(rideId);
   return { success: true };
 }
 
@@ -942,9 +928,7 @@ export async function updateRecurringSeries(rideId: string, data: UpdateRideData
     .gte('ride_date', today)
     .eq('status', 'scheduled');
 
-  revalidatePath('/rides');
-  revalidatePath('/manage');
-  revalidatePath('/');
+  invalidateRideMutation(rideId);
   return { success: true };
 }
 
@@ -1003,12 +987,7 @@ export async function cancelRide(rideId: string, reason: string) {
     .eq('ride_id', rideId)
     .in('status', ['confirmed', 'waitlisted']);
 
-  revalidatePath(`/rides/${rideId}`);
-  revalidatePath('/rides');
-  revalidatePath('/manage');
-  revalidatePath('/my-rides');
-  revalidatePath('/notifications');
-  revalidatePath('/');
+  invalidateRideMutation(rideId);
   return { success: true };
 }
 
@@ -1084,7 +1063,7 @@ export async function addComment(rideId: string, body: string) {
 
   if (error) return { error: error.message };
 
-  revalidatePath(`/rides/${rideId}`);
+  invalidateRideDetail(rideId);
   return { success: true };
 }
 
@@ -1110,7 +1089,7 @@ export async function editComment(commentId: string, body: string) {
 
   if (error) return { error: error.message };
 
-  revalidatePath(`/rides/${permission.comment.ride_id}`);
+  invalidateRideDetail(permission.comment.ride_id);
   return { success: true };
 }
 
@@ -1130,7 +1109,7 @@ export async function deleteComment(commentId: string) {
 
   if (error) return { error: error.message };
 
-  revalidatePath(`/rides/${permission.comment.ride_id}`);
+  invalidateRideDetail(permission.comment.ride_id);
   return { success: true };
 }
 
@@ -1165,7 +1144,7 @@ export async function toggleRideReaction(rideId: string, reaction: string) {
     if (error) return { error: error.message };
   }
 
-  revalidatePath(`/rides/${rideId}`);
+  invalidateRideDetail(rideId);
   return { success: true, added: !existing };
 }
 
@@ -1203,7 +1182,7 @@ export async function toggleCommentReaction(commentId: string, reaction: string)
     .eq('id', commentId)
     .single();
 
-  if (comment) revalidatePath(`/rides/${comment.ride_id}`);
+  if (comment) invalidateRideDetail(comment.ride_id);
   return { success: true, added: !existing };
 }
 
@@ -1253,7 +1232,7 @@ export async function addCoLeader(rideId: string, userId: string) {
     { onConflict: 'ride_id,user_id' },
   );
 
-  revalidatePath('/');
+  invalidateRideDetail(rideId);
   return { success: true };
 }
 
@@ -1294,7 +1273,7 @@ export async function removeCoLeader(rideId: string, userId: string) {
     .eq('ride_id', rideId)
     .eq('user_id', userId);
 
-  revalidatePath('/');
+  invalidateRideDetail(rideId);
   return { success: true };
 }
 

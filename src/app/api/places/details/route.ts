@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
         'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
         'X-Goog-FieldMask': 'displayName,formattedAddress,location',
       },
+      signal: AbortSignal.timeout(8000),
     });
     const data = await res.json();
 

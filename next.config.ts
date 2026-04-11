@@ -5,6 +5,16 @@ const nextConfig: NextConfig = {
   // Without this, Next.js blocks cross-origin server action POSTs as CSRF,
   // which silently fails form submissions like sign-in.
   allowedDevOrigins: ['10.88.111.40', '*.local'],
+
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

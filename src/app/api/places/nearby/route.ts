@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
         'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
         'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location',
       },
+      signal: AbortSignal.timeout(8000),
       body: JSON.stringify({
         locationRestriction: {
           circle: {

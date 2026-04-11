@@ -28,7 +28,25 @@ export function CurrentWeather() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!navigator.geolocation) {
+    const CACHE_KEY = 'draftr-weather';
+    const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+
+    // Check sessionStorage for cached weather response
+    try {
+      const cached = sessionStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { data, ts } = JSON.parse(cached) as { data: CurrentWeatherData; ts: number };
+        if (Date.now() - ts < CACHE_TTL) {
+          setWeather(data);
+          setLoading(false);
+          return;
+        }
+      }
+    } catch {
+      // Ignore parse errors
+    }
+
+    if (!navigator.geolocation || !window.isSecureContext) {
       setLoading(false);
       return;
     }
@@ -41,6 +59,11 @@ export function CurrentWeather() {
           if (res.ok) {
             const data = await res.json();
             setWeather(data);
+            try {
+              sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+            } catch {
+              // Storage full — non-critical
+            }
           }
         } catch {
           // Silently fail — weather is non-critical

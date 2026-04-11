@@ -1,8 +1,8 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { revalidatePath } from 'next/cache';
 import { getUser } from '@/lib/supabase/server';
+import { invalidateProfile } from '@/lib/cache-tags';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { integrations, OAUTH_STATE_COOKIE, OAUTH_STATE_MAX_AGE } from '@/config/integrations';
 import { deauthorize as stravaDeauthorize } from '@/lib/strava/api';
@@ -91,6 +91,6 @@ export async function disconnectService(service: IntegrationService) {
     return { error: content.disconnectError(integrations[service]?.displayName ?? service) };
   }
 
-  revalidatePath('/profile');
+  invalidateProfile(user.id);
   return { success: true };
 }

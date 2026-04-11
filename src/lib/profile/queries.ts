@@ -1,4 +1,7 @@
+import { unstable_cache } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { tagProfile } from '@/lib/cache-tags';
 
 export interface UserProfile {
   id: string;
@@ -67,65 +70,69 @@ const MS_PER_DAY = 86_400_000;
 /**
  * Fetch ride stats for the user's profile.
  * Distance/elevation are Phase 3 (require ride completion tracking).
+ * Cached per user; invalidated via tagProfile(userId).
  */
 export async function getUserProfileStats(userId: string): Promise<ProfileStats> {
-  const supabase = await createClient();
-
-  // Total rides (confirmed or checked_in, past dates only)
   const today = new Date().toISOString().split('T')[0];
 
-  const { count: totalRides, error: totalError } = await supabase
-    .from('ride_signups')
-    .select('*, ride:rides!inner(ride_date)', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .in('status', ['confirmed', 'checked_in'])
-    .lt('ride.ride_date', today);
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
 
-  if (totalError?.message) {
-    console.error('[profile] Error fetching total rides:', totalError.message);
-  }
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      const monthStartStr = monthStart.toISOString().split('T')[0];
 
-  // Rides this month
-  const monthStart = new Date();
-  monthStart.setDate(1);
-  const monthStartStr = monthStart.toISOString().split('T')[0];
+      const lastMonthEnd = new Date(monthStart);
+      lastMonthEnd.setDate(lastMonthEnd.getDate() - 1);
+      const lastMonthStart = new Date(lastMonthEnd.getFullYear(), lastMonthEnd.getMonth(), 1);
+      const lastMonthStartStr = lastMonthStart.toISOString().split('T')[0];
+      const lastMonthEndStr = new Date(lastMonthEnd.getTime() + MS_PER_DAY)
+        .toISOString()
+        .split('T')[0];
 
-  const { count: ridesThisMonth, error: thisMonthError } = await supabase
-    .from('ride_signups')
-    .select('*, ride:rides!inner(ride_date)', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .in('status', ['confirmed', 'checked_in'])
-    .gte('ride.ride_date', monthStartStr)
-    .lt('ride.ride_date', today);
+      const [totalResult, thisMonthResult, lastMonthResult] = await Promise.all([
+        supabase
+          .from('ride_signups')
+          .select('*, ride:rides!inner(ride_date)', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .in('status', ['confirmed', 'checked_in'])
+          .lt('ride.ride_date', today),
+        supabase
+          .from('ride_signups')
+          .select('*, ride:rides!inner(ride_date)', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .in('status', ['confirmed', 'checked_in'])
+          .gte('ride.ride_date', monthStartStr)
+          .lt('ride.ride_date', today),
+        supabase
+          .from('ride_signups')
+          .select('*, ride:rides!inner(ride_date)', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .in('status', ['confirmed', 'checked_in'])
+          .gte('ride.ride_date', lastMonthStartStr)
+          .lt('ride.ride_date', lastMonthEndStr),
+      ]);
 
-  if (thisMonthError?.message) {
-    console.error('[profile] Error fetching this month rides:', thisMonthError.message);
-  }
+      if (totalResult.error?.message) {
+        console.error('[profile] Error fetching total rides:', totalResult.error.message);
+      }
+      if (thisMonthResult.error?.message) {
+        console.error('[profile] Error fetching this month rides:', thisMonthResult.error.message);
+      }
+      if (lastMonthResult.error?.message) {
+        console.error('[profile] Error fetching last month rides:', lastMonthResult.error.message);
+      }
 
-  // Rides last month (for delta badge)
-  const lastMonthEnd = new Date(monthStart);
-  lastMonthEnd.setDate(lastMonthEnd.getDate() - 1);
-  const lastMonthStart = new Date(lastMonthEnd.getFullYear(), lastMonthEnd.getMonth(), 1);
-  const lastMonthStartStr = lastMonthStart.toISOString().split('T')[0];
-  const lastMonthEndStr = new Date(lastMonthEnd.getTime() + MS_PER_DAY).toISOString().split('T')[0];
-
-  const { count: ridesLastMonth, error: lastMonthError } = await supabase
-    .from('ride_signups')
-    .select('*, ride:rides!inner(ride_date)', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .in('status', ['confirmed', 'checked_in'])
-    .gte('ride.ride_date', lastMonthStartStr)
-    .lt('ride.ride_date', lastMonthEndStr);
-
-  if (lastMonthError?.message) {
-    console.error('[profile] Error fetching last month rides:', lastMonthError.message);
-  }
-
-  return {
-    totalRides: totalRides ?? 0,
-    ridesThisMonth: ridesThisMonth ?? 0,
-    ridesLastMonth: ridesLastMonth ?? 0,
-  };
+      return {
+        totalRides: totalResult.count ?? 0,
+        ridesThisMonth: thisMonthResult.count ?? 0,
+        ridesLastMonth: lastMonthResult.count ?? 0,
+      };
+    },
+    ['user-profile-stats', userId, today],
+    { tags: [tagProfile(userId)], revalidate: 300 },
+  )();
 }
 
 export interface RecentRide {

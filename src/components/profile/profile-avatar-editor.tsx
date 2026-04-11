@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useTransition, useState } from 'react';
+import { useRef, useTransition, useState, useEffect } from 'react';
 import { Camera } from '@phosphor-icons/react/dist/ssr';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -36,6 +36,15 @@ export function ProfileAvatarEditor({ avatarUrl, fullName, initials }: ProfileAv
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
+  // Revoke blob URL on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (avatarPreview?.startsWith('blob:')) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+    };
+  }, [avatarPreview]);
+
   function handleConfirmRemove() {
     setRemoveOpen(false);
     startUpload(async () => {
@@ -52,6 +61,10 @@ export function ProfileAvatarEditor({ avatarUrl, fullName, initials }: ProfileAv
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Revoke previous blob URL to prevent memory leak
+    if (avatarPreview?.startsWith('blob:')) {
+      URL.revokeObjectURL(avatarPreview);
+    }
     const previewUrl = URL.createObjectURL(file);
     setAvatarPreview(previewUrl);
     setAvatarError(null);

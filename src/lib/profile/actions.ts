@@ -1,7 +1,7 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { createClient, getUser } from '@/lib/supabase/server';
+import { invalidateProfile } from '@/lib/cache-tags';
 import { appContent } from '@/content/app';
 import { toE164 } from '@/lib/phone';
 import type { UserPreferences } from '@/types/user-preferences';
@@ -70,8 +70,7 @@ export async function updateProfile(data: UpdateProfileData) {
 
   if (error) return { error: error.message };
 
-  revalidatePath('/profile');
-  revalidatePath('/');
+  invalidateProfile(user.id);
   return { success: true };
 }
 
@@ -107,7 +106,7 @@ export async function updateUserPreferences(prefs: Partial<UserPreferences>) {
 
   if (error) return { error: error.message };
 
-  revalidatePath('/settings');
+  invalidateProfile(user.id);
   return { success: true };
 }
 
@@ -149,7 +148,7 @@ export async function updateNotificationChannel(channel: NotificationChannel, en
 
   if (error) return { error: error.message };
 
-  revalidatePath('/settings');
+  invalidateProfile(user.id);
   return { success: true };
 }
 
@@ -186,8 +185,7 @@ export async function uploadAvatar(formData: FormData) {
 
   if (updateError) return { error: updateError.message };
 
-  revalidatePath('/profile');
-  revalidatePath('/');
+  invalidateProfile(user.id);
   return { success: true, avatarUrl };
 }
 
@@ -219,7 +217,6 @@ export async function removeAvatar() {
 
   if (updateError) return { error: updateError.message };
 
-  revalidatePath('/profile');
-  revalidatePath('/');
+  invalidateProfile(user.id);
   return { success: true };
 }

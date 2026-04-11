@@ -54,7 +54,7 @@ const segmentedControlItemVariants = cva(
   {
     variants: {
       size: {
-        default: 'h-8 px-4 text-sm',
+        default: 'h-8 px-8 text-sm',
         compact: 'h-7 px-4 text-xs',
       },
       colorScheme: {

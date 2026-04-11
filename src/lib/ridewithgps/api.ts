@@ -48,6 +48,7 @@ export async function exchangeCodeForTokens(
     const res = await fetch(config.tokenUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(8000),
       body: JSON.stringify({
         grant_type: 'authorization_code',
         code,
@@ -79,6 +80,7 @@ export async function deauthorize(accessToken: string): Promise<void> {
     await fetch(config.deauthorizeUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(8000),
       body: JSON.stringify({
         client_id: process.env.RWGPS_CLIENT_ID,
         client_secret: process.env.RWGPS_CLIENT_SECRET,
@@ -159,7 +161,10 @@ export async function getUserRoutes(
 ): Promise<RwgpsRoute[] | null> {
   try {
     const url = apiUrl('/routes.json', { page, page_size: pageSize });
-    const res = await fetch(url, { headers: authHeaders(accessToken) });
+    const res = await fetch(url, {
+      headers: authHeaders(accessToken),
+      signal: AbortSignal.timeout(8000),
+    });
 
     if (!res.ok) {
       console.error('[rwgps] Get routes error:', res.status, await res.text());
@@ -186,7 +191,10 @@ export async function getUserTrips(
 ): Promise<RwgpsTrip[] | null> {
   try {
     const url = apiUrl('/trips.json', { page, page_size: pageSize });
-    const res = await fetch(url, { headers: authHeaders(accessToken) });
+    const res = await fetch(url, {
+      headers: authHeaders(accessToken),
+      signal: AbortSignal.timeout(8000),
+    });
 
     if (!res.ok) {
       console.error('[rwgps] Get trips error:', res.status, await res.text());
@@ -211,7 +219,10 @@ export async function getRouteById(
 ): Promise<RwgpsRoute | null> {
   try {
     const url = apiUrl(`/routes/${routeId}.json`);
-    const res = await fetch(url, { headers: authHeaders(accessToken) });
+    const res = await fetch(url, {
+      headers: authHeaders(accessToken),
+      signal: AbortSignal.timeout(8000),
+    });
 
     if (!res.ok) {
       console.error('[rwgps] Get route by ID error:', res.status, await res.text());
@@ -233,7 +244,10 @@ export async function getRouteById(
 export async function getTripById(accessToken: string, tripId: string): Promise<RwgpsTrip | null> {
   try {
     const url = apiUrl(`/trips/${tripId}.json`);
-    const res = await fetch(url, { headers: authHeaders(accessToken) });
+    const res = await fetch(url, {
+      headers: authHeaders(accessToken),
+      signal: AbortSignal.timeout(8000),
+    });
 
     if (!res.ok) {
       console.error('[rwgps] Get trip by ID error:', res.status, await res.text());
@@ -258,7 +272,10 @@ export async function getRoutePolyline(
 ): Promise<string | null> {
   try {
     const url = apiUrl(`/routes/${routeId}/polyline.json`);
-    const res = await fetch(url, { headers: authHeaders(accessToken) });
+    const res = await fetch(url, {
+      headers: authHeaders(accessToken),
+      signal: AbortSignal.timeout(8000),
+    });
 
     if (!res.ok) {
       console.error('[rwgps] Get route polyline error:', res.status, await res.text());
@@ -283,7 +300,10 @@ export async function getTripPolyline(
 ): Promise<string | null> {
   try {
     const url = apiUrl(`/trips/${tripId}/polyline.json`);
-    const res = await fetch(url, { headers: authHeaders(accessToken) });
+    const res = await fetch(url, {
+      headers: authHeaders(accessToken),
+      signal: AbortSignal.timeout(8000),
+    });
 
     if (!res.ok) {
       console.error('[rwgps] Get trip polyline error:', res.status, await res.text());
@@ -304,7 +324,10 @@ export async function getTripPolyline(
  */
 export async function getCurrentUser(accessToken: string): Promise<RwgpsUser | null> {
   try {
-    const res = await fetch(apiUrl('/users/current'), { headers: authHeaders(accessToken) });
+    const res = await fetch(apiUrl('/users/current'), {
+      headers: authHeaders(accessToken),
+      signal: AbortSignal.timeout(8000),
+    });
 
     if (!res.ok) {
       console.error('[rwgps] Get current user error:', res.status, await res.text());

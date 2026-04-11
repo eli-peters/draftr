@@ -1,7 +1,13 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidateTag } from 'next/cache';
 import { createClient, getUser } from '@/lib/supabase/server';
+import {
+  invalidateAnnouncements,
+  invalidateManage,
+  invalidatePaceGroups,
+  TAG_RIDES,
+} from '@/lib/cache-tags';
 import { appContent } from '@/content/app';
 import type { AnnouncementType, MemberRole, MemberStatus } from '@/types/database';
 import { parseLocalDate } from '@/config/formatting';
@@ -53,7 +59,7 @@ export async function updateMemberRole(clubId: string, userId: string, newRole: 
 
   if (error) return { error: error.message };
 
-  revalidatePath('/manage');
+  invalidateManage(clubId, userId);
   return { success: true };
 }
 
@@ -76,7 +82,7 @@ export async function deactivateMember(clubId: string, userId: string) {
 
   if (error) return { error: error.message };
 
-  revalidatePath('/manage');
+  invalidateManage(clubId, userId);
   return { success: true };
 }
 
@@ -96,7 +102,7 @@ export async function reactivateMember(clubId: string, userId: string) {
 
   if (error) return { error: error.message };
 
-  revalidatePath('/manage');
+  invalidateManage(clubId, userId);
   return { success: true };
 }
 
@@ -170,9 +176,8 @@ export async function createAnnouncement(
     }
   }
 
-  revalidatePath('/manage');
-  revalidatePath('/notifications');
-  revalidatePath('/', 'layout');
+  invalidateAnnouncements(clubId);
+  invalidateManage(clubId);
   return { success: true, id: announcement?.id };
 }
 
@@ -193,6 +198,12 @@ export async function updateAnnouncement(
   const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
+  const { data: existing } = await supabase
+    .from('announcements')
+    .select('club_id')
+    .eq('id', announcementId)
+    .single();
+
   const { error } = await supabase
     .from('announcements')
     .update({
@@ -206,7 +217,10 @@ export async function updateAnnouncement(
 
   if (error) return { error: error.message };
 
-  revalidatePath('/manage');
+  if (existing?.club_id) {
+    invalidateAnnouncements(existing.club_id);
+    invalidateManage(existing.club_id);
+  }
   return { success: true };
 }
 
@@ -218,11 +232,20 @@ export async function deleteAnnouncement(announcementId: string) {
   const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
+  const { data: existing } = await supabase
+    .from('announcements')
+    .select('club_id')
+    .eq('id', announcementId)
+    .single();
+
   const { error } = await supabase.from('announcements').delete().eq('id', announcementId);
 
   if (error) return { error: error.message };
 
-  revalidatePath('/manage');
+  if (existing?.club_id) {
+    invalidateAnnouncements(existing.club_id);
+    invalidateManage(existing.club_id);
+  }
   return { success: true };
 }
 
@@ -235,6 +258,12 @@ export async function dismissAnnouncement(announcementId: string) {
   const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
+  const { data: announcement } = await supabase
+    .from('announcements')
+    .select('club_id')
+    .eq('id', announcementId)
+    .single();
+
   const { error } = await supabase.from('announcement_dismissals').upsert(
     {
       announcement_id: announcementId,
@@ -245,7 +274,7 @@ export async function dismissAnnouncement(announcementId: string) {
 
   if (error) return { error: error.message };
 
-  revalidatePath('/', 'layout');
+  if (announcement?.club_id) invalidateAnnouncements(announcement.club_id);
   return { success: true };
 }
 
@@ -278,8 +307,8 @@ export async function toggleAnnouncementPin(
 
   if (error) return { error: error.message };
 
-  revalidatePath('/manage');
-  revalidatePath('/', 'layout');
+  invalidateAnnouncements(clubId);
+  invalidateManage(clubId);
   return { success: true };
 }
 
@@ -313,7 +342,7 @@ export async function addPaceTier(clubId: string, name: string) {
     return { error: error.message };
   }
 
-  revalidatePath('/manage');
+  invalidatePaceGroups(clubId);
   return { success: true };
 }
 
@@ -346,6 +375,12 @@ export async function updatePaceTier(
   if (data.typical_distance_max !== undefined)
     updates.typical_distance_max = data.typical_distance_max;
 
+  const { data: tier } = await supabase
+    .from('pace_groups')
+    .select('club_id')
+    .eq('id', tierId)
+    .single();
+
   const { error } = await supabase.from('pace_groups').update(updates).eq('id', tierId);
 
   if (error) {
@@ -353,8 +388,8 @@ export async function updatePaceTier(
     return { error: error.message };
   }
 
-  revalidatePath('/manage');
-  revalidatePath('/rides');
+  if (tier?.club_id) invalidatePaceGroups(tier.club_id);
+  revalidateTag(TAG_RIDES, 'max');
   return { success: true };
 }
 
@@ -410,8 +445,8 @@ export async function deletePaceTier(tierId: string) {
     }
   }
 
-  revalidatePath('/manage');
-  revalidatePath('/rides');
+  if (tier?.club_id) invalidatePaceGroups(tier.club_id);
+  revalidateTag(TAG_RIDES, 'max');
   return { success: true };
 }
 
@@ -432,7 +467,7 @@ export async function reorderPaceTiers(clubId: string, orderedIds: string[]) {
   const failed = results.find((r) => r.error);
   if (failed?.error) return { error: failed.error.message };
 
-  revalidatePath('/manage');
+  invalidatePaceGroups(clubId);
   return { success: true };
 }
 
@@ -463,7 +498,7 @@ export async function updateSeasonDates(clubId: string, seasonStart: string, sea
 
   if (error) return { error: error.message };
 
-  revalidatePath('/manage');
+  invalidateManage(clubId);
   return { success: true };
 }
 
@@ -519,9 +554,8 @@ export async function createRecurringRide(
     await generateRidesFromRecurring(template.id);
   }
 
-  revalidatePath('/manage');
-  revalidatePath('/rides');
-  revalidatePath('/', 'layout');
+  invalidateManage(clubId);
+  revalidateTag(TAG_RIDES, 'max');
   return { success: true };
 }
 
@@ -716,9 +750,8 @@ export async function generateRidesFromRecurring(templateId: string) {
     .update({ last_generated_date: formatLocalDate(new Date()) })
     .eq('id', templateId);
 
-  revalidatePath('/manage');
-  revalidatePath('/rides');
-  revalidatePath('/', 'layout');
+  invalidateManage(template.club_id);
+  revalidateTag(TAG_RIDES, 'max');
   return { success: true, count: datesToCreate.length };
 }
 
@@ -730,6 +763,12 @@ export async function toggleRecurringRide(templateId: string, isActive: boolean)
   const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
+  const { data: template } = await supabase
+    .from('ride_templates')
+    .select('club_id')
+    .eq('id', templateId)
+    .single();
+
   const { error } = await supabase
     .from('ride_templates')
     .update({ is_active: isActive })
@@ -737,7 +776,7 @@ export async function toggleRecurringRide(templateId: string, isActive: boolean)
 
   if (error) return { error: error.message };
 
-  revalidatePath('/manage');
+  if (template?.club_id) invalidateManage(template.club_id);
   return { success: true };
 }
 
@@ -748,6 +787,12 @@ export async function deleteRecurringRide(templateId: string) {
   const supabase = await createClient();
   const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
+
+  const { data: template } = await supabase
+    .from('ride_templates')
+    .select('club_id')
+    .eq('id', templateId)
+    .single();
 
   // Delete future unmodified rides from this template (no signups)
   const today = new Date().toISOString().split('T')[0];
@@ -762,8 +807,7 @@ export async function deleteRecurringRide(templateId: string) {
 
   if (error) return { error: error.message };
 
-  revalidatePath('/manage');
-  revalidatePath('/rides');
-  revalidatePath('/', 'layout');
+  if (template?.club_id) invalidateManage(template.club_id);
+  revalidateTag(TAG_RIDES, 'max');
   return { success: true };
 }

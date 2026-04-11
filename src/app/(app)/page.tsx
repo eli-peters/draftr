@@ -36,19 +36,10 @@ export default async function HomePage() {
 
   const userId = membership.user_id;
 
-  // Fetch profile for greeting — use membership's user_id directly
+  // Fetch profile + personal rides + admin counts in parallel
   const supabase = await createClient();
-  const { data: profile } = await supabase
-    .from('users')
-    .select('full_name')
-    .eq('id', userId)
-    .single();
-
-  const firstName = profile?.full_name?.split(' ')[0] ?? '';
-
-  // Fetch personal rides + admin counts in parallel
-  // All "next" queries filter out completed same-day rides internally
   const [
+    { data: profile },
     nextSignup,
     nextLedRide,
     nextWaitlistedRide,
@@ -56,6 +47,7 @@ export default async function HomePage() {
     pendingMemberCount,
     ridesNeedingLeaderCount,
   ] = await Promise.all([
+    supabase.from('users').select('full_name').eq('id', userId).single(),
     getUserNextSignup(userId, membership.club_id, timezone),
     isLeader ? getLeaderNextLedRide(userId, membership.club_id, timezone) : null,
     getUserNextWaitlistedRide(userId, membership.club_id, timezone),
@@ -63,6 +55,8 @@ export default async function HomePage() {
     isAdmin ? getPendingMemberCount(membership.club_id) : 0,
     isAdmin ? getRidesNeedingLeaderCount(membership.club_id, timezone) : 0,
   ]);
+
+  const firstName = profile?.full_name?.split(' ')[0] ?? '';
 
   // Dedup: suppress cards that refer to the same ride as another card
   const dedupedNextLedRide =

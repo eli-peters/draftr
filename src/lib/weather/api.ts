@@ -113,7 +113,10 @@ export async function fetchCurrentWeather(
       timezone: 'auto',
     });
 
-    const res = await fetch(`${BASE_URL}?${params}`, { next: { revalidate: 0 } });
+    const res = await fetch(`${BASE_URL}?${params}`, {
+      next: { revalidate: 1800 },
+      signal: AbortSignal.timeout(8000),
+    });
     if (!res.ok) {
       console.error('[weather] Open-Meteo current weather error:', res.status, await res.text());
       return null;
@@ -177,7 +180,10 @@ export async function fetchForecastForRide(
       forecast_days: '7',
     });
 
-    const res = await fetch(`${BASE_URL}?${params}`, { next: { revalidate: 0 } });
+    const res = await fetch(`${BASE_URL}?${params}`, {
+      next: { revalidate: 1800 },
+      signal: AbortSignal.timeout(8000),
+    });
     if (!res.ok) {
       console.error('[weather] Open-Meteo forecast error:', res.status, await res.text());
       return null;

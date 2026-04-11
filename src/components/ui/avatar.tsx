@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Image from 'next/image';
 import { Avatar as AvatarPrimitive } from '@base-ui/react/avatar';
 
 import { cn, getInitials } from '@/lib/utils';
@@ -127,7 +128,7 @@ function RiderAvatar({ avatarUrl, name, className }: RiderAvatarProps) {
       className={cn('relative size-8 shrink-0 rounded-full', !avatarUrl && bg, className)}
     >
       {avatarUrl ? (
-        <img src={avatarUrl} alt={name} className="size-full rounded-full object-cover" />
+        <Image src={avatarUrl} alt={name} fill sizes="32px" className="rounded-full object-cover" />
       ) : (
         <div className="flex size-full items-center justify-center">
           <span className={cn('text-xs font-medium', fg)}>{getInitials(name)}</span>
