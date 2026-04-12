@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { Bell } from '@phosphor-icons/react/dist/ssr';
 import { AppShell } from '@/components/layout/app-shell';
 import { UserPrefsProvider } from '@/components/user-prefs-provider';
+import { NavigationOriginProvider } from '@/components/navigation-origin-provider';
 import { getNavForRole, type UserRole } from '@/config/navigation';
 import { routes } from '@/config/routes';
 import { getInitials } from '@/lib/utils';
@@ -59,22 +60,26 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <UserPrefsProvider initialPrefs={userPrefs}>
-      <AppShell
-        navItems={navItems}
-        isAdmin={userRole === 'admin'}
-        userRole={userRole}
-        user={{
-          name: userName,
-          initials: getInitials(userName),
-          avatarUrl: profile?.avatar_url ?? null,
-        }}
-        notificationsSlot={notificationsSlot}
-        banner={
-          pinnedAnnouncement ? <AnnouncementBanner announcement={pinnedAnnouncement} /> : undefined
-        }
-      >
-        {children}
-      </AppShell>
+      <NavigationOriginProvider>
+        <AppShell
+          navItems={navItems}
+          isAdmin={userRole === 'admin'}
+          userRole={userRole}
+          user={{
+            name: userName,
+            initials: getInitials(userName),
+            avatarUrl: profile?.avatar_url ?? null,
+          }}
+          notificationsSlot={notificationsSlot}
+          banner={
+            pinnedAnnouncement ? (
+              <AnnouncementBanner announcement={pinnedAnnouncement} />
+            ) : undefined
+          }
+        >
+          {children}
+        </AppShell>
+      </NavigationOriginProvider>
     </UserPrefsProvider>
   );
 }

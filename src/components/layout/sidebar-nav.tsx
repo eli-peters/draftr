@@ -80,8 +80,8 @@ export function SidebarNav({ items, isAdmin = false }: SidebarNavProps) {
             );
           }
 
-          // Standard nav item — leaders go straight to /manage/rides
-          const navHref = isManageItem ? routes.manageRides : item.href;
+          // Standard nav item — leaders go to /manage (leader hub)
+          const navHref = item.href;
           const isActive =
             item.href === routes.home
               ? pathname === routes.home

@@ -296,6 +296,8 @@
   /* Clearance for top-level pages where only the BottomNav floats —
    * bar height + viewport inset + breathing room above it. */
   --nav-clearance: calc(var(--bar-min-height) + var(--bar-inset-bottom) + 1.5rem);
+  /* Toast offset — clears floating BottomNav on mobile, resets on desktop */
+  --toast-offset-bottom: calc(var(--bar-min-height) + var(--bar-inset-bottom) + 1rem);
 }
 
 /* Desktop clearance overrides — no bottom nav, different bar positioning */
@@ -305,7 +307,15 @@
     --nav-clearance: 4rem;
     /* Sticky bar: height + desktop bottom offset (mt-card-stack on ActionBar handles gap above) */
     --bar-clearance: calc(var(--bar-min-height) + var(--bar-inset-x));
+    --toast-offset-bottom: 2rem;
   }
+}
+
+/* Toast positioning — clear the floating BottomNav on mobile.
+   Sonner's internal mobile breakpoint (600px) doesn't match ours (768px),
+   so we override bottom directly at all widths using the responsive token. */
+[data-sonner-toaster][data-y-position='bottom'] {
+  bottom: var(--toast-offset-bottom) !important;
 }
 
 @theme inline {
@@ -758,6 +768,11 @@
 
 .page-transition-back {
   animation: page-slide-in-from-left var(--duration-slow) var(--ease-out);
+}
+
+/* Disable pointer events on all children during active swipe gesture */
+.swipe-active * {
+  pointer-events: none !important;
 }
 
 /*

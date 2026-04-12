@@ -15,6 +15,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
 
   return (
     <Sonner
+      position="bottom-center"
       theme={theme as ToasterProps['theme']}
       className="toaster group"
       richColors
@@ -48,6 +49,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast: 'font-sans !shadow-md !items-start !gap-3 !px-4 !py-3',
+          title: '!font-semibold',
           // Sonner's default [data-icon] container is 16×16 — force it to
           // match the 28px Phosphor icons so they don't overflow into the
           // flex gap and jam against the text.

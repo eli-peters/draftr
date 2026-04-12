@@ -67,22 +67,21 @@ export default async function PublicProfilePage({
     );
   }
 
-  const [profile, { data: paceGroups }] = await Promise.all([
+  const [profile, { data: paceGroups }, access] = await Promise.all([
     getUserProfile(userId),
     supabase
       .from('pace_groups')
       .select('id, name, sort_order')
       .order('sort_order', { ascending: true }),
+    getProfileViewerAccess({
+      viewerId: authUser.id,
+      viewerRole,
+      subjectId: userId,
+      now: new Date(),
+    }),
   ]);
 
   if (!profile) notFound();
-
-  const access = await getProfileViewerAccess({
-    viewerId: authUser.id,
-    viewerRole,
-    subjectId: userId,
-    now: new Date(),
-  });
 
   return (
     <ProfilePage

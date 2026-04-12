@@ -117,10 +117,6 @@ export function getNavForRole(role: UserRole): NavItem[] {
         if (role === 'admin') {
           return { ...item, label: appContent.nav.club };
         }
-        // Leaders go straight to /manage/rides (skip server redirect)
-        if (role === 'ride_leader') {
-          return { ...item, href: '/manage/rides' };
-        }
       }
       return item;
     });

@@ -2,13 +2,14 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { CaretLeft } from '@phosphor-icons/react';
 import { AvatarMenu } from './avatar-menu';
 import { AppLogo } from './app-logo';
 import { routes, isChildRoute, getParentRoute } from '@/config/routes';
 import { getParentRouteLabel } from '@/config/navigation';
 import { useIsMobile } from '@/hooks/use-is-mobile';
+import { useNavigationOrigin } from '@/components/navigation-origin-provider';
 
 interface HeaderBarProps {
   userName: string;
@@ -34,7 +35,9 @@ export function HeaderBar({
   userRole = 'rider',
 }: HeaderBarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const isMobile = useIsMobile();
+  const { hasReferrer } = useNavigationOrigin();
   const isChild = isChildRoute(pathname);
   const showBackNav = isMobile && isChild;
   const parentRoute = getParentRoute(pathname);
@@ -44,13 +47,23 @@ export function HeaderBar({
     <header className="sticky top-0 z-40 flex items-center justify-between bg-primary px-5 md:px-8 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3">
       {/* Left: back arrow on child pages (mobile), logo on parent pages */}
       {showBackNav ? (
-        <Link
-          href={parentRoute}
-          aria-label={`Navigate back to ${parentLabel}`}
-          className="flex items-center text-primary-foreground"
-        >
-          <CaretLeft weight="bold" className="size-6" />
-        </Link>
+        hasReferrer ? (
+          <button
+            onClick={() => router.back()}
+            aria-label={`Navigate back to ${parentLabel}`}
+            className="flex items-center text-primary-foreground"
+          >
+            <CaretLeft weight="bold" className="size-6" />
+          </button>
+        ) : (
+          <Link
+            href={parentRoute}
+            aria-label={`Navigate back to ${parentLabel}`}
+            className="flex items-center text-primary-foreground"
+          >
+            <CaretLeft weight="bold" className="size-6" />
+          </Link>
+        )
       ) : (
         <Link href={routes.home} className="flex items-center gap-2">
           <AppLogo className="h-5 w-auto text-primary-foreground" />

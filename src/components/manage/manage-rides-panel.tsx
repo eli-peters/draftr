@@ -138,7 +138,7 @@ interface ManageRidesPanelProps {
   isLeader?: boolean;
 }
 
-type StatusTab = 'upcoming' | 'past' | 'cancelled';
+type StatusTab = 'all' | 'upcoming' | 'past' | 'cancelled';
 
 export function ManageRidesPanel({
   rides,
@@ -146,7 +146,7 @@ export function ManageRidesPanel({
   initialPaceFilter = null,
   isLeader = false,
 }: ManageRidesPanelProps) {
-  const [statusFilter, setStatusFilter] = useState<StatusTab>('upcoming');
+  const [statusFilter, setStatusFilter] = useState<StatusTab>('all');
   const [paceFilter, setPaceFilter] = useState<string>(initialPaceFilter ?? 'all');
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<RideSortKey>('date');
@@ -175,6 +175,7 @@ export function ManageRidesPanel({
     } else if (statusFilter === 'cancelled') {
       filtered = filtered.filter((r) => r.status === RideStatus.CANCELLED);
     }
+    // 'all' shows all rides, no filter applied
 
     if (paceFilter !== 'all') {
       filtered = filtered.filter((r) => r.pace_group_id === paceFilter);
@@ -194,6 +195,7 @@ export function ManageRidesPanel({
   }, [rides, statusFilter, paceFilter, search, today, sortKey, sortDir]);
 
   const emptyMessages: Record<StatusTab, string> = {
+    all: content.rides.noAllRides,
     upcoming: content.rides.noUpcomingRides,
     past: content.rides.noPastRides,
     cancelled: content.rides.noCancelledRides,
@@ -202,8 +204,9 @@ export function ManageRidesPanel({
   const statusFilterDef: FilterDefinition = {
     key: 'status',
     label: content.rides.filterStatus,
-    defaultValue: 'upcoming',
+    defaultValue: 'all',
     options: [
+      { value: 'all', label: content.rides.all },
       { value: 'upcoming', label: content.rides.upcoming },
       { value: 'past', label: content.rides.past },
       { value: 'cancelled', label: content.rides.cancelled },

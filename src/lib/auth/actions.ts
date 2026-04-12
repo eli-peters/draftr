@@ -20,26 +20,22 @@ export async function signIn(formData: FormData) {
     return { error: error?.message ?? appContent.errors.signInFailed };
   }
 
-  // Check if user has completed onboarding
-  const { data: profile } = await supabase
-    .from('users')
-    .select('onboarding_completed')
-    .eq('id', data.user.id)
-    .single();
+  // Check onboarding + membership status in parallel
+  const [{ data: profile }, { data: membership }] = await Promise.all([
+    supabase.from('users').select('onboarding_completed').eq('id', data.user.id).single(),
+    // RLS only allows active members to read club_memberships, so if this returns null
+    // after onboarding is complete, the user's membership is inactive or doesn't exist.
+    supabase
+      .from('club_memberships')
+      .select('id')
+      .eq('user_id', data.user.id)
+      .eq('status', 'active')
+      .maybeSingle(),
+  ]);
 
   if (!profile || !profile.onboarding_completed) {
     redirect('/setup-profile');
   }
-
-  // Check membership status — block deactivated members
-  // RLS only allows active members to read club_memberships, so if this returns null
-  // after onboarding is complete, the user's membership is inactive or doesn't exist.
-  const { data: membership } = await supabase
-    .from('club_memberships')
-    .select('id')
-    .eq('user_id', data.user.id)
-    .eq('status', 'active')
-    .maybeSingle();
 
   if (!membership) {
     await supabase.auth.signOut();

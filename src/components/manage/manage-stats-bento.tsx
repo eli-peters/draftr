@@ -44,6 +44,13 @@ interface ManageStatsBentoProps {
   cancellationRate: number;
   cancellationsThisMonth: number;
   activeMembers: number;
+  /** Optional title/context overrides for non-admin contexts (e.g. leader hub). */
+  labelOverrides?: {
+    fillRate?: string;
+    cancellationRate?: string;
+    activeMembers?: string;
+    activeMembersContext?: string;
+  };
 }
 
 /* ── TrendBadge (temporary — replaced in step #4) ──────────────────────── */
@@ -111,6 +118,7 @@ export function ManageStatsBento({
   cancellationRate,
   cancellationsThisMonth,
   activeMembers,
+  labelOverrides,
 }: ManageStatsBentoProps) {
   const { fadeSlideUp, staggerContainer } = useMotionPresets();
 
@@ -118,6 +126,12 @@ export function ManageStatsBento({
     month: 'long',
     year: 'numeric',
   });
+
+  const fillRateTitle = labelOverrides?.fillRate ?? content.stats.fillRate;
+  const cancellationRateTitle = labelOverrides?.cancellationRate ?? content.stats.cancellationRate;
+  const activeMembersTitle = labelOverrides?.activeMembers ?? content.stats.activeMembers;
+  const activeMembersContext =
+    labelOverrides?.activeMembersContext ?? content.stats.activeMembersContext(monthLabel);
 
   return (
     <motion.div
@@ -130,7 +144,7 @@ export function ManageStatsBento({
       <motion.div variants={fadeSlideUp} className="md:flex-1">
         <StatColumn
           icon={PersonSimpleBike}
-          title={content.stats.fillRate}
+          title={fillRateTitle}
           value={fillRate}
           suffix="%"
           visualization={{
@@ -150,7 +164,7 @@ export function ManageStatsBento({
         <motion.div variants={fadeSlideUp} className="flex-1">
           <StatColumn
             icon={UserCircleMinus}
-            title={content.stats.cancellationRate}
+            title={cancellationRateTitle}
             value={cancellationRate}
             suffix="%"
             decimals={1}
@@ -167,11 +181,11 @@ export function ManageStatsBento({
         <motion.div variants={fadeSlideUp} className="flex-1">
           <StatColumn
             icon={UsersThree}
-            title={content.stats.activeMembers}
+            title={activeMembersTitle}
             value={activeMembers}
             visualization={{
               direction: 'up',
-              label: content.stats.activeMembersContext(monthLabel),
+              label: activeMembersContext,
               sentiment: 'positive',
             }}
           />

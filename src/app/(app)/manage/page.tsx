@@ -4,27 +4,33 @@ import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { AdminStatsBentoSection } from '@/components/manage/admin-stats-bento-section';
 import { SectionCardsSection } from '@/components/manage/section-cards-section';
+import { LeaderHub } from '@/components/manage/leader-hub';
 
 import { getUserClubMembership } from '@/lib/rides/queries';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import type { UserRole } from '@/config/navigation';
-
 const { dashboard: content } = appContent.manage;
 
-export default async function AdminDashboardPage() {
+export default async function ManagePage() {
   const membership = await getUserClubMembership();
   if (!membership) redirect(routes.signIn);
 
   const userRole = membership.role as UserRole;
-  if (userRole === 'ride_leader') redirect(routes.manageRides);
+
+  // Leaders get the leader hub
+  if (userRole === 'ride_leader') {
+    return <LeaderHub userId={membership.user_id} clubId={membership.club_id} />;
+  }
+
+  // Non-leaders and non-admins can't access manage
   if (userRole !== 'admin') redirect(routes.signIn);
 
+  // Admin dashboard
   return (
     <DashboardShell>
       <PageHeader centered={false} title={content.heading} />
       <div className="mt-2 min-w-0 space-y-card-stack">
-        {/* Stats bento and section cards stream independently */}
         <Suspense
           fallback={
             <div className="grid grid-cols-3 gap-card-stack">

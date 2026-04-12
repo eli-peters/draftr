@@ -319,6 +319,176 @@ export async function getPinnedAnnouncement(clubId: string, userId: string) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Leader Dashboard Stats
+// ---------------------------------------------------------------------------
+
+export interface LeaderDashboardStats {
+  fillRate: number;
+  fillRateChange: number;
+  cancellationRate: number;
+  cancellationsThisMonth: number;
+  ridesLed: number;
+}
+
+/**
+ * Compute ManageStatsBento-compatible stats scoped to a single leader's rides.
+ *
+ * - fillRate / fillRateChange: avg capacity fill across their upcoming rides vs. last 30 days
+ * - cancellationRate / cancellationsThisMonth: cancelled signups on their rides
+ * - ridesLed: total non-cancelled rides created by this leader
+ */
+export async function getLeaderDashboardStats(
+  userId: string,
+  clubId: string,
+): Promise<LeaderDashboardStats> {
+  const supabase = await createClient();
+  const todayStr = new Date().toISOString().split('T')[0];
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
+
+  const [upcomingResult, recentResult, ridesLedResult] = await Promise.all([
+    // Upcoming rides with signups (for fill rate)
+    supabase
+      .from('rides')
+      .select('id, capacity, ride_signups(status)')
+      .eq('club_id', clubId)
+      .eq('created_by', userId)
+      .neq('status', 'cancelled')
+      .gte('ride_date', todayStr),
+
+    // Rides in last 30 days with signups (for cancellation rate + fill rate change)
+    supabase
+      .from('rides')
+      .select('id, capacity, ride_signups(status)')
+      .eq('club_id', clubId)
+      .eq('created_by', userId)
+      .neq('status', 'cancelled')
+      .gte('ride_date', thirtyDaysAgoStr)
+      .lt('ride_date', todayStr),
+
+    // Total non-cancelled rides led
+    supabase
+      .from('rides')
+      .select('*', { count: 'exact', head: true })
+      .eq('club_id', clubId)
+      .eq('created_by', userId)
+      .neq('status', 'cancelled'),
+  ]);
+
+  const upcomingRides = upcomingResult.data ?? [];
+  const recentRides = recentResult.data ?? [];
+
+  // Fill rate: avg confirmed/capacity across upcoming rides with a capacity set
+  let fillRate = 0;
+  const upcomingWithCapacity = upcomingRides.filter((r) => r.capacity != null && r.capacity > 0);
+  if (upcomingWithCapacity.length > 0) {
+    const total = upcomingWithCapacity.reduce((sum, r) => {
+      const confirmed = ((r.ride_signups as { status: string }[]) ?? []).filter(
+        (s) => s.status === 'confirmed' || s.status === 'checked_in',
+      ).length;
+      return sum + confirmed / r.capacity!;
+    }, 0);
+    fillRate = Math.round((total / upcomingWithCapacity.length) * 100);
+  }
+
+  // Fill rate change: compare upcoming fill rate vs. last-30-day fill rate
+  let pastFillRate = 0;
+  const recentWithCapacity = recentRides.filter((r) => r.capacity != null && r.capacity > 0);
+  if (recentWithCapacity.length > 0) {
+    const pastTotal = recentWithCapacity.reduce((sum, r) => {
+      const confirmed = ((r.ride_signups as { status: string }[]) ?? []).filter(
+        (s) => s.status === 'confirmed' || s.status === 'checked_in',
+      ).length;
+      return sum + confirmed / r.capacity!;
+    }, 0);
+    pastFillRate = Math.round((pastTotal / recentWithCapacity.length) * 100);
+  }
+  const fillRateChange = fillRate - pastFillRate;
+
+  // Cancellation rate + count from recent rides
+  let totalSignups = 0;
+  let cancelledSignups = 0;
+  for (const r of recentRides) {
+    const signups = (r.ride_signups as { status: string }[]) ?? [];
+    totalSignups += signups.length;
+    cancelledSignups += signups.filter((s) => s.status === 'cancelled').length;
+  }
+  const cancellationRate =
+    totalSignups > 0 ? Math.round((cancelledSignups / totalSignups) * 100) : 0;
+
+  return {
+    fillRate,
+    fillRateChange,
+    cancellationRate,
+    cancellationsThisMonth: cancelledSignups,
+    ridesLed: ridesLedResult.count ?? 0,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Leader Hub Stats
+// ---------------------------------------------------------------------------
+
+export interface LeaderHubStats {
+  ridesLedCount: number;
+  totalSignups: number;
+}
+
+/**
+ * Fetch aggregate stats for the leader hub — rides led and total signups
+ * across rides the leader has created or co-led.
+ */
+export async function getLeaderHubStats(userId: string, clubId: string): Promise<LeaderHubStats> {
+  const supabase = await createClient();
+
+  // Rides where the user is creator OR co-leader (non-cancelled)
+  const [createdResult, coLedResult] = await Promise.all([
+    supabase
+      .from('rides')
+      .select('id, ride_signups(status)')
+      .eq('club_id', clubId)
+      .eq('created_by', userId)
+      .neq('status', 'cancelled'),
+    supabase
+      .from('ride_leaders')
+      .select('ride:rides!inner(id, club_id, status, ride_signups(status))')
+      .eq('user_id', userId)
+      .eq('ride.club_id', clubId)
+      .neq('ride.status', 'cancelled'),
+  ]);
+
+  // Deduplicate ride IDs (leader can be both creator and co-leader)
+  const rideMap = new Map<string, { status: string }[]>();
+
+  for (const ride of createdResult.data ?? []) {
+    rideMap.set(ride.id, (ride.ride_signups as { status: string }[]) ?? []);
+  }
+
+  for (const row of coLedResult.data ?? []) {
+    const ride = row.ride as unknown as {
+      id: string;
+      ride_signups: { status: string }[];
+    };
+    if (ride && !rideMap.has(ride.id)) {
+      rideMap.set(ride.id, ride.ride_signups ?? []);
+    }
+  }
+
+  let totalSignups = 0;
+  for (const signups of rideMap.values()) {
+    totalSignups += signups.filter(
+      (s) => s.status === 'confirmed' || s.status === 'checked_in',
+    ).length;
+  }
+
+  return {
+    ridesLedCount: rideMap.size,
+    totalSignups,
+  };
+}
+
 export interface ClubStats {
   totalRides: number;
   activeMembers: number;

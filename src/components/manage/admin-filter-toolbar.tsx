@@ -105,10 +105,10 @@ export function AdminFilterToolbar({
   }
 
   return (
-    <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
-      {/* Search input — always visible, full-width on mobile */}
+    <div className="flex flex-row flex-wrap gap-10 items-center">
+      {/* Search input — flex on mobile, fixed width on desktop */}
       {onSearchChange && (
-        <div className="relative order-first md:order-last md:ml-auto">
+        <div className="relative flex-1 min-w-24 md:flex-none md:order-last md:ml-auto">
           <MagnifyingGlass className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={localSearch}

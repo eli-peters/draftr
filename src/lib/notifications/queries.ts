@@ -1,5 +1,4 @@
 import { unstable_cache } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { tagNotifications } from '@/lib/cache-tags';
 import type { Notification } from '@/components/notifications/notification-item';
@@ -34,20 +33,27 @@ export async function getUserNotifications(userId: string): Promise<Notification
 
 /**
  * Get the count of unread notifications for a user.
+ * Cached per user; invalidated via tagNotifications(userId).
  */
 export async function getUnreadNotificationCount(userId: string): Promise<number> {
-  const supabase = await createClient();
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
 
-  const { count, error } = await supabase
-    .from('notifications')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .eq('is_read', false);
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('is_read', false);
 
-  if (error?.message) {
-    console.error('Error fetching unread count:', error.message, error.code, error.details);
-    return 0;
-  }
+      if (error?.message) {
+        console.error('Error fetching unread count:', error.message, error.code, error.details);
+        return 0;
+      }
 
-  return count ?? 0;
+      return count ?? 0;
+    },
+    ['unread-notification-count', userId],
+    { tags: [tagNotifications(userId)], revalidate: 120 },
+  )();
 }
