@@ -41,16 +41,18 @@ export function SectionCards({ stats, clubId }: SectionCardsProps) {
   return (
     <>
       <div className="grid grid-cols-2 gap-5">
-        {/* Rides */}
-        <SectionCard
-          icon={Bicycle}
-          label={content.sectionCards.rides}
-          stat={content.sectionCards.upcomingStat(stats.upcomingRides)}
-          href={routes.manageRides}
-          actionLabel={content.sectionCards.createRide}
-          actionHref={routes.manageNewRide}
-          isMobile={isMobile}
-        />
+        {/* Rides — full width on mobile, single col on desktop */}
+        <div className="col-span-2 md:col-span-1">
+          <SectionCard
+            icon={Bicycle}
+            label={content.sectionCards.rides}
+            stat={content.sectionCards.upcomingStat(stats.upcomingRides)}
+            href={routes.manageRides}
+            actionLabel={content.sectionCards.createRide}
+            actionHref={routes.manageNewRide}
+            isMobile={isMobile}
+          />
+        </div>
 
         {/* Members */}
         <SectionCard
@@ -64,19 +66,17 @@ export function SectionCards({ stats, clubId }: SectionCardsProps) {
           isMobile={isMobile}
         />
 
-        {/* Announcements — full width on mobile (Settings hidden), single col on desktop */}
-        <div className="col-span-2 md:col-span-1">
-          <SectionCard
-            icon={Megaphone}
-            label={content.sectionCards.announcements}
-            stat={content.sectionCards.thisWeekStat(stats.recentAnnouncements)}
-            href={routes.manageAnnouncements}
-            actionLabel={content.sectionCards.newAnnouncement}
-            actionType="announcement"
-            onAction={() => setAnnouncementOpen(true)}
-            isMobile={isMobile}
-          />
-        </div>
+        {/* Announcements */}
+        <SectionCard
+          icon={Megaphone}
+          label={content.sectionCards.announcements}
+          stat={content.sectionCards.thisWeekStat(stats.recentAnnouncements)}
+          href={routes.manageAnnouncements}
+          actionLabel={content.sectionCards.newAnnouncement}
+          actionType="announcement"
+          onAction={() => setAnnouncementOpen(true)}
+          isMobile={isMobile}
+        />
 
         {/* Settings — hidden on mobile (fully gated, no quick action) */}
         <div className="hidden md:block">
