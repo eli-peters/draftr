@@ -138,8 +138,10 @@ export async function signUpForRide(rideId: string) {
   }
 
   // Create notification for the rider
+  // Uses admin client — RLS INSERT policy doesn't allow riders to insert for themselves
   if (!isFull) {
-    const { error: notifError } = await supabase.from('notifications').insert({
+    const admin = createAdminClient();
+    const { error: notifError } = await admin.from('notifications').insert({
       user_id: user.id,
       type: 'signup_confirmed',
       title: notif.signupConfirmed.title(ride.title),
@@ -150,6 +152,7 @@ export async function signUpForRide(rideId: string) {
     if (notifError?.message) {
       console.error('Failed to create signup notification:', notifError.message);
     }
+    invalidateNotifications(user.id);
   }
 
   // Notify the ride leader when a rider joins the waitlist
@@ -700,10 +703,12 @@ export async function createRide(data: CreateRideData) {
       }));
 
     if (notifications.length > 0) {
-      const { error: notifError } = await supabase.from('notifications').insert(notifications);
+      const admin = createAdminClient();
+      const { error: notifError } = await admin.from('notifications').insert(notifications);
       if (notifError?.message) {
         console.error('Failed to create new ride notifications:', notifError.message);
       }
+      notifications.forEach((n) => invalidateNotifications(n.user_id));
     }
   }
 
@@ -844,10 +849,12 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
       }));
 
     if (notifications.length > 0) {
-      const { error: notifError } = await supabase.from('notifications').insert(notifications);
+      const admin = createAdminClient();
+      const { error: notifError } = await admin.from('notifications').insert(notifications);
       if (notifError?.message) {
         console.error('Failed to create ride update notifications:', notifError.message);
       }
+      notifications.forEach((n) => invalidateNotifications(n.user_id));
     }
   }
 
@@ -977,7 +984,9 @@ export async function cancelRide(rideId: string, reason: string) {
       channel: 'both' as const,
     }));
 
-    await supabase.from('notifications').insert(notifications);
+    const admin = createAdminClient();
+    await admin.from('notifications').insert(notifications);
+    signups.forEach((s) => invalidateNotifications(s.user_id));
   }
 
   // Cancel all active signups for this ride

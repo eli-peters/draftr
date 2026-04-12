@@ -53,6 +53,10 @@ const avatarAssignments: Record<string, number> = {
   '5e00600f-7974-4051-93d9-470b6220ea30': 5836902,
   // James Chiu — man riding bike in forest
   '4b92398d-d430-4943-83de-101bcd90dec1': 12328608,
+  // Leo Marchetti (ride_leader) — road cyclist in orange vest, helmet and sunglasses
+  '75064912-ae78-48ac-8a20-6ca8071b2a07': 5807579,
+  // Riley Bennett (rider) — person smiling while riding bike in city
+  '8f8178fd-2aa4-4c09-85b3-b324d2dd1c93': 7242981,
 };
 
 // Users WITHOUT photos (keep initials):
@@ -60,8 +64,6 @@ const avatarAssignments: Record<string, number> = {
 // - Tom Baker (a0...10)
 // - Chris Evans (a0...12)
 // - Fatima Al-Rashid (a0...15)
-// - Leo Marchetti (leader)
-// - Riley Bennett (rider)
 
 async function seedAvatars() {
   console.log(`Seeding avatars for ${Object.keys(avatarAssignments).length} users...\n`);

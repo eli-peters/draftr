@@ -35,6 +35,7 @@ export const notificationIcons: Record<NotificationType, React.ElementType> = {
   waitlist_joined: Hourglass,
   announcement: Megaphone,
   rider_removed: UserMinus,
+  leader_promoted: ArrowCircleUp,
 };
 
 export const notificationStyles: Record<NotificationType, string> = {
@@ -46,6 +47,7 @@ export const notificationStyles: Record<NotificationType, string> = {
   waitlist_joined: 'text-warning bg-warning/10',
   announcement: 'text-foreground bg-muted',
   rider_removed: 'text-destructive bg-destructive/10',
+  leader_promoted: 'text-success bg-success/10',
 };
 
 interface NotificationItemProps {
@@ -63,13 +65,7 @@ export function NotificationItem({ notification, compact }: NotificationItemProp
   const timeAgo = formatDistanceToNow(new Date(notification.sent_at), { addSuffix: true });
 
   return (
-    <div
-      className={cn(
-        'flex gap-3 transition-opacity duration-200',
-        compact && 'px-3 py-2.5',
-        notification.is_read && 'opacity-muted',
-      )}
-    >
+    <div className={cn('flex gap-3 transition-opacity duration-200', compact && 'px-3 py-2.5')}>
       {/* Icon */}
       <div
         className={`flex ${compact ? 'h-7 w-7' : 'h-10 w-10'} shrink-0 items-center justify-center rounded-xl ${iconStyle}`}
@@ -83,7 +79,7 @@ export function NotificationItem({ notification, compact }: NotificationItemProp
           <h3
             className={cn(
               'leading-tight text-foreground',
-              compact ? 'text-xs' : 'text-sm',
+              compact ? 'text-xs line-clamp-1' : 'text-sm line-clamp-2',
               notification.is_read ? 'font-medium' : 'font-semibold',
             )}
           >

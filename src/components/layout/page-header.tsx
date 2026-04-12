@@ -22,16 +22,24 @@ export function PageHeader({
 }: PageHeaderProps) {
   if (centered) {
     return (
-      <div className={cn('relative mb-6', className)}>
-        {actions && <div className="absolute top-0 right-0 flex items-center gap-1">{actions}</div>}
-        <div className="text-center">
-          <div className="flex min-w-0 max-w-full items-center justify-center gap-3">
-            <h1 className="line-clamp-2 text-3xl font-bold tracking-tight text-foreground">
-              {title}
-            </h1>
-            {badge}
+      <div className={cn('mb-6', className)}>
+        <div className="flex items-start">
+          {/* Invisible counterbalance keeps the title visually centered when actions are present */}
+          {actions && (
+            <div className="flex flex-1 items-center gap-1" aria-hidden="true">
+              <div className="invisible">{actions}</div>
+            </div>
+          )}
+          <div className="min-w-0 text-center">
+            <div className="flex min-w-0 max-w-full items-center justify-center gap-3">
+              <h1 className="line-clamp-2 text-3xl font-bold tracking-tight text-foreground">
+                {title}
+              </h1>
+              {badge}
+            </div>
+            {subtitle && <p className="mt-1.5 text-base text-muted-foreground">{subtitle}</p>}
           </div>
-          {subtitle && <p className="mt-1.5 text-base text-muted-foreground">{subtitle}</p>}
+          {actions && <div className="flex flex-1 items-center justify-end gap-1">{actions}</div>}
         </div>
       </div>
     );

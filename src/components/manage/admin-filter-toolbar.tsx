@@ -105,7 +105,7 @@ export function AdminFilterToolbar({
   }
 
   return (
-    <div className="flex flex-row flex-wrap gap-10 items-center">
+    <div className="flex flex-row flex-wrap gap-8 items-center">
       {/* Search input — flex on mobile, fixed width on desktop */}
       {onSearchChange && (
         <div className="relative flex-1 min-w-24 md:flex-none md:order-last md:ml-auto">

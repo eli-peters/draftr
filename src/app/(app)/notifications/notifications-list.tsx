@@ -53,7 +53,7 @@ export function NotificationsList({
           unreadCount > 0 ? (
             <span
               aria-label={appContent.notifications.badge.ariaLabel(displayCount)}
-              className="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-2 text-sm font-bold text-primary-foreground tabular-nums"
+              className="flex h-6 min-w-6 items-center justify-center rounded-full bg-badge-notification-bg px-2 text-sm font-bold text-badge-notification-text tabular-nums"
             >
               {displayCount}
             </span>
@@ -85,7 +85,7 @@ export function NotificationsList({
           {notifications.map((notification) => {
             const content = (
               <Card
-                className={cn('p-5', notification.is_read ? 'opacity-disabled' : 'cursor-pointer')}
+                className={cn('p-5', notification.is_read ? 'opacity-muted' : 'cursor-pointer')}
                 onClick={!notification.is_read ? () => handleMarkRead(notification.id) : undefined}
               >
                 <NotificationItem notification={notification} />

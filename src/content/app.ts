@@ -627,6 +627,7 @@ export const appContent = {
       waitlist_joined: 'Waitlist Alert',
       announcement: 'Announcement',
       rider_removed: 'Removed from Ride',
+      leader_promoted: 'Leader Promoted',
     },
   },
 

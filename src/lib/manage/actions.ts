@@ -5,9 +5,11 @@ import { createClient, getUser } from '@/lib/supabase/server';
 import {
   invalidateAnnouncements,
   invalidateManage,
+  invalidateNotifications,
   invalidatePaceGroups,
   TAG_RIDES,
 } from '@/lib/cache-tags';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { appContent } from '@/content/app';
 import type { AnnouncementType, MemberRole, MemberStatus } from '@/types/database';
 import { parseLocalDate } from '@/config/formatting';
@@ -172,7 +174,9 @@ export async function createAnnouncement(
       }));
 
     if (notifications.length > 0) {
-      await supabase.from('notifications').insert(notifications);
+      const admin = createAdminClient();
+      await admin.from('notifications').insert(notifications);
+      notifications.forEach((n) => invalidateNotifications(n.user_id));
     }
   }
 
