@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
@@ -24,9 +23,11 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { AdminFilterToolbar, type FilterDefinition } from './admin-filter-toolbar';
 import { TablePagination } from './table-pagination';
 import { getAvatarColourClasses } from '@/lib/avatar-colours';
+import { formatPhoneDisplay } from '@/lib/phone';
 import { appContent } from '@/content/app';
 import { cn, getInitials } from '@/lib/utils';
 import { routes } from '@/config/routes';
@@ -47,6 +48,7 @@ interface MemberData {
   full_name: string;
   email: string;
   avatar_url: string | null;
+  phone_number: string | null;
   preferred_pace_group: string | null;
   role: string;
   status: string;
@@ -280,309 +282,247 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
         />
       </div>
 
-      {/* Desktop table */}
-      <div className="hidden overflow-x-auto rounded-md border border-(--border-subtle) md:block">
-        <table className="w-full text-left">
-          <thead>
-            <tr className="border-b border-(--border-subtle) bg-(--surface-sunken)">
-              <SortableHeader
-                label={content.memberActions.memberColumn}
-                sortKey="name"
-                {...sortProps}
-              />
-              <SortableHeader
-                label={content.memberActions.roleColumn}
-                sortKey="role"
-                {...sortProps}
-              />
-              <SortableHeader
-                label={content.memberActions.paceGroupColumn}
-                sortKey="paceGroup"
-                {...sortProps}
-              />
-              <SortableHeader
-                label={content.memberActions.joinedColumn}
-                sortKey="joined"
-                {...sortProps}
-              />
-              <SortableHeader
-                label={content.memberActions.statusColumn}
-                sortKey="status"
-                {...sortProps}
-              />
-              <th className="w-10 p-3" />
-            </tr>
-          </thead>
-          <tbody>
-            <AnimatePresence initial={false}>
-              {paginatedMembers.map((member) => {
-                const isSelf = member.user_id === currentUserId;
-                const isInactive = member.status === MemberStatus.INACTIVE;
-                const isPendingMember = member.status === MemberStatus.PENDING;
-                const name = member.full_name;
-                const initials = getInitials(name);
-                const joinedFormatted = format(new Date(member.joined_at), 'MMM yyyy');
-                const roleKey = member.role as keyof typeof content.members.roles;
-                const canEditRole = !isInactive && !isPendingMember && !isSelf;
-
-                let statusText = '';
-                let statusClass = '';
-                if (isPendingMember) {
-                  statusText = content.members.status.pending;
-                  statusClass = 'text-(--feedback-warning-text)';
-                } else if (isInactive) {
-                  statusText = content.members.status.inactive;
-                  statusClass = 'text-(--text-tertiary)';
-                } else {
-                  statusText = content.members.status.active;
-                }
-
-                // Pace group badge
-                const pgSortOrder = member.preferred_pace_group
-                  ? paceGroupMap.get(member.preferred_pace_group)
-                  : undefined;
-
-                function handleRowClick() {
-                  router.push(routes.publicProfile(member.user_id));
-                }
-
-                function handleRowKeyDown(e: React.KeyboardEvent) {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleRowClick();
-                  }
-                }
-
-                return (
-                  <motion.tr
-                    key={member.user_id}
-                    layout
-                    variants={listItem}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    onClick={handleRowClick}
-                    onKeyDown={handleRowKeyDown}
-                    tabIndex={0}
-                    role="link"
-                    className={cn(
-                      'group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-sunken) hover:bg-muted/50',
-                      isInactive && 'opacity-muted',
-                    )}
-                  >
-                    {/* Member — name is a clickable link */}
-                    <td className="p-3">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <Avatar className="h-6 w-6 shrink-0">
-                          {member.avatar_url && <AvatarImage src={member.avatar_url} alt={name} />}
-                          <AvatarFallback
-                            className={`text-[10px] font-medium ${getAvatarColourClasses(name)}`}
-                          >
-                            {initials}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                          <p className="font-sans text-xs font-medium text-(--text-primary) truncate">
-                            {name}
-                            {isSelf && (
-                              <span className="ml-1 text-xs font-normal text-(--text-tertiary)">
-                                ({content.members.you})
-                              </span>
-                            )}
-                          </p>
-                          <p className="font-sans text-xs text-(--text-tertiary) truncate">
-                            {member.email}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Role — click-to-edit via kebab or inline */}
-                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                      {editingRoleUserId === member.user_id ? (
-                        <Select
-                          size="sm"
-                          value={member.role}
-                          onValueChange={(v) => handleRoleChange(member.user_id, v as MemberRole)}
-                          items={Object.fromEntries(
-                            roleOptions.map((opt) => [opt.value, opt.label]),
-                          )}
-                        >
-                          <SelectTrigger className="h-7 text-xs" autoFocus>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {roleOptions.map((opt) => (
-                              <SelectItem key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <span className="font-sans text-xs text-(--text-secondary)">
-                          {content.members.roles[roleKey] ?? member.role}
-                        </span>
-                      )}
-                    </td>
-
-                    {/* Pace Group — coloured badge */}
-                    <td className="p-3">
-                      {member.preferred_pace_group && pgSortOrder != null ? (
-                        <Badge variant={getPaceBadgeVariant(pgSortOrder)} size="sm">
-                          {member.preferred_pace_group}
-                        </Badge>
-                      ) : (
-                        <span className="font-sans text-xs text-(--text-tertiary)">—</span>
-                      )}
-                    </td>
-
-                    {/* Joined */}
-                    <td className="p-3 font-sans text-xs text-(--text-primary)">
-                      {joinedFormatted}
-                    </td>
-
-                    {/* Status */}
-                    <td className={cn('p-3 font-sans text-xs', statusClass)}>{statusText}</td>
-
-                    {/* Kebab menu — always visible */}
-                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                      {isPendingMember ? (
-                        <Button size="sm" onClick={() => handleApprove(member.user_id)}>
-                          {content.memberActions.approve}
-                        </Button>
-                      ) : !isSelf ? (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
-                            <DotsThree className="h-4 w-4" weight="bold" />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {canEditRole && (
-                              <DropdownMenuItem
-                                onClick={() => setEditingRoleUserId(member.user_id)}
-                              >
-                                {content.memberActions.editRole}
-                              </DropdownMenuItem>
-                            )}
-                            {!isInactive && (
-                              <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onClick={() => handleDeactivate(member.user_id)}
-                              >
-                                {content.memberActions.deactivate}
-                              </DropdownMenuItem>
-                            )}
-                            {isInactive && (
-                              <DropdownMenuItem onClick={() => handleReactivate(member.user_id)}>
-                                {content.memberActions.reactivate}
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      ) : null}
-                    </td>
-                  </motion.tr>
-                );
-              })}
-            </AnimatePresence>
-          </tbody>
-        </table>
-        <TablePagination
-          totalItems={displayMembers.length}
-          page={page}
-          pageSize={pageSize}
-          onPageChange={setPage}
-          onPageSizeChange={setPageSize}
+      {displayMembers.length === 0 ? (
+        <EmptyState
+          title={content.memberActions.noMembers}
+          description={content.memberActions.noFilterResults}
         />
-      </div>
+      ) : (
+        <>
+          {/* Desktop table */}
+          <div className="overflow-x-auto rounded-md border border-(--border-default)">
+            <table className="w-full bg-(--surface-default) text-left">
+              <thead>
+                <tr className="border-b border-(--border-default) bg-(--surface-sunken)">
+                  <SortableHeader
+                    label={content.memberActions.memberColumn}
+                    sortKey="name"
+                    {...sortProps}
+                  />
+                  <SortableHeader
+                    label={content.memberActions.roleColumn}
+                    sortKey="role"
+                    {...sortProps}
+                  />
+                  <SortableHeader
+                    label={content.memberActions.statusColumn}
+                    sortKey="status"
+                    {...sortProps}
+                  />
+                  <SortableHeader
+                    label={content.memberActions.paceGroupColumn}
+                    sortKey="paceGroup"
+                    {...sortProps}
+                  />
+                  <SortableHeader
+                    label={content.memberActions.joinedColumn}
+                    sortKey="joined"
+                    {...sortProps}
+                  />
+                  <th className="p-3 text-overline font-sans text-(--text-secondary)">
+                    {content.memberActions.emailColumn}
+                  </th>
+                  <th className="hidden p-3 text-overline font-sans text-(--text-secondary) lg:table-cell">
+                    {content.memberActions.phoneColumn}
+                  </th>
+                  <th className="w-10 p-3" />
+                </tr>
+              </thead>
+              <tbody>
+                <AnimatePresence initial={false}>
+                  {paginatedMembers.map((member) => {
+                    const isSelf = member.user_id === currentUserId;
+                    const isInactive = member.status === MemberStatus.INACTIVE;
+                    const isPendingMember = member.status === MemberStatus.PENDING;
+                    const name = member.full_name;
+                    const initials = getInitials(name);
+                    const joinedFormatted = format(new Date(member.joined_at), 'MMM yyyy');
+                    const roleKey = member.role as keyof typeof content.members.roles;
+                    const canEditRole = !isInactive && !isPendingMember && !isSelf;
 
-      {/* Mobile condensed rows — all filtered results, no pagination */}
-      <div className="min-w-0 overflow-hidden rounded-md border border-(--border-subtle) divide-y divide-(--border-subtle) [&>*:nth-child(even)]:bg-(--surface-sunken) md:hidden">
-        <AnimatePresence initial={false}>
-          {displayMembers.map((member) => (
-            <MobileMemberRow
-              key={member.user_id}
-              member={member}
-              isSelf={member.user_id === currentUserId}
+                    let statusText = '';
+                    let statusClass = '';
+                    if (isPendingMember) {
+                      statusText = content.members.status.pending;
+                      statusClass = 'text-(--feedback-warning-text)';
+                    } else if (isInactive) {
+                      statusText = content.members.status.inactive;
+                      statusClass = 'text-(--text-tertiary)';
+                    } else {
+                      statusText = content.members.status.active;
+                    }
+
+                    // Pace group badge
+                    const pgSortOrder = member.preferred_pace_group
+                      ? paceGroupMap.get(member.preferred_pace_group)
+                      : undefined;
+
+                    function handleRowClick() {
+                      router.push(routes.publicProfile(member.user_id));
+                    }
+
+                    function handleRowKeyDown(e: React.KeyboardEvent) {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleRowClick();
+                      }
+                    }
+
+                    return (
+                      <motion.tr
+                        key={member.user_id}
+                        layout
+                        variants={listItem}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        onClick={handleRowClick}
+                        onKeyDown={handleRowKeyDown}
+                        tabIndex={0}
+                        role="link"
+                        className={cn(
+                          'group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-page) hover:bg-(--action-primary-subtle-bg)',
+                          isInactive && 'opacity-muted',
+                        )}
+                      >
+                        {/* Member — avatar + name */}
+                        <td className="p-3">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <Avatar className="h-6 w-6 shrink-0">
+                              {member.avatar_url && (
+                                <AvatarImage src={member.avatar_url} alt={name} />
+                              )}
+                              <AvatarFallback
+                                className={`text-[10px] font-medium ${getAvatarColourClasses(name)}`}
+                              >
+                                {initials}
+                              </AvatarFallback>
+                            </Avatar>
+                            <p className="min-w-0 truncate font-sans text-xs font-medium text-(--text-primary)">
+                              {name}
+                              {isSelf && (
+                                <span className="ml-1 text-xs font-normal text-(--text-tertiary)">
+                                  ({content.members.you})
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </td>
+
+                        {/* Role — click-to-edit via kebab or inline */}
+                        <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                          {editingRoleUserId === member.user_id ? (
+                            <Select
+                              size="sm"
+                              value={member.role}
+                              onValueChange={(v) =>
+                                handleRoleChange(member.user_id, v as MemberRole)
+                              }
+                              items={Object.fromEntries(
+                                roleOptions.map((opt) => [opt.value, opt.label]),
+                              )}
+                            >
+                              <SelectTrigger className="h-7 text-xs" autoFocus>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {roleOptions.map((opt) => (
+                                  <SelectItem key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <span className="font-sans text-xs text-(--text-secondary)">
+                              {content.members.roles[roleKey] ?? member.role}
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Status */}
+                        <td className={cn('p-3 font-sans text-xs', statusClass)}>{statusText}</td>
+
+                        {/* Pace Group — coloured badge */}
+                        <td className="p-3">
+                          {member.preferred_pace_group && pgSortOrder != null ? (
+                            <Badge variant={getPaceBadgeVariant(pgSortOrder)} size="sm">
+                              {member.preferred_pace_group}
+                            </Badge>
+                          ) : (
+                            <span className="font-sans text-xs text-(--text-tertiary)">—</span>
+                          )}
+                        </td>
+
+                        {/* Joined */}
+                        <td className="p-3 font-sans text-xs text-(--text-primary)">
+                          {joinedFormatted}
+                        </td>
+
+                        {/* Email */}
+                        <td className="max-w-[200px] truncate p-3 font-sans text-xs text-(--text-secondary)">
+                          {member.email}
+                        </td>
+
+                        {/* Phone — responsive, lg+ only */}
+                        <td className="hidden p-3 font-sans text-xs text-(--text-secondary) lg:table-cell">
+                          {member.phone_number ? formatPhoneDisplay(member.phone_number) : '—'}
+                        </td>
+
+                        {/* Kebab menu — always visible */}
+                        <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                          {isPendingMember ? (
+                            <Button size="sm" onClick={() => handleApprove(member.user_id)}>
+                              {content.memberActions.approve}
+                            </Button>
+                          ) : !isSelf ? (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-(--action-primary-subtle-bg) hover:text-(--text-primary)">
+                                <DotsThree className="h-4 w-4" weight="bold" />
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                {canEditRole && (
+                                  <DropdownMenuItem
+                                    onClick={() => setEditingRoleUserId(member.user_id)}
+                                  >
+                                    {content.memberActions.editRole}
+                                  </DropdownMenuItem>
+                                )}
+                                {!isInactive && (
+                                  <DropdownMenuItem
+                                    className="text-destructive focus:text-destructive"
+                                    onClick={() => handleDeactivate(member.user_id)}
+                                  >
+                                    {content.memberActions.deactivate}
+                                  </DropdownMenuItem>
+                                )}
+                                {isInactive && (
+                                  <DropdownMenuItem
+                                    onClick={() => handleReactivate(member.user_id)}
+                                  >
+                                    {content.memberActions.reactivate}
+                                  </DropdownMenuItem>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          ) : null}
+                        </td>
+                      </motion.tr>
+                    );
+                  })}
+                </AnimatePresence>
+              </tbody>
+            </table>
+            <TablePagination
+              totalItems={displayMembers.length}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
             />
-          ))}
-        </AnimatePresence>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// MobileMemberRow
-// ---------------------------------------------------------------------------
-
-function MobileMemberRow({ member, isSelf }: { member: MemberData; isSelf: boolean }) {
-  const { listItem } = useMotionPresets();
-  const name = member.full_name;
-  const initials = getInitials(name);
-  const isInactive = member.status === MemberStatus.INACTIVE;
-  const isPendingMember = member.status === MemberStatus.PENDING;
-
-  const roleKey = member.role as keyof typeof content.members.roles;
-
-  let statusText = '';
-  let statusClass = '';
-  if (isPendingMember) {
-    statusText = content.members.status.pending;
-    statusClass = 'text-(--feedback-warning-text)';
-  } else if (isInactive) {
-    statusText = content.members.status.inactive;
-    statusClass = 'text-(--text-tertiary)';
-  }
-
-  return (
-    <motion.div layout variants={listItem} initial="hidden" animate="visible" exit="exit">
-      <Link
-        href={routes.publicProfile(member.user_id)}
-        className={cn(
-          'flex items-start gap-3 px-3 py-2.5 hover:bg-muted/50',
-          isInactive && 'opacity-muted',
-        )}
-      >
-        <Avatar className="mt-0.5 h-8 w-8 shrink-0">
-          {member.avatar_url && <AvatarImage src={member.avatar_url} alt={name} />}
-          <AvatarFallback className={`text-xs font-medium ${getAvatarColourClasses(name)}`}>
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-sans text-xs font-medium text-(--text-primary)">
-            {name}
-            {isSelf && (
-              <span className="ml-1 text-xs font-normal text-(--text-tertiary)">
-                ({content.members.you})
-              </span>
-            )}
-          </p>
-          <div className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 font-sans text-xs">
-            <span className="text-(--text-tertiary)">{content.memberActions.roleColumn}</span>
-            <span className="text-(--text-secondary)">
-              {content.members.roles[roleKey] ?? member.role}
-            </span>
-
-            {member.preferred_pace_group && (
-              <>
-                <span className="text-(--text-tertiary)">
-                  {content.memberActions.paceGroupColumn}
-                </span>
-                <span className="text-(--text-secondary)">{member.preferred_pace_group}</span>
-              </>
-            )}
-
-            {statusText && (
-              <>
-                <span className="text-(--text-tertiary)">{content.memberActions.statusColumn}</span>
-                <span className={statusClass}>{statusText}</span>
-              </>
-            )}
           </div>
-        </div>
-      </Link>
-    </motion.div>
+        </>
+      )}
+    </div>
   );
 }

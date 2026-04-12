@@ -1430,6 +1430,92 @@
           }
         }
       }
+    },
+    "stat": {
+      "neutral": {
+        "bg": {
+          "$type": "color",
+          "$description": "Background for neutral-sentiment stat pills (e.g. fill rate steady)",
+          "$value": "{color.primary.50}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.primary.50}",
+                "Dark": "{color.primary.700}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$description": "Text for neutral-sentiment stat pills",
+          "$value": "{color.primary.800}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.primary.800}",
+                "Dark": "{color.primary.300}"
+              }
+            }
+          }
+        }
+      },
+      "negative": {
+        "bg": {
+          "$type": "color",
+          "$description": "Background for negative-sentiment stat pills (e.g. cancellations)",
+          "$value": "{color.primary.100}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.primary.100}",
+                "Dark": "{color.primary.500-alpha-12}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$description": "Text for negative-sentiment stat pills",
+          "$value": "{color.primary.800}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.primary.800}",
+                "Dark": "{color.primary.300}"
+              }
+            }
+          }
+        }
+      },
+      "positive": {
+        "bg": {
+          "$type": "color",
+          "$description": "Background for positive-sentiment stat pills (e.g. active members, growth)",
+          "$value": "{color.success.100}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.success.100}",
+                "Dark": "{color.success.500-alpha-12}"
+              }
+            }
+          }
+        },
+        "text": {
+          "$type": "color",
+          "$description": "Text for positive-sentiment stat pills",
+          "$value": "{color.success.800}",
+          "$extensions": {
+            "com.figma": {
+              "modes": {
+                "Light": "{color.success.800}",
+                "Dark": "{color.success.300}"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "chip": {

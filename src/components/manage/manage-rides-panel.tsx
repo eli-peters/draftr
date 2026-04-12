@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { CaretUp, CaretDown, DotsThree } from '@phosphor-icons/react/dist/ssr';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -26,7 +28,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { AdminFilterToolbar, type FilterDefinition } from './admin-filter-toolbar';
 import { TablePagination } from './table-pagination';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 import { useUserPrefs } from '@/components/user-prefs-provider';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
@@ -51,6 +53,7 @@ export interface ManageRideData {
   pace_group_sort_order: number | null;
   signup_count: number;
   created_by_name: string | null;
+  created_by_avatar_url: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -190,12 +193,6 @@ export function ManageRidesPanel({
     return [...filtered].sort((a, b) => compareRides(a, b, sortKey, sortDir));
   }, [rides, statusFilter, paceFilter, search, today, sortKey, sortDir]);
 
-  // Mobile always shows chronological order (earliest → latest)
-  const mobileRides = useMemo(
-    () => [...visibleRides].sort((a, b) => compareRides(a, b, 'date', 'asc')),
-    [visibleRides],
-  );
-
   const emptyMessages: Record<StatusTab, string> = {
     upcoming: content.rides.noUpcomingRides,
     past: content.rides.noPastRides,
@@ -258,11 +255,11 @@ export function ManageRidesPanel({
         <EmptyState title={emptyMessages[statusFilter]} description={content.rides.noRides} />
       ) : (
         <>
-          {/* Desktop table (admin: always, leader: md+) */}
-          <div className="hidden overflow-x-auto rounded-md border border-(--border-subtle) md:block">
-            <table className="w-full text-left">
+          {/* Desktop table */}
+          <div className="overflow-x-auto rounded-md border border-(--border-default)">
+            <table className="w-full bg-(--surface-default) text-left">
               <thead>
-                <tr className="border-b border-(--border-subtle) bg-(--surface-sunken)">
+                <tr className="border-b border-(--border-default) bg-(--surface-sunken)">
                   <SortableHeader label={content.rides.dateColumn} sortKey="date" {...sortProps} />
                   <SortableHeader label={ridesContent.form.title} sortKey="title" {...sortProps} />
                   <SortableHeader
@@ -302,13 +299,6 @@ export function ManageRidesPanel({
               onPageChange={setPage}
               onPageSizeChange={setPageSize}
             />
-          </div>
-
-          {/* Mobile stacked rows — all filtered results, no pagination */}
-          <div className="min-w-0 overflow-hidden rounded-md border border-(--border-subtle) divide-y divide-(--border-subtle) [&>*:nth-child(even)]:bg-(--surface-sunken) md:hidden">
-            {mobileRides.map((ride) => (
-              <MobileRideRow key={ride.id} ride={ride} isLeader={isLeader} />
-            ))}
           </div>
         </>
       )}
@@ -377,7 +367,7 @@ function DesktopRideRow({ ride, isLeader }: { ride: ManageRideData; isLeader: bo
       tabIndex={0}
       role="link"
       className={cn(
-        'group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-sunken) hover:bg-muted/50',
+        'group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-page) hover:bg-(--action-primary-subtle-bg)',
         isCancelled && 'opacity-disabled',
         isPending && 'opacity-pending pointer-events-none',
       )}
@@ -395,13 +385,48 @@ function DesktopRideRow({ ride, isLeader }: { ride: ManageRideData; isLeader: bo
           <span className="font-sans text-xs text-(--text-tertiary)">—</span>
         )}
       </td>
-      <td className="whitespace-nowrap p-3 font-sans text-xs text-(--text-primary)">{spotsText}</td>
+      <td className="whitespace-nowrap p-3 font-sans text-xs text-(--text-primary)">
+        {spotsText}
+        {ride.capacity != null && ride.capacity > 0 && (
+          <div className="mt-1 h-0.5 w-full max-w-[60px] rounded-full bg-(--border-subtle)">
+            <div
+              className={cn(
+                'h-full rounded-full',
+                ride.signup_count / ride.capacity >= 0.9
+                  ? 'bg-(--feedback-error-default)'
+                  : ride.signup_count / ride.capacity >= 0.7
+                    ? 'bg-(--feedback-warning-default)'
+                    : 'bg-(--feedback-success-default)',
+              )}
+              style={{ width: `${Math.min(100, (ride.signup_count / ride.capacity) * 100)}%` }}
+            />
+          </div>
+        )}
+      </td>
       <td className="max-w-[180px] truncate p-3 font-sans text-xs text-(--text-secondary)">
         {ride.start_location_name ?? '—'}
       </td>
       {!isLeader && (
-        <td className="max-w-[140px] truncate p-3 font-sans text-xs text-(--text-tertiary)">
-          {ride.created_by_name ?? '—'}
+        <td className="max-w-[160px] p-3">
+          {ride.created_by_name ? (
+            <div className="flex items-center gap-2 min-w-0">
+              <Avatar className="h-6 w-6 shrink-0">
+                {ride.created_by_avatar_url && (
+                  <AvatarImage src={ride.created_by_avatar_url} alt={ride.created_by_name} />
+                )}
+                <AvatarFallback
+                  className={`text-[10px] font-medium ${getAvatarColourClasses(ride.created_by_name)}`}
+                >
+                  {getInitials(ride.created_by_name)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="truncate font-sans text-xs text-(--text-secondary)">
+                {ride.created_by_name}
+              </span>
+            </div>
+          ) : (
+            <span className="font-sans text-xs text-(--text-tertiary)">—</span>
+          )}
         </td>
       )}
       <td className={cn('p-3 font-sans text-xs', statusClass)}>{statusLabel}</td>
@@ -445,84 +470,5 @@ function DesktopRideRow({ ride, isLeader }: { ride: ManageRideData; isLeader: bo
         </AlertDialog>
       </td>
     </tr>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// MobileRideRow
-// ---------------------------------------------------------------------------
-
-function MobileRideRow({ ride, isLeader }: { ride: ManageRideData; isLeader: boolean }) {
-  const prefs = useUserPrefs();
-  const router = useRouter();
-  const isCancelled = ride.status === RideStatus.CANCELLED;
-  const isWeatherWatch = ride.status === RideStatus.WEATHER_WATCH;
-  const spotsText =
-    ride.capacity != null ? `${ride.signup_count}/${ride.capacity}` : `${ride.signup_count}`;
-
-  const dateFormatted = `${format(new Date(ride.ride_date), 'MMM d')}, ${formatTime(ride.start_time, prefs.time_format)}`;
-
-  let statusLabel = '';
-  let statusClass = '';
-  if (isCancelled) {
-    statusLabel = ridesContent.status.cancelled;
-    statusClass = 'text-(--feedback-error-text)';
-  } else if (isWeatherWatch) {
-    statusLabel = ridesContent.status.weatherWatch;
-    statusClass = 'text-(--feedback-warning-text)';
-  }
-
-  function handleClick() {
-    router.push(routes.manageEditRide(ride.id, routes.manageRides));
-  }
-
-  return (
-    <div
-      onClick={handleClick}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleClick();
-        }
-      }}
-      tabIndex={0}
-      role="link"
-      className={cn(
-        'cursor-pointer px-3 py-2.5 hover:bg-muted/50',
-        isCancelled && 'opacity-disabled',
-      )}
-    >
-      <p className="min-w-0 truncate font-sans text-xs font-semibold text-(--text-primary)">
-        {ride.title}
-      </p>
-      <div className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 font-sans text-xs">
-        <span className="text-(--text-tertiary)">{content.rides.dateColumn}</span>
-        <span className="truncate text-(--text-secondary)">{dateFormatted}</span>
-
-        {ride.pace_group_name && (
-          <>
-            <span className="text-(--text-tertiary)">{ridesContent.form.paceGroup}</span>
-            <span className="text-(--text-secondary)">{ride.pace_group_name}</span>
-          </>
-        )}
-
-        <span className="text-(--text-tertiary)">{ridesContent.card.riders}</span>
-        <span className="text-(--text-secondary)">{spotsText}</span>
-
-        {!isLeader && ride.created_by_name && (
-          <>
-            <span className="text-(--text-tertiary)">{content.rides.leaderColumn}</span>
-            <span className="truncate text-(--text-secondary)">{ride.created_by_name}</span>
-          </>
-        )}
-
-        {statusLabel && (
-          <>
-            <span className="text-(--text-tertiary)">{content.rides.statusColumn}</span>
-            <span className={statusClass}>{statusLabel}</span>
-          </>
-        )}
-      </div>
-    </div>
   );
 }

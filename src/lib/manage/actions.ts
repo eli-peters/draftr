@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 import { createClient, getUser } from '@/lib/supabase/server';
 import {
   invalidateAnnouncements,
@@ -389,7 +389,7 @@ export async function updatePaceTier(
   }
 
   if (tier?.club_id) invalidatePaceGroups(tier.club_id);
-  revalidateTag(TAG_RIDES, 'max');
+  updateTag(TAG_RIDES);
   return { success: true };
 }
 
@@ -446,7 +446,7 @@ export async function deletePaceTier(tierId: string) {
   }
 
   if (tier?.club_id) invalidatePaceGroups(tier.club_id);
-  revalidateTag(TAG_RIDES, 'max');
+  updateTag(TAG_RIDES);
   return { success: true };
 }
 
@@ -555,7 +555,7 @@ export async function createRecurringRide(
   }
 
   invalidateManage(clubId);
-  revalidateTag(TAG_RIDES, 'max');
+  updateTag(TAG_RIDES);
   return { success: true };
 }
 
@@ -751,7 +751,7 @@ export async function generateRidesFromRecurring(templateId: string) {
     .eq('id', templateId);
 
   invalidateManage(template.club_id);
-  revalidateTag(TAG_RIDES, 'max');
+  updateTag(TAG_RIDES);
   return { success: true, count: datesToCreate.length };
 }
 
@@ -808,6 +808,71 @@ export async function deleteRecurringRide(templateId: string) {
   if (error) return { error: error.message };
 
   if (template?.club_id) invalidateManage(template.club_id);
-  revalidateTag(TAG_RIDES, 'max');
+  updateTag(TAG_RIDES);
   return { success: true };
+}
+
+// ---------------------------------------------------------------------------
+// Member Search (for dashboard inline search)
+// ---------------------------------------------------------------------------
+
+export interface MemberSearchResult {
+  user_id: string;
+  full_name: string;
+  avatar_url: string | null;
+  role: string;
+  status: string;
+}
+
+/**
+ * Search club members by name or email. Returns top 5 matches.
+ * Fetches all club members and filters in JS because PostgREST
+ * does not support `.or()` on foreign table columns.
+ */
+export async function searchClubMembers(
+  clubId: string,
+  query: string,
+): Promise<MemberSearchResult[]> {
+  const supabase = await createClient();
+  const user = await getUser();
+  if (!user) return [];
+
+  const trimmed = query.trim();
+  if (trimmed.length < 2) return [];
+
+  const { data, error } = await supabase
+    .from('club_memberships')
+    .select(
+      'user_id, role, status, user:users!club_memberships_user_id_fkey(full_name, avatar_url, email)',
+    )
+    .eq('club_id', clubId);
+
+  if (error) {
+    console.error('Error searching members:', error.message);
+    return [];
+  }
+
+  const q = trimmed.toLowerCase();
+
+  return (data ?? [])
+    .filter((m) => {
+      if (!m.user) return false;
+      const u = m.user as unknown as { full_name: string; email: string };
+      return u.full_name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+    })
+    .slice(0, 5)
+    .map((m) => {
+      const u = m.user as unknown as {
+        full_name: string;
+        avatar_url: string | null;
+        email: string;
+      };
+      return {
+        user_id: m.user_id,
+        full_name: u.full_name,
+        avatar_url: u.avatar_url,
+        role: m.role,
+        status: m.status,
+      };
+    });
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { MagnifyingGlass, X, Plus } from '@phosphor-icons/react/dist/ssr';
+import { MagnifyingGlass, X, Plus, Funnel } from '@phosphor-icons/react/dist/ssr';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -172,8 +172,8 @@ export function AdminFilterToolbar({
         {/* + Add filter button */}
         {availableFilters.length > 0 && (
           <DropdownMenu>
-            <DropdownMenuTrigger className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
-              <Plus className="h-3 w-3" />
+            <DropdownMenuTrigger className="inline-flex items-center gap-1.5 rounded-md border border-(--border-default) bg-(--surface-default) px-2.5 py-1.5 text-xs font-medium text-(--text-secondary) hover:bg-(--surface-sunken) hover:border-(--border-strong) hover:text-(--text-primary)">
+              <Funnel className="h-3.5 w-3.5" />
               {manageContent.addFilter}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">

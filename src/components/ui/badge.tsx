@@ -35,6 +35,12 @@ const badgeVariants = cva(
         'role-admin': 'bg-badge-role-admin-bg text-badge-role-admin-text',
         'role-new': 'bg-badge-role-new-bg text-badge-role-new-text',
         count: 'bg-badge-count-bg text-badge-count-text',
+        'type-general':
+          'rounded-md! border border-feedback-info-default bg-feedback-info-bg text-text-primary',
+        'type-event':
+          'rounded-md! border border-feedback-success-default bg-feedback-success-bg text-text-primary',
+        'type-urgent':
+          'rounded-md! border border-feedback-warning-default bg-feedback-warning-bg text-text-primary',
       },
       shape: {
         pill: 'rounded-full',

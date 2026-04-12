@@ -9,6 +9,7 @@ export interface ClubMember {
   full_name: string;
   email: string;
   avatar_url: string | null;
+  phone_number: string | null;
   preferred_pace_group: string | null;
   role: string;
   status: string;
@@ -26,7 +27,7 @@ export async function getClubMembers(clubId: string): Promise<ClubMember[]> {
     .select(
       `
       user_id, role, status, joined_at,
-      user:users!club_memberships_user_id_fkey(full_name, email, avatar_url, preferred_pace_group)
+      user:users!club_memberships_user_id_fkey(full_name, email, avatar_url, phone_number, preferred_pace_group)
     `,
     )
     .eq('club_id', clubId)
@@ -42,6 +43,7 @@ export async function getClubMembers(clubId: string): Promise<ClubMember[]> {
       full_name: string;
       email: string;
       avatar_url: string | null;
+      phone_number: string | null;
       preferred_pace_group: string | null;
     };
     return {
@@ -49,6 +51,7 @@ export async function getClubMembers(clubId: string): Promise<ClubMember[]> {
       full_name: user.full_name,
       email: user.email,
       avatar_url: user.avatar_url,
+      phone_number: user.phone_number,
       preferred_pace_group: user.preferred_pace_group,
       role: m.role,
       status: m.status,
@@ -160,13 +163,14 @@ export interface SectionCardStats {
   upcomingRides: number;
   activeMembers: number;
   recentAnnouncements: number;
+  pendingMembers: number;
 }
 
 export async function getSectionCardStats(clubId: string): Promise<SectionCardStats> {
   const supabase = await createClient();
   const todayStr = new Date().toISOString().split('T')[0];
 
-  const [ridesResult, membersResult, announcementsCount] = await Promise.all([
+  const [ridesResult, membersResult, announcementsCount, pendingMembers] = await Promise.all([
     supabase
       .from('rides')
       .select('*', { count: 'exact', head: true })
@@ -179,12 +183,14 @@ export async function getSectionCardStats(clubId: string): Promise<SectionCardSt
       .eq('club_id', clubId)
       .eq('status', 'active'),
     getRecentAnnouncementCount(clubId),
+    getPendingMemberCount(clubId),
   ]);
 
   return {
     upcomingRides: ridesResult.count ?? 0,
     activeMembers: membersResult.count ?? 0,
     recentAnnouncements: announcementsCount,
+    pendingMembers,
   };
 }
 

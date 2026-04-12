@@ -8,11 +8,12 @@ import {
   UsersThree,
   Megaphone,
   Sliders,
-  Laptop,
-  CaretRight,
+  ArrowCircleRight,
 } from '@phosphor-icons/react/dist/ssr';
 import { routes } from '@/config/routes';
 import { appContent } from '@/content/app';
+import { useIsMobile } from '@/hooks/use-is-mobile';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { InviteMemberDrawer } from '@/components/manage/invite-member-drawer';
 import { AnnouncementFormDrawer } from '@/components/manage/announcements-panel';
 import type { SectionCardStats } from '@/lib/manage/queries';
@@ -20,57 +21,6 @@ import type { SectionCardStats } from '@/lib/manage/queries';
 const { dashboard: content } = appContent.manage;
 
 type ActionType = 'invite' | 'announcement';
-
-interface SectionCard {
-  label: string;
-  href: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  icon: React.ComponentType<any>;
-  stat?: (stats: SectionCardStats) => string;
-  /** Static descriptive subtitle, shown on desktop only. */
-  subtitle?: string;
-  mobileHint?: string;
-  cta: { label: string; href: string };
-  /** When set, the card footer opens a drawer instead of navigating. */
-  actionType?: ActionType;
-}
-
-const sections: SectionCard[] = [
-  {
-    label: content.sectionCards.rides,
-    href: routes.manageRides,
-    icon: Bicycle,
-    stat: (s) => content.sectionCards.upcomingStat(s.upcomingRides),
-    cta: { label: content.sectionCards.createRide, href: routes.manageNewRide },
-  },
-  {
-    label: content.sectionCards.members,
-    href: routes.manageMembers,
-    icon: UsersThree,
-    stat: (s) => content.sectionCards.activeStat(s.activeMembers),
-    cta: { label: content.sectionCards.invite, href: routes.manageMembers },
-    actionType: 'invite',
-  },
-  {
-    label: content.sectionCards.announcements,
-    href: routes.manageAnnouncements,
-    icon: Megaphone,
-    stat: (s) => content.sectionCards.thisWeekStat(s.recentAnnouncements),
-    cta: { label: content.sectionCards.newAnnouncement, href: routes.manageAnnouncements },
-    actionType: 'announcement',
-  },
-  {
-    label: content.sectionCards.settings,
-    href: routes.manageSettings,
-    icon: Sliders,
-    subtitle: content.sectionCards.settingsStat,
-    mobileHint: content.sectionCards.comingSoonMobile,
-    cta: { label: content.sectionCards.edit, href: routes.manageSettings },
-  },
-];
-
-const footerClass =
-  'relative z-10 block bg-surface-card-footer-soft px-4 py-2.5 text-xs font-semibold text-primary hover:underline';
 
 interface SectionCardsProps {
   stats: SectionCardStats;
@@ -81,72 +31,65 @@ export function SectionCards({ stats, clubId }: SectionCardsProps) {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [announcementOpen, setAnnouncementOpen] = useState(false);
   const router = useRouter();
+  const isMobile = useIsMobile();
 
-  function handleFooterAction(actionType: ActionType) {
-    if (actionType === 'invite') setInviteOpen(true);
-    else setAnnouncementOpen(true);
-  }
+  const membersStat =
+    stats.pendingMembers > 0
+      ? content.sectionCards.pendingInvitesStat(stats.pendingMembers)
+      : content.sectionCards.activeStat(stats.activeMembers);
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-3">
-        {sections.map((section) => (
-          <div
-            key={section.href}
-            className="group relative flex flex-col overflow-clip rounded-(--card-radius) border border-(--border-default) bg-card transition-all hover:border-(--border-strong) hover:shadow-sm"
-          >
-            <Link
-              href={section.href}
-              className="absolute inset-0 z-0 rounded-(--card-radius)"
-              tabIndex={-1}
-              aria-hidden="true"
-            />
+      <div className="grid grid-cols-2 gap-5">
+        {/* Rides */}
+        <SectionCard
+          icon={Bicycle}
+          label={content.sectionCards.rides}
+          stat={content.sectionCards.upcomingStat(stats.upcomingRides)}
+          href={routes.manageRides}
+          actionLabel={content.sectionCards.createRide}
+          actionHref={routes.manageNewRide}
+          isMobile={isMobile}
+        />
 
-            <div className="flex-1 p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted/60">
-                  <section.icon className="h-[1.125rem] w-[1.125rem] text-muted-foreground" />
-                </div>
-                <CaretRight
-                  className="h-4 w-4 text-muted-foreground/70 transition-transform group-hover:translate-x-0.5"
-                  weight="bold"
-                />
-              </div>
+        {/* Members */}
+        <SectionCard
+          icon={UsersThree}
+          label={content.sectionCards.members}
+          stat={membersStat}
+          href={routes.manageMembers}
+          actionLabel={content.sectionCards.invite}
+          actionType="invite"
+          onAction={() => setInviteOpen(true)}
+          isMobile={isMobile}
+        />
 
-              <div className="mt-3">
-                <p className="text-sm font-semibold text-foreground">{section.label}</p>
-                {section.stat && (
-                  <p className="mt-0.5 text-xs text-muted-foreground">{section.stat(stats)}</p>
-                )}
-                {section.subtitle && (
-                  <p className="mt-0.5 hidden text-xs text-muted-foreground md:block">
-                    {section.subtitle}
-                  </p>
-                )}
-                {section.mobileHint && (
-                  <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground md:hidden">
-                    <Laptop className="h-3 w-3" />
-                    {section.mobileHint}
-                  </p>
-                )}
-              </div>
-            </div>
+        {/* Announcements — full width on mobile (Settings hidden), single col on desktop */}
+        <div className="col-span-2 md:col-span-1">
+          <SectionCard
+            icon={Megaphone}
+            label={content.sectionCards.announcements}
+            stat={content.sectionCards.thisWeekStat(stats.recentAnnouncements)}
+            href={routes.manageAnnouncements}
+            actionLabel={content.sectionCards.newAnnouncement}
+            actionType="announcement"
+            onAction={() => setAnnouncementOpen(true)}
+            isMobile={isMobile}
+          />
+        </div>
 
-            {section.actionType ? (
-              <button
-                type="button"
-                className={`${footerClass} w-full cursor-pointer text-left`}
-                onClick={() => handleFooterAction(section.actionType!)}
-              >
-                {section.cta.label}
-              </button>
-            ) : (
-              <Link href={section.cta.href} className={footerClass}>
-                {section.cta.label}
-              </Link>
-            )}
-          </div>
-        ))}
+        {/* Settings — hidden on mobile (fully gated, no quick action) */}
+        <div className="hidden md:block">
+          <SectionCard
+            icon={Sliders}
+            label={content.sectionCards.settings}
+            stat={content.sectionCards.settingsStat}
+            href={routes.manageSettings}
+            actionLabel={content.sectionCards.edit}
+            actionHref={routes.manageSettings}
+            isMobile={false}
+          />
+        </div>
       </div>
 
       {/* Drawers rendered outside the overflow-clip cards */}
@@ -164,5 +107,93 @@ export function SectionCards({ stats, clubId }: SectionCardsProps) {
         onSuccess={() => router.push(routes.manageAnnouncements)}
       />
     </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Individual card — matches Figma node 1655:6540
+// Centered icon, title, stat line, action link with arrow
+// ---------------------------------------------------------------------------
+
+interface SectionCardProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  icon: React.ComponentType<any>;
+  label: string;
+  stat: string;
+  href: string;
+  actionLabel: string;
+  /** Direct link for the action (e.g. create ride page). */
+  actionHref?: string;
+  /** Drawer action type — mutually exclusive with actionHref. */
+  actionType?: ActionType;
+  /** Callback when a drawer action is triggered. */
+  onAction?: () => void;
+  /**
+   * Whether the viewport is mobile.
+   * Option A: on mobile, card click-through is disabled — cards are action-only containers.
+   * To switch to Option B (let users hit the gate), remove the isMobile conditional on the Link.
+   */
+  isMobile: boolean;
+}
+
+function SectionCard({
+  icon: Icon,
+  label,
+  stat,
+  href,
+  actionLabel,
+  actionHref,
+  actionType,
+  onAction,
+  isMobile,
+}: SectionCardProps) {
+  function handleActionClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    e.preventDefault();
+    if (actionType && onAction) {
+      onAction();
+    }
+  }
+
+  return (
+    <div className="relative flex flex-col items-center overflow-clip rounded-(--card-radius) border border-(--border-default) bg-card px-4 pt-8 pb-8 transition-[transform,box-shadow,border-color,background-color] duration-(--duration-normal) ease-(--ease-in-out) hover:-translate-y-0.5 hover:border-accent-primary-muted hover:shadow-md active:scale-[0.98]">
+      {/* Card click-through: desktop only (Option A — mobile cards are action-only containers) */}
+      {!isMobile && (
+        <Link
+          href={href}
+          className="absolute inset-0 z-0 rounded-(--card-radius)"
+          tabIndex={-1}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Icon */}
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-primary-subtle">
+        <Icon className="size-9 text-accent-secondary-default" weight="duotone" />
+      </div>
+
+      {/* Title + stat */}
+      <div className="mt-6 w-full text-center">
+        <p className="text-xl font-semibold leading-7 tracking-tight text-foreground mb-2">
+          {label}
+        </p>
+        <p className="text-md text-(--text-secondary)">{stat}</p>
+      </div>
+
+      {/* Action button */}
+      <div className="relative z-10 mt-8">
+        {actionHref && !actionType ? (
+          <Link href={actionHref} className={buttonVariants({ variant: 'ghost', size: 'default' })}>
+            {actionLabel}
+            <ArrowCircleRight weight="fill" />
+          </Link>
+        ) : (
+          <Button variant="ghost" size="default" onClick={handleActionClick}>
+            {actionLabel}
+            <ArrowCircleRight weight="fill" />
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }

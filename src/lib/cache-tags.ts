@@ -1,7 +1,7 @@
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 
 // ---------------------------------------------------------------------------
-// Cache tag taxonomy — centralised constants for unstable_cache + revalidateTag
+// Cache tag taxonomy — centralised constants for unstable_cache + updateTag
 // ---------------------------------------------------------------------------
 
 /** Global ride feed (upcoming rides list) */
@@ -59,11 +59,11 @@ export function tagPaceGroups(clubId: string) {
 
 // ---------------------------------------------------------------------------
 // Invalidation helpers — call these from server actions
-// Next.js 16 revalidateTag requires a second argument: 'max' for full purge
+// updateTag guarantees read-your-own-writes and notifies the client to re-render
 // ---------------------------------------------------------------------------
 
 function purgeTag(tag: string) {
-  revalidateTag(tag, 'max');
+  updateTag(tag);
 }
 
 /** Invalidate ride-related caches after a signup/cancel action */

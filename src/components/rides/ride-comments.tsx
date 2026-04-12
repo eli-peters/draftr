@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState, useTransition } from 'react';
+import { useCallback, useRef, useState, useTransition } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ChatCircle, PaperPlaneTilt } from '@phosphor-icons/react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { FloatingField } from '@/components/ui/floating-field';
 import { ContentCard } from '@/components/ui/content-card';
+import { useCompositionSafe } from '@/hooks/use-composition-safe';
 import {
   AlertDialog,
   AlertDialogClose,
@@ -99,6 +100,16 @@ function CommentRow({
   const [isPending, startTransition] = useTransition();
   const editRef = useRef<HTMLTextAreaElement>(null);
 
+  const editCompositionProps = useCompositionSafe(
+    useCallback(
+      (value: string) => {
+        setEditBody(value);
+        if (editRef.current) autoExpand(editRef.current);
+      },
+      [editRef],
+    ),
+  );
+
   const { listItem } = useMotionPresets();
   const isOwn = currentUserId === comment.user_id;
   const canModify = isOwn || isAdmin;
@@ -157,10 +168,7 @@ function CommentRow({
             <Textarea
               ref={editRef}
               value={editBody}
-              onChange={(e) => {
-                setEditBody(e.target.value);
-                autoExpand(e.currentTarget);
-              }}
+              {...editCompositionProps}
               maxLength={CHAR_LIMIT}
               rows={1}
               className="min-h-0 resize-none overflow-hidden py-2 text-sm"
@@ -251,6 +259,16 @@ function AddCommentForm({ rideId }: { rideId: string }) {
   const [isPending, startTransition] = useTransition();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const commentCompositionProps = useCompositionSafe(
+    useCallback(
+      (value: string) => {
+        setBody(value);
+        if (textareaRef.current) autoExpand(textareaRef.current);
+      },
+      [textareaRef],
+    ),
+  );
+
   function handleSubmit() {
     if (!body.trim()) return;
     startTransition(async () => {
@@ -283,10 +301,7 @@ function AddCommentForm({ rideId }: { rideId: string }) {
           id="add-comment"
           ref={textareaRef}
           value={body}
-          onChange={(e) => {
-            setBody(e.target.value);
-            autoExpand(e.currentTarget);
-          }}
+          {...commentCompositionProps}
           onKeyDown={handleKeyDown}
           placeholder=" "
           maxLength={CHAR_LIMIT}

@@ -658,7 +658,7 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
       id, title, ride_date, start_time, status, capacity, template_id, distance_km,
       start_location_name,
       pace_group:pace_groups(id, name, sort_order),
-      creator:users!rides_created_by_fkey(full_name),
+      creator:users!rides_created_by_fkey(full_name, avatar_url),
       ride_signups(status)
     `,
     )
@@ -686,6 +686,7 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
     const signups = ride.ride_signups as unknown as JoinedSignupStatus;
     const creator = ride.creator as unknown as {
       full_name: string;
+      avatar_url: string | null;
     } | null;
     return {
       id: ride.id,
@@ -703,6 +704,7 @@ export async function getLeaderRides(userId: string, clubId: string, isAdmin: bo
       pace_group_sort_order: pace?.sort_order ?? null,
       signup_count: countActiveSignups(signups ?? []),
       created_by_name: creator?.full_name ?? null,
+      created_by_avatar_url: creator?.avatar_url ?? null,
     };
   });
 }

@@ -1,8 +1,12 @@
+'use client';
+
+import { useCallback } from 'react';
 import { Bicycle } from '@phosphor-icons/react/dist/ssr';
 import { ContentCard } from '@/components/ui/content-card';
 import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { useCompositionSafe } from '@/hooks/use-composition-safe';
 import { DatePicker } from '@/components/ui/date-picker';
 import { TimePicker } from '@/components/ui/time-picker';
 import {
@@ -52,6 +56,13 @@ export function StepDetails({
   onDateChange,
   onTimeChange,
 }: StepDetailsProps) {
+  const titleCompositionProps = useCompositionSafe(
+    useCallback((value: string) => onFieldChange('title', value), [onFieldChange]),
+  );
+  const descCompositionProps = useCompositionSafe(
+    useCallback((value: string) => onFieldChange('description', value), [onFieldChange]),
+  );
+
   return (
     <ContentCard padding="default" heading={form.sectionRideDetails} icon={Bicycle}>
       <div className="flex flex-col gap-5 md:gap-6">
@@ -64,7 +75,7 @@ export function StepDetails({
             enterKeyHint="next"
             aria-invalid={!!fieldErrors?.title}
             value={title}
-            onChange={(e) => onFieldChange('title', e.target.value)}
+            {...titleCompositionProps}
             placeholder=" "
           />
         </FloatingField>
@@ -82,7 +93,7 @@ export function StepDetails({
             spellCheck
             enterKeyHint="next"
             value={description}
-            onChange={(e) => onFieldChange('description', e.target.value)}
+            {...descCompositionProps}
             placeholder=" "
             maxLength={250}
           />

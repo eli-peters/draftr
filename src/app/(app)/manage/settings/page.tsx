@@ -20,7 +20,7 @@ export default async function ManageSettingsPage() {
   if (userRole !== 'admin') redirect(routes.manageRides);
 
   return (
-    <MobileGate mode="block">
+    <MobileGate>
       <DashboardShell>
         <PageHeader centered={false} title={content.sections.club} />
         <div className="mt-4 space-y-8">

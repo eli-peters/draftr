@@ -13,9 +13,12 @@ import {
 } from '@phosphor-icons/react/dist/ssr';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMotionPresets } from '@/lib/motion';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
+import { useCompositionSafe } from '@/hooks/use-composition-safe';
 import { Textarea } from '@/components/ui/textarea';
 import { CardIconHeader } from '@/components/ui/card-icon-header';
 import { Label } from '@/components/ui/label';
@@ -58,11 +61,11 @@ const announcementTypeOptions = announcementTypes.map((t) => ({
   label: content.announcements.typeOptions[t],
 }));
 
-/** Type indicator dot colours. */
-const typeDotColors: Record<AnnouncementType, string> = {
-  general: 'bg-(--feedback-info-default)',
-  event: 'bg-(--feedback-success-default)',
-  urgent: 'bg-(--feedback-warning-default)',
+/** Badge variant per announcement type. */
+const typeBadgeVariant: Record<AnnouncementType, 'type-general' | 'type-event' | 'type-urgent'> = {
+  general: 'type-general',
+  event: 'type-event',
+  urgent: 'type-urgent',
 };
 
 interface AnnouncementData {
@@ -232,22 +235,25 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
       />
 
       {visibleAnnouncements.length === 0 ? (
-        <p className="font-sans text-xs text-(--text-secondary)">
-          {content.announcements.noAnnouncements}
-        </p>
+        <EmptyState
+          title={content.announcements.noAnnouncements}
+          description={content.announcements.noFilterResults}
+        />
       ) : (
         <>
           {/* Desktop table */}
-          <div className="hidden overflow-x-auto rounded-md border border-(--border-subtle) md:block">
-            <table className="w-full text-left">
+          <div className="overflow-x-auto rounded-md border border-(--border-default)">
+            <table className="w-full bg-(--surface-default) text-left">
               <thead>
-                <tr className="border-b border-(--border-subtle) bg-(--surface-sunken)">
-                  <th className="w-6 p-3" />
+                <tr className="border-b border-(--border-default) bg-(--surface-sunken)">
                   <SortableHeader
                     label={content.announcements.titleColumn}
                     sortKey="title"
                     {...sortProps}
                   />
+                  <th className="p-3 text-overline font-sans text-(--text-secondary)">
+                    {content.announcements.typeColumn}
+                  </th>
                   <SortableHeader
                     label={content.announcements.dateColumn}
                     sortKey="published"
@@ -278,20 +284,20 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                       }}
                       tabIndex={0}
                       role="button"
-                      className="group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-sunken) hover:bg-muted/50"
+                      className="group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-page) hover:bg-(--action-primary-subtle-bg)"
                     >
-                      {/* Type dot */}
-                      <td className="p-3">
-                        <div
-                          className={cn('h-2 w-2 rounded-full', typeDotColors[a.announcement_type])}
-                        />
-                      </td>
-
                       {/* Title */}
                       <td className="min-w-0 p-3">
                         <p className="truncate font-sans text-xs font-semibold text-(--text-primary)">
                           {a.title}
                         </p>
+                      </td>
+
+                      {/* Type badge */}
+                      <td className="p-3">
+                        <Badge variant={typeBadgeVariant[a.announcement_type]} size="sm">
+                          {content.announcements.typeOptions[a.announcement_type]}
+                        </Badge>
                       </td>
 
                       {/* Published */}
@@ -316,7 +322,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                       {/* Actions — kebab menu */}
                       <td className="p-3" onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
-                          <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
+                          <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-(--action-primary-subtle-bg) hover:text-(--text-primary)">
                             <DotsThree className="h-4 w-4" weight="bold" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -345,15 +351,6 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
               onPageChange={setPage}
               onPageSizeChange={setPageSize}
             />
-          </div>
-
-          {/* Mobile condensed rows — all filtered results, no pagination */}
-          <div className="min-w-0 overflow-hidden rounded-md border border-(--border-subtle) divide-y divide-(--border-subtle) [&>*:nth-child(even)]:bg-(--surface-sunken) md:hidden">
-            <AnimatePresence initial={false}>
-              {visibleAnnouncements.map((a) => (
-                <MobileAnnouncementRow key={a.id} announcement={a} onEdit={handleEdit} />
-              ))}
-            </AnimatePresence>
           </div>
         </>
       )}
@@ -404,6 +401,9 @@ export function AnnouncementFormDrawer({
   const [isDismissible, setIsDismissible] = useState(true);
   const [isPinned, setIsPinned] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  const titleCompositionProps = useCompositionSafe(setTitle);
+  const bodyCompositionProps = useCompositionSafe(setBody);
 
   function resetForm() {
     setTitle('');
@@ -489,7 +489,7 @@ export function AnnouncementFormDrawer({
           <Input
             id={`${mode}-announcement-title`}
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            {...titleCompositionProps}
             placeholder=" "
           />
         </FloatingField>
@@ -502,7 +502,7 @@ export function AnnouncementFormDrawer({
           <Textarea
             id={`${mode}-announcement-body`}
             value={body}
-            onChange={(e) => setBody(e.target.value)}
+            {...bodyCompositionProps}
             placeholder=" "
             rows={4}
             maxLength={500}
@@ -590,50 +590,5 @@ export function CreateAnnouncementButton({
         onSuccess={onSuccess}
       />
     </>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// MobileAnnouncementRow
-// ---------------------------------------------------------------------------
-
-function MobileAnnouncementRow({
-  announcement: a,
-  onEdit,
-}: {
-  announcement: AnnouncementData;
-  onEdit: (a: AnnouncementData) => void;
-}) {
-  const { listItem } = useMotionPresets();
-  return (
-    <motion.div
-      layout
-      variants={listItem}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      onClick={() => onEdit(a)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onEdit(a);
-        }
-      }}
-      tabIndex={0}
-      role="button"
-      className="min-w-0 cursor-pointer overflow-hidden px-3 py-2.5 hover:bg-muted/50"
-    >
-      <div className="flex items-center gap-2">
-        <p className="truncate font-sans text-xs font-semibold text-(--text-primary)">{a.title}</p>
-        {a.is_pinned && (
-          <PushPin className="h-3.5 w-3.5 shrink-0 text-(--text-tertiary)" weight="fill" />
-        )}
-      </div>
-      <div className="mt-1.5 font-sans text-xs">
-        <span className="text-(--text-secondary)">
-          {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
-        </span>
-      </div>
-    </motion.div>
   );
 }
