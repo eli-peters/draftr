@@ -9,6 +9,8 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+.agents
+.skills-lock.json
 
 # testing
 /coverage
@@ -52,3 +54,4 @@ DESIGN_SYSTEM.md
 
 # flow capture (admin flow map screenshots)
 /flow-capture/
+skills-lock.json

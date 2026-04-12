@@ -1,14 +1,13 @@
 'use client';
 
-import { useCallback, useMemo, useState, useTransition } from 'react';
+import { useCallback, useMemo, useState, useTransition, type ReactNode } from 'react';
 
 import { toast } from 'sonner';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { Button } from '@/components/ui/button';
 import { ActionBar } from '@/components/ui/action-bar';
 import { ProfileIdentityHero } from '@/components/profile/profile-identity-hero';
-import { ProfileStatsBento } from '@/components/profile/profile-stats-bento';
-import { ProfileRecentRides } from '@/components/profile/profile-recent-rides';
+
 import { ProfileContactCard } from '@/components/profile/profile-contact-card';
 import { ProfileEmergencyCard } from '@/components/profile/profile-emergency-card';
 import {
@@ -21,7 +20,6 @@ import { updateProfile } from '@/lib/profile/actions';
 import { stripToDigits, toE164 } from '@/lib/phone';
 import { appContent } from '@/content/app';
 import type { ProfileViewerAccess } from '@/lib/profile/access';
-import type { RecentRide } from '@/lib/profile/queries';
 
 const { profile: content, common } = appContent;
 
@@ -33,8 +31,6 @@ interface ProfilePageProps {
     avatarUrl: string | null;
     role: 'rider' | 'ride_leader' | 'admin';
     memberSince: string;
-    totalRides: number;
-    ridesThisMonth: number;
     bio: string;
     preferredPaceGroup: string;
     phoneNumber: string;
@@ -44,7 +40,8 @@ interface ProfilePageProps {
   };
   access: ProfileViewerAccess;
   paceGroups: { id: string; name: string; sort_order: number }[];
-  recentRides: RecentRide[];
+  statsSlot: ReactNode;
+  recentRidesSlot: ReactNode;
 }
 
 /**
@@ -62,7 +59,13 @@ interface ProfilePageProps {
  *   Without sidebar (member-to-member view): single-column bento.
  *     Stats bento (3 tiles, full width) above Recent Rides (full width).
  */
-export function ProfilePage({ subject, access, paceGroups, recentRides }: ProfilePageProps) {
+export function ProfilePage({
+  subject,
+  access,
+  paceGroups,
+  statsSlot,
+  recentRidesSlot,
+}: ProfilePageProps) {
   const initialValues: ProfileFormFields = useMemo(
     () => ({
       bio: subject.bio,
@@ -135,9 +138,7 @@ export function ProfilePage({ subject, access, paceGroups, recentRides }: Profil
 
   const showSidebar = access.canSeeContact || access.canSeeEmergency;
 
-  const statsBento = (
-    <ProfileStatsBento totalRides={subject.totalRides} ridesThisMonth={subject.ridesThisMonth} />
-  );
+  const statsBento = statsSlot;
 
   return (
     <ProfileFormContext.Provider value={formContextValue}>
@@ -175,7 +176,7 @@ export function ProfilePage({ subject, access, paceGroups, recentRides }: Profil
             </aside>
             <div className="flex flex-col gap-card-stack">
               {statsBento}
-              <ProfileRecentRides rides={recentRides} />
+              {recentRidesSlot}
             </div>
           </div>
         ) : (
@@ -183,7 +184,7 @@ export function ProfilePage({ subject, access, paceGroups, recentRides }: Profil
           // 3-column grid, recent rides fills full width below.
           <div className="mt-card-stack flex flex-col gap-card-stack">
             {statsBento}
-            <ProfileRecentRides rides={recentRides} />
+            {recentRidesSlot}
           </div>
         )}
 

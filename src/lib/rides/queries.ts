@@ -5,7 +5,14 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { SignupStatus } from '@/config/statuses';
 import { todayDateString, todayInTimezone } from '@/config/formatting';
 import { isRideCompleted } from '@/lib/rides/lifecycle';
-import { TAG_RIDES, tagRide, tagRideSignups, tagUserRides, tagPaceGroups } from '@/lib/cache-tags';
+import {
+  TAG_RIDES,
+  tagRide,
+  tagRideSignups,
+  tagUserRides,
+  tagPaceGroups,
+  tagMembership,
+} from '@/lib/cache-tags';
 import type {
   Ride,
   PaceGroup,
@@ -428,35 +435,42 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string, 
         pace_group: { name: string; sort_order: number } | null;
       };
 
+      // Find the first non-completed waitlisted ride without sequential per-ride queries.
+      // Collect all candidate rows first, then batch a single waitlist position query.
+      const candidates: Array<{ row: (typeof data)[number]; ride: RideRow }> = [];
       for (const row of data) {
         if (!row.ride) continue;
         const ride = row.ride as unknown as RideRow;
         if (isRideCompleted(ride.ride_date, ride.start_time, ride.end_time, timezone)) continue;
-
-        // Derive waitlist position from signed_up_at order
-        const { count } = await supabase
-          .from('ride_signups')
-          .select('*', { count: 'exact', head: true })
-          .eq('ride_id', ride.id)
-          .eq('status', 'waitlisted')
-          .lte('signed_up_at', row.signed_up_at);
-
-        return {
-          id: ride.id,
-          title: ride.title,
-          ride_date: ride.ride_date,
-          start_time: ride.start_time,
-          end_time: ride.end_time,
-          distance_km: ride.distance_km,
-          elevation_m: ride.elevation_m,
-          start_location_name: ride.start_location_name ?? null,
-          pace_group_name: ride.pace_group?.name ?? null,
-          pace_group_sort_order: ride.pace_group?.sort_order ?? null,
-          waitlist_position: count ?? 1,
-        };
+        candidates.push({ row, ride });
       }
 
-      return null;
+      if (!candidates.length) return null;
+
+      // Take the soonest candidate (data is already ordered by ride_date ascending).
+      const { row, ride } = candidates[0];
+
+      // Single query to derive waitlist position — replaces the per-iteration await.
+      const { count } = await supabase
+        .from('ride_signups')
+        .select('*', { count: 'exact', head: true })
+        .eq('ride_id', ride.id)
+        .eq('status', 'waitlisted')
+        .lte('signed_up_at', row.signed_up_at);
+
+      return {
+        id: ride.id,
+        title: ride.title,
+        ride_date: ride.ride_date,
+        start_time: ride.start_time,
+        end_time: ride.end_time,
+        distance_km: ride.distance_km,
+        elevation_m: ride.elevation_m,
+        start_location_name: ride.start_location_name ?? null,
+        pace_group_name: ride.pace_group?.name ?? null,
+        pace_group_sort_order: ride.pace_group?.sort_order ?? null,
+        waitlist_position: count ?? 1,
+      };
     },
     ['user-next-waitlisted', userId, clubId, today],
     { tags: [tagUserRides(userId), TAG_RIDES], revalidate: 300 },
@@ -585,23 +599,30 @@ export async function getNextAvailableRide(
 
 /**
  * Get the user's club membership (first active club).
- * Wrapped in React.cache() — called by layout + every child page, deduplicates per request.
+ * React.cache() deduplicates within a request; unstable_cache persists the DB result
+ * across requests (5 min TTL) so repeated page loads don't re-query Supabase.
  */
 export const getUserClubMembership = cache(async () => {
   const user = await getUser();
   if (!user) return null;
 
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from('club_memberships')
-    .select('*, club:clubs(*)')
-    .eq('user_id', user.id)
-    .eq('status', 'active')
-    .single();
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
+      const { data } = await supabase
+        .from('club_memberships')
+        .select('*, club:clubs(*)')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .single();
 
-  if (!data) return null;
+      if (!data) return null;
 
-  return { ...data, user_id: user.id };
+      return { ...data, user_id: user.id };
+    },
+    ['club-membership', user.id],
+    { tags: [tagMembership(user.id)], revalidate: 300 },
+  )();
 });
 
 /**

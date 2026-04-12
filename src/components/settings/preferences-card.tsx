@@ -33,8 +33,8 @@ export function PreferencesCard({ userPrefs }: PreferencesCardProps) {
   useEffect(() => setMounted(true), []);
 
   function save(patch: Partial<UserPreferences>) {
-    setOptimisticPrefs({ ...optimisticPrefs, ...patch });
     startTransition(async () => {
+      setOptimisticPrefs({ ...optimisticPrefs, ...patch });
       const result = await updateUserPreferences(patch);
       if (result && 'error' in result) {
         toast.error(result.error);
