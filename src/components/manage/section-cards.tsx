@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Bicycle,
-  UsersThree,
+  UserList,
+  UserPlus,
   Megaphone,
   Sliders,
   ArrowCircleRight,
@@ -40,9 +41,9 @@ export function SectionCards({ stats, clubId }: SectionCardsProps) {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-5">
-        {/* Rides — full width on mobile, single col on desktop */}
-        <div className="col-span-2 md:col-span-1">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+        {/* Rides */}
+        <div>
           <SectionCard
             icon={Bicycle}
             label={content.sectionCards.rides}
@@ -56,7 +57,8 @@ export function SectionCards({ stats, clubId }: SectionCardsProps) {
 
         {/* Members */}
         <SectionCard
-          icon={UsersThree}
+          icon={UserList}
+          mobileIcon={UserPlus}
           label={content.sectionCards.members}
           stat={membersStat}
           href={routes.manageMembers}
@@ -118,6 +120,9 @@ export function SectionCards({ stats, clubId }: SectionCardsProps) {
 interface SectionCardProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   icon: React.ComponentType<any>;
+  /** Optional override icon for mobile layout. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mobileIcon?: React.ComponentType<any>;
   label: string;
   stat: string;
   href: string;
@@ -136,8 +141,13 @@ interface SectionCardProps {
   isMobile: boolean;
 }
 
+// Shared card surface: border, background, radius, transition, hover lift, active press
+const cardSurface =
+  'rounded-(--card-radius) border border-(--border-default) bg-card transition-[transform,box-shadow,border-color,background-color] duration-(--duration-normal) ease-(--ease-in-out) hover:-translate-y-0.5 hover:border-accent-primary-muted hover:shadow-md active:scale-[0.98]';
+
 function SectionCard({
   icon: Icon,
+  mobileIcon: MobileIcon,
   label,
   stat,
   href,
@@ -155,17 +165,64 @@ function SectionCard({
     }
   }
 
-  return (
-    <div className="relative flex flex-col items-center overflow-clip rounded-(--card-radius) border border-(--border-default) bg-card px-4 pt-8 pb-8 transition-[transform,box-shadow,border-color,background-color] duration-(--duration-normal) ease-(--ease-in-out) hover:-translate-y-0.5 hover:border-accent-primary-muted hover:shadow-md active:scale-[0.98]">
-      {/* Card click-through: desktop only (Option A — mobile cards are action-only containers) */}
-      {!isMobile && (
+  // ---------------------------------------------------------------------------
+  // Mobile: thin horizontal action bar
+  // ---------------------------------------------------------------------------
+  if (isMobile) {
+    const BarIcon = MobileIcon ?? Icon;
+    const inner = (
+      <>
+        {/* Icon pill */}
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent-primary-subtle">
+          <BarIcon className="size-6 text-accent-secondary-default" weight="duotone" />
+        </div>
+
+        {/* Action label + arrow */}
+        <div className="flex items-center gap-2">
+          <span className="text-base font-bold font-body text-accent-primary-default">
+            {actionLabel}
+          </span>
+          <ArrowCircleRight className="size-5 text-accent-primary-default" weight="fill" />
+        </div>
+      </>
+    );
+
+    if (actionHref && !actionType) {
+      return (
         <Link
-          href={href}
-          className="absolute inset-0 z-0 rounded-(--card-radius)"
-          tabIndex={-1}
-          aria-hidden="true"
-        />
-      )}
+          href={actionHref}
+          className={`flex w-full items-center justify-between p-4 gap-3 ${cardSurface}`}
+        >
+          {inner}
+        </Link>
+      );
+    }
+
+    return (
+      <button
+        type="button"
+        className={`flex w-full items-center justify-between p-4 gap-3 ${cardSurface}`}
+        onClick={handleActionClick}
+      >
+        {inner}
+      </button>
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Desktop: tall card layout
+  // ---------------------------------------------------------------------------
+  return (
+    <div
+      className={`relative flex flex-col items-center overflow-clip px-4 pt-8 pb-8 ${cardSurface}`}
+    >
+      {/* Card click-through (desktop only — mobile cards are action-only containers) */}
+      <Link
+        href={href}
+        className="absolute inset-0 z-0 rounded-(--card-radius)"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
 
       {/* Icon */}
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-primary-subtle">

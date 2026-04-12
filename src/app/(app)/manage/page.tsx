@@ -23,7 +23,7 @@ export default async function AdminDashboardPage() {
   return (
     <DashboardShell>
       <PageHeader centered={false} title={content.heading} />
-      <div className="mt-6 min-w-0 space-y-card-stack">
+      <div className="mt-2 min-w-0 space-y-card-stack">
         {/* Stats bento and section cards stream independently */}
         <Suspense
           fallback={

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import {
   ArrowUpIcon,
   ArrowDownIcon,
-  Bicycle,
+  PersonSimpleBike,
   UserCircleMinus,
   UsersThree,
 } from '@phosphor-icons/react/dist/ssr';
@@ -127,9 +127,9 @@ export function ManageStatsBento({
       className="flex flex-col md:flex-row md:items-stretch"
     >
       {/* Fill rate — full width on mobile, first column on desktop */}
-      <motion.div variants={fadeSlideUp} className="md:flex-1 mb-3">
+      <motion.div variants={fadeSlideUp} className="md:flex-1">
         <StatColumn
-          icon={Bicycle}
+          icon={PersonSimpleBike}
           title={content.stats.fillRate}
           value={fillRate}
           suffix="%"
@@ -146,7 +146,7 @@ export function ManageStatsBento({
       <Separator orientation="vertical" className="hidden md:block" />
 
       {/* Bottom row on mobile (side by side with vertical separator), columns on desktop */}
-      <div className="flex flex-row items-stretch md:flex-1 md:contents mt-2">
+      <div className="flex flex-row items-stretch md:flex-1 md:contents mt-6">
         <motion.div variants={fadeSlideUp} className="flex-1">
           <StatColumn
             icon={UserCircleMinus}
