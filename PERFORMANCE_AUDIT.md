@@ -1,7 +1,6 @@
 # Performance Audit — Draftr
 
-**Date:** April 11, 2026  
-**Auditor:** Staff Engineer (GitHub Copilot – Claude Sonnet 4.6)
+**Date:** April 11, 2026
 
 ---
 

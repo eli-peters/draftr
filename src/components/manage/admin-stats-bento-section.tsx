@@ -1,4 +1,5 @@
-import { getAdminDashboardStats, getSectionCardStats } from '@/lib/manage/queries';
+import { getAdminDashboardStats } from '@/lib/manage/queries';
+import { createClient } from '@/lib/supabase/server';
 import { ManageStatsBento } from '@/components/manage/manage-stats-bento';
 
 interface AdminStatsBentoSectionProps {
@@ -10,9 +11,14 @@ interface AdminStatsBentoSectionProps {
  * stream behind its own Suspense boundary without blocking SectionCards.
  */
 export async function AdminStatsBentoSection({ clubId }: AdminStatsBentoSectionProps) {
-  const [stats, sectionStats] = await Promise.all([
+  const supabase = await createClient();
+  const [stats, membersResult] = await Promise.all([
     getAdminDashboardStats(clubId),
-    getSectionCardStats(clubId),
+    supabase
+      .from('club_memberships')
+      .select('*', { count: 'exact', head: true })
+      .eq('club_id', clubId)
+      .eq('status', 'active'),
   ]);
 
   return (
@@ -21,7 +27,7 @@ export async function AdminStatsBentoSection({ clubId }: AdminStatsBentoSectionP
       fillRateChange={stats.fillRateChange}
       cancellationRate={stats.cancellationRate}
       cancellationsThisMonth={stats.cancellationsThisMonth}
-      activeMembers={sectionStats.activeMembers}
+      activeMembers={membersResult.count ?? 0}
     />
   );
 }

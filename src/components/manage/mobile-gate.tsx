@@ -1,6 +1,4 @@
-'use client';
-
-import { Laptop } from '@phosphor-icons/react';
+import { Laptop } from '@phosphor-icons/react/dist/ssr';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SystemNoticeBanner } from '@/components/dashboard/system-notice-banner';
 import { appContent } from '@/content/app';
