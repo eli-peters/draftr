@@ -9,6 +9,9 @@ const ROOT_DOMAINS = ['draftr.app', 'lvh.me', 'localhost'];
 /** Reserved subdomain that serves the authenticated app. */
 export const APP_SUBDOMAIN = 'go';
 
+/** Subdomains treated as equivalent to root domain (marketing). */
+const MARKETING_SUBDOMAINS = new Set(['www']);
+
 /** Request header carrying the resolved subdomain (set by middleware). */
 export const HEADER_SUBDOMAIN = 'x-draftr-subdomain';
 
@@ -54,6 +57,11 @@ export function resolveSubdomain(host: string): SubdomainContext {
       subdomain = hostname.slice(0, -(root.length + 1));
       break;
     }
+  }
+
+  // Treat www (and any other marketing subdomains) as root domain
+  if (subdomain && MARKETING_SUBDOMAINS.has(subdomain)) {
+    subdomain = null;
   }
 
   const isApp = subdomain === APP_SUBDOMAIN;
