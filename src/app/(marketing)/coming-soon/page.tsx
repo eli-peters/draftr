@@ -60,12 +60,12 @@ export default function LandingPage() {
       <style>{`
         :root {
           --landing-accent: #DE0387;
-          --landing-accent-glow: rgba(222, 3, 135, 0.35);
-          --landing-bg: #0A0A0C;
-          --landing-surface: #131316;
-          --landing-text: #F0EFF2;
-          --landing-text-muted: #8A8894;
-          --landing-border: rgba(255, 255, 255, 0.06);
+          --landing-accent-glow: rgba(222, 3, 135, 0.18);
+          --landing-bg: #FFFFFF;
+          --landing-surface: #F5F5F7;
+          --landing-text: #1A1A1E;
+          --landing-text-muted: #6B6B76;
+          --landing-border: rgba(0, 0, 0, 0.08);
         }
 
         .landing-root {
@@ -94,7 +94,7 @@ export default function LandingPage() {
           background: radial-gradient(
             circle,
             var(--landing-accent-glow) 0%,
-            rgba(222, 3, 135, 0.08) 40%,
+            rgba(222, 3, 135, 0.04) 40%,
             transparent 70%
           );
           pointer-events: none;
@@ -106,7 +106,7 @@ export default function LandingPage() {
           content: '';
           position: absolute;
           inset: 0;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.015'/%3E%3C/svg%3E");
           background-repeat: repeat;
           pointer-events: none;
           z-index: 0;
@@ -274,7 +274,7 @@ export default function LandingPage() {
         }
 
         .landing-status-error {
-          color: #ff6b6b;
+          color: #D32F2F;
           font-size: 0.875rem;
           margin-top: 0.5rem;
           padding: 0;
