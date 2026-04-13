@@ -64,7 +64,7 @@ export async function sendPasswordResetEmail() {
     return { error: appContent.common.notAuthenticated };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
   const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
     redirectTo: `${siteUrl}/auth/callback?type=recovery`,
@@ -151,7 +151,7 @@ export async function inviteMember(formData: FormData) {
     return { error: 'already_invited' };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
   // Generate invite link without sending email (avoids Supabase free-tier rate limits)
   const { data, error } = await adminSupabase.auth.admin.generateLink({

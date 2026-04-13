@@ -39,7 +39,7 @@ export async function initiateConnect(service: IntegrationService) {
   });
 
   // Build authorize URL
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
   const redirectUri = `${siteUrl}${config.callbackPath}`;
 
   const params = new URLSearchParams({

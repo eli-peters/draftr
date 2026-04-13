@@ -61,7 +61,7 @@ export async function GET(request: Request) {
   }
 
   // Exchange code for token — RWGPS requires redirect_uri in token exchange
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
   const redirectUri = `${siteUrl}${integrations.ridewithgps.callbackPath}`;
   const tokenData = await exchangeCodeForTokens(code, redirectUri);
   if (!tokenData) {

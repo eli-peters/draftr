@@ -61,3 +61,21 @@ export const routes = {
   placesAutocomplete: '/api/places/autocomplete',
   placesDetails: '/api/places/details',
 } as const;
+
+/**
+ * Build a full URL on the app subdomain (go.draftr.app in production).
+ * Use for cross-subdomain links from marketing → app.
+ */
+export function appUrl(path: string): string {
+  const base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  return `${base}${path}`;
+}
+
+/**
+ * Build a full URL on the marketing root domain (draftr.app in production).
+ * Use for cross-subdomain links from app → marketing.
+ */
+export function marketingUrl(path: string): string {
+  const base = process.env.NEXT_PUBLIC_MARKETING_URL || 'http://localhost:3000';
+  return `${base}${path}`;
+}

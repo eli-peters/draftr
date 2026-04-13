@@ -1,6 +1,7 @@
 import { cache } from 'react';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { getCookieDomain } from '@/lib/supabase/cookie-domain';
 
 /**
  * Request-scoped Supabase client for Server Components, Server Actions, and Route Handlers.
@@ -8,6 +9,7 @@ import { cookies } from 'next/headers';
  */
 export const createClient = cache(async () => {
   const cookieStore = await cookies();
+  const cookieDomain = getCookieDomain();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,7 +22,10 @@ export const createClient = cache(async () => {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
+              cookieStore.set(name, value, {
+                ...options,
+                ...(cookieDomain ? { domain: cookieDomain } : {}),
+              }),
             );
           } catch {
             // setAll is called from Server Components where cookies can't be set.
