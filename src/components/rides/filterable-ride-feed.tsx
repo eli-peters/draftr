@@ -64,7 +64,7 @@ export function FilterableRideFeed({
 
       {filtered.length > 0 ? (
         <motion.div
-          className="flex flex-col gap-6"
+          className="group flex flex-col gap-6"
           variants={shouldReduce ? undefined : staggerContainer()}
           initial="hidden"
           animate="visible"
@@ -87,7 +87,9 @@ export function FilterableRideFeed({
                       }
                 }
               >
-                <RideCard ride={ride} variant={cardVariant} timezone={timezone} />
+                <div className="transition-opacity duration-(--duration-normal) group-hover:opacity-40 hover:!opacity-100">
+                  <RideCard ride={ride} variant={cardVariant} timezone={timezone} />
+                </div>
               </motion.div>
             ))}
           </AnimatePresence>

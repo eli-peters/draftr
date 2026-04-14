@@ -55,7 +55,7 @@ export function MyScheduleSections({ upcoming, past, timezone }: MyScheduleSecti
 
       {visibleRides.length > 0 ? (
         <motion.div
-          className="flex flex-col gap-6"
+          className="group flex flex-col gap-6"
           variants={shouldReduce ? undefined : staggerContainer()}
           initial="hidden"
           animate="visible"
@@ -79,7 +79,9 @@ export function MyScheduleSections({ upcoming, past, timezone }: MyScheduleSecti
                       }
                 }
               >
-                <ScheduleCard ride={ride} onAction={handleAction} timezone={timezone} />
+                <div className="transition-opacity duration-(--duration-normal) group-hover:opacity-40 hover:!opacity-100">
+                  <ScheduleCard ride={ride} onAction={handleAction} timezone={timezone} />
+                </div>
               </motion.div>
             ))}
           </AnimatePresence>

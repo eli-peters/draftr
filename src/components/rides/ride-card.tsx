@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { motion, useReducedMotion } from 'framer-motion';
+import { SPRINGS } from '@/lib/motion';
 import { Card } from '@/components/ui/card';
 import {
   CardContentSection,
@@ -19,6 +21,8 @@ import { dateFormats, formatTime, parseLocalDate } from '@/config/formatting';
 import { getRideAvailability, getRideLifecycle } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
 import type { RideWithDetails } from '@/types/database';
+
+const MotionLink = motion.create(Link);
 
 // ---------------------------------------------------------------------------
 // RideCard
@@ -43,11 +47,15 @@ export function RideCard({ ride, variant = 'rides', timezone }: RideCardProps) {
   const isHome = variant === 'home';
   const homeSuppressed: CardState[] = ['confirmed'];
   const isBannerSuppressed = isHome && homeSuppressed.includes(cardState);
+  const shouldReduce = useReducedMotion();
 
   return (
-    <Link
+    <MotionLink
       href={routes.ride(ride.id)}
-      className="group block cursor-pointer rounded-(--card-radius) focus-ring transition-[transform,box-shadow] duration-(--duration-normal) ease-(--ease-in-out) hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]"
+      whileHover={shouldReduce ? undefined : { scale: 1.04 }}
+      whileTap={shouldReduce ? undefined : { scale: 0.96 }}
+      transition={SPRINGS.gentle}
+      className="group block cursor-pointer"
     >
       <Card
         className={cn(
@@ -81,7 +89,7 @@ export function RideCard({ ride, variant = 'rides', timezone }: RideCardProps) {
           />
         )}
       </Card>
-    </Link>
+    </MotionLink>
   );
 }
 
