@@ -157,10 +157,14 @@ export function InviteMemberDrawer({
                       <Button
                         variant="outline"
                         size="icon-sm"
-                        onClick={() => {
-                          navigator.clipboard.writeText(inviteLink);
-                          setCopied(true);
-                          setTimeout(() => setCopied(false), 2000);
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(inviteLink);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
+                          } catch {
+                            // Clipboard API unavailable — input is already selectable
+                          }
                         }}
                       >
                         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}

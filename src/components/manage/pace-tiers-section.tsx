@@ -160,7 +160,7 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
         setTiers((prev) => [
           ...prev,
           {
-            id: crypto.randomUUID(),
+            id: result.id ?? crypto.randomUUID(),
             name: newName.trim(),
             sort_order: prev.length + 1,
             moving_pace_min: null,
@@ -196,7 +196,10 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
             startTransition(async () => {
               const undoResult = await addPaceTier(clubId, tier.name);
               if (!undoResult.error) {
-                setTiers((prev) => [...prev, { ...tier, id: crypto.randomUUID() }]);
+                setTiers((prev) => [
+                  ...prev,
+                  { ...tier, id: undoResult.id ?? crypto.randomUUID() },
+                ]);
                 toast.info(content.restored, {
                   duration: 3000,
                   icon: <ArrowCounterClockwise weight="fill" className="size-7" />,

@@ -48,7 +48,7 @@ const toggleTrackVariants = cva(
 // Capsule thumb: fully-rounded rectangle, white in both modes (iOS-inspired
 // identity cue). Travel = 20px: off at 2px left inset, on at 22px.
 const TOGGLE_THUMB_CLASS = [
-  'pointer-events-none block h-6 w-8 translate-x-0.5 rounded-full bg-white ring-0 shadow-md',
+  'pointer-events-none block h-6 w-8 translate-x-0.5 rounded-full bg-(--toggle-thumb) ring-0 shadow-md',
   'transition-transform duration-(--duration-normal) [transition-timing-function:cubic-bezier(0.175,0.885,0.32,1.275)]',
   'data-checked:translate-x-[22px]',
   'motion-reduce:duration-100',

@@ -126,7 +126,7 @@ async function fetchRwgpsRoutes(
   perPage: number,
 ): Promise<ImportableRoute[]> {
   if (type === 'activities') {
-    const trips = await getRwgpsTrips(token, externalUserId, page, perPage);
+    const trips = await getRwgpsTrips(token, page, perPage);
     if (!trips) throw new Error('RWGPS trips API returned null');
     return trips.map((t) => ({
       id: `ridewithgps:${t.id}`,
@@ -142,7 +142,7 @@ async function fetchRwgpsRoutes(
     }));
   }
 
-  const routes = await getRwgpsRoutes(token, externalUserId, page, perPage);
+  const routes = await getRwgpsRoutes(token, page, perPage);
   if (!routes) throw new Error('RWGPS routes API returned null');
   return routes.map((r) => ({
     id: `ridewithgps:${r.id}`,

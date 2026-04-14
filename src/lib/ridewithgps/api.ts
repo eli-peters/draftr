@@ -155,7 +155,6 @@ function authHeaders(accessToken: string): Record<string, string> {
  */
 export async function getUserRoutes(
   accessToken: string,
-  userId: string,
   page = 1,
   pageSize = 30,
 ): Promise<RwgpsRoute[] | null> {
@@ -185,7 +184,6 @@ export async function getUserRoutes(
  */
 export async function getUserTrips(
   accessToken: string,
-  userId: string,
   page = 1,
   pageSize = 30,
 ): Promise<RwgpsTrip[] | null> {

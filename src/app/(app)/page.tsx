@@ -13,8 +13,10 @@ export default async function HomePage() {
   const membership = await getUserClubMembership();
   if (!membership) redirect(routes.signIn);
 
-  const timezone = (membership.club as unknown as Club).timezone;
-  const userRole = membership.role as UserRole;
+  const club = membership.club as Club | null;
+  const timezone = club?.timezone ?? 'America/Toronto';
+  const userRole: UserRole =
+    membership.role === 'admin' || membership.role === 'ride_leader' ? membership.role : 'rider';
 
   return (
     <DashboardShell>

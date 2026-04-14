@@ -290,6 +290,24 @@ export async function cancelSignUp(rideId: string) {
       firstCoLeader = activeCoLeaders.find((cl) => activeSet.has(cl.user_id)) ?? null;
     }
 
+    // Re-verify the co-leader still has an active signup before promoting (guards against
+    // race where they cancel between our query above and this promotion)
+    if (firstCoLeader) {
+      const { data: verifySignup } = await supabase
+        .from('ride_signups')
+        .select('status')
+        .eq('ride_id', rideId)
+        .eq('user_id', firstCoLeader.user_id)
+        .in('status', ['confirmed', 'checked_in'])
+        .maybeSingle();
+
+      if (!verifySignup) {
+        // Co-leader cancelled in between — leave ride without transferring
+        // (ride will show as leaderless and admins can reassign)
+        firstCoLeader = null;
+      }
+    }
+
     if (firstCoLeader) {
       const admin = createAdminClient();
 

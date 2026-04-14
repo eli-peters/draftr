@@ -73,6 +73,7 @@
   --color-input-bg-disabled: var(--input-bg-disabled);
   --color-input-border-invalid: var(--input-border-invalid);
   --color-input-ring-invalid: var(--input-ring-invalid);
+  --color-toggle-thumb: var(--toggle-thumb);
   --color-tabs-list-bg: var(--tabs-list-bg);
   --color-tabs-trigger-text: var(--tabs-trigger-text);
   --color-tabs-trigger-active-bg: var(--tabs-trigger-active-bg);
@@ -451,6 +452,7 @@
   --tabs-trigger-active-bg: var(--action-primary-default);
   --tabs-trigger-active-border: transparent;
   --tabs-trigger-active-text: var(--text-on-primary);
+  --toggle-thumb: #fff;
   --destructive-focus-bg: color-mix(in srgb, var(--action-danger-default) 10%, transparent);
   --destructive-hover-bg: color-mix(in srgb, var(--action-danger-default) 8%, transparent);
   --fills-primary: color-mix(in srgb, var(--color-neutral-500) 20%, transparent);

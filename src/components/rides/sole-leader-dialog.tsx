@@ -47,7 +47,7 @@ export function SoleLeaderDialog({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<DialogStep>('options');
-  const editUrl = routes.manageEditRide(rideId, `/rides/${rideId}`);
+  const editUrl = routes.manageEditRide(rideId, routes.ride(rideId));
 
   function handleCancelRide() {
     startTransition(async () => {

@@ -56,7 +56,8 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const riderConfirmedCount = confirmedSignups.filter((s) => !leaderUserIds.has(s.user_id)).length;
 
   // Centralized availability — uses non-leader count for capacity math
-  const timezone = (membership?.club as unknown as Club)?.timezone ?? 'America/Toronto';
+  const club = membership?.club as Club | null;
+  const timezone = club?.timezone ?? 'America/Toronto';
   const availability = getRideAvailability(ride, riderConfirmedCount, timezone);
 
   // Avatar data for action bar — first 4 confirmed signups
@@ -66,7 +67,8 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   }));
 
   const activeSignupCount = signups.filter((s) => s.status !== 'cancelled').length;
-  const userRole = (membership?.role as UserRole) ?? 'rider';
+  const role = membership?.role;
+  const userRole: UserRole = role === 'admin' || role === 'ride_leader' ? role : 'rider';
   const isCreator = membership?.user_id === ride.created_by;
   const isCoLeader = coLeaders.some((cl) => cl.user_id === membership?.user_id);
   const hasEditRole =

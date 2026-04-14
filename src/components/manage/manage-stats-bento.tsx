@@ -53,7 +53,7 @@ interface ManageStatsBentoProps {
   };
 }
 
-/* ── TrendBadge (temporary — replaced in step #4) ──────────────────────── */
+/* ── TrendBadge ────────────────────────────────────────────────────────── */
 
 const trendPillStyles: Record<TrendSentiment, string> = {
   positive: 'bg-(--badge-stat-positive-bg) text-(--badge-stat-positive-text)',

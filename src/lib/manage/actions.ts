@@ -20,12 +20,43 @@ import { FORECAST_MAX_DAYS } from '@/config/weather';
 const { common, errors } = appContent;
 
 /**
+ * Verify the caller has at least the required role for a club.
+ * Returns an error string if denied, null if allowed.
+ */
+async function requireClubRole(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  clubId: string,
+  minimumRole: 'admin' | 'ride_leader' = 'admin',
+): Promise<string | null> {
+  const { data: membership } = await supabase
+    .from('club_memberships')
+    .select('role')
+    .eq('user_id', userId)
+    .eq('club_id', clubId)
+    .eq('status', 'active')
+    .single();
+
+  if (!membership) return errors.notAuthorized;
+
+  const role = membership.role;
+  if (minimumRole === 'admin' && role !== 'admin') return errors.notAuthorized;
+  if (minimumRole === 'ride_leader' && role !== 'admin' && role !== 'ride_leader')
+    return errors.notAuthorized;
+
+  return null;
+}
+
+/**
  * Update a club member's role.
  */
 export async function updateMemberRole(clubId: string, userId: string, newRole: MemberRole) {
   const supabase = await createClient();
   const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
+
+  const roleError = await requireClubRole(supabase, user.id, clubId);
+  if (roleError) return { error: roleError };
 
   // Prevent self-demotion
   if (user.id === userId) return { error: errors.cannotDeactivateSelf };
@@ -73,6 +104,9 @@ export async function deactivateMember(clubId: string, userId: string) {
   const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
+  const roleError = await requireClubRole(supabase, user.id, clubId);
+  if (roleError) return { error: roleError };
+
   // Prevent self-deactivation
   if (user.id === userId) return { error: errors.cannotDeactivateSelf };
 
@@ -95,6 +129,9 @@ export async function reactivateMember(clubId: string, userId: string) {
   const supabase = await createClient();
   const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
+
+  const roleError = await requireClubRole(supabase, user.id, clubId);
+  if (roleError) return { error: roleError };
 
   const { error } = await supabase
     .from('club_memberships')
@@ -130,6 +167,9 @@ export async function createAnnouncement(
   const supabase = await createClient();
   const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
+
+  const roleError = await requireClubRole(supabase, user.id, clubId, 'ride_leader');
+  if (roleError) return { error: roleError };
 
   // New announcements are always pinned — unpin any existing pinned announcement first
   await supabase
@@ -295,6 +335,9 @@ export async function toggleAnnouncementPin(
   const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
+  const roleError = await requireClubRole(supabase, user.id, clubId, 'ride_leader');
+  if (roleError) return { error: roleError };
+
   // Enforce one-pinned-max: unpin all others in this club first
   if (isPinned) {
     await supabase
@@ -325,6 +368,9 @@ export async function addPaceTier(clubId: string, name: string) {
   const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
+  const roleError = await requireClubRole(supabase, user.id, clubId);
+  if (roleError) return { error: roleError };
+
   // Get max sort_order
   const { data: existing } = await supabase
     .from('pace_groups')
@@ -335,11 +381,15 @@ export async function addPaceTier(clubId: string, name: string) {
 
   const nextOrder = (existing?.[0]?.sort_order ?? 0) + 1;
 
-  const { error } = await supabase.from('pace_groups').insert({
-    club_id: clubId,
-    name: name.trim(),
-    sort_order: nextOrder,
-  });
+  const { data: newTier, error } = await supabase
+    .from('pace_groups')
+    .insert({
+      club_id: clubId,
+      name: name.trim(),
+      sort_order: nextOrder,
+    })
+    .select('id')
+    .single();
 
   if (error) {
     if (error.code === '23505') return { error: appContent.manage.paceTiers.duplicateName };
@@ -347,7 +397,7 @@ export async function addPaceTier(clubId: string, name: string) {
   }
 
   invalidatePaceGroups(clubId);
-  return { success: true };
+  return { success: true, id: newTier?.id };
 }
 
 export async function updatePaceTier(
@@ -459,6 +509,9 @@ export async function reorderPaceTiers(clubId: string, orderedIds: string[]) {
   const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
 
+  const roleError = await requireClubRole(supabase, user.id, clubId);
+  if (roleError) return { error: roleError };
+
   const results = await Promise.all(
     orderedIds.map((id, i) =>
       supabase
@@ -483,6 +536,9 @@ export async function updateSeasonDates(clubId: string, seasonStart: string, sea
   const supabase = await createClient();
   const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
+
+  const roleError = await requireClubRole(supabase, user.id, clubId);
+  if (roleError) return { error: roleError };
 
   // Fetch existing settings and merge
   const { data: club } = await supabase.from('clubs').select('settings').eq('id', clubId).single();
@@ -529,6 +585,9 @@ export async function createRecurringRide(
   const supabase = await createClient();
   const user = await getUser();
   if (!user) return { error: common.notAuthenticated };
+
+  const roleError = await requireClubRole(supabase, user.id, clubId, 'ride_leader');
+  if (roleError) return { error: roleError };
 
   const { data: template, error } = await supabase
     .from('ride_templates')
@@ -844,12 +903,15 @@ export async function searchClubMembers(
   const trimmed = query.trim();
   if (trimmed.length < 2) return [];
 
+  // PostgREST doesn't support `.or()` on foreign table columns, so we filter
+  // in JS. Limit to active members only and fetch only the fields we need.
   const { data, error } = await supabase
     .from('club_memberships')
     .select(
-      'user_id, role, status, user:users!club_memberships_user_id_fkey(full_name, avatar_url, email)',
+      'user_id, role, status, user:users!club_memberships_user_id_fkey(full_name, avatar_url)',
     )
-    .eq('club_id', clubId);
+    .eq('club_id', clubId)
+    .eq('status', 'active');
 
   if (error) {
     console.error('Error searching members:', error.message);
@@ -861,16 +923,12 @@ export async function searchClubMembers(
   return (data ?? [])
     .filter((m) => {
       if (!m.user) return false;
-      const u = m.user as unknown as { full_name: string; email: string };
-      return u.full_name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+      const u = m.user as unknown as { full_name: string };
+      return u.full_name.toLowerCase().includes(q);
     })
     .slice(0, 5)
     .map((m) => {
-      const u = m.user as unknown as {
-        full_name: string;
-        avatar_url: string | null;
-        email: string;
-      };
+      const u = m.user as unknown as { full_name: string; avatar_url: string | null };
       return {
         user_id: m.user_id,
         full_name: u.full_name,

@@ -16,7 +16,8 @@ export default async function ManagePage() {
   const membership = await getUserClubMembership();
   if (!membership) redirect(routes.signIn);
 
-  const userRole = membership.role as UserRole;
+  const role = membership.role;
+  const userRole: UserRole = role === 'admin' || role === 'ride_leader' ? role : 'rider';
 
   // Leaders get the leader hub
   if (userRole === 'ride_leader') {

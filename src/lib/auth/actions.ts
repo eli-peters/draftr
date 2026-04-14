@@ -8,8 +8,12 @@ import { appContent } from '@/content/app';
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
 
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
+  const email = formData.get('email');
+  const password = formData.get('password');
+
+  if (typeof email !== 'string' || !email.trim() || typeof password !== 'string' || !password) {
+    return { error: appContent.errors.signInFailed };
+  }
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -133,12 +137,31 @@ export async function setupProfile(formData: FormData) {
  * Uses the service role client to call auth.admin.inviteUserByEmail().
  */
 export async function inviteMember(formData: FormData) {
-  const { createAdminClient } = await import('@/lib/supabase/admin');
-  const adminSupabase = createAdminClient();
+  const supabase = await createClient();
+  const user = await getUser();
+  if (!user) return { error: appContent.common.notAuthenticated };
 
   const email = formData.get('email') as string;
   const role = (formData.get('role') as string) || 'rider';
   const clubId = formData.get('club_id') as string;
+
+  if (!email || !clubId) return { error: appContent.errors.notAuthorized };
+
+  // Verify caller is an admin for this club
+  const { data: callerMembership } = await supabase
+    .from('club_memberships')
+    .select('role')
+    .eq('user_id', user.id)
+    .eq('club_id', clubId)
+    .eq('status', 'active')
+    .single();
+
+  if (callerMembership?.role !== 'admin') {
+    return { error: appContent.errors.notAuthorized };
+  }
+
+  const { createAdminClient } = await import('@/lib/supabase/admin');
+  const adminSupabase = createAdminClient();
 
   // Check if this email has already been invited
   const { data: existingUser } = await adminSupabase

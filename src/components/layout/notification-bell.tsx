@@ -42,12 +42,20 @@ export function NotificationBell({ notifications, unreadCount }: NotificationBel
   const shouldReduce = useReducedMotion();
 
   async function handleMarkAllRead() {
-    await markAllNotificationsRead();
+    try {
+      await markAllNotificationsRead();
+    } catch {
+      // Silently fail — notification state will sync on next page load
+    }
   }
 
   async function handleNotificationClick(notification: Notification) {
     if (!notification.is_read) {
-      await markNotificationRead(notification.id);
+      try {
+        await markNotificationRead(notification.id);
+      } catch {
+        // Best-effort — don't block navigation
+      }
     }
   }
 

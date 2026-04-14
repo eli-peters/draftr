@@ -46,7 +46,8 @@ export default async function PublicProfilePage({
     ],
   );
 
-  const viewerRole: UserRole = (viewerMembership?.role as UserRole) ?? 'rider';
+  const vRole = viewerMembership?.role;
+  const viewerRole: UserRole = vRole === 'admin' || vRole === 'ride_leader' ? vRole : 'rider';
 
   // Deactivated member placeholder.
   if (membership?.status === MemberStatus.INACTIVE) {

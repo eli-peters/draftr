@@ -28,7 +28,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect(routes.signIn);
   }
 
-  const userRole: UserRole = (membership?.role as UserRole) ?? 'rider';
+  const role = membership?.role;
+  const userRole: UserRole = role === 'admin' || role === 'ride_leader' ? role : 'rider';
   const navItems = getNavForRole(userRole);
 
   // Fetch profile and announcement in parallel (notifications stream separately)
