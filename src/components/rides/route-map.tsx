@@ -3,7 +3,7 @@
 import { useRef, useCallback, useEffect, useState, forwardRef } from 'react';
 import Map, { Source, Layer, type MapRef } from 'react-map-gl/mapbox';
 import polyline from '@mapbox/polyline';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import './map-styles';
 import { integrations } from '@/config/integrations';
 import { cn } from '@/lib/utils';
 

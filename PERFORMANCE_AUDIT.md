@@ -321,3 +321,118 @@ The `getRideSignups` result is needed to compute `riderConfirmedCount → availa
 | [src/components/manage/season-dates-section-loader.tsx](src/components/manage/season-dates-section-loader.tsx)     | **New** — fetches club settings, renders `SeasonDatesSection`                                |
 | [src/components/manage/pace-tiers-section-loader.tsx](src/components/manage/pace-tiers-section-loader.tsx)         | **New** — fetches pace tier usage, renders `PaceTiersSection`                                |
 | [src/components/settings/integrations-setting-loader.tsx](src/components/settings/integrations-setting-loader.tsx) | **New** — fetches connections, renders `IntegrationsSetting`                                 |
+
+---
+
+## Third Audit — Re-Audit
+
+**Date:** April 14, 2026
+
+Re-ran the full performance audit checklist against the current codebase. All fixes from the first two audits remain intact. Three new improvements applied; no critical issues found.
+
+---
+
+### 11. Font `display: 'swap'` missing — **FIXED**
+
+**File:** [src/app/layout.tsx](src/app/layout.tsx)
+**Impact: FOIT (Flash of Invisible Text) on every page load — affects LCP and FCP**
+
+Both `Outfit` and `DM_Sans` font declarations lacked `display: 'swap'`, causing the browser to hide text until the web font downloads. This directly delays Largest Contentful Paint on text-heavy pages.
+
+**Fix:** Added `display: 'swap'` to both font declarations. Text now renders immediately in a fallback system font, then swaps to the web font once loaded.
+
+---
+
+### 12. `optimizePackageImports` not configured — **FIXED**
+
+**File:** [next.config.ts](next.config.ts)
+**Impact: Safety net for tree-shaking `@phosphor-icons/react` and `date-fns`**
+
+Added `experimental.optimizePackageImports` for `@phosphor-icons/react` and `date-fns`. While Phosphor icons were already imported via `/dist/ssr` deep paths and Turbopack already tree-shakes well, this ensures any future barrel imports are automatically optimized.
+
+---
+
+### 13. Mapbox GL CSS imported twice — **FIXED**
+
+**Files:** [src/components/rides/route-map.tsx](src/components/rides/route-map.tsx), [src/components/rides/location-map.tsx](src/components/rides/location-map.tsx)
+**Impact: Code hygiene — bundler deduplicates in production, but canonical single source is cleaner**
+
+Both map components independently imported `mapbox-gl/dist/mapbox-gl.css`. Extracted to a shared [src/components/rides/map-styles.ts](src/components/rides/map-styles.ts) file; both components now import from there.
+
+---
+
+## Bundle Size Analysis
+
+**Build:** Next.js 16.2.3 (Turbopack) — `@next/bundle-analyzer` is webpack-only and incompatible with Turbopack. Sizes measured from `.next/static/chunks/` output.
+
+| Metric        | Value                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------ |
+| Total JS      | 4.6MB                                                                                      |
+| Total CSS     | 196KB                                                                                      |
+| Largest chunk | 1.7MB (mapbox-gl — behind `dynamic()` with `ssr: false`, only loaded on ride detail pages) |
+
+**JS chunks > 100KB:**
+
+| Size  | Contents                                                 |
+| ----- | -------------------------------------------------------- |
+| 1.7MB | mapbox-gl (dynamically imported, ride detail pages only) |
+| 223KB | Mapbox buffer utilities (co-loaded with mapbox-gl)       |
+| 222KB | Next.js framework runtime                                |
+| 135KB | React + React DOM runtime                                |
+| 110KB | Framer Motion (used across nav, transitions, animations) |
+| 106KB | Application shared chunk                                 |
+
+All large chunks are either framework runtime (unavoidable) or behind dynamic imports (mapbox). No actionable bundle size issues.
+
+---
+
+## Full Checklist Status
+
+### Confirmed Good
+
+| Area                                                       | Status                                                              |
+| ---------------------------------------------------------- | ------------------------------------------------------------------- |
+| `React.cache()` on `createClient` and `getUser`            | Correct — one auth call per request                                 |
+| `unstable_cache` with typed cache tags on all hot paths    | Consistent                                                          |
+| Parallel fetches with `Promise.all`                        | Used throughout — no sequential waterfalls                          |
+| Suspense boundaries with streaming                         | All major pages: dashboard, profile, manage, settings               |
+| `loading.tsx` files with matching skeletons                | Present on all dynamic routes                                       |
+| Phosphor icons via `/dist/ssr` (tree-shaken)               | Correct                                                             |
+| `next/image` used for all images (no raw `<img>`)          | Correct                                                             |
+| `next/font` with subset + specific weights                 | Correct — 2 families (Outfit, DM Sans), latin subset                |
+| Font `display: 'swap'`                                     | **Now set** (fixed in this audit)                                   |
+| `optimizePackageImports`                                   | **Now configured** (fixed in this audit)                            |
+| Dynamic import for mapbox (`ssr: false`)                   | Correct — `RouteMapLoader` uses `dynamic()`                         |
+| No barrel file import issues                               | Verified                                                            |
+| Optimistic updates in mutations                            | `card-signup-button.tsx` uses `useTransition` + optimistic state    |
+| Reduced-motion respected                                   | `useReducedMotion()` checked in all animation components            |
+| Lean context providers (4 total)                           | ThemeProvider, UserPrefsProvider, NavigationOriginProvider, Toaster |
+| Middleware (proxy) — no DB calls, matcher excludes statics | Session refresh only; fast-path returns for localhost and marketing |
+| No `force-dynamic` directives                              | Verified — all pages use default caching                            |
+| No client-side fetching for server-fetchable data          | All data fetching in server components                              |
+| `<Link>` used for all internal navigation                  | Verified — no raw `<a>` tags for in-app routes                      |
+| `lottie-react` removed                                     | Confirmed removed (commit 0700140)                                  |
+| Analytics (Vercel) only on marketing routes                | Correct — not in authenticated app routes                           |
+
+### Not Applicable / Deferred
+
+| Area                        | Reason                                                                                      |
+| --------------------------- | ------------------------------------------------------------------------------------------- |
+| PPR (Partial Prerendering)  | Not yet stable for production use in Next.js 16                                             |
+| `generateStaticParams`      | All dynamic routes are auth-gated; static generation not applicable                         |
+| Avatar `priority` prop      | Header avatar uses Base UI `AvatarPrimitive.Image` (not `next/image`); not LCP element      |
+| Speculation Rules API       | Chrome-only; app is SPA with client-side routing; limited benefit                           |
+| `@next/bundle-analyzer`     | Webpack-only; incompatible with Turbopack. Chunk sizes inspected directly from build output |
+| Edge runtime for API routes | Supabase client requires Node.js runtime; edge not compatible                               |
+
+---
+
+## Summary of Changes (This Audit)
+
+| File                                                                           | Change                                            |
+| ------------------------------------------------------------------------------ | ------------------------------------------------- |
+| [src/app/layout.tsx](src/app/layout.tsx)                                       | Add `display: 'swap'` to Outfit and DM Sans fonts |
+| [next.config.ts](next.config.ts)                                               | Add `experimental.optimizePackageImports`         |
+| [src/components/rides/map-styles.ts](src/components/rides/map-styles.ts)       | **New** — shared Mapbox GL CSS import             |
+| [src/components/rides/route-map.tsx](src/components/rides/route-map.tsx)       | Import CSS from shared `map-styles.ts`            |
+| [src/components/rides/location-map.tsx](src/components/rides/location-map.tsx) | Import CSS from shared `map-styles.ts`            |
