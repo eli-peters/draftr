@@ -10,10 +10,10 @@ export function CommentsSkeleton() {
       <div className="space-y-4">
         {[1, 2].map((i) => (
           <div key={i} className="flex gap-3">
-            <div className="size-8 shrink-0 animate-pulse rounded-full bg-surface-sunken" />
+            <div className="size-8 shrink-0 skeleton-shimmer rounded-full" />
             <div className="flex-1 space-y-2">
-              <div className="h-3 w-24 animate-pulse rounded bg-surface-sunken" />
-              <div className="h-3 w-full animate-pulse rounded bg-surface-sunken" />
+              <div className="h-3 w-24 skeleton-shimmer" />
+              <div className="h-3 w-full skeleton-shimmer" />
             </div>
           </div>
         ))}

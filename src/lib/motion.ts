@@ -54,6 +54,12 @@ export const fadeScale: Variants = {
   exit: { opacity: 0, scale: 0.94, transition: { duration: DURATIONS.fast, ease: EASE.out } },
 };
 
+// Skeleton block entering view — subtle rise with micro-scale for "materialising" feel
+export const skeletonItem: Variants = {
+  hidden: { opacity: 0, y: 6, scale: 0.98 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: baseTransition },
+};
+
 // List item that may be reordered (waitlist → confirmed). Pair with `layout`.
 export const listItem: Variants = {
   hidden: { opacity: 0, y: 8 },
@@ -110,6 +116,7 @@ export function useMotionPresets() {
     shouldReduce: !!shouldReduce,
     fadeSlideUp: resolve(fadeSlideUp),
     fadeScale: resolve(fadeScale),
+    skeletonItem: resolve(skeletonItem),
     listItem: resolve(listItem),
     staggerContainer: (stagger?: number, delayChildren?: number) =>
       shouldReduce ? staggerContainer(0, 0) : staggerContainer(stagger, delayChildren),

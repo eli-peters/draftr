@@ -6,6 +6,7 @@ import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { DashboardGreeting } from '@/components/dashboard/dashboard-greeting';
 import { DashboardActionContent } from '@/components/dashboard/dashboard-action-content';
 import { CurrentWeather } from '@/components/weather/current-weather';
+import { ContentTransition } from '@/components/motion/content-transition';
 import type { UserRole } from '@/config/navigation';
 import type { Club } from '@/types/database';
 
@@ -30,7 +31,9 @@ export default async function HomePage() {
           </div>
         }
       >
-        <DashboardGreeting userId={membership.user_id} className="mb-8 mt-0 md:mt-0 md:mb-10" />
+        <ContentTransition>
+          <DashboardGreeting userId={membership.user_id} className="mb-8 mt-0 md:mt-0 md:mb-10" />
+        </ContentTransition>
       </Suspense>
 
       {/* Weather widget — client component, uses browser geolocation, renders immediately */}
@@ -46,12 +49,14 @@ export default async function HomePage() {
           </div>
         }
       >
-        <DashboardActionContent
-          userId={membership.user_id}
-          clubId={membership.club_id}
-          timezone={timezone}
-          userRole={userRole}
-        />
+        <ContentTransition>
+          <DashboardActionContent
+            userId={membership.user_id}
+            clubId={membership.club_id}
+            timezone={timezone}
+            userRole={userRole}
+          />
+        </ContentTransition>
       </Suspense>
     </DashboardShell>
   );

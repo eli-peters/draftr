@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useMotionPresets } from '@/lib/motion';
 import { InlineEditTransition } from '@/components/motion/inline-edit-transition';
 import { Button } from '@/components/ui/button';
+import { ButtonSpinner } from '@/components/ui/button-spinner';
 import { Input } from '@/components/ui/input';
 import { SectionHeading } from '@/components/ui/section-heading';
 import {
@@ -349,7 +350,11 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
                             onClick={handleSaveEdit}
                             disabled={isPending}
                           >
-                            <Check className="h-3.5 w-3.5" />
+                            {isPending ? (
+                              <ButtonSpinner className="size-3.5" />
+                            ) : (
+                              <Check className="h-3.5 w-3.5" />
+                            )}
                           </Button>
                           <Button variant="ghost" size="icon-sm" onClick={cancelEdit}>
                             <X className="h-3.5 w-3.5" />
@@ -452,7 +457,7 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
               onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
             />
             <Button variant="ghost" size="icon-sm" onClick={handleAdd} disabled={isPending}>
-              <Check className="h-4 w-4" />
+              {isPending ? <ButtonSpinner /> : <Check className="h-4 w-4" />}
             </Button>
             <Button variant="ghost" size="icon-sm" onClick={() => setIsAdding(false)}>
               <X className="h-4 w-4" />

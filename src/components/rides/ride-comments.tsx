@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useRef, useState, useTransition } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ChatCircle, PaperPlaneTilt } from '@phosphor-icons/react';
+import { ButtonSpinner } from '@/components/ui/button-spinner';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMotionPresets } from '@/lib/motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -244,6 +245,7 @@ function CommentRow({
                 }
               />
               <Button variant="destructive" size="sm" onClick={handleDelete} disabled={isPending}>
+                {isPending ? <ButtonSpinner /> : null}
                 {isPending ? appContent.common.loading : content.delete}
               </Button>
             </AlertDialogFooter>
@@ -317,7 +319,7 @@ function AddCommentForm({ rideId }: { rideId: string }) {
           onClick={handleSubmit}
           aria-label={content.sendAriaLabel}
         >
-          <PaperPlaneTilt className="size-4" />
+          {isPending ? <ButtonSpinner /> : <PaperPlaneTilt className="size-4" />}
         </Button>
       </div>
     </FloatingField>

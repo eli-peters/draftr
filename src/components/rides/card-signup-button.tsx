@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useRef, useTransition } from 'react';
 import { toast } from 'sonner';
-import { ArrowCounterClockwise, SpinnerGap } from '@phosphor-icons/react/dist/ssr';
+import { ArrowCounterClockwise } from '@phosphor-icons/react/dist/ssr';
 import { signUpForRide, cancelSignUp } from '@/lib/rides/actions';
 import { Button } from '@/components/ui/button';
+import { ButtonSpinner } from '@/components/ui/button-spinner';
 import { appContent } from '@/content/app';
 import { SignupStatus } from '@/config/statuses';
 
@@ -116,13 +117,7 @@ export function CardSignupButton({ rideId, rideName, isFull, userStatus }: CardS
   // Not signed up — show action button
   return (
     <Button size="sm" className="shrink-0" disabled={isPending} onClick={handleSignup}>
-      {isPending ? (
-        <SpinnerGap className="size-4 animate-spin" />
-      ) : isFull ? (
-        card.joinWaitlist
-      ) : (
-        card.joinRide
-      )}
+      {isPending ? <ButtonSpinner /> : isFull ? card.joinWaitlist : card.joinRide}
     </Button>
   );
 }

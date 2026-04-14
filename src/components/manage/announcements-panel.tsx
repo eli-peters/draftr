@@ -15,6 +15,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useMotionPresets } from '@/lib/motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ButtonSpinner } from '@/components/ui/button-spinner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
@@ -535,6 +536,7 @@ export function AnnouncementFormDrawer({
           onClick={handleSubmit}
           disabled={isPending || !title.trim() || !body.trim()}
         >
+          {isPending ? <ButtonSpinner className="size-5" /> : null}
           {submitText}
         </Button>
         <DrawerClose asChild>

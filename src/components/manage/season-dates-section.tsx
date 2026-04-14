@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { format } from 'date-fns';
 import { PencilSimple, Check, X } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
+import { ButtonSpinner } from '@/components/ui/button-spinner';
 import { FloatingField } from '@/components/ui/floating-field';
 import { DatePicker } from '@/components/ui/date-picker';
 import { SectionHeading } from '@/components/ui/section-heading';
@@ -65,7 +66,7 @@ export function SeasonDatesSection({ clubId, seasonStart, seasonEnd }: SeasonDat
               <DatePicker id="season-end" value={end} onChange={setEnd} />
             </FloatingField>
             <Button variant="ghost" size="icon-sm" onClick={handleSave} disabled={isPending}>
-              <Check className="h-4 w-4" />
+              {isPending ? <ButtonSpinner /> : <Check className="h-4 w-4" />}
             </Button>
             <Button variant="ghost" size="icon-sm" onClick={handleCancel}>
               <X className="h-4 w-4" />

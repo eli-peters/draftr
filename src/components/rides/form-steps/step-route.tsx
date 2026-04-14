@@ -8,13 +8,13 @@ import {
   ArrowSquareOut,
   Path,
   LinkSimple,
-  SpinnerGap,
   UploadSimple,
   Mountains,
   Info,
   ArrowRight,
 } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
+import { ButtonSpinner } from '@/components/ui/button-spinner';
 import { Input } from '@/components/ui/input';
 import { RouteMapLoader } from '@/components/rides/route-map-loader';
 import { RouteImportDrawer } from '@/components/rides/route-import-drawer';
@@ -267,11 +267,7 @@ export function StepRoute({
                     onClick={onPasteUrl}
                     className="absolute right-1 top-1/2 size-7 -translate-y-1/2 rounded-full text-muted-foreground transition-transform hover:bg-action-primary-subtle-bg hover:text-primary active:scale-90"
                   >
-                    {isFetchingRoute ? (
-                      <SpinnerGap className="size-4 animate-spin" />
-                    ) : (
-                      <ArrowRight className="size-4" />
-                    )}
+                    {isFetchingRoute ? <ButtonSpinner /> : <ArrowRight className="size-4" />}
                   </Button>
                 </div>
                 <div className="flex items-start gap-2 rounded-lg bg-info/10 px-3 py-2.5">

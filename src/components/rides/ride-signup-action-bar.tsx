@@ -3,6 +3,7 @@
 import { useRideActionCta } from '@/hooks/use-ride-action-cta';
 import { ActionBar } from '@/components/ui/action-bar';
 import { Button } from '@/components/ui/button';
+import { ButtonSpinner } from '@/components/ui/button-spinner';
 import { RiderAvatarGroup } from '@/components/rides/ride-card-parts';
 import { SoleLeaderDialog } from '@/components/rides/sole-leader-dialog';
 import { appContent } from '@/content/app';
@@ -66,6 +67,7 @@ export function RideSignupActionBar({
                 onClick={handleCtaClick}
                 disabled={isPending}
               >
+                {isPending ? <ButtonSpinner /> : null}
                 {ctaLabel}
               </Button>
             )
@@ -80,6 +82,7 @@ export function RideSignupActionBar({
                 onClick={handleConfirmLeave}
                 disabled={isPending}
               >
+                {isPending ? <ButtonSpinner /> : null}
                 {confirmLeaveLabel}
               </Button>
             </>

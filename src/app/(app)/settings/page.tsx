@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
+import { ContentTransition } from '@/components/motion/content-transition';
 import { createClient, getUser } from '@/lib/supabase/server';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -60,7 +61,9 @@ export default async function SettingsPage() {
         {/* Connections — only for ride leaders and admins; streams independently */}
         {isLeaderOrAbove && (
           <Suspense fallback={<div className="h-32 skeleton-shimmer rounded-(--card-radius)" />}>
-            <IntegrationsSettingLoader userId={authUser.id} />
+            <ContentTransition>
+              <IntegrationsSettingLoader userId={authUser.id} />
+            </ContentTransition>
           </Suspense>
         )}
 

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { ButtonSpinner } from '@/components/ui/button-spinner';
 import { FloatingField } from '@/components/ui/floating-field';
 import { StatusCallout } from '@/components/ui/status-callout';
 import { Textarea } from '@/components/ui/textarea';
@@ -67,6 +68,7 @@ export function CancelRideButton({ rideId, rideTitle }: CancelRideButtonProps) {
       {error && <p className="text-sm">{error}</p>}
       <div className="flex gap-3">
         <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
+          {isPending ? <ButtonSpinner /> : null}
           {isPending ? common.loading : ridesContent.edit.confirmCancel}
         </Button>
         <Button variant="outline" onClick={() => setShowConfirm(false)} disabled={isPending}>

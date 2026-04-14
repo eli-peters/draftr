@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
+import { ContentTransition } from '@/components/motion/content-transition';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { getUserClubMembership } from '@/lib/rides/queries';
@@ -25,10 +26,14 @@ export default async function ManageSettingsPage() {
         <PageHeader centered={false} title={content.sections.club} />
         <div className="mt-4 space-y-8">
           <Suspense fallback={<div className="h-32 skeleton-shimmer rounded-(--card-radius)" />}>
-            <SeasonDatesSectionLoader clubId={membership.club_id} />
+            <ContentTransition>
+              <SeasonDatesSectionLoader clubId={membership.club_id} />
+            </ContentTransition>
           </Suspense>
           <Suspense fallback={<div className="h-32 skeleton-shimmer rounded-(--card-radius)" />}>
-            <PaceTiersSectionLoader clubId={membership.club_id} />
+            <ContentTransition>
+              <PaceTiersSectionLoader clubId={membership.club_id} />
+            </ContentTransition>
           </Suspense>
         </div>
       </DashboardShell>

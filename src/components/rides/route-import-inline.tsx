@@ -8,10 +8,10 @@ import {
   ArrowClockwise,
   MagnifyingGlass,
   LinkSimple,
-  SpinnerGap,
 } from '@phosphor-icons/react/dist/ssr';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { ButtonSpinner } from '@/components/ui/button-spinner';
 import { Input } from '@/components/ui/input';
 import { FloatingField } from '@/components/ui/floating-field';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -57,7 +57,7 @@ export function PasteUrlPanel({
         className="w-full gap-2"
       >
         {isFetchingRoute ? (
-          <SpinnerGap className="size-4 animate-spin" />
+          <ButtonSpinner />
         ) : (
           <>
             <LinkSimple className="size-4" />

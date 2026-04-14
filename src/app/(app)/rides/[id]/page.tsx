@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
+import { ContentTransition } from '@/components/motion/content-transition';
 import {
   getRideById,
   getUserSignupStatus,
@@ -149,12 +150,14 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
       {/* Comments — streamed via Suspense to avoid blocking initial paint */}
       <div className="mt-card-stack">
         <Suspense fallback={<CommentsSkeleton />}>
-          <RideCommentsSection
-            rideId={ride.id}
-            currentUserId={currentUserId}
-            userRole={userRole}
-            isCancelled={availability.isCancelled}
-          />
+          <ContentTransition>
+            <RideCommentsSection
+              rideId={ride.id}
+              currentUserId={currentUserId}
+              userRole={userRole}
+              isCancelled={availability.isCancelled}
+            />
+          </ContentTransition>
         </Suspense>
       </div>
 

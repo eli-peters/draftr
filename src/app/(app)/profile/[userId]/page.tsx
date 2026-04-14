@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { notFound, redirect } from 'next/navigation';
 import { format } from 'date-fns';
+import { ContentTransition } from '@/components/motion/content-transition';
 import { createClient, getUser } from '@/lib/supabase/server';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { routes } from '@/config/routes';
@@ -112,12 +113,16 @@ export default async function PublicProfilePage({
             </div>
           }
         >
-          <ProfileStatsSection userId={userId} />
+          <ContentTransition>
+            <ProfileStatsSection userId={userId} />
+          </ContentTransition>
         </Suspense>
       }
       recentRidesSlot={
         <Suspense fallback={<div className="h-48 skeleton-shimmer rounded-(--card-radius)" />}>
-          <ProfileRecentRidesSection userId={userId} />
+          <ContentTransition>
+            <ProfileRecentRidesSection userId={userId} />
+          </ContentTransition>
         </Suspense>
       }
     />

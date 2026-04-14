@@ -9,6 +9,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { ButtonSpinner } from '@/components/ui/button-spinner';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
   DropdownMenu,
@@ -465,7 +466,8 @@ function DesktopRideRow({ ride, isLeader }: { ride: ManageRideData; isLeader: bo
               <AlertDialogClose render={<Button variant="ghost" />}>
                 {common.cancel}
               </AlertDialogClose>
-              <Button variant="destructive" onClick={handleCancel}>
+              <Button variant="destructive" onClick={handleCancel} disabled={isPending}>
+                {isPending ? <ButtonSpinner /> : null}
                 {ridesContent.actionBar.confirmCancelRide}
               </Button>
             </AlertDialogFooter>

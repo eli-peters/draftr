@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { LinkBreak, LinkSimple, PlugsConnected } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
+import { ButtonSpinner } from '@/components/ui/button-spinner';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ContentCard } from '@/components/ui/content-card';
 import {
@@ -151,7 +152,7 @@ function ServiceRow({ service, displayName, brandColor, connection }: ServiceRow
             disabled={isLoading}
             className="text-muted-foreground hover:text-destructive shrink-0"
           >
-            <LinkBreak className="h-4 w-4" />
+            {isLoading ? <ButtonSpinner /> : <LinkBreak className="h-4 w-4" />}
             {isLoading ? content.disconnecting : content.disconnectButton}
           </Button>
         </div>
@@ -195,7 +196,7 @@ function ServiceRow({ service, displayName, brandColor, connection }: ServiceRow
         disabled={isLoading}
         className="shrink-0"
       >
-        <LinkSimple className="h-4 w-4" />
+        {isLoading ? <ButtonSpinner /> : <LinkSimple className="h-4 w-4" />}
         {isLoading ? content.connecting : content.connectButton(displayName)}
       </Button>
     </div>

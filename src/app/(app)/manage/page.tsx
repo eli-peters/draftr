@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
+import { ContentTransition } from '@/components/motion/content-transition';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { AdminStatsBentoSection } from '@/components/manage/admin-stats-bento-section';
@@ -41,7 +42,9 @@ export default async function ManagePage() {
             </div>
           }
         >
-          <AdminStatsBentoSection clubId={membership.club_id} />
+          <ContentTransition>
+            <AdminStatsBentoSection clubId={membership.club_id} />
+          </ContentTransition>
         </Suspense>
 
         <Suspense
@@ -53,7 +56,9 @@ export default async function ManagePage() {
             </div>
           }
         >
-          <SectionCardsSection clubId={membership.club_id} />
+          <ContentTransition>
+            <SectionCardsSection clubId={membership.club_id} />
+          </ContentTransition>
         </Suspense>
       </div>
     </DashboardShell>

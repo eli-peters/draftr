@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { format } from 'date-fns';
+import { ContentTransition } from '@/components/motion/content-transition';
 import { createClient, getUser } from '@/lib/supabase/server';
 import { routes } from '@/config/routes';
 import { dateFormats } from '@/config/formatting';
@@ -63,12 +64,16 @@ export default async function OwnProfilePage() {
             </div>
           }
         >
-          <ProfileStatsSection userId={authUser.id} />
+          <ContentTransition>
+            <ProfileStatsSection userId={authUser.id} />
+          </ContentTransition>
         </Suspense>
       }
       recentRidesSlot={
         <Suspense fallback={<div className="h-48 skeleton-shimmer rounded-(--card-radius)" />}>
-          <ProfileRecentRidesSection userId={authUser.id} />
+          <ContentTransition>
+            <ProfileRecentRidesSection userId={authUser.id} />
+          </ContentTransition>
         </Suspense>
       }
     />

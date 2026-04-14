@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { EnvelopeSimple, SignOut, UserCircle } from '@phosphor-icons/react/dist/ssr';
 import { toast } from 'sonner';
+import { ButtonSpinner } from '@/components/ui/button-spinner';
 import { ContentCard } from '@/components/ui/content-card';
 import { SignOutConfirmDialog } from '@/components/auth/sign-out-confirm-dialog';
 import { settingsContent } from '@/content/settings';
@@ -61,7 +62,11 @@ export function AccountCard({ email }: AccountCardProps) {
                 {content.rows.changePassword.description}
               </span>
             </div>
-            <EnvelopeSimple className="size-4 shrink-0 text-muted-foreground" />
+            {isSendingReset ? (
+              <ButtonSpinner className="size-4 shrink-0 text-muted-foreground" />
+            ) : (
+              <EnvelopeSimple className="size-4 shrink-0 text-muted-foreground" />
+            )}
           </button>
 
           {/* Sign out — destructive, opens shared confirm dialog */}
