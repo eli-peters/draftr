@@ -23,7 +23,7 @@ export function PageHeader({
   if (centered) {
     return (
       <div className={cn('mb-6', className)}>
-        <div className="flex items-start">
+        <div className={cn('flex items-start', !actions && 'justify-center')}>
           {/* Invisible counterbalance keeps the title visually centered when actions are present */}
           {actions && (
             <div className="flex flex-1 items-center gap-1" aria-hidden="true">
