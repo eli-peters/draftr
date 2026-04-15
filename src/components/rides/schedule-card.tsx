@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { motion, useReducedMotion } from 'framer-motion';
+import { SPRINGS } from '@/lib/motion';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -40,6 +42,7 @@ interface ScheduleCardProps {
 // ---------------------------------------------------------------------------
 
 export function ScheduleCard({ ride, onAction, timezone }: ScheduleCardProps) {
+  const shouldReduce = useReducedMotion();
   const prefs = useUserPrefs();
   const rideDate = parseLocalDate(ride.ride_date);
   const isCompleted = ride.signup_status === SignupStatus.COMPLETED;
@@ -96,7 +99,11 @@ export function ScheduleCard({ ride, onAction, timezone }: ScheduleCardProps) {
   const hasFooter = statusKey !== 'completed' && statusKey !== 'cancelled';
 
   return (
-    <div className="rounded-(--card-radius) transition-[transform,box-shadow] duration-(--duration-normal) ease-(--ease-in-out) hover:-translate-y-0.5 hover:shadow-md">
+    <motion.div
+      whileHover={shouldReduce ? undefined : { scale: 1.04 }}
+      whileTap={shouldReduce ? undefined : { scale: 0.96 }}
+      transition={SPRINGS.gentle}
+    >
       <Card
         className={cn(
           'overflow-clip p-0',
@@ -113,10 +120,7 @@ export function ScheduleCard({ ride, onAction, timezone }: ScheduleCardProps) {
         />
 
         {/* Content — tappable, links to ride detail */}
-        <Link
-          href={routes.ride(ride.id)}
-          className="block cursor-pointer focus-ring active:scale-[0.98]"
-        >
+        <Link href={routes.ride(ride.id)} className="block cursor-pointer focus-ring">
           <CardContentSection
             className="px-5 pt-4 pb-5"
             date={getRelativeDay(rideDate, dateFormats.dayShort, true)}
@@ -176,6 +180,6 @@ export function ScheduleCard({ ride, onAction, timezone }: ScheduleCardProps) {
           </CardFooterSection>
         )}
       </Card>
-    </div>
+    </motion.div>
   );
 }

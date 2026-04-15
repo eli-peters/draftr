@@ -17,9 +17,9 @@ const filterChipVariants = cva(
   [
     'inline-flex items-center gap-1.5 shrink-0 cursor-pointer rounded-3xl font-medium whitespace-nowrap select-none',
     'border border-text-primary outline-none',
-    'transition-[background-color,color,border-color,box-shadow,transform] duration-(--duration-fast) ease-out',
+    'transition-[background-color,color,border-color,box-shadow,transform,opacity] duration-(--duration-fast) ease-out',
+    'group-[]/chips:opacity-100 group-hover/chips:opacity-40 hover:!opacity-100',
     'focus-ring',
-    'active:scale-90',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   ].join(' '),
   {
@@ -103,7 +103,10 @@ function FilterChipGroup<Value extends string = string>({
     <ToggleGroup
       data-slot="filter-chip-group"
       loopFocus
-      className={cn('flex w-full flex-wrap items-center justify-center gap-2', className)}
+      className={cn(
+        'flex w-full flex-wrap items-center justify-center gap-2 group/chips',
+        className,
+      )}
       {...props}
     >
       {children}

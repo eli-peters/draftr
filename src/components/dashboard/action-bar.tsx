@@ -12,7 +12,7 @@ import {
   UserPlus,
 } from '@phosphor-icons/react/dist/ssr';
 import { motion, useReducedMotion } from 'framer-motion';
-import { DURATIONS, EASE } from '@/lib/motion';
+import { DURATIONS, EASE, SPRINGS } from '@/lib/motion';
 import { Card } from '@/components/ui/card';
 import { CardBanner, CardContentSection } from '@/components/rides/ride-card-parts';
 import { useUserPrefs } from '@/components/user-prefs-provider';
@@ -24,6 +24,8 @@ import { cn, getRelativeDay } from '@/lib/utils';
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 import type { UserRole } from '@/config/navigation';
 import type { RideWeatherSnapshot } from '@/types/database';
+
+const MotionLink = motion.create(Link);
 
 const { dashboard: content } = appContent;
 
@@ -133,21 +135,26 @@ function ActionCard({
         },
       }}
     >
-      <Link
-        href={href}
-        className="group block cursor-pointer rounded-(--card-radius) focus-ring transition-[transform,box-shadow] duration-(--duration-normal) ease-(--ease-in-out) hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]"
-      >
-        <Card className={cn('overflow-clip p-0', borderClass)}>
-          <CardBanner
-            icon={icon}
-            label={label}
-            bgClass={bgClass}
-            textClass={textClass}
-            borderClass={bannerBorderClass}
-          />
-          <div className="px-5 pt-3 pb-4">{children}</div>
-        </Card>
-      </Link>
+      <div className="transition-opacity duration-(--duration-normal) group-hover:opacity-40 hover:!opacity-100">
+        <MotionLink
+          href={href}
+          whileHover={shouldReduce ? undefined : { scale: 1.04 }}
+          whileTap={shouldReduce ? undefined : { scale: 0.96 }}
+          transition={SPRINGS.gentle}
+          className="group block cursor-pointer"
+        >
+          <Card className={cn('overflow-clip p-0', borderClass)}>
+            <CardBanner
+              icon={icon}
+              label={label}
+              bgClass={bgClass}
+              textClass={textClass}
+              borderClass={bannerBorderClass}
+            />
+            <div className="px-5 pt-3 pb-4">{children}</div>
+          </Card>
+        </MotionLink>
+      </div>
     </motion.div>
   );
 }
@@ -185,7 +192,7 @@ export function ActionBar({
         hidden: {},
         visible: { transition: { staggerChildren: 0.07, delayChildren: 0.04 } },
       }}
-      className="flex flex-col gap-6"
+      className="group flex flex-col gap-6"
     >
       {/* Rider: your next confirmed ride */}
       {nextSignup &&
