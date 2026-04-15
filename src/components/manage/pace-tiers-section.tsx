@@ -31,6 +31,7 @@ import type { PaceTierWithUsage } from '@/lib/manage/queries';
 const content = appContent.manage.paceTiers;
 const MAX_PACE_TIERS = 6;
 
+// Uses the bold -text colour (not the pastel -bg) as swatch fill for visual prominence
 const PACE_SWATCH_CLASSES = [
   'bg-badge-pace-1-text',
   'bg-badge-pace-2-text',
