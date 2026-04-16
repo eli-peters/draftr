@@ -624,6 +624,10 @@
   body {
     @apply bg-background text-foreground;
     text-rendering: optimizeLegibility;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* ── Mobile touch behavior ──────────────────────────────────────────────
@@ -635,6 +639,11 @@
   *::before,
   *::after {
     -webkit-tap-highlight-color: transparent;
+  }
+
+  a,
+  button {
+    touch-action: manipulation;
   }
 
   a,
