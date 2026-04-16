@@ -664,6 +664,11 @@
   }
 
   a,
+  button {
+    touch-action: manipulation;
+  }
+
+  a,
   button,
   [role='button'],
   [data-slot='filter-chip'],
