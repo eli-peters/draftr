@@ -17,7 +17,7 @@ export function tagRideSignups(rideId: string) {
   return `ride-signups:${rideId}`;
 }
 
-/** User's personal ride data (my-rides, next-signup, waitlisted) */
+/** User's personal ride data (next-signup, waitlisted, ride history) */
 export function tagUserRides(userId: string) {
   return `user-rides:${userId}`;
 }

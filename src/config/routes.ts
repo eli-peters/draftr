@@ -2,7 +2,7 @@
  * Top-level routes show bottom nav + logo header on mobile.
  * Any route NOT in this set is a "child" route (back arrow header, no bottom nav).
  */
-const topLevelRoutes = new Set(['/', '/rides', '/my-rides', '/manage', '/notifications']);
+const topLevelRoutes = new Set(['/', '/rides', '/manage', '/notifications']);
 
 /**
  * Routes that can serve as a back-navigation target for deeper children,
@@ -37,7 +37,6 @@ export const routes = {
   setupProfile: '/setup-profile',
   rides: '/rides',
   ride: (id: string) => `/rides/${id}`,
-  schedule: '/my-rides',
   manage: '/manage',
   manageRides: '/manage/rides',
   manageMembers: '/manage/members',
@@ -50,6 +49,7 @@ export const routes = {
       : `/manage/rides/${id}/edit`,
   manageTab: (tab: string) => `/manage/rides?tab=${tab}`,
   profile: '/profile',
+  profileHistory: '/profile/history',
   publicProfile: (userId: string) => `/profile/${userId}`,
   settings: '/settings',
   notifications: '/notifications',

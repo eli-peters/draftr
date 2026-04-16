@@ -20,7 +20,6 @@ export const appContent = {
   nav: {
     home: 'Home',
     rides: 'Rides',
-    schedule: 'Schedule',
     notifications: 'Notifications',
     profile: 'Profile',
     manage: 'Manage',
@@ -480,6 +479,14 @@ export const appContent = {
     },
   },
 
+  calendar: {
+    todayButton: 'Today',
+    showAllUpcoming: 'Show all upcoming',
+    noRidesOnDay: 'No rides scheduled',
+    signedUpFilter: 'Signed up',
+    weekdays: ['M', 'T', 'W', 'T', 'F', 'S', 'S'] as const,
+  },
+
   schedule: {
     heading: 'My Rides',
     toolbar: {
@@ -600,6 +607,14 @@ export const appContent = {
       contactInfoHeading: 'Contact Information',
       contactInfoNote: 'Visible to admins only',
       emergencyContactNote: 'Visible to ride leaders and admins',
+    },
+    history: {
+      heading: 'Ride History',
+      emptyState: {
+        title: 'No past rides yet',
+        description: 'Your completed rides will show up here.',
+      },
+      viewAll: 'View all',
     },
     roles: {
       rider: 'Rider',

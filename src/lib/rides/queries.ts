@@ -1100,3 +1100,82 @@ export async function getRideCoLeaders(rideId: string): Promise<RideLeader[]> {
     { tags: [tagRide(rideId)], revalidate: 300 },
   )();
 }
+
+// ---------------------------------------------------------------------------
+// Calendar — lightweight ride data for month grid dots
+// ---------------------------------------------------------------------------
+
+export type CalendarRide = {
+  id: string;
+  ride_date: string;
+  start_time: string;
+  pace_group_sort_order: number | null;
+  user_has_signup: boolean;
+  user_is_leader: boolean;
+};
+
+/**
+ * Fetch lightweight ride data for a given month — used for calendar dot indicators.
+ * Returns one entry per ride with pace group sort order and whether the current user
+ * has a signup or is a leader.
+ */
+export async function getRidesForMonth(
+  clubId: string,
+  userId: string,
+  year: number,
+  month: number,
+): Promise<CalendarRide[]> {
+  const firstDay = `${year}-${String(month).padStart(2, '0')}-01`;
+  const lastDay =
+    month === 12 ? `${year + 1}-01-01` : `${year}-${String(month + 1).padStart(2, '0')}-01`;
+
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
+
+      const { data, error } = await supabase
+        .from('rides')
+        .select(
+          `
+          id, ride_date, start_time, status,
+          pace_group:pace_groups(sort_order),
+          ride_signups(user_id, status),
+          ride_leaders(user_id)
+        `,
+        )
+        .eq('club_id', clubId)
+        .gte('ride_date', firstDay)
+        .lt('ride_date', lastDay)
+        .neq('status', 'cancelled')
+        .order('ride_date', { ascending: true })
+        .order('start_time', { ascending: true });
+
+      if (error?.message) {
+        console.error('Error fetching month rides:', error.message);
+        return [];
+      }
+
+      return (data ?? []).map((ride) => {
+        const pg = ride.pace_group as unknown as { sort_order: number } | null;
+        const signups = (ride.ride_signups ?? []) as unknown as {
+          user_id: string;
+          status: string;
+        }[];
+        const leaders = (ride.ride_leaders ?? []) as unknown as { user_id: string }[];
+
+        return {
+          id: ride.id,
+          ride_date: ride.ride_date,
+          start_time: ride.start_time,
+          pace_group_sort_order: pg?.sort_order ?? null,
+          user_has_signup: signups.some(
+            (s) => s.user_id === userId && (s.status === 'confirmed' || s.status === 'waitlisted'),
+          ),
+          user_is_leader: leaders.some((l) => l.user_id === userId),
+        };
+      });
+    },
+    ['month-rides', clubId, String(year), String(month)],
+    { tags: [TAG_RIDES], revalidate: 300 },
+  )();
+}

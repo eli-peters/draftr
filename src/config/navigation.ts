@@ -44,11 +44,6 @@ export const primaryNav: NavItem[] = [
     icon: 'bike',
   },
   {
-    href: '/my-rides',
-    label: appContent.nav.schedule,
-    icon: 'calendar-check',
-  },
-  {
     href: '/manage',
     label: appContent.nav.manage,
     icon: 'shield-chevron',
@@ -97,7 +92,7 @@ export function getParentRouteLabel(parentPath: string, isAdmin = false): string
 
 /**
  * Filter nav items based on user role.
- * Riders see 4 tabs. Ride leaders and admins see 5 (includes Manage/Club).
+ * Riders see 3 tabs. Ride leaders and admins see 4 (includes Manage/Club).
  * Admins see "Club" instead of "Manage" in the nav label.
  */
 export function getNavForRole(role: UserRole): NavItem[] {

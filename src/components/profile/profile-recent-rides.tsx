@@ -23,13 +23,22 @@ export function ProfileRecentRides({ rides }: { rides: RecentRide[] }) {
       {rides.length === 0 ? (
         <p className="text-center text-base text-muted-foreground">{content.noRidesYet}</p>
       ) : (
-        <ul className="divide-y divide-border-subtle">
-          {rides.map((ride, index) => (
-            <li key={ride.id}>
-              <RecentRideRow ride={ride} first={index === 0} last={index === rides.length - 1} />
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className="divide-y divide-border-subtle">
+            {rides.map((ride, index) => (
+              <li key={ride.id}>
+                <RecentRideRow ride={ride} first={index === 0} last={index === rides.length - 1} />
+              </li>
+            ))}
+          </ul>
+          <Link
+            href={routes.profileHistory}
+            className="mt-4 flex items-center justify-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+          >
+            {content.history.viewAll}
+            <CaretRight className="h-3.5 w-3.5" />
+          </Link>
+        </>
       )}
     </ContentCard>
   );
