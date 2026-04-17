@@ -88,13 +88,11 @@ export function ScheduleCard({ ride, onAction, timezone }: ScheduleCardProps) {
     name: ride.start_location_name,
   });
 
-  const statusKey = isCancelled
-    ? 'cancelled'
-    : isCompleted
-      ? 'completed'
-      : isWaitlisted
-        ? 'waitlisted'
-        : 'confirmed';
+  let statusKey: 'cancelled' | 'completed' | 'waitlisted' | 'confirmed';
+  if (isCancelled) statusKey = 'cancelled';
+  else if (isCompleted) statusKey = 'completed';
+  else if (isWaitlisted) statusKey = 'waitlisted';
+  else statusKey = 'confirmed';
 
   const hasFooter = statusKey !== 'completed' && statusKey !== 'cancelled';
 

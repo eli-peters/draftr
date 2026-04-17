@@ -3,14 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
-import {
-  PushPin,
-  Plus,
-  CaretUp,
-  CaretDown,
-  DotsThree,
-  Megaphone,
-} from '@phosphor-icons/react/dist/ssr';
+import { PushPin, Plus, DotsThree, Megaphone } from '@phosphor-icons/react/dist/ssr';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMotionPresets } from '@/lib/motion';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +37,7 @@ import {
 import { AdminFilterToolbar } from './admin-filter-toolbar';
 import { TablePagination } from './table-pagination';
 import { cn } from '@/lib/utils';
+import { SortableHeader, type SortDir } from '@/components/manage/sortable-header';
 import { appContent } from '@/content/app';
 import type { AnnouncementType } from '@/types/database';
 import {
@@ -55,6 +49,7 @@ import {
 
 const { manage: content, common } = appContent;
 
+const ANNOUNCEMENT_BODY_LIMIT = 500;
 const announcementTypes: AnnouncementType[] = ['general', 'event', 'urgent'];
 
 const announcementTypeOptions = announcementTypes.map((t) => ({
@@ -90,7 +85,6 @@ interface AnnouncementsPanelProps {
 /* ------------------------------------------------------------------ */
 
 type AnnouncementSortKey = 'title' | 'published';
-type SortDir = 'asc' | 'desc';
 
 function compareAnnouncements(
   a: AnnouncementData,
@@ -107,43 +101,6 @@ function compareAnnouncements(
     default:
       return 0;
   }
-}
-
-function SortableHeader({
-  label,
-  sortKey,
-  currentKey,
-  currentDir,
-  onSort,
-  className,
-}: {
-  label: string;
-  sortKey: AnnouncementSortKey;
-  currentKey: AnnouncementSortKey;
-  currentDir: SortDir;
-  onSort: (key: AnnouncementSortKey) => void;
-  className?: string;
-}) {
-  const isActive = sortKey === currentKey;
-  return (
-    <th
-      className={cn(
-        'cursor-pointer select-none p-3 text-overline font-sans text-(--text-secondary) hover:text-(--text-primary)',
-        className,
-      )}
-      onClick={() => onSort(sortKey)}
-    >
-      <span className="inline-flex items-center gap-1">
-        {label}
-        {isActive &&
-          (currentDir === 'asc' ? (
-            <CaretUp className="h-3 w-3" weight="bold" />
-          ) : (
-            <CaretDown className="h-3 w-3" weight="bold" />
-          ))}
-      </span>
-    </th>
-  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -429,10 +386,6 @@ export function AnnouncementFormDrawer({
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  function handleOpenChange(isOpen: boolean) {
-    onOpenChange(isOpen);
-  }
-
   function handleSubmit() {
     if (!title.trim() || !body.trim()) return;
     startTransition(async () => {
@@ -470,12 +423,7 @@ export function AnnouncementFormDrawer({
     mode === 'create' ? content.announcements.create : content.announcements.update;
 
   return (
-    <ResponsiveDrawer
-      open={open}
-      onOpenChange={handleOpenChange}
-      size="auto"
-      className="overflow-clip"
-    >
+    <ResponsiveDrawer open={open} onOpenChange={onOpenChange} size="auto" className="overflow-clip">
       <DrawerHeader>
         <DrawerTitle className="sr-only">{headerText}</DrawerTitle>
         <DrawerDescription className="sr-only">{content.announcements.bodyLabel}</DrawerDescription>
@@ -498,7 +446,7 @@ export function AnnouncementFormDrawer({
           label={content.announcements.bodyLabel}
           htmlFor={`${mode}-announcement-body`}
           hasValue={!!body}
-          maxLength={500}
+          maxLength={ANNOUNCEMENT_BODY_LIMIT}
         >
           <Textarea
             id={`${mode}-announcement-body`}
@@ -506,7 +454,7 @@ export function AnnouncementFormDrawer({
             {...bodyCompositionProps}
             placeholder=" "
             rows={4}
-            maxLength={500}
+            maxLength={ANNOUNCEMENT_BODY_LIMIT}
           />
         </FloatingField>
         <SegmentedControl

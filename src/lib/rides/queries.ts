@@ -14,6 +14,7 @@ import {
   tagMembership,
 } from '@/lib/cache-tags';
 import type {
+  Club,
   Ride,
   PaceGroup,
   User,
@@ -597,12 +598,22 @@ export async function getNextAvailableRide(
   return null;
 }
 
+/** Membership row with the joined club object — typed for consumers. */
+export type UserClubMembership = {
+  id: string;
+  club_id: string;
+  user_id: string;
+  role: string;
+  status: string;
+  club: Club;
+};
+
 /**
  * Get the user's club membership (first active club).
  * React.cache() deduplicates within a request; unstable_cache persists the DB result
  * across requests (5 min TTL) so repeated page loads don't re-query Supabase.
  */
-export const getUserClubMembership = cache(async () => {
+export const getUserClubMembership = cache(async (): Promise<UserClubMembership | null> => {
   const user = await getUser();
   if (!user) return null;
 
@@ -618,7 +629,7 @@ export const getUserClubMembership = cache(async () => {
 
       if (!data) return null;
 
-      return { ...data, user_id: user.id };
+      return { ...data, user_id: user.id } as UserClubMembership;
     },
     ['club-membership', user.id],
     { tags: [tagMembership(user.id)], revalidate: 300 },

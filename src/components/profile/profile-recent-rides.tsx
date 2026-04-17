@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { Bicycle, CaretRight, Path } from '@phosphor-icons/react/dist/ssr';
 import { ContentCard } from '@/components/ui/content-card';
 import { appContent } from '@/content/app';
-import { dateFormats, units } from '@/config/formatting';
+import { dateFormats, formatDistance } from '@/config/formatting';
 import { routes } from '@/config/routes';
 import type { RecentRide } from '@/lib/profile/queries';
 
@@ -17,7 +17,13 @@ const { profile: content } = appContent;
  * Inside the card, rides are rendered as a simple vertical list — title + a
  * muted date + pink distance row — with subtle dividers between rows.
  */
-export function ProfileRecentRides({ rides }: { rides: RecentRide[] }) {
+export function ProfileRecentRides({
+  rides,
+  distanceUnit = 'km',
+}: {
+  rides: RecentRide[];
+  distanceUnit?: 'km' | 'mi';
+}) {
   return (
     <ContentCard icon={Bicycle} heading={content.recentRides}>
       {rides.length === 0 ? (
@@ -27,7 +33,12 @@ export function ProfileRecentRides({ rides }: { rides: RecentRide[] }) {
           <ul className="divide-y divide-border-subtle">
             {rides.map((ride, index) => (
               <li key={ride.id}>
-                <RecentRideRow ride={ride} first={index === 0} last={index === rides.length - 1} />
+                <RecentRideRow
+                  ride={ride}
+                  first={index === 0}
+                  last={index === rides.length - 1}
+                  distanceUnit={distanceUnit}
+                />
               </li>
             ))}
           </ul>
@@ -44,7 +55,17 @@ export function ProfileRecentRides({ rides }: { rides: RecentRide[] }) {
   );
 }
 
-function RecentRideRow({ ride, first, last }: { ride: RecentRide; first: boolean; last: boolean }) {
+function RecentRideRow({
+  ride,
+  first,
+  last,
+  distanceUnit,
+}: {
+  ride: RecentRide;
+  first: boolean;
+  last: boolean;
+  distanceUnit: 'km' | 'mi';
+}) {
   const rideDate = new Date(ride.ride_date);
   return (
     <Link
@@ -60,8 +81,7 @@ function RecentRideRow({ ride, first, last }: { ride: RecentRide; first: boolean
           {ride.distance_km != null && (
             <span className="inline-flex items-center gap-1 font-bold text-primary">
               <Path weight="regular" className="h-3.5 w-3.5" />
-              {ride.distance_km}
-              {units.km}
+              {formatDistance(ride.distance_km, distanceUnit)}
             </span>
           )}
         </div>

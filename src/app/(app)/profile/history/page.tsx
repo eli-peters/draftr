@@ -3,7 +3,6 @@ import { getUserClubMembership, getUserRideSignups } from '@/lib/rides/queries';
 import { getRideLifecycle } from '@/lib/rides/lifecycle';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
-import type { Club } from '@/types/database';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { RideHistoryList } from './ride-history-list';
@@ -14,7 +13,7 @@ export default async function RideHistoryPage() {
   const membership = await getUserClubMembership();
   if (!membership) redirect(routes.signIn);
 
-  const timezone = (membership.club as unknown as Club).timezone;
+  const timezone = membership.club.timezone;
   const userId = membership.user_id;
 
   const [pastRaw, upcomingRaw, waitlistedRaw] = await Promise.all([

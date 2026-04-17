@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { CaretUp, CaretDown, DotsThree } from '@phosphor-icons/react/dist/ssr';
+import { DotsThree } from '@phosphor-icons/react/dist/ssr';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMotionPresets } from '@/lib/motion';
 import {
@@ -38,6 +38,7 @@ import {
   reactivateMember,
   approveMember,
 } from '@/lib/manage/actions';
+import { SortableHeader, type SortDir } from '@/components/manage/sortable-header';
 import { MemberStatus } from '@/config/statuses';
 import type { MemberRole } from '@/types/database';
 
@@ -71,7 +72,6 @@ interface MemberListProps {
 type RoleFilter = 'all' | MemberRole;
 type StatusFilter = 'all' | 'active' | 'pending' | 'inactive';
 type MemberSortKey = 'name' | 'role' | 'paceGroup' | 'joined' | 'status';
-type SortDir = 'asc' | 'desc';
 
 const roleOptions: { value: MemberRole; label: string }[] = [
   { value: 'rider', label: content.members.roles.rider },
@@ -98,38 +98,6 @@ function compareMembers(a: MemberData, b: MemberData, key: MemberSortKey, dir: S
     default:
       return 0;
   }
-}
-
-function SortableHeader({
-  label,
-  sortKey,
-  currentKey,
-  currentDir,
-  onSort,
-}: {
-  label: string;
-  sortKey: MemberSortKey;
-  currentKey: MemberSortKey;
-  currentDir: SortDir;
-  onSort: (key: MemberSortKey) => void;
-}) {
-  const isActive = sortKey === currentKey;
-  return (
-    <th
-      className="cursor-pointer select-none p-3 text-overline font-sans text-(--text-secondary) hover:text-(--text-primary)"
-      onClick={() => onSort(sortKey)}
-    >
-      <span className="inline-flex items-center gap-1">
-        {label}
-        {isActive &&
-          (currentDir === 'asc' ? (
-            <CaretUp className="h-3 w-3" weight="bold" />
-          ) : (
-            <CaretDown className="h-3 w-3" weight="bold" />
-          ))}
-      </span>
-    </th>
-  );
 }
 
 export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: MemberListProps) {

@@ -7,7 +7,6 @@ import {
 } from '@/lib/rides/queries';
 import { getRideLifecycle } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
-import type { Club } from '@/types/database';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { RidesCalendar } from '@/components/rides/calendar/rides-calendar';
 
@@ -15,7 +14,7 @@ export default async function RidesPage() {
   const membership = await getUserClubMembership();
   if (!membership) redirect(routes.signIn);
 
-  const timezone = (membership.club as unknown as Club).timezone;
+  const timezone = membership.club.timezone;
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1;

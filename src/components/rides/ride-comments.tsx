@@ -102,13 +102,10 @@ function CommentRow({
   const editRef = useRef<HTMLTextAreaElement>(null);
 
   const editCompositionProps = useCompositionSafe(
-    useCallback(
-      (value: string) => {
-        setEditBody(value);
-        if (editRef.current) autoExpand(editRef.current);
-      },
-      [editRef],
-    ),
+    useCallback((value: string) => {
+      setEditBody(value);
+      if (editRef.current) autoExpand(editRef.current);
+    }, []),
   );
 
   const { listItem } = useMotionPresets();
@@ -264,13 +261,10 @@ function AddCommentForm({ rideId }: { rideId: string }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const commentCompositionProps = useCompositionSafe(
-    useCallback(
-      (value: string) => {
-        setBody(value);
-        if (textareaRef.current) autoExpand(textareaRef.current);
-      },
-      [textareaRef],
-    ),
+    useCallback((value: string) => {
+      setBody(value);
+      if (textareaRef.current) autoExpand(textareaRef.current);
+    }, []),
   );
 
   function handleSubmit() {

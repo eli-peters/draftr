@@ -6,6 +6,7 @@ import { ArrowCounterClockwise } from '@phosphor-icons/react/dist/ssr';
 import { signUpForRide, cancelSignUp } from '@/lib/rides/actions';
 import { Button } from '@/components/ui/button';
 import { ButtonSpinner } from '@/components/ui/button-spinner';
+import { TOAST_ACTION_STYLES } from '@/lib/toast-styles';
 import { appContent } from '@/content/app';
 import { SignupStatus } from '@/config/statuses';
 
@@ -13,8 +14,6 @@ const { card } = appContent.rides;
 
 // Cooldown between same-direction actions to prevent rapid toggle (ms)
 const ACTION_COOLDOWN_MS = 5000;
-
-import { TOAST_ACTION_STYLES } from '@/lib/toast-styles';
 
 interface CardSignupButtonProps {
   rideId: string;

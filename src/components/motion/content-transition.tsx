@@ -1,9 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { DURATIONS, EASE } from '@/lib/motion';
-import { useReducedMotion } from 'framer-motion';
 
 interface ContentTransitionProps {
   children: ReactNode;

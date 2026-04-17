@@ -70,30 +70,16 @@ export function ProfileIdentityHero({
             {fullName}
           </h1>
           {access.canEdit && !isEditing && (
-            <>
-              {/* Mobile: directly below name, before pace/bio */}
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={beginEdit}
-                className="shrink-0 self-center text-primary hover:text-primary md:hidden"
-              >
-                <PencilSimple weight="regular" />
-                {content.editProfile}
-              </Button>
-              {/* Desktop: top-right, vertically centred against name */}
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={beginEdit}
-                className="hidden shrink-0 text-primary hover:text-primary md:inline-flex"
-              >
-                <PencilSimple weight="regular" />
-                {content.editProfile}
-              </Button>
-            </>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={beginEdit}
+              className="shrink-0 self-center text-primary hover:text-primary"
+            >
+              <PencilSimple weight="regular" />
+              {content.editProfile}
+            </Button>
           )}
         </div>
 

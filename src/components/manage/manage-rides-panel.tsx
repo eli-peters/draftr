@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { CaretUp, CaretDown, DotsThree } from '@phosphor-icons/react/dist/ssr';
+import { DotsThree } from '@phosphor-icons/react/dist/ssr';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { Badge } from '@/components/ui/badge';
@@ -35,9 +35,13 @@ import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import { RideStatus } from '@/config/statuses';
 import { formatTime, getPaceBadgeVariant } from '@/config/formatting';
+import { SortableHeader, type SortDir } from '@/components/manage/sortable-header';
 import { cancelRide } from '@/lib/rides/actions';
 
 const { manage: content, rides: ridesContent, common } = appContent;
+
+const CAPACITY_FILL_CRITICAL = 0.9;
+const CAPACITY_FILL_WARNING = 0.7;
 
 export interface ManageRideData {
   id: string;
@@ -62,7 +66,6 @@ export interface ManageRideData {
 // ---------------------------------------------------------------------------
 
 type RideSortKey = 'date' | 'title' | 'pace' | 'spots' | 'location' | 'leader';
-type SortDir = 'asc' | 'desc';
 
 function compareRides(
   a: ManageRideData,
@@ -90,42 +93,6 @@ function compareRides(
     default:
       return 0;
   }
-}
-
-// ---------------------------------------------------------------------------
-// SortableHeader
-// ---------------------------------------------------------------------------
-
-function SortableHeader({
-  label,
-  sortKey,
-  currentKey,
-  currentDir,
-  onSort,
-}: {
-  label: string;
-  sortKey: RideSortKey;
-  currentKey: RideSortKey;
-  currentDir: SortDir;
-  onSort: (key: RideSortKey) => void;
-}) {
-  const isActive = sortKey === currentKey;
-  return (
-    <th
-      className="cursor-pointer select-none p-3 text-overline font-sans text-(--text-secondary) hover:text-(--text-primary)"
-      onClick={() => onSort(sortKey)}
-    >
-      <span className="inline-flex items-center gap-1">
-        {label}
-        {isActive &&
-          (currentDir === 'asc' ? (
-            <CaretUp className="h-3 w-3" weight="bold" />
-          ) : (
-            <CaretDown className="h-3 w-3" weight="bold" />
-          ))}
-      </span>
-    </th>
-  );
 }
 
 // ---------------------------------------------------------------------------
@@ -292,7 +259,7 @@ export function ManageRidesPanel({
               </thead>
               <tbody>
                 {paginatedRides.map((ride) => (
-                  <DesktopRideRow key={ride.id} ride={ride} isLeader={isLeader} />
+                  <DesktopRideRow key={ride.id} ride={ride} isLeader={isLeader} today={today} />
                 ))}
               </tbody>
             </table>
@@ -314,14 +281,22 @@ export function ManageRidesPanel({
 // DesktopRideRow
 // ---------------------------------------------------------------------------
 
-function DesktopRideRow({ ride, isLeader }: { ride: ManageRideData; isLeader: boolean }) {
+function DesktopRideRow({
+  ride,
+  isLeader,
+  today,
+}: {
+  ride: ManageRideData;
+  isLeader: boolean;
+  today: string;
+}) {
   const prefs = useUserPrefs();
   const router = useRouter();
   const [cancelOpen, setCancelOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const isCancelled = ride.status === RideStatus.CANCELLED;
   const isWeatherWatch = ride.status === RideStatus.WEATHER_WATCH;
-  const isPast = ride.ride_date < new Date().toISOString().split('T')[0];
+  const isPast = ride.ride_date < today;
   const canCancel = !isCancelled && !isPast;
   const spotsText =
     ride.capacity != null ? `${ride.signup_count}/${ride.capacity}` : `${ride.signup_count}`;
@@ -396,9 +371,9 @@ function DesktopRideRow({ ride, isLeader }: { ride: ManageRideData; isLeader: bo
             <div
               className={cn(
                 'h-full rounded-full',
-                ride.signup_count / ride.capacity >= 0.9
+                ride.signup_count / ride.capacity >= CAPACITY_FILL_CRITICAL
                   ? 'bg-(--feedback-error-default)'
-                  : ride.signup_count / ride.capacity >= 0.7
+                  : ride.signup_count / ride.capacity >= CAPACITY_FILL_WARNING
                     ? 'bg-(--feedback-warning-default)'
                     : 'bg-(--feedback-success-default)',
               )}
