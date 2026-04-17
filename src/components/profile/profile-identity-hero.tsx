@@ -142,7 +142,11 @@ function BioBlock({
   onChange: (v: string) => void;
 }) {
   if (!isEditing) {
-    return <p className="line-clamp-3 text-base leading-relaxed text-foreground">{initialValue}</p>;
+    return (
+      <p className="line-clamp-3 select-text text-base leading-relaxed text-foreground">
+        {initialValue}
+      </p>
+    );
   }
   return (
     <FloatingField label={auth.setupProfile.bioLabel} htmlFor="profile_bio" maxLength={300}>

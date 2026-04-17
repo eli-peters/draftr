@@ -96,7 +96,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col">
       <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</dt>
-      <dd className="mt-1 truncate text-base font-semibold text-foreground">{value}</dd>
+      <dd className="mt-1 select-text truncate text-base font-semibold text-foreground">{value}</dd>
     </div>
   );
 }

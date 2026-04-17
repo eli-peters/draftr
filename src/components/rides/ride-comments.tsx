@@ -191,7 +191,9 @@ function CommentRow({
             </div>
           </div>
         ) : (
-          <p className="mt-0.5 whitespace-pre-line text-sm text-foreground/80">{comment.body}</p>
+          <p className="mt-0.5 select-text whitespace-pre-line text-sm text-foreground/80">
+            {comment.body}
+          </p>
         )}
 
         {canModify && !isEditing && (

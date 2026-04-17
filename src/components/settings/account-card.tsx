@@ -44,7 +44,9 @@ export function AccountCard({ email }: AccountCardProps) {
                 {content.rows.email.description}
               </span>
             </div>
-            <span className="shrink-0 truncate text-sm text-muted-foreground">{email}</span>
+            <span className="shrink-0 select-text truncate text-sm text-muted-foreground">
+              {email}
+            </span>
           </div>
 
           {/* Change password — fires reset email */}

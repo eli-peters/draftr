@@ -38,7 +38,7 @@ export function ProfileContactCard({ email, initialPhone, access }: ProfileConta
               />
             </FloatingField>
           ) : initialPhone ? (
-            <span className="text-base font-semibold text-foreground">
+            <span className="select-text text-base font-semibold text-foreground">
               {formatPhoneDisplay(initialPhone)}
             </span>
           ) : (
@@ -49,7 +49,7 @@ export function ProfileContactCard({ email, initialPhone, access }: ProfileConta
         </Row>
         {access.canSeeEmail && (
           <Row label={content.contactInfo.emailLabel}>
-            <span className="text-base font-semibold text-foreground">{email}</span>
+            <span className="select-text text-base font-semibold text-foreground">{email}</span>
           </Row>
         )}
       </dl>

@@ -41,7 +41,7 @@ export function StartLocationDisplay({
             {name}
           </p>
           {address && (
-            <p className="mt-0.5 text-[0.8125rem] text-muted-foreground">
+            <p className="mt-0.5 select-text text-[0.8125rem] text-muted-foreground">
               {shortenAddress(address)}
             </p>
           )}
