@@ -13,7 +13,6 @@ import {
   Smiley,
   Users,
 } from '@phosphor-icons/react/dist/ssr';
-import { motion, useReducedMotion } from 'framer-motion';
 import { RiderAvatar, RiderAvatarOverflow, RiderAvatarStack } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { RideWeatherBadge } from '@/components/weather/ride-weather-badge';
@@ -251,26 +250,15 @@ export function StateCardBanner({
 // ---------------------------------------------------------------------------
 
 /**
- * 20×20 container with an 8px brand-magenta dot and a radar-ping ring.
- * Ring scales 1× → 1.8× while fading; dot subtly breathes.
- * Honours `prefers-reduced-motion` — renders a static dot when motion is reduced.
+ * 20×20 container with an 8px brand-magenta dot and a symmetric pulse ring.
+ * Ring scales 1× → 2× → 1× while fading in and out; dot breathes in sync.
+ * `motion-safe:` gates disable animations under prefers-reduced-motion.
  */
 export function PulsatingDot() {
-  const reduce = useReducedMotion();
   return (
     <span className="relative inline-flex size-5 shrink-0 items-center justify-center" aria-hidden>
-      {!reduce && (
-        <motion.span
-          className="absolute size-2 rounded-full bg-status-inProgress-accent"
-          animate={{ scale: [1, 1.8], opacity: [0.6, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
-        />
-      )}
-      <motion.span
-        className="size-2 rounded-full bg-status-inProgress-accent"
-        animate={reduce ? undefined : { opacity: [1, 0.85, 1] }}
-        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-      />
+      <span className="motion-safe:animate-live-ring absolute size-3 rounded-full bg-status-inProgress-accent" />
+      <span className="motion-safe:animate-live-dot relative size-2 rounded-full bg-status-inProgress-accent" />
     </span>
   );
 }

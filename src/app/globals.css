@@ -407,6 +407,10 @@
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
+  /* Live-indicator animations — symmetric pulse for "ride in progress" dot */
+  --animate-live-ring: live-ring 2.5s ease-in-out infinite;
+  --animate-live-dot: live-dot 2.5s ease-in-out infinite;
+
   /* Fonts */
   --font-display: var(--font-outfit);
   --font-sans: var(--font-dm-sans);
@@ -974,6 +978,29 @@
   &:focus-visible {
     outline: var(--focus-ring-width) solid var(--ring);
     outline-offset: var(--focus-ring-offset);
+  }
+}
+
+/* Live-indicator — symmetric pulse for "ride in progress" dot */
+@keyframes live-ring {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(2);
+    opacity: 0.5;
+  }
+}
+
+@keyframes live-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
   }
 }
 
