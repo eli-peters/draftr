@@ -3,7 +3,7 @@ import { unstable_cache } from 'next/cache';
 import { createClient, getUser } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { SignupStatus } from '@/config/statuses';
-import { todayDateString, todayInTimezone } from '@/config/formatting';
+import { todayInTimezone } from '@/config/formatting';
 import { isRideCompleted } from '@/lib/rides/lifecycle';
 import {
   TAG_RIDES,
@@ -162,9 +162,9 @@ function toRideWithDetails(ride: RawRideRow, currentUserId?: string): RideWithDe
 export async function getUpcomingRides(
   clubId: string,
   userId?: string,
-  timezone?: string,
+  timezone: string = 'America/Toronto',
 ): Promise<RideWithDetails[]> {
-  const today = timezone ? todayInTimezone(timezone) : todayDateString();
+  const today = todayInTimezone(timezone);
 
   const data = await unstable_cache(
     async () => {
@@ -788,9 +788,10 @@ export async function getUserRideSignups(
   userId: string,
   clubId: string,
   filter: 'upcoming' | 'past' | 'waitlisted',
+  timezone: string = 'America/Toronto',
 ): Promise<UserRideSignup[]> {
   const supabase = await createClient();
-  const today = todayDateString();
+  const today = todayInTimezone(timezone);
 
   let query = supabase
     .from('ride_signups')

@@ -12,7 +12,7 @@ import { appContent } from '@/content/app';
 import { RideStatus } from '@/config/statuses';
 import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { estimateEndTime } from '@/lib/rides/estimate-duration';
-import { todayDateString } from '@/config/formatting';
+import { todayInTimezone } from '@/config/formatting';
 import { syncWeatherForRide } from '@/lib/weather/sync';
 
 const { errors, common, notificationMessages: notif, rides: ridesContent } = appContent;
@@ -550,11 +550,12 @@ export async function createRide(data: CreateRideData) {
   // Fetch club settings once — used for date validation and recurring template creation
   const { data: club } = await supabase
     .from('clubs')
-    .select('settings')
+    .select('settings, timezone')
     .eq('id', data.club_id)
     .single();
 
   const settings = (club?.settings ?? {}) as Record<string, string>;
+  const timezone = (club?.timezone as string) ?? 'America/Toronto';
 
   // Validate start_time: must be on a 15-minute interval
   const [, startMinutes] = data.start_time.split(':').map(Number);
@@ -563,7 +564,7 @@ export async function createRide(data: CreateRideData) {
   }
 
   // Validate ride_date: must not be in the past
-  if (data.ride_date < todayDateString()) {
+  if (data.ride_date < todayInTimezone(timezone)) {
     return { error: errors.rideDateInPast };
   }
 
@@ -900,7 +901,7 @@ export async function updateRecurringSeries(rideId: string, data: UpdateRideData
   // Get the current ride to find its template
   const { data: ride } = await supabase
     .from('rides')
-    .select('template_id')
+    .select('template_id, club_id')
     .eq('id', rideId)
     .single();
 
@@ -909,8 +910,16 @@ export async function updateRecurringSeries(rideId: string, data: UpdateRideData
     return updateRide(rideId, data);
   }
 
+  // Resolve club timezone for correct "today" boundary
+  const { data: clubRow } = await supabase
+    .from('clubs')
+    .select('timezone')
+    .eq('id', ride.club_id)
+    .single();
+  const seriesTimezone = (clubRow?.timezone as string) ?? 'America/Toronto';
+
   const templateId = ride.template_id;
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayInTimezone(seriesTimezone);
 
   // Update the template
   await supabase

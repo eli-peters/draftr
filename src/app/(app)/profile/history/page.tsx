@@ -18,9 +18,9 @@ export default async function RideHistoryPage() {
   const userId = membership.user_id;
 
   const [pastRaw, upcomingRaw, waitlistedRaw] = await Promise.all([
-    getUserRideSignups(userId, membership.club_id, 'past'),
-    getUserRideSignups(userId, membership.club_id, 'upcoming'),
-    getUserRideSignups(userId, membership.club_id, 'waitlisted'),
+    getUserRideSignups(userId, membership.club_id, 'past', timezone),
+    getUserRideSignups(userId, membership.club_id, 'upcoming', timezone),
+    getUserRideSignups(userId, membership.club_id, 'waitlisted', timezone),
   ]);
 
   // Post-filter: rides past their end_time today move to "past"

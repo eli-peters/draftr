@@ -62,7 +62,12 @@ export function parseLocalDate(dateStr: string): Date {
   return new Date(year, month - 1, day);
 }
 
-/** Get today's date as a local ISO string (YYYY-MM-DD) — uses browser/server local time. */
+/**
+ * Get today's date as a local ISO string (YYYY-MM-DD) — uses browser/server local time.
+ * @deprecated Use `todayInTimezone(timezone)` for server-side code. This function uses
+ * server-local time which is UTC on Vercel, causing mismatches with the club's timezone.
+ * Retained for client-side usage (e.g. date picker min) where browser local time is correct.
+ */
 export function todayDateString(): string {
   const now = new Date();
   const year = now.getFullYear();
