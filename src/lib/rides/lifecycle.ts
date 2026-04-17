@@ -110,10 +110,13 @@ export function isRideCompleted(
 
 /**
  * Combine an ISO date string ("2026-03-25") with a time string ("09:00" or "09:00:00")
- * into a local Date object. Uses parseISO for correct local timezone handling.
+ * into a timezone-aware Date whose epoch represents the given wall-clock time in the
+ * target timezone. Uses the component constructor — the string constructor treats bare
+ * datetime strings as UTC on servers where TZ=UTC (e.g. Vercel).
  */
 function combineDateAndTime(dateStr: string, timeStr: string, timezone: string): Date {
-  // Ensure time has seconds
+  const [year, month, day] = dateStr.split('-').map(Number);
   const normalizedTime = timeStr.length === 5 ? `${timeStr}:00` : timeStr;
-  return new TZDate(`${dateStr}T${normalizedTime}`, timezone);
+  const [hours, minutes, seconds] = normalizedTime.split(':').map(Number);
+  return new TZDate(year, month - 1, day, hours, minutes, seconds, timezone);
 }
