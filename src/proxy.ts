@@ -23,8 +23,8 @@ export async function proxy(request: NextRequest) {
   const ctx = resolveSubdomain(host);
   const { pathname } = request.nextUrl;
 
-  // ── LOCALHOST (no subdomain) — treat as app to preserve dev experience ──
-  if (host.startsWith('localhost')) {
+  // ── LOCALHOST / IP ADDRESS — treat as app to preserve dev experience ──
+  if (host.startsWith('localhost') || /^\d+\.\d+\.\d+\.\d+/.test(host)) {
     return updateSession(request);
   }
 

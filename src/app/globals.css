@@ -292,13 +292,13 @@
   /* Mobile floating bars use a soft Liquid Glass shadow with inset rim light;
    * desktop sticky bars sit inline so they get a normal directional shadow. */
   --bar-shadow:
-    inset 0 0.5px 0 rgba(255, 255, 255, 0.25), 0 4px 20px rgba(0, 0, 0, 0.06),
-    0 1px 3px rgba(0, 0, 0, 0.04);
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.25), 0 4px 24px rgba(0, 0, 0, 0.14),
+    0 1px 4px rgba(0, 0, 0, 0.08);
   --bar-shadow-desktop: var(--shadow-md);
   --bar-bg-opacity: 20%;
   --bar-backdrop-blur: 18px;
   --bar-backdrop-saturate: 180%;
-  --bar-border-opacity: 12%;
+  --bar-border-opacity: 100%;
   --bar-inset-x: 0.875rem;
   --bar-inset-bottom: max(0.875rem, calc(env(safe-area-inset-bottom, 0px) - 0.5rem));
   --bar-fade-height: 8rem;
@@ -620,10 +620,10 @@
 
   /* ── Floating bar — Liquid Glass dark overrides ── */
   --bar-shadow:
-    inset 0 0.5px 0 rgba(255, 255, 255, 0.06), 0 4px 24px rgba(0, 0, 0, 0.25),
-    0 1px 4px rgba(0, 0, 0, 0.18);
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.08), 0 4px 28px rgba(0, 0, 0, 0.4),
+    0 1px 4px rgba(0, 0, 0, 0.25);
   --bar-bg-opacity: 22%;
-  --bar-border-opacity: 8%;
+  --bar-border-opacity: 100%;
 
   /* ── Status card glow — subtle colored halo on status-accented cards ── */
   --card-glow-success: 0 0 20px color-mix(in srgb, var(--color-success-500) 8%, transparent);
@@ -643,6 +643,10 @@
   body {
     @apply bg-background text-foreground;
     text-rendering: optimizeLegibility;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* ── Mobile touch behavior ──────────────────────────────────────────────
@@ -666,6 +670,7 @@
   select,
   textarea {
     touch-action: manipulation;
+    -webkit-user-drag: none;
   }
 
   @media (pointer: coarse) {

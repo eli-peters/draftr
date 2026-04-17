@@ -27,7 +27,7 @@ export function BottomNav({ items }: BottomNavProps) {
 
   return (
     <div className="fixed left-(--bar-inset-x) right-(--bar-inset-x) bottom-(--bar-inset-bottom) z-50 mx-auto max-w-lg md:hidden">
-      <nav className="rounded-(--bar-radius) border border-border/(--bar-border-opacity) bg-surface-default/(--bar-bg-opacity) shadow-(--bar-shadow) backdrop-blur-(--bar-backdrop-blur) backdrop-saturate-(--bar-backdrop-saturate)">
+      <nav className="rounded-(--bar-radius) bg-surface-default/(--bar-bg-opacity) shadow-(--bar-shadow) backdrop-blur-(--bar-backdrop-blur) backdrop-saturate-(--bar-backdrop-saturate)">
         <LayoutGroup id="bottom-nav">
           <div className="flex items-center justify-around px-(--bar-padding-x)">
             {items.map((item) => {
