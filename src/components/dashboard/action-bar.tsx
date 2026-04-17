@@ -2,28 +2,28 @@
 
 import Link from 'next/link';
 import {
-  Bicycle,
+  Alarm,
   CalendarDots,
-  ClockCountdown,
   CloudWarning,
   FlagBanner,
   FlagPennant,
-  Hourglass,
+  HandsPraying,
   UserPlus,
 } from '@phosphor-icons/react/dist/ssr';
 import { motion, useReducedMotion } from 'framer-motion';
 import { DURATIONS, EASE, SPRINGS } from '@/lib/motion';
 import { Card } from '@/components/ui/card';
-import { CardBanner, CardContentSection } from '@/components/rides/ride-card-parts';
+import { CardBanner, CardContentSection, PulsatingDot } from '@/components/rides/ride-card-parts';
 import { useUserPrefs } from '@/components/user-prefs-provider';
 import { appContent } from '@/content/app';
 import { formatTime, parseLocalDate } from '@/config/formatting';
 import { getRideLifecycle } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
 import { cn, getRelativeDay } from '@/lib/utils';
-import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 import type { UserRole } from '@/config/navigation';
 import type { RideWeatherSnapshot } from '@/types/database';
+
+const STATUS_ICON_CLASS = 'size-3.5 shrink-0 text-status-label-text';
 
 const MotionLink = motion.create(Link);
 
@@ -77,9 +77,8 @@ function getLifecycleBannerProps(
   timezone: string,
   defaults: {
     label: string;
-    icon: PhosphorIcon;
+    icon: React.ReactNode;
     bgClass: string;
-    textClass: string;
     borderClass: string;
   },
 ) {
@@ -88,17 +87,20 @@ function getLifecycleBannerProps(
 
   if (!isLive) return { ...defaults, isLive: false };
 
-  const label =
-    lifecycle === 'in_progress'
-      ? appContent.rides.status.inProgress
-      : appContent.rides.status.aboutToStart;
-  const icon = lifecycle === 'in_progress' ? Bicycle : ClockCountdown;
+  if (lifecycle === 'in_progress') {
+    return {
+      label: appContent.rides.status.inProgress,
+      icon: <PulsatingDot />,
+      bgClass: 'bg-status-inProgress-bg',
+      borderClass: 'border-card-border-info',
+      isLive: true,
+    };
+  }
 
   return {
-    label,
-    icon,
-    bgClass: 'bg-banner-soft-info-bg',
-    textClass: 'text-banner-soft-info-text',
+    label: appContent.rides.status.aboutToStart,
+    icon: <Alarm weight="fill" className={STATUS_ICON_CLASS} />,
+    bgClass: 'bg-status-aboutToStart-bg',
     borderClass: 'border-card-border-info',
     isLive: true,
   };
@@ -109,16 +111,14 @@ function ActionCard({
   icon,
   href,
   bgClass,
-  textClass,
   borderClass,
   bannerBorderClass,
   children,
 }: {
   label: string;
-  icon: PhosphorIcon;
+  icon: React.ReactNode;
   href: string;
   bgClass: string;
-  textClass: string;
   borderClass?: string;
   bannerBorderClass?: string;
   children: React.ReactNode;
@@ -148,7 +148,6 @@ function ActionCard({
               icon={icon}
               label={label}
               bgClass={bgClass}
-              textClass={textClass}
               borderClass={bannerBorderClass}
             />
             <div className="px-5 pt-3 pb-4">{children}</div>
@@ -199,9 +198,8 @@ export function ActionBar({
         (() => {
           const banner = getLifecycleBannerProps(nextSignup, timezone, {
             label: content.actionBar.yourNextRide,
-            icon: CalendarDots,
-            bgClass: 'bg-banner-soft-success-bg',
-            textClass: 'text-banner-soft-success-text',
+            icon: <CalendarDots weight="fill" className={STATUS_ICON_CLASS} />,
+            bgClass: 'bg-status-confirmed-bg',
             borderClass: 'border-card-border-success',
           });
           return (
@@ -210,9 +208,7 @@ export function ActionBar({
               icon={banner.icon}
               href={routes.ride(nextSignup.id)}
               bgClass={banner.bgClass}
-              textClass={banner.textClass}
               borderClass={banner.borderClass}
-              bannerBorderClass={banner.borderClass}
             >
               <CardContentSection
                 date={getRelativeDay(parseLocalDate(nextSignup.ride_date))}
@@ -244,16 +240,10 @@ export function ActionBar({
           return (
             <ActionCard
               label={label}
-              icon={Hourglass}
+              icon={<HandsPraying weight="fill" className={STATUS_ICON_CLASS} />}
               href={routes.ride(nextWaitlistedRide.id)}
-              bgClass={waitlistClosed ? 'bg-banner-muted-bg' : 'bg-banner-soft-warning-bg'}
-              textClass={
-                waitlistClosed ? 'text-banner-muted-text' : 'text-banner-soft-warning-text'
-              }
+              bgClass={waitlistClosed ? 'bg-status-completed-bg' : 'bg-status-waitlisted-bg'}
               borderClass={waitlistClosed ? 'border-border-default' : 'border-card-border-warning'}
-              bannerBorderClass={
-                waitlistClosed ? 'border-border-default' : 'border-card-border-warning'
-              }
             >
               <CardContentSection
                 date={getRelativeDay(parseLocalDate(nextWaitlistedRide.ride_date))}
@@ -273,9 +263,8 @@ export function ActionBar({
         (() => {
           const banner = getLifecycleBannerProps(nextLedRide, timezone, {
             label: content.actionBar.nextLedRide,
-            icon: FlagBanner,
-            bgClass: 'bg-banner-soft-secondary-bg',
-            textClass: 'text-banner-soft-secondary-text',
+            icon: <FlagBanner weight="fill" className={STATUS_ICON_CLASS} />,
+            bgClass: 'bg-status-ledRide-bg',
             borderClass: 'border-border-default',
           });
           return (
@@ -284,9 +273,7 @@ export function ActionBar({
               icon={banner.icon}
               href={routes.ride(nextLedRide.id)}
               bgClass={banner.bgClass}
-              textClass={banner.textClass}
               borderClass={banner.borderClass}
-              bannerBorderClass={banner.borderClass}
             >
               <CardContentSection
                 date={getRelativeDay(parseLocalDate(nextLedRide.ride_date))}
@@ -306,12 +293,10 @@ export function ActionBar({
       {weatherWatchRide && (
         <ActionCard
           label={content.actionBar.weatherWatch}
-          icon={CloudWarning}
+          icon={<CloudWarning weight="fill" className={STATUS_ICON_CLASS} />}
           href={routes.ride(weatherWatchRide.id)}
-          bgClass="bg-banner-soft-warning-bg"
-          textClass="text-banner-soft-warning-text"
+          bgClass="bg-status-weatherWatch-bg"
           borderClass="border-card-border-warning"
-          bannerBorderClass="border-card-border-warning"
         >
           <CardContentSection
             date={getRelativeDay(parseLocalDate(weatherWatchRide.ride_date))}
@@ -330,10 +315,9 @@ export function ActionBar({
       {isAdmin && pendingMemberCount > 0 && (
         <ActionCard
           label={content.actionBar.pendingApprovals}
-          icon={UserPlus}
+          icon={<UserPlus weight="fill" className={STATUS_ICON_CLASS} />}
           href={routes.manageTab('members')}
-          bgClass="bg-accent-primary-subtle"
-          textClass="text-accent-primary-default"
+          bgClass="bg-status-adminNudge-bg"
         >
           <p className="text-sm text-muted-foreground">
             {content.actionBar.pendingApprovalsCount(pendingMemberCount)}
@@ -345,10 +329,9 @@ export function ActionBar({
       {isAdmin && ridesNeedingLeaderCount > 0 && (
         <ActionCard
           label={content.actionBar.ridesNeedingLeader}
-          icon={FlagPennant}
+          icon={<FlagPennant weight="fill" className={STATUS_ICON_CLASS} />}
           href={routes.manageTab('rides')}
-          bgClass="bg-accent-primary-subtle"
-          textClass="text-accent-primary-default"
+          bgClass="bg-status-adminNudge-bg"
         >
           <p className="text-sm text-muted-foreground">
             {content.actionBar.ridesNeedingLeaderCount(ridesNeedingLeaderCount)}
@@ -360,10 +343,9 @@ export function ActionBar({
       {nextAvailableRide && (
         <ActionCard
           label={content.nudge.heading}
-          icon={CalendarDots}
+          icon={<CalendarDots weight="fill" className={STATUS_ICON_CLASS} />}
           href={routes.ride(nextAvailableRide.id)}
-          bgClass="bg-banner-muted-bg"
-          textClass="text-banner-muted-text"
+          bgClass="bg-status-completed-bg"
         >
           <CardContentSection
             date={getRelativeDay(parseLocalDate(nextAvailableRide.ride_date))}

@@ -1,18 +1,19 @@
 'use client';
 
 import {
-  Bicycle,
+  Alarm,
+  CheckFat,
   Clock,
-  ClockCountdown,
   CloudWarning,
-  Hourglass,
+  HandsPraying,
   MapPin,
   Mountains,
   Path,
-  Prohibit,
-  SealCheck,
+  ProhibitInset,
+  Smiley,
   Users,
 } from '@phosphor-icons/react/dist/ssr';
+import { motion, useReducedMotion } from 'framer-motion';
 import { RiderAvatar, RiderAvatarOverflow, RiderAvatarStack } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { RideWeatherBadge } from '@/components/weather/ride-weather-badge';
@@ -26,7 +27,6 @@ import {
   getPaceBadgeVariant,
 } from '@/config/formatting';
 import { RideStatus, SignupStatus } from '@/config/statuses';
-import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 import type { RideWeatherSnapshot, SignupAvatar } from '@/types/database';
 
 const { rides: ridesContent } = appContent;
@@ -67,85 +67,79 @@ export type CardState =
 interface CardStateStyle {
   /** Muted status border for the card outline (300 light / 700 dark) */
   borderClass: string;
-  /** Status-coloured stroke between banner and content (matches banner text) */
+  /** Status-coloured stroke between banner and content, if any */
   bannerBorderClass: string | null;
   bannerBg: string | null;
-  bannerText: string | null;
-  bannerIcon: PhosphorIcon | null;
+  bannerIcon: React.ReactNode | null;
   bannerLabel: string | null;
   /** Dark-mode colored glow shadow (subtle halo around status cards) */
   glowClass: string | null;
 }
+
+const STATUS_ICON_CLASS = 'size-3.5 shrink-0 text-status-label-text';
 
 export function getCardStateStyle(state: CardState): CardStateStyle {
   switch (state) {
     case 'confirmed':
       return {
         borderClass: 'border-card-border-success',
-        bannerBorderClass: 'border-card-border-success',
-        bannerBg: 'bg-banner-soft-success-bg',
-        bannerText: 'text-banner-soft-success-text',
-        bannerIcon: SealCheck,
+        bannerBorderClass: null,
+        bannerBg: 'bg-status-confirmed-bg',
+        bannerIcon: <CheckFat weight="fill" className={STATUS_ICON_CLASS} />,
         bannerLabel: ridesContent.card.signedUp,
         glowClass: 'dark:shadow-[shadow:var(--card-shadow),var(--card-glow-success)]',
       };
     case 'waitlisted':
       return {
         borderClass: 'border-card-border-warning',
-        bannerBorderClass: 'border-card-border-warning',
-        bannerBg: 'bg-banner-soft-warning-bg',
-        bannerText: 'text-banner-soft-warning-text',
-        bannerIcon: Hourglass,
+        bannerBorderClass: null,
+        bannerBg: 'bg-status-waitlisted-bg',
+        bannerIcon: <HandsPraying weight="fill" className={STATUS_ICON_CLASS} />,
         bannerLabel: ridesContent.card.waitlisted,
         glowClass: 'dark:shadow-[shadow:var(--card-shadow),var(--card-glow-warning)]',
       };
     case 'weather_watch':
       return {
         borderClass: 'border-card-border-warning',
-        bannerBorderClass: 'border-card-border-warning',
-        bannerBg: 'bg-banner-soft-warning-bg',
-        bannerText: 'text-banner-soft-warning-text',
-        bannerIcon: CloudWarning,
+        bannerBorderClass: null,
+        bannerBg: 'bg-status-weatherWatch-bg',
+        bannerIcon: <CloudWarning weight="fill" className={STATUS_ICON_CLASS} />,
         bannerLabel: ridesContent.status.weatherWatch,
         glowClass: 'dark:shadow-[shadow:var(--card-shadow),var(--card-glow-warning)]',
       };
     case 'cancelled':
       return {
         borderClass: 'border-card-border-error',
-        bannerBorderClass: 'border-card-border-error',
-        bannerBg: 'bg-banner-soft-error-bg',
-        bannerText: 'text-banner-soft-error-text',
-        bannerIcon: Prohibit,
+        bannerBorderClass: null,
+        bannerBg: 'bg-status-cancelled-bg',
+        bannerIcon: <ProhibitInset weight="fill" className={STATUS_ICON_CLASS} />,
         bannerLabel: ridesContent.status.cancelled,
         glowClass: 'dark:shadow-[shadow:var(--card-shadow),var(--card-glow-error)]',
       };
     case 'in_progress':
       return {
         borderClass: 'border-card-border-info',
-        bannerBorderClass: 'border-card-border-info',
-        bannerBg: 'bg-banner-soft-info-bg',
-        bannerText: 'text-banner-soft-info-text',
-        bannerIcon: Bicycle,
+        bannerBorderClass: null,
+        bannerBg: 'bg-status-inProgress-bg',
+        bannerIcon: <PulsatingDot />,
         bannerLabel: ridesContent.status.inProgress,
         glowClass: 'dark:shadow-[shadow:var(--card-shadow),var(--card-glow-info)]',
       };
     case 'about_to_start':
       return {
         borderClass: 'border-card-border-info',
-        bannerBorderClass: 'border-card-border-info',
-        bannerBg: 'bg-banner-soft-info-bg',
-        bannerText: 'text-banner-soft-info-text',
-        bannerIcon: ClockCountdown,
+        bannerBorderClass: null,
+        bannerBg: 'bg-status-aboutToStart-bg',
+        bannerIcon: <Alarm weight="fill" className={STATUS_ICON_CLASS} />,
         bannerLabel: ridesContent.status.aboutToStart,
         glowClass: 'dark:shadow-[shadow:var(--card-shadow),var(--card-glow-info)]',
       };
     case 'completed':
       return {
         borderClass: 'border-border-default',
-        bannerBorderClass: 'border-border-default',
-        bannerBg: 'bg-banner-muted-bg',
-        bannerText: 'text-banner-muted-text',
-        bannerIcon: SealCheck,
+        bannerBorderClass: null,
+        bannerBg: 'bg-status-completed-bg',
+        bannerIcon: <Smiley weight="fill" className={STATUS_ICON_CLASS} />,
         bannerLabel: ridesContent.status.completed,
         glowClass: null,
       };
@@ -155,7 +149,6 @@ export function getCardStateStyle(state: CardState): CardStateStyle {
         borderClass: 'border-border-default',
         bannerBorderClass: null,
         bannerBg: null,
-        bannerText: null,
         bannerIcon: null,
         bannerLabel: null,
         glowClass: null,
@@ -196,21 +189,20 @@ export function resolveCardState({
 // ---------------------------------------------------------------------------
 
 interface CardBannerProps {
-  icon: PhosphorIcon;
+  icon: React.ReactNode;
   label: string;
   bgClass: string;
-  textClass: string;
-  /** Status-coloured bottom border (stroke between banner and content) */
+  /** Optional bottom border stroke between banner and content */
   borderClass?: string;
 }
 
-export function CardBanner({
-  icon: Icon,
-  label,
-  bgClass,
-  textClass,
-  borderClass,
-}: CardBannerProps) {
+/**
+ * Universal card status cap. Uses the `status-*` semantic tokens,
+ * DM Sans Bold 13/20 label, and fixed dark label text (mode-invariant).
+ * Callers provide a pre-rendered icon (Phosphor + weight="fill" or a
+ * custom element like PulsatingDot).
+ */
+export function CardBanner({ icon, label, bgClass, borderClass }: CardBannerProps) {
   return (
     <div
       className={cn(
@@ -219,13 +211,8 @@ export function CardBanner({
         borderClass && `border-b-(length:--card-border-width) ${borderClass}`,
       )}
     >
-      <Icon weight="bold" className={cn('size-3.5 shrink-0', textClass)} />
-      <span
-        className={cn(
-          'font-sans text-xs font-semibold uppercase tracking-[0.06em] leading-4.25 whitespace-nowrap',
-          textClass,
-        )}
-      >
+      {icon}
+      <span className="font-sans text-status-label font-bold text-status-label-text whitespace-nowrap">
         {label}
       </span>
     </div>
@@ -248,15 +235,43 @@ export function StateCardBanner({
   suppressStates?: CardState[];
 }) {
   if (state && suppressStates?.includes(state)) return null;
-  if (!style.bannerBg || !style.bannerText || !style.bannerIcon || !style.bannerLabel) return null;
+  if (!style.bannerBg || !style.bannerIcon || !style.bannerLabel) return null;
   return (
     <CardBanner
       icon={style.bannerIcon}
       label={labelOverride ?? style.bannerLabel}
       bgClass={style.bannerBg}
-      textClass={style.bannerText}
       borderClass={style.bannerBorderClass ?? undefined}
     />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// PulsatingDot — live indicator for "Ride in progress" card state
+// ---------------------------------------------------------------------------
+
+/**
+ * 20×20 container with an 8px brand-magenta dot and a radar-ping ring.
+ * Ring scales 1× → 1.8× while fading; dot subtly breathes.
+ * Honours `prefers-reduced-motion` — renders a static dot when motion is reduced.
+ */
+export function PulsatingDot() {
+  const reduce = useReducedMotion();
+  return (
+    <span className="relative inline-flex size-5 shrink-0 items-center justify-center" aria-hidden>
+      {!reduce && (
+        <motion.span
+          className="absolute size-2 rounded-full bg-status-inProgress-accent"
+          animate={{ scale: [1, 1.8], opacity: [0.6, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
+        />
+      )}
+      <motion.span
+        className="size-2 rounded-full bg-status-inProgress-accent"
+        animate={reduce ? undefined : { opacity: [1, 0.85, 1] }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+      />
+    </span>
   );
 }
 

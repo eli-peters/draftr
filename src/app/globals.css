@@ -153,6 +153,19 @@
   --color-banner-soft-secondary-bg: var(--banner-soft-secondary-bg);
   --color-banner-soft-secondary-text: var(--banner-soft-secondary-text);
 
+  /* Status cap tokens → Tailwind (ride card header status labels) */
+  --color-status-confirmed-bg: var(--status-confirmed-bg);
+  --color-status-waitlisted-bg: var(--status-waitlisted-bg);
+  --color-status-weatherWatch-bg: var(--status-weatherWatch-bg);
+  --color-status-cancelled-bg: var(--status-cancelled-bg);
+  --color-status-inProgress-bg: var(--status-inProgress-bg);
+  --color-status-inProgress-accent: var(--status-inProgress-accent);
+  --color-status-aboutToStart-bg: var(--status-aboutToStart-bg);
+  --color-status-completed-bg: var(--status-completed-bg);
+  --color-status-ledRide-bg: var(--status-ledRide-bg);
+  --color-status-adminNudge-bg: var(--status-adminNudge-bg);
+  --color-status-label-text: var(--status-label-text);
+
   /* Fills tokens → Tailwind */
   --color-fills-primary: var(--fills-primary);
 
@@ -258,7 +271,7 @@
   --card-radius: var(--radius-2xl);
   --card-radius-lg: var(--radius-3xl);
   --card-border-width: 0px;
-  --card-shadow: var(--shadow-sm);
+  --card-shadow: var(--shadow-md);
   --card-padding: 1rem;
   --card-padding-md: 1.25rem;
 
@@ -375,6 +388,8 @@
   --text-caption-sm: clamp(0.625rem, 0.599rem + 0.11vw, 0.6875rem); /* 10 → 11 px */
   --text-caption-sm--line-height: 0.875rem;
   --text-overline: clamp(0.6875rem, 0.662rem + 0.11vw, 0.75rem); /* 11 → 12 px */
+  --text-status-label: 0.8125rem; /* 13px — card header status cap (non-fluid) */
+  --text-status-label--line-height: 1.25rem; /* 20px */
 
   /* Fixed micro sizes — too small to benefit from scaling */
   --text-micro: 0.6rem; /* 9.6 px — badge counts, inline notifications */

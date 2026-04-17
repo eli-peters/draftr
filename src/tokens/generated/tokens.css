@@ -189,6 +189,19 @@
   --banner-soft-secondary-bg: var(--color-secondary-100);
   --banner-soft-secondary-text: var(--color-secondary-800);
 
+  /* status */
+  --status-confirmed-bg: var(--color-success-400);
+  --status-waitlisted-bg: var(--color-warning-300);
+  --status-weatherWatch-bg: var(--color-warning-300);
+  --status-cancelled-bg: var(--color-error-300);
+  --status-inProgress-bg: var(--color-primary-50);
+  --status-inProgress-accent: var(--color-primary-500);
+  --status-aboutToStart-bg: var(--color-success-100);
+  --status-completed-bg: var(--color-neutral-300);
+  --status-ledRide-bg: var(--color-secondary-100);
+  --status-adminNudge-bg: var(--color-primary-100);
+  --status-label-text: var(--color-neutral-900);
+
   /* accent */
   --accent-primary-default: var(--color-primary-500);
   --accent-primary-muted: var(--color-primary-300);
@@ -253,18 +266,18 @@
   --chip-focus-border: var(--color-primary-200);
 
   /* avatar */
-  --avatar-1-bg: var(--color-primary-50);
-  --avatar-1-fg: var(--color-primary-700);
-  --avatar-2-bg: var(--color-secondary-50);
-  --avatar-2-fg: var(--color-secondary-700);
-  --avatar-3-bg: var(--color-success-50);
-  --avatar-3-fg: var(--color-success-700);
-  --avatar-4-bg: var(--color-warning-50);
-  --avatar-4-fg: var(--color-warning-700);
-  --avatar-5-bg: var(--color-info-50);
-  --avatar-5-fg: var(--color-info-700);
-  --avatar-6-bg: var(--color-error-50);
-  --avatar-6-fg: var(--color-error-700);
+  --avatar-1-bg: var(--color-primary-200);
+  --avatar-1-fg: var(--color-primary-800);
+  --avatar-2-bg: var(--color-secondary-200);
+  --avatar-2-fg: var(--color-secondary-800);
+  --avatar-3-bg: var(--color-success-200);
+  --avatar-3-fg: var(--color-success-800);
+  --avatar-4-bg: var(--color-warning-200);
+  --avatar-4-fg: var(--color-warning-800);
+  --avatar-5-bg: var(--color-info-200);
+  --avatar-5-fg: var(--color-info-800);
+  --avatar-6-bg: var(--color-error-200);
+  --avatar-6-fg: var(--color-error-800);
 
   /* weather */
   --weather-clear: var(--color-warning-500);
@@ -354,6 +367,19 @@
   --banner-soft-secondary-bg: var(--color-secondary-500-alpha-12);
   --banner-soft-secondary-text: var(--color-secondary-300);
 
+  /* status */
+  --status-confirmed-bg: var(--color-success-400);
+  --status-waitlisted-bg: var(--color-warning-300);
+  --status-weatherWatch-bg: var(--color-warning-300);
+  --status-cancelled-bg: var(--color-error-300);
+  --status-inProgress-bg: var(--color-primary-50);
+  --status-inProgress-accent: var(--color-primary-500);
+  --status-aboutToStart-bg: var(--color-success-100);
+  --status-completed-bg: var(--color-neutral-300);
+  --status-ledRide-bg: var(--color-secondary-100);
+  --status-adminNudge-bg: var(--color-primary-100);
+  --status-label-text: var(--color-neutral-900);
+
   /* accent */
   --accent-primary-default: var(--color-primary-400);
   --accent-primary-muted: var(--color-primary-700);
@@ -418,18 +444,18 @@
   --chip-focus-border: var(--color-primary-800);
 
   /* avatar */
-  --avatar-1-bg: var(--color-primary-950);
-  --avatar-1-fg: var(--color-primary-300);
-  --avatar-2-bg: var(--color-secondary-950);
-  --avatar-2-fg: var(--color-secondary-300);
-  --avatar-3-bg: var(--color-success-950);
-  --avatar-3-fg: var(--color-success-300);
-  --avatar-4-bg: var(--color-warning-950);
-  --avatar-4-fg: var(--color-warning-300);
-  --avatar-5-bg: var(--color-info-950);
-  --avatar-5-fg: var(--color-info-300);
-  --avatar-6-bg: var(--color-error-950);
-  --avatar-6-fg: var(--color-error-300);
+  --avatar-1-bg: var(--color-primary-800);
+  --avatar-1-fg: var(--color-primary-200);
+  --avatar-2-bg: var(--color-secondary-800);
+  --avatar-2-fg: var(--color-secondary-200);
+  --avatar-3-bg: var(--color-success-800);
+  --avatar-3-fg: var(--color-success-200);
+  --avatar-4-bg: var(--color-warning-800);
+  --avatar-4-fg: var(--color-warning-200);
+  --avatar-5-bg: var(--color-info-800);
+  --avatar-5-fg: var(--color-info-200);
+  --avatar-6-bg: var(--color-error-800);
+  --avatar-6-fg: var(--color-error-200);
 
   /* weather */
   --weather-clear: var(--color-warning-400);

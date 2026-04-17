@@ -884,6 +884,171 @@
       }
     }
   },
+  "status": {
+    "confirmed": {
+      "bg": {
+        "$type": "color",
+        "$description": "Card header status cap — confirmed / signed-up",
+        "$value": "{color.success.400}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.success.400}",
+              "Dark": "{color.success.400}"
+            }
+          }
+        }
+      }
+    },
+    "waitlisted": {
+      "bg": {
+        "$type": "color",
+        "$description": "Card header status cap — waitlisted",
+        "$value": "{color.warning.300}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.warning.300}",
+              "Dark": "{color.warning.300}"
+            }
+          }
+        }
+      }
+    },
+    "weatherWatch": {
+      "bg": {
+        "$type": "color",
+        "$description": "Card header status cap — weather watch (separate from waitlisted; may diverge)",
+        "$value": "{color.warning.300}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.warning.300}",
+              "Dark": "{color.warning.300}"
+            }
+          }
+        }
+      }
+    },
+    "cancelled": {
+      "bg": {
+        "$type": "color",
+        "$description": "Card header status cap — cancelled",
+        "$value": "{color.error.300}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.error.300}",
+              "Dark": "{color.error.300}"
+            }
+          }
+        }
+      }
+    },
+    "inProgress": {
+      "bg": {
+        "$type": "color",
+        "$description": "Card header status cap — ride in progress (pastel background)",
+        "$value": "{color.primary.50}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.primary.50}",
+              "Dark": "{color.primary.50}"
+            }
+          }
+        }
+      },
+      "accent": {
+        "$type": "color",
+        "$description": "Card header status cap — ride in progress pulsing dot (primary magenta)",
+        "$value": "{color.primary.500}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.primary.500}",
+              "Dark": "{color.primary.500}"
+            }
+          }
+        }
+      }
+    },
+    "aboutToStart": {
+      "bg": {
+        "$type": "color",
+        "$description": "Card header status cap — ride about to start (pastel green)",
+        "$value": "{color.success.100}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.success.100}",
+              "Dark": "{color.success.100}"
+            }
+          }
+        }
+      }
+    },
+    "completed": {
+      "bg": {
+        "$type": "color",
+        "$description": "Card header status cap — ride completed (pastel warm grey)",
+        "$value": "{color.neutral.300}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.300}",
+              "Dark": "{color.neutral.300}"
+            }
+          }
+        }
+      }
+    },
+    "ledRide": {
+      "bg": {
+        "$type": "color",
+        "$description": "Card header status cap — dashboard led ride (pastel teal)",
+        "$value": "{color.secondary.100}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.secondary.100}",
+              "Dark": "{color.secondary.100}"
+            }
+          }
+        }
+      }
+    },
+    "adminNudge": {
+      "bg": {
+        "$type": "color",
+        "$description": "Card header status cap — admin nudge (pastel pink)",
+        "$value": "{color.primary.100}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.primary.100}",
+              "Dark": "{color.primary.100}"
+            }
+          }
+        }
+      }
+    },
+    "label": {
+      "text": {
+        "$type": "color",
+        "$description": "Card header status cap — label text (mode-invariant, always dark)",
+        "$value": "{color.neutral.900}",
+        "$extensions": {
+          "com.figma": {
+            "modes": {
+              "Light": "{color.neutral.900}",
+              "Dark": "{color.neutral.900}"
+            }
+          }
+        }
+      }
+    }
+  },
   "accent": {
     "primary": {
       "default": {
@@ -1694,21 +1859,21 @@
     "1": {
       "bg": {
         "$type": "color",
-        "$description": "Primary — pink tint",
-        "$value": "{color.primary.50}",
+        "$description": "Primary — pink saturated pastel",
+        "$value": "{color.primary.200}",
         "$extensions": {
           "com.figma": {
-            "modes": { "Light": "{color.primary.50}", "Dark": "{color.primary.950}" }
+            "modes": { "Light": "{color.primary.200}", "Dark": "{color.primary.800}" }
           }
         }
       },
       "fg": {
         "$type": "color",
         "$description": "Primary — pink foreground (text + border)",
-        "$value": "{color.primary.700}",
+        "$value": "{color.primary.800}",
         "$extensions": {
           "com.figma": {
-            "modes": { "Light": "{color.primary.700}", "Dark": "{color.primary.300}" }
+            "modes": { "Light": "{color.primary.800}", "Dark": "{color.primary.200}" }
           }
         }
       }
@@ -1716,21 +1881,21 @@
     "2": {
       "bg": {
         "$type": "color",
-        "$description": "Secondary — teal tint",
-        "$value": "{color.secondary.50}",
+        "$description": "Secondary — teal saturated pastel",
+        "$value": "{color.secondary.200}",
         "$extensions": {
           "com.figma": {
-            "modes": { "Light": "{color.secondary.50}", "Dark": "{color.secondary.950}" }
+            "modes": { "Light": "{color.secondary.200}", "Dark": "{color.secondary.800}" }
           }
         }
       },
       "fg": {
         "$type": "color",
         "$description": "Secondary — teal foreground (text + border)",
-        "$value": "{color.secondary.700}",
+        "$value": "{color.secondary.800}",
         "$extensions": {
           "com.figma": {
-            "modes": { "Light": "{color.secondary.700}", "Dark": "{color.secondary.300}" }
+            "modes": { "Light": "{color.secondary.800}", "Dark": "{color.secondary.200}" }
           }
         }
       }
@@ -1738,21 +1903,21 @@
     "3": {
       "bg": {
         "$type": "color",
-        "$description": "Success — green tint",
-        "$value": "{color.success.50}",
+        "$description": "Success — green saturated pastel",
+        "$value": "{color.success.200}",
         "$extensions": {
           "com.figma": {
-            "modes": { "Light": "{color.success.50}", "Dark": "{color.success.950}" }
+            "modes": { "Light": "{color.success.200}", "Dark": "{color.success.800}" }
           }
         }
       },
       "fg": {
         "$type": "color",
         "$description": "Success — green foreground (text + border)",
-        "$value": "{color.success.700}",
+        "$value": "{color.success.800}",
         "$extensions": {
           "com.figma": {
-            "modes": { "Light": "{color.success.700}", "Dark": "{color.success.300}" }
+            "modes": { "Light": "{color.success.800}", "Dark": "{color.success.200}" }
           }
         }
       }
@@ -1760,21 +1925,21 @@
     "4": {
       "bg": {
         "$type": "color",
-        "$description": "Warning — amber tint",
-        "$value": "{color.warning.50}",
+        "$description": "Warning — amber saturated pastel",
+        "$value": "{color.warning.200}",
         "$extensions": {
           "com.figma": {
-            "modes": { "Light": "{color.warning.50}", "Dark": "{color.warning.950}" }
+            "modes": { "Light": "{color.warning.200}", "Dark": "{color.warning.800}" }
           }
         }
       },
       "fg": {
         "$type": "color",
         "$description": "Warning — amber foreground (text + border)",
-        "$value": "{color.warning.700}",
+        "$value": "{color.warning.800}",
         "$extensions": {
           "com.figma": {
-            "modes": { "Light": "{color.warning.700}", "Dark": "{color.warning.300}" }
+            "modes": { "Light": "{color.warning.800}", "Dark": "{color.warning.200}" }
           }
         }
       }
@@ -1782,21 +1947,21 @@
     "5": {
       "bg": {
         "$type": "color",
-        "$description": "Info — blue tint",
-        "$value": "{color.info.50}",
+        "$description": "Info — blue saturated pastel",
+        "$value": "{color.info.200}",
         "$extensions": {
           "com.figma": {
-            "modes": { "Light": "{color.info.50}", "Dark": "{color.info.950}" }
+            "modes": { "Light": "{color.info.200}", "Dark": "{color.info.800}" }
           }
         }
       },
       "fg": {
         "$type": "color",
         "$description": "Info — blue foreground (text + border)",
-        "$value": "{color.info.700}",
+        "$value": "{color.info.800}",
         "$extensions": {
           "com.figma": {
-            "modes": { "Light": "{color.info.700}", "Dark": "{color.info.300}" }
+            "modes": { "Light": "{color.info.800}", "Dark": "{color.info.200}" }
           }
         }
       }
@@ -1804,21 +1969,21 @@
     "6": {
       "bg": {
         "$type": "color",
-        "$description": "Error — red tint",
-        "$value": "{color.error.50}",
+        "$description": "Error — red saturated pastel",
+        "$value": "{color.error.200}",
         "$extensions": {
           "com.figma": {
-            "modes": { "Light": "{color.error.50}", "Dark": "{color.error.950}" }
+            "modes": { "Light": "{color.error.200}", "Dark": "{color.error.800}" }
           }
         }
       },
       "fg": {
         "$type": "color",
         "$description": "Error — red foreground (text + border)",
-        "$value": "{color.error.700}",
+        "$value": "{color.error.800}",
         "$extensions": {
           "com.figma": {
-            "modes": { "Light": "{color.error.700}", "Dark": "{color.error.300}" }
+            "modes": { "Light": "{color.error.800}", "Dark": "{color.error.200}" }
           }
         }
       }
