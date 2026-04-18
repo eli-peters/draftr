@@ -249,10 +249,10 @@
   --badge-count-text: var(--color-neutral-900);
   --badge-notification-bg: var(--color-secondary-500);
   --badge-notification-text: var(--color-neutral-0);
-  --badge-stat-neutral-bg: var(--color-primary-50);
-  --badge-stat-neutral-text: var(--color-primary-800);
-  --badge-stat-negative-bg: var(--color-primary-100);
-  --badge-stat-negative-text: var(--color-primary-800);
+  --badge-stat-neutral-bg: var(--color-neutral-100);
+  --badge-stat-neutral-text: var(--color-neutral-700);
+  --badge-stat-negative-bg: var(--color-error-50);
+  --badge-stat-negative-text: var(--color-error-800);
   --badge-stat-positive-bg: var(--color-success-100);
   --badge-stat-positive-text: var(--color-success-800);
 
@@ -427,10 +427,10 @@
   --badge-count-text: var(--color-neutral-50);
   --badge-notification-bg: var(--color-secondary-500);
   --badge-notification-text: var(--color-neutral-0);
-  --badge-stat-neutral-bg: var(--color-primary-700);
-  --badge-stat-neutral-text: var(--color-primary-300);
-  --badge-stat-negative-bg: var(--color-primary-500-alpha-12);
-  --badge-stat-negative-text: var(--color-primary-300);
+  --badge-stat-neutral-bg: var(--color-neutral-800);
+  --badge-stat-neutral-text: var(--color-neutral-300);
+  --badge-stat-negative-bg: var(--color-error-900);
+  --badge-stat-negative-text: var(--color-error-300);
   --badge-stat-positive-bg: var(--color-success-500-alpha-12);
   --badge-stat-positive-text: var(--color-success-300);
 

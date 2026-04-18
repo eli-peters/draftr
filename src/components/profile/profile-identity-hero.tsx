@@ -100,7 +100,7 @@ export function ProfileIdentityHero({
               variant="ghost"
               size="sm"
               onClick={beginEdit}
-              className="shrink-0 self-center text-primary hover:text-primary"
+              className="shrink-0 self-center"
             >
               <PencilSimple weight="regular" />
               {content.editProfile}

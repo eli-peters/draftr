@@ -1600,13 +1600,13 @@
       "neutral": {
         "bg": {
           "$type": "color",
-          "$description": "Background for neutral-sentiment stat pills (e.g. fill rate steady)",
-          "$value": "{color.primary.50}",
+          "$description": "Background for neutral-sentiment stat pills (e.g. fill rate steady) — true neutral, never the brand colour",
+          "$value": "{color.neutral.100}",
           "$extensions": {
             "com.figma": {
               "modes": {
-                "Light": "{color.primary.50}",
-                "Dark": "{color.primary.700}"
+                "Light": "{color.neutral.100}",
+                "Dark": "{color.neutral.800}"
               }
             }
           }
@@ -1614,12 +1614,12 @@
         "text": {
           "$type": "color",
           "$description": "Text for neutral-sentiment stat pills",
-          "$value": "{color.primary.800}",
+          "$value": "{color.neutral.700}",
           "$extensions": {
             "com.figma": {
               "modes": {
-                "Light": "{color.primary.800}",
-                "Dark": "{color.primary.300}"
+                "Light": "{color.neutral.700}",
+                "Dark": "{color.neutral.300}"
               }
             }
           }
@@ -1628,13 +1628,13 @@
       "negative": {
         "bg": {
           "$type": "color",
-          "$description": "Background for negative-sentiment stat pills (e.g. cancellations)",
-          "$value": "{color.primary.100}",
+          "$description": "Background for negative-sentiment stat pills (e.g. cancellations) — feedback-error tone, never the brand colour",
+          "$value": "{color.error.50}",
           "$extensions": {
             "com.figma": {
               "modes": {
-                "Light": "{color.primary.100}",
-                "Dark": "{color.primary.500-alpha-12}"
+                "Light": "{color.error.50}",
+                "Dark": "{color.error.900}"
               }
             }
           }
@@ -1642,12 +1642,12 @@
         "text": {
           "$type": "color",
           "$description": "Text for negative-sentiment stat pills",
-          "$value": "{color.primary.800}",
+          "$value": "{color.error.800}",
           "$extensions": {
             "com.figma": {
               "modes": {
-                "Light": "{color.primary.800}",
-                "Dark": "{color.primary.300}"
+                "Light": "{color.error.800}",
+                "Dark": "{color.error.300}"
               }
             }
           }

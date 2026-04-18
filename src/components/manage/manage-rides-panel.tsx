@@ -346,7 +346,7 @@ function DesktopRideRow({
       tabIndex={0}
       role="link"
       className={cn(
-        'group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-page) hover:bg-(--action-primary-subtle-bg)',
+        'group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-page) hover:bg-muted/50',
         isCancelled && 'opacity-disabled',
         isPending && 'opacity-pending pointer-events-none',
       )}

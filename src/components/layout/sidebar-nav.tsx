@@ -39,12 +39,12 @@ export function SidebarNav({ items, isAdmin = false }: SidebarNavProps) {
                 <Link
                   href={routes.manage}
                   className={cn(
-                    'relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                    'relative flex w-full items-center gap-3 rounded-lg py-2.5 pl-4 pr-3 text-sm font-medium transition-colors',
                     isManageExact
-                      ? 'font-semibold text-primary bg-primary/10'
+                      ? 'font-semibold text-primary before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-r-full before:bg-primary'
                       : isManageActive
                         ? 'font-semibold text-primary hover:bg-muted/50'
-                        : 'text-foreground hover:text-foreground hover:bg-muted/50',
+                        : 'text-foreground hover:bg-muted/50',
                   )}
                 >
                   <NavIcon name={item.icon} className="relative h-5 w-5" active={isManageActive} />
@@ -63,10 +63,10 @@ export function SidebarNav({ items, isAdmin = false }: SidebarNavProps) {
                           key={child.href}
                           href={child.href}
                           className={cn(
-                            'flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors',
+                            'relative flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors',
                             isChildActive
-                              ? 'font-semibold text-primary bg-primary/10'
-                              : 'text-foreground hover:text-foreground hover:bg-muted/50',
+                              ? 'font-semibold text-primary before:absolute before:-left-[13px] before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-r-full before:bg-primary'
+                              : 'text-foreground hover:bg-muted/50',
                           )}
                         >
                           <NavIcon name={child.icon} className="h-4 w-4" active={isChildActive} />
@@ -92,10 +92,10 @@ export function SidebarNav({ items, isAdmin = false }: SidebarNavProps) {
               key={item.href}
               href={navHref}
               className={cn(
-                'relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                'relative flex items-center gap-3 rounded-lg py-2.5 pl-4 pr-3 text-sm font-medium transition-colors',
                 isActive
-                  ? 'font-semibold text-primary bg-primary/10'
-                  : 'text-foreground hover:text-foreground hover:bg-muted/50',
+                  ? 'font-semibold text-primary before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-r-full before:bg-primary'
+                  : 'text-foreground hover:bg-muted/50',
               )}
             >
               <NavIcon name={item.icon} className="relative h-5 w-5" active={isActive} />

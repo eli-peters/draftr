@@ -357,7 +357,7 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                         tabIndex={0}
                         role="link"
                         className={cn(
-                          'group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-page) hover:bg-(--action-primary-subtle-bg)',
+                          'group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-page) hover:bg-muted/50',
                           isInactive && 'opacity-muted',
                         )}
                       >
@@ -458,7 +458,7 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                             </Button>
                           ) : !isSelf ? (
                             <DropdownMenu>
-                              <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-(--action-primary-subtle-bg) hover:text-(--text-primary)">
+                              <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
                                 <DotsThree className="h-4 w-4" weight="bold" />
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
