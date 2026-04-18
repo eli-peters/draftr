@@ -369,7 +369,7 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                                 <AvatarImage src={member.avatar_url} alt={name} />
                               )}
                               <AvatarFallback
-                                className={`text-[10px] font-medium ${getAvatarColourClasses(name)}`}
+                                className={`text-caption-sm font-medium ${getAvatarColourClasses(name)}`}
                               >
                                 {initials}
                               </AvatarFallback>

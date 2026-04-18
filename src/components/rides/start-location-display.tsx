@@ -24,7 +24,7 @@ export function StartLocationDisplay({
   hasRoute,
 }: StartLocationDisplayProps) {
   if (isGeocoding) {
-    return <p className="text-[0.8125rem] text-muted-foreground">{form.startLocationFromRoute}</p>;
+    return <p className="text-status-label text-muted-foreground">{form.startLocationFromRoute}</p>;
   }
 
   if (name) {
@@ -37,11 +37,11 @@ export function StartLocationDisplay({
       <Wrapper {...wrapperProps} className="group flex items-start gap-2">
         <MapPin weight="duotone" className="mt-0.5 size-6 shrink-0 text-primary" />
         <div className="min-w-0">
-          <p className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground decoration-primary/30 underline-offset-2 group-hover:underline">
+          <p className="truncate font-display text-xl font-semibold text-foreground decoration-primary/30 underline-offset-2 group-hover:underline">
             {name}
           </p>
           {address && (
-            <p className="mt-0.5 select-text text-[0.8125rem] text-muted-foreground">
+            <p className="mt-0.5 select-text text-status-label text-muted-foreground">
               {shortenAddress(address)}
             </p>
           )}

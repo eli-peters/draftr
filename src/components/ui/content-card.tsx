@@ -31,7 +31,7 @@ const variantStyles = {
   outlined: 'border-(length:--card-border-width) border-border bg-card shadow-(--card-shadow)',
   elevated: 'bg-card shadow-(--card-shadow)',
   flat: 'bg-card',
-  admin: 'border border-(--border-default) bg-card',
+  admin: 'border border-(--border-default) bg-card dark:ring-1 dark:ring-foreground/5',
   alert: 'bg-feedback-error-bg shadow-(--card-shadow)',
 } as const;
 
@@ -77,7 +77,7 @@ function ContentCard({
         interactive && [
           'cursor-pointer',
           'transition-[transform,box-shadow] duration-(--duration-normal) ease-(--ease-in-out)',
-          'hover:-translate-y-0.5 hover:shadow-md',
+          'hover:-translate-y-0.5 hover:shadow-lg',
           'active:scale-[0.98]',
         ],
         className,

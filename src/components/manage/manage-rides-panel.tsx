@@ -394,7 +394,7 @@ function DesktopRideRow({
                   <AvatarImage src={ride.created_by_avatar_url} alt={ride.created_by_name} />
                 )}
                 <AvatarFallback
-                  className={`text-[10px] font-medium ${getAvatarColourClasses(ride.created_by_name)}`}
+                  className={`text-caption-sm font-medium ${getAvatarColourClasses(ride.created_by_name)}`}
                 >
                   {getInitials(ride.created_by_name)}
                 </AvatarFallback>

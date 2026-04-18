@@ -564,9 +564,7 @@ export function CardContentSection({
       </div>
 
       {/* Title */}
-      <h3 className="truncate font-display text-xl font-semibold tracking-[-0.015em] text-foreground">
-        {title}
-      </h3>
+      <h3 className="truncate font-display text-xl font-semibold text-foreground">{title}</h3>
 
       {/* Description */}
       {description && <p className="line-clamp-2 text-sm text-muted-foreground">{description}</p>}

@@ -65,7 +65,12 @@ export function NotificationItem({ notification, compact }: NotificationItemProp
   const timeAgo = formatDistanceToNow(new Date(notification.sent_at), { addSuffix: true });
 
   return (
-    <div className={cn('flex gap-3 transition-opacity duration-200', compact && 'px-3 py-2.5')}>
+    <div
+      className={cn(
+        'flex gap-3 transition-opacity duration-(--duration-fast)',
+        compact && 'px-3 py-2.5',
+      )}
+    >
       {/* Icon */}
       <div
         className={`flex ${compact ? 'h-7 w-7' : 'h-10 w-10'} shrink-0 items-center justify-center rounded-xl ${iconStyle}`}

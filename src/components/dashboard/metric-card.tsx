@@ -42,7 +42,7 @@ function TrendBadge({ direction, label, sentiment }: TrendVisualization) {
       )}
     >
       <Arrow className="size-3.5 shrink-0 text-foreground" weight="bold" />
-      <span className="truncate font-sans text-[0.8125rem] leading-5 text-foreground">{label}</span>
+      <span className="truncate font-sans text-status-label text-foreground">{label}</span>
     </div>
   );
 }
@@ -77,7 +77,7 @@ export function MetricCard({
           value={value}
           suffix={suffix}
           decimals={decimals}
-          className="w-full font-display text-[2.5rem] leading-11.5 font-bold tracking-[-0.48px] text-center text-foreground"
+          className="w-full font-display text-4xl font-bold text-center text-foreground tabular-nums"
         />
         {visualization?.type === 'trend' && <TrendBadge {...visualization} />}
       </div>

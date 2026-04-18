@@ -237,7 +237,7 @@ export function StepRoute({
               <span className="inline-flex cursor-default items-center gap-2 rounded-full bg-surface-page px-4 py-2 text-sm font-medium opacity-50">
                 <UploadSimple className="size-4 text-muted-foreground" />
                 {importContent.modes.gpx.heading}
-                <span className="rounded-full bg-muted px-2 py-0.5 text-[0.625rem] font-medium leading-none text-muted-foreground">
+                <span className="rounded-full bg-muted px-2 py-0.5 text-caption-sm font-medium leading-none text-muted-foreground">
                   {importContent.modes.gpx.comingSoon}
                 </span>
               </span>
@@ -245,7 +245,7 @@ export function StepRoute({
 
             {/* Paste input — shown on pill click */}
             {showPasteInput && (
-              <div className="animate-in fade-in-0 space-y-2.5 duration-200">
+              <div className="animate-in fade-in-0 space-y-2.5 duration-(--duration-fast)">
                 <div className="relative">
                   <Input
                     ref={pasteUrlRef}

@@ -124,7 +124,7 @@ export function AvatarMenu({ userName, userInitials, avatarUrl, userRole }: Avat
             <DrawerBody className="flex flex-col gap-1 pb-5">
               <button
                 type="button"
-                className="flex h-12 w-full items-center gap-3 rounded-lg px-3 text-[15px] font-medium text-foreground transition-colors hover:bg-muted/50"
+                className="flex h-12 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/50"
                 onClick={() => handleNavigate(routes.profile)}
               >
                 <UserCircle className="size-6 text-foreground" />
@@ -132,7 +132,7 @@ export function AvatarMenu({ userName, userInitials, avatarUrl, userRole }: Avat
               </button>
               <button
                 type="button"
-                className="flex h-12 w-full items-center gap-3 rounded-lg px-3 text-[15px] font-medium text-foreground transition-colors hover:bg-muted/50"
+                className="flex h-12 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/50"
                 onClick={() => handleNavigate(routes.settings)}
               >
                 <GearSix className="size-6 text-foreground" />
@@ -141,7 +141,7 @@ export function AvatarMenu({ userName, userInitials, avatarUrl, userRole }: Avat
               <div className="my-1 h-px bg-border" />
               <button
                 type="button"
-                className="flex h-12 w-full items-center gap-3 rounded-lg px-3 text-[15px] font-medium text-foreground transition-colors hover:bg-muted/50"
+                className="flex h-12 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/50"
                 onClick={handleSignOut}
               >
                 <SignOut className="size-6 text-foreground" />
