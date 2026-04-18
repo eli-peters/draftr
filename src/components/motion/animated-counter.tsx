@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { animate, useMotionValue, useReducedMotion } from 'framer-motion';
 import { DURATIONS, EASE } from '@/lib/motion';
 
@@ -14,8 +14,10 @@ interface AnimatedCounterProps {
 }
 
 /**
- * Tweens a numeric value from its previous render to the new one.
- * Respects prefers-reduced-motion (snaps instantly).
+ * Renders a numeric value. On *change*, tweens from the previous value to the
+ * new one. On initial mount the number snaps in immediately — premium internal
+ * dashboards (Linear, Stripe, Notion) display KPI numbers instantly; only
+ * subsequent live updates earn the tween. Respects prefers-reduced-motion.
  */
 export function AnimatedCounter({
   value,
@@ -28,12 +30,14 @@ export function AnimatedCounter({
   const shouldReduce = useReducedMotion();
   const motionValue = useMotionValue(value);
   const [display, setDisplay] = useState(() => formatNumber(value, decimals));
+  const isFirstRenderRef = useRef(true);
 
   useEffect(() => {
-    if (shouldReduce) {
+    // First render: snap to the value, no tween. Subsequent value changes
+    // animate from the previous frame's value.
+    if (isFirstRenderRef.current || shouldReduce) {
+      isFirstRenderRef.current = false;
       motionValue.set(value);
-      // Schedule the format update outside the effect body to avoid
-      // cascading-render warnings in strict-mode builds.
       const id = requestAnimationFrame(() => setDisplay(formatNumber(value, decimals)));
       return () => cancelAnimationFrame(id);
     }

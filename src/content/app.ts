@@ -43,8 +43,9 @@ export const appContent = {
 
   auth: {
     signIn: {
-      heading: 'Welcome to Draftr',
+      heading: 'Welcome back',
       subheading: 'Sign in to find your next ride',
+      tagline: 'Find your next ride',
       emailLabel: 'Email',
       passwordLabel: 'Password',
       submitButton: 'Sign In',
