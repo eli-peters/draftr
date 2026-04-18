@@ -27,7 +27,7 @@ EMAIL = "admin@draftr.app"
 PASSWORD = "pwd123"
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-OUT_BASE = REPO_ROOT / "docs" / "audit-screenshots"
+OUT_BASE = REPO_ROOT / "docs" / (os.environ.get("CAPTURE_OUT_DIR") or "audit-screenshots")
 
 MOBILE_VIEWPORT = {"width": 390, "height": 844}
 DESKTOP_VIEWPORT = {"width": 1440, "height": 900}
