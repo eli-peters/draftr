@@ -39,9 +39,9 @@ interface NavIconProps {
 
 /**
  * Resolves icon name strings to Phosphor icon components.
- * Uses fill weight when active, regular when inactive.
+ * Active = filled (iOS tab bar convention). Inactive = regular outline.
  */
 export function NavIcon({ name, className, active }: NavIconProps) {
   const Icon = iconMap[name];
-  return <Icon className={className} weight={active ? 'fill' : undefined} />;
+  return <Icon className={className} weight={active ? 'fill' : 'regular'} />;
 }

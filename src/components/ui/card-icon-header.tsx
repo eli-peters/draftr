@@ -8,8 +8,11 @@ import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
  * Any card that needs a centred icon header uses this — ContentCard delegates
  * to it internally when both `icon` and `heading` are provided.
  *
- * Spec (matches the contact information card, the golden standard):
- *   Icon  — size-8, duotone weight, text-primary
+ * Spec — hero layout, reserve for genuine hero contexts (onboarding, empty
+ * states, single hero card on a page, action prompt cards). For routine
+ * data sections, use SectionHeading instead — see DESIGN_SYSTEM.md
+ * § 15 Centered Icon-Hero Pattern.
+ *   Icon  — size-8, regular weight, text-primary
  *   Gap   — mb-2 between icon and title
  *   Title — text-lg font-semibold leading-snug, centred
  * ──────────────────────────────────────────────────────────────────────── */
@@ -23,7 +26,7 @@ function CardIconHeader({ icon, title }: CardIconHeaderProps) {
   return (
     <div data-slot="card-icon-header" className="text-center">
       <div className="mb-2 flex justify-center">
-        {React.createElement(icon, { weight: 'duotone', className: 'size-8 text-primary' })}
+        {React.createElement(icon, { weight: 'regular', className: 'size-8 text-primary' })}
       </div>
       <h3 className="text-lg font-semibold leading-snug">{title}</h3>
     </div>

@@ -21,7 +21,7 @@ export function SectionHeading({
         className,
       )}
     >
-      {Icon && <Icon weight="duotone" className="size-3.5 text-primary" />}
+      {Icon && <Icon weight="regular" className="size-3.5" />}
       {children}
     </Tag>
   );

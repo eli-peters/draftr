@@ -124,7 +124,7 @@ export function ThemeProvider({ children, club = defaultTheme }: ThemeProviderPr
 
   return (
     <ThemeContext.Provider value={{ club, colorMode, setColorMode, resolvedColorMode }}>
-      <IconContext.Provider value={{ weight: 'bold' }}>{children}</IconContext.Provider>
+      <IconContext.Provider value={{ weight: 'regular' }}>{children}</IconContext.Provider>
     </ThemeContext.Provider>
   );
 }

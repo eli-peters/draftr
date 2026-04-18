@@ -141,9 +141,10 @@ interface SectionCardProps {
   isMobile: boolean;
 }
 
-// Shared card surface: border, background, radius, transition, hover lift, active press
+// Shared card surface: stroke-only at rest (admin spec), neutral hover lift, active press.
+// Magenta is reserved for the page-level CTA (Create Ride etc.) — never on hover here.
 const cardSurface =
-  'rounded-(--card-radius) border border-(--border-default) bg-card transition-[transform,box-shadow,border-color,background-color] duration-(--duration-normal) ease-(--ease-in-out) hover:-translate-y-0.5 hover:border-accent-primary-muted hover:shadow-md active:scale-[0.98]';
+  'rounded-(--card-radius) border border-(--border-default) bg-card transition-[transform,box-shadow,border-color] duration-(--duration-normal) ease-(--ease-in-out) hover:-translate-y-0.5 hover:border-(--border-strong) hover:shadow-lg active:scale-[0.98]';
 
 function SectionCard({
   icon: Icon,
@@ -172,17 +173,10 @@ function SectionCard({
     const BarIcon = MobileIcon ?? Icon;
     const inner = (
       <>
-        {/* Icon pill */}
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent-primary-subtle">
-          <BarIcon className="size-6 text-accent-secondary-default" weight="duotone" />
-        </div>
-
-        {/* Action label + arrow */}
-        <div className="flex items-center gap-2">
-          <span className="text-base font-bold font-body text-accent-primary-default">
-            {actionLabel}
-          </span>
-          <ArrowCircleRight className="size-5 text-accent-primary-default" weight="fill" />
+        <BarIcon className="size-6 shrink-0 text-muted-foreground" weight="regular" />
+        <div className="flex items-center gap-1.5">
+          <span className="text-base font-semibold text-foreground">{actionLabel}</span>
+          <ArrowCircleRight className="size-5 text-muted-foreground" weight="regular" />
         </div>
       </>
     );
@@ -210,13 +204,12 @@ function SectionCard({
   }
 
   // ---------------------------------------------------------------------------
-  // Desktop: tall card layout
+  // Desktop: left-aligned card — icon next to title (no center-stage hero pattern).
+  // Premium-restrained per DESIGN_SYSTEM.md § 15.
   // ---------------------------------------------------------------------------
   return (
-    <div
-      className={`relative flex flex-col items-center overflow-clip px-4 pt-8 pb-8 ${cardSurface}`}
-    >
-      {/* Card click-through (desktop only — mobile cards are action-only containers) */}
+    <div className={`relative flex flex-col overflow-clip p-5 ${cardSurface}`}>
+      {/* Card click-through */}
       <Link
         href={href}
         className="absolute inset-0 z-0 rounded-(--card-radius)"
@@ -224,30 +217,29 @@ function SectionCard({
         aria-hidden="true"
       />
 
-      {/* Icon */}
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-primary-subtle">
-        <Icon className="size-9 text-accent-secondary-default" weight="duotone" />
+      {/* Title row: icon + label */}
+      <div className="relative z-10 flex items-center gap-2">
+        <Icon className="size-5 shrink-0 text-muted-foreground" weight="regular" />
+        <p className="text-base font-semibold text-foreground">{label}</p>
       </div>
 
-      {/* Title + stat */}
-      <div className="mt-6 w-full text-center">
-        <p className="text-xl font-semibold leading-7 tracking-tight text-foreground mb-2">
-          {label}
-        </p>
-        <p className="text-md text-(--text-secondary)">{stat}</p>
-      </div>
+      {/* Stat */}
+      <p className="relative z-10 mt-2 text-sm text-(--text-secondary)">{stat}</p>
 
-      {/* Action button */}
-      <div className="relative z-10 mt-8">
+      {/* Action affordance — restrained ghost variant; primary CTA lives in PageHeader */}
+      <div className="relative z-10 mt-6">
         {actionHref && !actionType ? (
-          <Link href={actionHref} className={buttonVariants({ variant: 'ghost', size: 'default' })}>
+          <Link
+            href={actionHref}
+            className={buttonVariants({ variant: 'ghost', size: 'sm', className: '-ml-3' })}
+          >
             {actionLabel}
-            <ArrowCircleRight weight="fill" />
+            <ArrowCircleRight weight="regular" />
           </Link>
         ) : (
-          <Button variant="ghost" size="default" onClick={handleActionClick}>
+          <Button variant="ghost" size="sm" onClick={handleActionClick} className="-ml-3">
             {actionLabel}
-            <ArrowCircleRight weight="fill" />
+            <ArrowCircleRight weight="regular" />
           </Button>
         )}
       </div>

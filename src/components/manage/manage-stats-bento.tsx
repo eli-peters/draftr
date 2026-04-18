@@ -89,19 +89,21 @@ function StatColumn({
 }: StatColumnProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 pb-8 md:flex-1 md:px-6">
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex items-center gap-2">
         {React.createElement(icon, {
-          weight: 'duotone',
-          className: 'size-10 text-foreground',
+          weight: 'regular',
+          className: 'size-5 text-muted-foreground',
         })}
-        <p className="font-semibold leading-snug text-muted-foreground md:text-lg">{title}</p>
+        <p className="text-overline font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+          {title}
+        </p>
       </div>
 
       <AnimatedCounter
         value={value}
         suffix={suffix}
         decimals={decimals}
-        className="w-full text-center font-display text-4xl font-bold tracking-tight text-foreground mb-2"
+        className="w-full text-center font-display text-4xl font-bold tracking-tight text-foreground mb-2 tabular-nums"
       />
 
       {visualization && <TrendBadge {...visualization} />}

@@ -2,7 +2,6 @@ import * as React from 'react';
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 
 import { cn } from '@/lib/utils';
-import { CardIconHeader } from '@/components/ui/card-icon-header';
 
 /* ────────────────────────────────────────────────────────────────────────────
  * ContentCard — canonical content container for non-ride content.
@@ -19,9 +18,11 @@ import { CardIconHeader } from '@/components/ui/card-icon-header';
  *   compact   — dense data display (rosters, stats, small panels)
  *   default   — standard content sections (settings, profile, forms, weather)
  *
- * Icon + heading hero: when both props are present, delegates to CardIconHeader
- * (the single canonical centred icon-above-title component). When heading is
- * present without an icon, the heading renders inline without an icon.
+ * Section header layout: when icon + heading are both provided, renders a
+ * left-aligned section header (regular-weight icon next to heading). This is
+ * the routine pattern for data sections. For genuine hero use (onboarding,
+ * empty states, single hero card on a page) import CardIconHeader directly
+ * and place it inside children. See DESIGN_SYSTEM.md § 15.
  *
  * Interactive adds hover/press micro-interactions for clickable cards.
  * ──────────────────────────────────────────────────────────────────────── */
@@ -84,30 +85,22 @@ function ContentCard({
       {...props}
     >
       {(icon || heading) && (
-        <div
-          data-slot="content-card-hero"
-          className={cn('text-center', children && 'mb-3 md:mb-4')}
-        >
-          {icon && heading ? (
-            // Both icon and heading: use the single canonical header component.
-            <CardIconHeader icon={icon} title={heading} />
-          ) : (
-            <>
-              {icon && (
-                <div className="mb-2 flex justify-center">
-                  {React.createElement(icon, {
-                    weight: 'duotone',
-                    className: 'size-8 text-primary',
-                  })}
-                </div>
-              )}
-              {heading && (
-                <h3 data-slot="content-card-heading" className="text-lg font-semibold leading-snug">
-                  {heading}
-                </h3>
-              )}
-            </>
-          )}
+        <div data-slot="content-card-header" className={cn(children && 'mb-3 md:mb-4')}>
+          <div className="flex items-center gap-2">
+            {icon &&
+              React.createElement(icon, {
+                weight: 'regular',
+                className: 'size-5 shrink-0 text-muted-foreground',
+              })}
+            {heading && (
+              <h3
+                data-slot="content-card-heading"
+                className="text-base font-semibold leading-snug text-foreground"
+              >
+                {heading}
+              </h3>
+            )}
+          </div>
           {subtitle && (
             <p data-slot="content-card-subtitle" className="mt-1 text-sm text-muted-foreground">
               {subtitle}

@@ -46,7 +46,7 @@ export function BottomNav({ items }: BottomNavProps) {
                     'relative flex flex-1 flex-col items-center gap-0.5 py-2 text-sm font-medium transition-colors',
                     isActive
                       ? 'font-semibold text-primary'
-                      : 'text-foreground before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-0.5 before:rounded-full before:bg-primary/0 before:transition-colors hover:before:bg-primary/10 active:text-foreground',
+                      : 'text-muted-foreground before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-0.5 before:rounded-full before:bg-primary/0 before:transition-colors hover:before:bg-primary/10',
                   )}
                 >
                   {isActive && (
@@ -56,16 +56,7 @@ export function BottomNav({ items }: BottomNavProps) {
                       transition={shouldReduce ? { duration: 0 } : SPRINGS.snappy}
                     />
                   )}
-                  <motion.div
-                    animate={isActive && !shouldReduce ? { y: [0, -2, 0] } : { y: 0 }}
-                    transition={
-                      shouldReduce
-                        ? { duration: 0 }
-                        : { duration: 0.35, ease: [0.175, 0.885, 0.32, 1.275] }
-                    }
-                  >
-                    <NavIcon name={item.icon} className="h-6 w-6" active={isActive} />
-                  </motion.div>
+                  <NavIcon name={item.icon} className="h-6 w-6" active={isActive} />
                   <span>{item.label}</span>
                 </MotionLink>
               );
