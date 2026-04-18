@@ -178,15 +178,15 @@
   --banner-secondary-text: var(--color-neutral-0);
   --banner-muted-bg: var(--color-neutral-100);
   --banner-muted-text: var(--color-neutral-500);
-  --banner-soft-success-bg: var(--color-success-100);
+  --banner-soft-success-bg: var(--color-success-50);
   --banner-soft-success-text: var(--color-success-800);
-  --banner-soft-warning-bg: var(--color-warning-100);
+  --banner-soft-warning-bg: var(--color-warning-50);
   --banner-soft-warning-text: var(--color-warning-800);
-  --banner-soft-error-bg: var(--color-error-100);
+  --banner-soft-error-bg: var(--color-error-50);
   --banner-soft-error-text: var(--color-error-800);
-  --banner-soft-info-bg: var(--color-info-100);
+  --banner-soft-info-bg: var(--color-info-50);
   --banner-soft-info-text: var(--color-info-800);
-  --banner-soft-secondary-bg: var(--color-secondary-100);
+  --banner-soft-secondary-bg: var(--color-secondary-50);
   --banner-soft-secondary-text: var(--color-secondary-800);
 
   /* status */
@@ -356,15 +356,15 @@
   --banner-secondary-text: var(--color-neutral-0);
   --banner-muted-bg: var(--color-neutral-975);
   --banner-muted-text: var(--color-neutral-400);
-  --banner-soft-success-bg: var(--color-success-500-alpha-12);
+  --banner-soft-success-bg: var(--color-success-900);
   --banner-soft-success-text: var(--color-success-300);
-  --banner-soft-warning-bg: var(--color-warning-500-alpha-12);
+  --banner-soft-warning-bg: var(--color-warning-900);
   --banner-soft-warning-text: var(--color-warning-300);
-  --banner-soft-error-bg: var(--color-error-500-alpha-12);
+  --banner-soft-error-bg: var(--color-error-900);
   --banner-soft-error-text: var(--color-error-300);
-  --banner-soft-info-bg: var(--color-info-500-alpha-12);
+  --banner-soft-info-bg: var(--color-info-900);
   --banner-soft-info-text: var(--color-info-300);
-  --banner-soft-secondary-bg: var(--color-secondary-500-alpha-12);
+  --banner-soft-secondary-bg: var(--color-secondary-900);
   --banner-soft-secondary-text: var(--color-secondary-300);
 
   /* status */

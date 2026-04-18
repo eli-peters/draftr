@@ -625,11 +625,13 @@
   --bar-bg-opacity: 22%;
   --bar-border-opacity: 100%;
 
-  /* ── Status card glow — subtle colored halo on status-accented cards ── */
-  --card-glow-success: 0 0 20px color-mix(in srgb, var(--color-success-500) 8%, transparent);
-  --card-glow-warning: 0 0 20px color-mix(in srgb, var(--color-warning-500) 8%, transparent);
-  --card-glow-error: 0 0 20px color-mix(in srgb, var(--color-error-500) 8%, transparent);
-  --card-glow-info: 0 0 20px color-mix(in srgb, var(--color-info-500) 8%, transparent);
+  /* ── Status card glow — subtle colored halo on status-accented cards ──
+   * Bumped from 8% / 20px (imperceptible) to 14% / 28px so the halo actually
+   * registers visually around dark-mode status cards (Finding 7.3). */
+  --card-glow-success: 0 0 28px color-mix(in srgb, var(--color-success-500) 14%, transparent);
+  --card-glow-warning: 0 0 28px color-mix(in srgb, var(--color-warning-500) 14%, transparent);
+  --card-glow-error: 0 0 28px color-mix(in srgb, var(--color-error-500) 14%, transparent);
+  --card-glow-info: 0 0 28px color-mix(in srgb, var(--color-info-500) 14%, transparent);
 
   /* ── shadcn bridge overrides ── */
   --warning-foreground: var(--color-neutral-900);

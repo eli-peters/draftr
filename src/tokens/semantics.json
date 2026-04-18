@@ -745,13 +745,13 @@
       "success": {
         "bg": {
           "$type": "color",
-          "$description": "Subdued card banner background — confirmed / signed-up state (list, schedule, detail contexts)",
-          "$value": "{color.success.100}",
+          "$description": "Subdued card banner background — confirmed / signed-up state. Calmer than the loud tier — lighter (step 50) in light, deeper desaturated (step 900) in dark.",
+          "$value": "{color.success.50}",
           "$extensions": {
             "com.figma": {
               "modes": {
-                "Light": "{color.success.100}",
-                "Dark": "{color.success.500-alpha-12}"
+                "Light": "{color.success.50}",
+                "Dark": "{color.success.900}"
               }
             }
           }
@@ -773,13 +773,13 @@
       "warning": {
         "bg": {
           "$type": "color",
-          "$description": "Subdued card banner background — waitlisted / weather watch state (list, schedule, detail contexts)",
-          "$value": "{color.warning.100}",
+          "$description": "Subdued card banner background — waitlisted / weather watch state. Calmer than the loud tier.",
+          "$value": "{color.warning.50}",
           "$extensions": {
             "com.figma": {
               "modes": {
-                "Light": "{color.warning.100}",
-                "Dark": "{color.warning.500-alpha-12}"
+                "Light": "{color.warning.50}",
+                "Dark": "{color.warning.900}"
               }
             }
           }
@@ -801,13 +801,13 @@
       "error": {
         "bg": {
           "$type": "color",
-          "$description": "Subdued card banner background — cancelled state (list, schedule, detail contexts)",
-          "$value": "{color.error.100}",
+          "$description": "Subdued card banner background — cancelled state. Calmer than the loud tier.",
+          "$value": "{color.error.50}",
           "$extensions": {
             "com.figma": {
               "modes": {
-                "Light": "{color.error.100}",
-                "Dark": "{color.error.500-alpha-12}"
+                "Light": "{color.error.50}",
+                "Dark": "{color.error.900}"
               }
             }
           }
@@ -829,13 +829,13 @@
       "info": {
         "bg": {
           "$type": "color",
-          "$description": "Subdued card banner background — about to start / in progress state (list, schedule, detail contexts)",
-          "$value": "{color.info.100}",
+          "$description": "Subdued card banner background — about to start / in progress state. Calmer than the loud tier.",
+          "$value": "{color.info.50}",
           "$extensions": {
             "com.figma": {
               "modes": {
-                "Light": "{color.info.100}",
-                "Dark": "{color.info.500-alpha-12}"
+                "Light": "{color.info.50}",
+                "Dark": "{color.info.900}"
               }
             }
           }
@@ -857,13 +857,13 @@
       "secondary": {
         "bg": {
           "$type": "color",
-          "$description": "Subdued card banner background — leader context (list, schedule, detail contexts)",
-          "$value": "{color.secondary.100}",
+          "$description": "Subdued card banner background — leader context. Calmer than the loud tier.",
+          "$value": "{color.secondary.50}",
           "$extensions": {
             "com.figma": {
               "modes": {
-                "Light": "{color.secondary.100}",
-                "Dark": "{color.secondary.500-alpha-12}"
+                "Light": "{color.secondary.50}",
+                "Dark": "{color.secondary.900}"
               }
             }
           }
