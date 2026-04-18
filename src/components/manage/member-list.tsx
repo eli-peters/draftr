@@ -265,8 +265,8 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
           {/* Desktop table */}
           <div className="overflow-x-auto rounded-md border border-(--border-default)">
             <table className="w-full bg-(--surface-default) text-left">
-              <thead>
-                <tr className="border-b border-(--border-default) bg-(--surface-sunken)">
+              <thead className="sticky top-0 z-10 bg-(--surface-sunken)">
+                <tr className="border-b border-(--border-default)">
                   <SortableHeader
                     label={content.memberActions.memberColumn}
                     sortKey="name"
@@ -357,7 +357,7 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                         tabIndex={0}
                         role="link"
                         className={cn(
-                          'group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-page) hover:bg-muted/50',
+                          'group cursor-pointer border-b border-(--border-subtle) last:border-b-0 hover:bg-muted/50',
                           isInactive && 'opacity-muted',
                         )}
                       >
@@ -410,7 +410,7 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                               </SelectContent>
                             </Select>
                           ) : (
-                            <span className="font-sans text-xs text-(--text-secondary)">
+                            <span className="font-sans text-xs tabular-nums text-(--text-secondary)">
                               {content.members.roles[roleKey] ?? member.role}
                             </span>
                           )}
@@ -426,27 +426,29 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                               {member.preferred_pace_group}
                             </Badge>
                           ) : (
-                            <span className="font-sans text-xs text-(--text-tertiary)">—</span>
+                            <span className="font-sans text-xs tabular-nums text-(--text-tertiary)">
+                              —
+                            </span>
                           )}
                         </td>
 
                         {/* Joined */}
-                        <td className="p-3 font-sans text-xs text-(--text-primary)">
+                        <td className="p-3 font-sans text-xs tabular-nums text-(--text-primary)">
                           {joinedFormatted}
                         </td>
 
                         {/* Email */}
-                        <td className="max-w-[200px] truncate p-3 font-sans text-xs text-(--text-secondary)">
+                        <td className="max-w-[200px] truncate p-3 font-sans text-xs tabular-nums text-(--text-secondary)">
                           {member.email}
                         </td>
 
                         {/* Phone — responsive, lg+ only */}
-                        <td className="hidden p-3 font-sans text-xs text-(--text-secondary) lg:table-cell">
+                        <td className="hidden p-3 font-sans text-xs tabular-nums text-(--text-secondary) lg:table-cell">
                           {member.phone_number ? formatPhoneDisplay(member.phone_number) : '—'}
                         </td>
 
                         {/* CCN # — xl+ only */}
-                        <td className="hidden p-3 font-sans text-xs text-(--text-secondary) xl:table-cell">
+                        <td className="hidden p-3 font-sans text-xs tabular-nums text-(--text-secondary) xl:table-cell">
                           {member.membership?.member_number ?? '—'}
                         </td>
 

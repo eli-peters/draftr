@@ -229,8 +229,8 @@ export function ManageRidesPanel({
           {/* Desktop table */}
           <div className="overflow-x-auto rounded-md border border-(--border-default)">
             <table className="w-full bg-(--surface-default) text-left">
-              <thead>
-                <tr className="border-b border-(--border-default) bg-(--surface-sunken)">
+              <thead className="sticky top-0 z-10 bg-(--surface-sunken)">
+                <tr className="border-b border-(--border-default)">
                   <SortableHeader label={content.rides.dateColumn} sortKey="date" {...sortProps} />
                   <SortableHeader label={ridesContent.form.title} sortKey="title" {...sortProps} />
                   <SortableHeader
@@ -346,12 +346,12 @@ function DesktopRideRow({
       tabIndex={0}
       role="link"
       className={cn(
-        'group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-page) hover:bg-muted/50',
+        'group cursor-pointer border-b border-(--border-subtle) last:border-b-0 hover:bg-muted/50',
         isCancelled && 'opacity-disabled',
         isPending && 'opacity-pending pointer-events-none',
       )}
     >
-      <td className="whitespace-nowrap p-3 font-sans text-xs text-(--text-primary)">
+      <td className="whitespace-nowrap p-3 font-sans text-xs tabular-nums text-(--text-primary)">
         {dateFormatted}, {timeFormatted}
       </td>
       <td className="p-3 font-sans text-xs font-semibold text-(--text-primary)">{ride.title}</td>
@@ -361,10 +361,10 @@ function DesktopRideRow({
             {ride.pace_group_name}
           </Badge>
         ) : (
-          <span className="font-sans text-xs text-(--text-tertiary)">—</span>
+          <span className="font-sans text-xs tabular-nums text-(--text-tertiary)">—</span>
         )}
       </td>
-      <td className="whitespace-nowrap p-3 font-sans text-xs text-(--text-primary)">
+      <td className="whitespace-nowrap p-3 font-sans text-xs tabular-nums text-(--text-primary)">
         {spotsText}
         {ride.capacity != null && ride.capacity > 0 && (
           <div className="mt-1 h-0.5 w-full max-w-[60px] rounded-full bg-(--border-subtle)">
@@ -382,7 +382,7 @@ function DesktopRideRow({
           </div>
         )}
       </td>
-      <td className="max-w-[180px] truncate p-3 font-sans text-xs text-(--text-secondary)">
+      <td className="max-w-[180px] truncate p-3 font-sans text-xs tabular-nums text-(--text-secondary)">
         {ride.start_location_name ?? '—'}
       </td>
       {!isLeader && (
@@ -399,12 +399,12 @@ function DesktopRideRow({
                   {getInitials(ride.created_by_name)}
                 </AvatarFallback>
               </Avatar>
-              <span className="truncate font-sans text-xs text-(--text-secondary)">
+              <span className="truncate font-sans text-xs tabular-nums text-(--text-secondary)">
                 {ride.created_by_name}
               </span>
             </div>
           ) : (
-            <span className="font-sans text-xs text-(--text-tertiary)">—</span>
+            <span className="font-sans text-xs tabular-nums text-(--text-tertiary)">—</span>
           )}
         </td>
       )}

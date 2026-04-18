@@ -6,12 +6,19 @@ import { PageHeader } from '@/components/layout/page-header';
 import { AdminStatsBentoSection } from '@/components/manage/admin-stats-bento-section';
 import { SectionCardsSection } from '@/components/manage/section-cards-section';
 import { LeaderHub } from '@/components/manage/leader-hub';
+import { ActivityFeed } from '@/components/manage/activity-feed';
+import { getRecentActivity } from '@/lib/manage/queries';
 
 import { getUserClubMembership } from '@/lib/rides/queries';
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import type { UserRole } from '@/config/navigation';
 const { dashboard: content } = appContent.manage;
+
+async function ActivityFeedSection({ clubId }: { clubId: string }) {
+  const events = await getRecentActivity(clubId, 8);
+  return <ActivityFeed events={events} />;
+}
 
 export default async function ManagePage() {
   const membership = await getUserClubMembership();
@@ -58,6 +65,19 @@ export default async function ManagePage() {
         >
           <ContentTransition>
             <SectionCardsSection clubId={membership.club_id} />
+          </ContentTransition>
+        </Suspense>
+
+        <Suspense
+          fallback={
+            <div className="space-y-2">
+              <div className="h-4 w-24 skeleton-shimmer rounded-md" />
+              <div className="h-48 skeleton-shimmer rounded-md" />
+            </div>
+          }
+        >
+          <ContentTransition>
+            <ActivityFeedSection clubId={membership.club_id} />
           </ContentTransition>
         </Suspense>
       </div>

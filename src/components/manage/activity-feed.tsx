@@ -58,7 +58,7 @@ export function ActivityFeed({ events }: ActivityFeedProps) {
   return (
     <div className="min-w-0">
       <h3 className="mb-3 text-sm font-semibold text-foreground">{content.activity.heading}</h3>
-      <div className="min-w-0 overflow-hidden rounded-md border border-(--border-subtle) divide-y divide-(--border-subtle) [&>*:nth-child(even)]:bg-(--surface-sunken)">
+      <div className="min-w-0 overflow-hidden rounded-md border border-(--border-subtle) divide-y divide-(--border-subtle)">
         {events.map((event) => (
           <Link
             key={event.id}
