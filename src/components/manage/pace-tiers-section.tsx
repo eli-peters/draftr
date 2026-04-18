@@ -11,7 +11,6 @@ import { InlineEditTransition } from '@/components/motion/inline-edit-transition
 import { Button } from '@/components/ui/button';
 import { ButtonSpinner } from '@/components/ui/button-spinner';
 import { Input } from '@/components/ui/input';
-import { SectionHeading } from '@/components/ui/section-heading';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
   AdminTable,
@@ -235,8 +234,6 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
 
   return (
     <div className="space-y-3">
-      <SectionHeading as="h3">{content.heading}</SectionHeading>
-
       <AdminTable>
         <AdminTableHead>
           <th className="w-8 p-3" />
