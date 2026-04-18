@@ -24,7 +24,7 @@ export function ProfileEmergencyCard({
   const { isEditing, values, setField } = useProfileForm();
 
   return (
-    <ContentCard variant="elevated" icon={FirstAid} heading={content.sections.emergencyContact}>
+    <ContentCard variant="alert" icon={FirstAid} heading={content.sections.emergencyContact}>
       {isEditing ? (
         <div className="flex flex-col gap-3">
           <FloatingField
