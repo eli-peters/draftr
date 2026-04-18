@@ -235,10 +235,10 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
     <div className="space-y-3">
       <SectionHeading as="h3">{content.heading}</SectionHeading>
 
-      <div className="overflow-x-auto rounded-md border border-(--border-subtle)">
+      <div className="overflow-x-auto rounded-md border border-(--border-default)">
         <table className="w-full text-left">
-          <thead>
-            <tr className="border-b border-(--border-subtle) bg-(--surface-sunken)">
+          <thead className="sticky top-0 z-10 bg-(--surface-sunken)">
+            <tr className="border-b border-(--border-default)">
               <th className="w-8 p-3" />
               <th className="p-3 text-overline font-sans text-(--text-secondary)">
                 {content.nameColumn}
@@ -386,7 +386,7 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
                     initial="hidden"
                     animate="visible"
                     exit="exit"
-                    className="group border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-sunken) hover:bg-muted/50"
+                    className="group border-b border-(--border-subtle) last:border-b-0 hover:bg-muted/50"
                   >
                     <td className="p-3">
                       <div className={`h-4 w-4 rounded-full ${swatchClass}`} />
@@ -394,9 +394,13 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
                     <td className="p-3 font-sans text-xs font-medium text-(--text-primary)">
                       {tier.name}
                     </td>
-                    <td className="p-3 font-sans text-xs text-(--text-primary)">{paceRange}</td>
-                    <td className="p-3 font-sans text-xs text-(--text-primary)">{distanceRange}</td>
-                    <td className="p-3 font-sans text-xs text-(--text-primary)">
+                    <td className="p-3 font-sans text-xs tabular-nums text-(--text-primary)">
+                      {paceRange}
+                    </td>
+                    <td className="p-3 font-sans text-xs tabular-nums text-(--text-primary)">
+                      {distanceRange}
+                    </td>
+                    <td className="p-3 font-sans text-xs tabular-nums text-(--text-primary)">
                       {tier.upcoming_ride_count > 0 ? (
                         <Link href={`${routes.manageRides}?pace=${tier.id}`}>
                           <Button variant="ghost" size="xs" className="text-(--text-tertiary)">

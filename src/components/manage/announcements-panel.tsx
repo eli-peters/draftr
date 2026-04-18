@@ -199,11 +199,11 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
         />
       ) : (
         <>
-          {/* Desktop table */}
+          {/* Desktop table — matches Members / Rides chrome */}
           <div className="overflow-x-auto rounded-md border border-(--border-default)">
             <table className="w-full bg-(--surface-default) text-left">
-              <thead>
-                <tr className="border-b border-(--border-default) bg-(--surface-sunken)">
+              <thead className="sticky top-0 z-10 bg-(--surface-sunken)">
+                <tr className="border-b border-(--border-default)">
                   <SortableHeader
                     label={content.announcements.titleColumn}
                     sortKey="title"
@@ -242,7 +242,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                       }}
                       tabIndex={0}
                       role="button"
-                      className="group cursor-pointer border-b border-(--border-subtle) last:border-b-0 even:bg-(--surface-page) hover:bg-(--action-primary-subtle-bg)"
+                      className="group cursor-pointer border-b border-(--border-subtle) last:border-b-0 hover:bg-muted/50"
                     >
                       {/* Title */}
                       <td className="min-w-0 p-3">
@@ -260,7 +260,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
 
                       {/* Published */}
                       <td className="p-3">
-                        <span className="whitespace-nowrap font-sans text-xs text-(--text-tertiary)">
+                        <span className="whitespace-nowrap font-sans text-xs tabular-nums text-(--text-tertiary)">
                           {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
                         </span>
                       </td>
@@ -280,7 +280,7 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
                       {/* Actions — kebab menu */}
                       <td className="p-3" onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
-                          <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-(--action-primary-subtle-bg) hover:text-(--text-primary)">
+                          <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
                             <DotsThree className="h-4 w-4" weight="bold" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
