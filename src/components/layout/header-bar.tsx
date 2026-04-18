@@ -44,7 +44,7 @@ export function HeaderBar({
   const parentLabel = getParentRouteLabel(parentRoute, isAdmin);
 
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between border-b border-(--border-subtle) bg-(--surface-default)/70 px-5 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 backdrop-blur-(--bar-backdrop-blur) backdrop-saturate-(--bar-backdrop-saturate) md:px-8 dark:bg-(--surface-default)/55">
+    <header className="material-regular sticky top-0 z-40 flex items-center justify-between border-b border-(--border-subtle) px-5 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 md:px-8">
       {/* Left: back arrow on child pages (mobile), logo on parent pages */}
       {showBackNav ? (
         hasReferrer ? (

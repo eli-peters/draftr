@@ -422,7 +422,11 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                         {/* Pace Group — coloured badge */}
                         <td className="p-3">
                           {member.preferred_pace_group && pgSortOrder != null ? (
-                            <Badge variant={getPaceBadgeVariant(pgSortOrder)} size="sm">
+                            <Badge
+                              variant={getPaceBadgeVariant(pgSortOrder)}
+                              size="sm"
+                              className="bg-transparent"
+                            >
                               {member.preferred_pace_group}
                             </Badge>
                           ) : (

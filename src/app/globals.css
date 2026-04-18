@@ -977,6 +977,57 @@
   }
 }
 
+/* ── Material utilities ── iOS Liquid Glass surfaces.
+ *
+ * Three levels mirror Apple's UIBlurEffect.Style: thin (lightest blur, most
+ * transparent), regular (default sticky chrome), thick (heaviest blur, used
+ * for sheet overlays where content should mostly disappear).
+ *
+ * Each material composes backdrop-blur + backdrop-saturate + a translucent
+ * surface fill. Apply on any sticky/floating surface that sits over content.
+ *
+ * Light + dark opacities differ — dark surfaces need slightly more
+ * transparency for the underlying content to read through.
+ */
+@utility material-thin {
+  background-color: color-mix(in srgb, var(--surface-default) 60%, transparent);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+
+  @variant dark {
+    background-color: color-mix(in srgb, var(--surface-default) 45%, transparent);
+  }
+}
+
+@utility material-regular {
+  background-color: color-mix(in srgb, var(--surface-default) 70%, transparent);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+
+  @variant dark {
+    background-color: color-mix(in srgb, var(--surface-default) 55%, transparent);
+  }
+}
+
+@utility material-thick {
+  background-color: color-mix(in srgb, var(--surface-default) 85%, transparent);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+
+  @variant dark {
+    background-color: color-mix(in srgb, var(--surface-default) 75%, transparent);
+  }
+}
+
+/* ── Mapbox logo restraint ── reduce the mandatory wordmark to a polite
+ * watermark. We can't hide it (TOS), but we can keep it from competing
+ * with the route polyline for attention. */
+.mapboxgl-ctrl-logo {
+  opacity: 0.3 !important;
+  transform: scale(0.85);
+  transform-origin: bottom left;
+}
+
 /* ── Focus ring utilities ──
  * Uses CSS outline (not box-shadow ring) so focus indicators
  * are never clipped by overflow-hidden parent containers.

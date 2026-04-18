@@ -357,7 +357,11 @@ function DesktopRideRow({
       <td className="p-3 font-sans text-xs font-semibold text-(--text-primary)">{ride.title}</td>
       <td className="p-3">
         {ride.pace_group_name && ride.pace_group_sort_order != null ? (
-          <Badge variant={getPaceBadgeVariant(ride.pace_group_sort_order)} size="sm">
+          <Badge
+            variant={getPaceBadgeVariant(ride.pace_group_sort_order)}
+            size="sm"
+            className="bg-transparent"
+          >
             {ride.pace_group_name}
           </Badge>
         ) : (
