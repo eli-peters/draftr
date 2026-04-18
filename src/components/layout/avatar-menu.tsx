@@ -50,7 +50,7 @@ export function AvatarMenu({ userName, userInitials, avatarUrl, userRole }: Avat
   const avatarElement = (
     <Avatar className="h-9 w-9 after:border-border-strong">
       {avatarUrl && <AvatarImage src={avatarUrl} alt={userName} />}
-      <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground text-xs font-bold">
+      <AvatarFallback className="bg-muted text-muted-foreground text-xs font-bold">
         {userInitials}
       </AvatarFallback>
     </Avatar>

@@ -93,7 +93,7 @@ export function NotificationBell({ notifications, unreadCount }: NotificationBel
   );
 
   const bellClassName =
-    'relative inline-flex h-10 w-10 items-center justify-center rounded-full text-primary-foreground transition-colors hover:bg-primary-foreground/15';
+    'relative inline-flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted/50';
 
   return (
     <>
