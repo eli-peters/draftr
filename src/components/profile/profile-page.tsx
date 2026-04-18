@@ -10,6 +10,8 @@ import { ProfileIdentityHero } from '@/components/profile/profile-identity-hero'
 
 import { ProfileContactCard } from '@/components/profile/profile-contact-card';
 import { ProfileEmergencyCard } from '@/components/profile/profile-emergency-card';
+import { ProfilePersonalInfoCard } from '@/components/profile/profile-personal-info-card';
+import { ProfileMembershipCard } from '@/components/profile/profile-membership-card';
 import {
   ProfileFormContext,
   type ProfileFormContextValue,
@@ -26,6 +28,8 @@ const { profile: content, common } = appContent;
 interface ProfilePageProps {
   subject: {
     id: string;
+    firstName: string;
+    lastName: string;
     fullName: string;
     email: string;
     avatarUrl: string | null;
@@ -34,12 +38,21 @@ interface ProfilePageProps {
     bio: string;
     preferredPaceGroup: string;
     phoneNumber: string;
+    dateOfBirth: string;
+    gender: string;
+    streetAddress1: string;
+    streetAddress2: string;
+    city: string;
+    province: string;
+    postalCode: string;
+    country: string;
     emergencyContactName: string;
     emergencyContactPhone: string;
     emergencyContactRelationship: string;
   };
   access: ProfileViewerAccess;
   paceGroups: { id: string; name: string; sort_order: number }[];
+  memberships: import('@/lib/profile/queries').UserMembership[];
   statsSlot: ReactNode;
   recentRidesSlot: ReactNode;
 }
@@ -63,16 +76,27 @@ export function ProfilePage({
   subject,
   access,
   paceGroups,
+  memberships,
   statsSlot,
   recentRidesSlot,
 }: ProfilePageProps) {
   const initialValues: ProfileFormFields = useMemo(
     () => ({
+      first_name: subject.firstName,
+      last_name: subject.lastName,
       bio: subject.bio,
       preferred_pace_group: subject.preferredPaceGroup,
       // Phone fields are stored as raw 10-digit strings while editing;
       // they are normalized to E.164 on save.
       phone_number: stripToDigits(subject.phoneNumber).slice(-10),
+      date_of_birth: subject.dateOfBirth,
+      gender: subject.gender,
+      street_address_line_1: subject.streetAddress1,
+      street_address_line_2: subject.streetAddress2,
+      city: subject.city,
+      province: subject.province,
+      postal_code: subject.postalCode,
+      country: subject.country,
       emergency_contact_name: subject.emergencyContactName,
       emergency_contact_phone: stripToDigits(subject.emergencyContactPhone).slice(-10),
       emergency_contact_relationship: subject.emergencyContactRelationship,
@@ -114,9 +138,19 @@ export function ProfilePage({
       }
 
       const result = await updateProfile({
+        first_name: values.first_name,
+        last_name: values.last_name,
         bio: values.bio,
         preferred_pace_group: values.preferred_pace_group,
         phone_number: values.phone_number,
+        date_of_birth: values.date_of_birth,
+        gender: values.gender,
+        street_address_line_1: values.street_address_line_1,
+        street_address_line_2: values.street_address_line_2,
+        city: values.city,
+        province: values.province,
+        postal_code: values.postal_code,
+        country: values.country,
         emergency_contact_name: values.emergency_contact_name,
         emergency_contact_phone: values.emergency_contact_phone,
         emergency_contact_relationship: values.emergency_contact_relationship,
@@ -136,7 +170,10 @@ export function ProfilePage({
     [isEditing, isPending, values, setField, beginEdit, cancelEdit],
   );
 
-  const showSidebar = access.canSeeContact || access.canSeeEmergency;
+  // Personal info (DOB, gender, address, phone, email): self + admin only.
+  // canSeeEmail is true for exactly self + admin in the access model.
+  const canSeePersonalInfo = access.canSeeEmail;
+  const showSidebar = canSeePersonalInfo || access.canSeeContact || access.canSeeEmergency;
 
   const statsBento = statsSlot;
 
@@ -154,12 +191,23 @@ export function ProfilePage({
         />
 
         {showSidebar ? (
-          // Two-column layout: left sidebar (contact/emergency) + right primary column
-          // (stats bento → recent rides). Stats live in the right column so all content
-          // in that column shares one width, fixing the prior grid misalignment.
           <div className="mt-card-stack grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
             <aside className="flex flex-col gap-card-stack">
-              {access.canSeeContact && (
+              {canSeePersonalInfo && (
+                <ProfilePersonalInfoCard
+                  email={subject.email}
+                  initialPhone={subject.phoneNumber}
+                  initialDateOfBirth={subject.dateOfBirth}
+                  initialGender={subject.gender}
+                  initialStreetAddress1={subject.streetAddress1}
+                  initialStreetAddress2={subject.streetAddress2}
+                  initialCity={subject.city}
+                  initialProvince={subject.province}
+                  initialPostalCode={subject.postalCode}
+                  initialCountry={subject.country}
+                />
+              )}
+              {!canSeePersonalInfo && access.canSeeContact && (
                 <ProfileContactCard
                   email={subject.email}
                   initialPhone={subject.phoneNumber}
@@ -176,12 +224,11 @@ export function ProfilePage({
             </aside>
             <div className="flex flex-col gap-card-stack">
               {statsBento}
+              {canSeePersonalInfo && <ProfileMembershipCard memberships={memberships} />}
               {recentRidesSlot}
             </div>
           </div>
         ) : (
-          // Member-to-member bento view: no sidebar, stats expand to full width in a
-          // 3-column grid, recent rides fills full width below.
           <div className="mt-card-stack flex flex-col gap-card-stack">
             {statsBento}
             {recentRidesSlot}

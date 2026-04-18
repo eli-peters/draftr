@@ -91,9 +91,12 @@ export async function setupProfile(formData: FormData) {
   const fullName = (formData.get('full_name') as string).trim();
 
   // Require at least a first and last name
-  if (fullName.split(/\s+/).filter(Boolean).length < 2) {
+  const nameParts = fullName.split(/\s+/).filter(Boolean);
+  if (nameParts.length < 2) {
     return { error: appContent.errors.fullNameRequired };
   }
+  const firstName = nameParts[0];
+  const lastName = nameParts.slice(1).join(' ');
   const bio = formData.get('bio') as string;
   const preferredPace = formData.get('preferred_pace_group') as string;
 
@@ -104,7 +107,8 @@ export async function setupProfile(formData: FormData) {
   const { error } = await adminSupabase.from('users').upsert({
     id: user.id,
     email: user.email!,
-    full_name: fullName,
+    first_name: firstName,
+    last_name: lastName,
     bio: bio || null,
     preferred_pace_group: preferredPace || null,
     onboarding_completed: true,
@@ -196,7 +200,8 @@ export async function inviteMember(formData: FormData) {
       {
         id: data.user.id,
         email,
-        full_name: email.split('@')[0],
+        first_name: email.split('@')[0],
+        last_name: '',
         onboarding_completed: false,
       },
       { onConflict: 'id' },

@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FloatingField } from '@/components/ui/floating-field';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -66,9 +67,33 @@ export function ProfileIdentityHero({
       <div className="flex min-w-0 flex-1 flex-col items-center gap-4 md:items-stretch">
         {/* Top row: name + Edit CTA (desktop top-right, mobile below name) */}
         <div className="flex w-full flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-6">
-          <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
-            {fullName}
-          </h1>
+          {isEditing ? (
+            <div className="flex w-full gap-3 md:max-w-md">
+              <FloatingField
+                label={content.personalInfo.firstNameLabel}
+                htmlFor="profile_first_name"
+              >
+                <Input
+                  id="profile_first_name"
+                  value={values.first_name}
+                  onChange={(e) => setField('first_name', e.target.value)}
+                  placeholder=" "
+                />
+              </FloatingField>
+              <FloatingField label={content.personalInfo.lastNameLabel} htmlFor="profile_last_name">
+                <Input
+                  id="profile_last_name"
+                  value={values.last_name}
+                  onChange={(e) => setField('last_name', e.target.value)}
+                  placeholder=" "
+                />
+              </FloatingField>
+            </div>
+          ) : (
+            <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
+              {fullName}
+            </h1>
+          )}
           {access.canEdit && !isEditing && (
             <Button
               type="button"

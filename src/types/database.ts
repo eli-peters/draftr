@@ -22,13 +22,26 @@ export interface Club {
   updated_at: string;
 }
 
+export type Gender = 'male' | 'female';
+export type Country = 'CA' | 'US';
+
 export interface User {
   id: string;
   email: string;
-  full_name: string;
+  first_name: string;
+  last_name: string;
+  full_name: string; // trigger-maintained: trim(first_name || ' ' || last_name)
   avatar_url: string | null;
   bio: string | null;
   phone_number: string | null;
+  date_of_birth: string | null;
+  gender: Gender | null;
+  street_address_line_1: string | null;
+  street_address_line_2: string | null;
+  city: string | null;
+  province: string | null;
+  postal_code: string | null;
+  country: Country | null;
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
   emergency_contact_relationship: string | null;
@@ -301,4 +314,22 @@ export interface RideWithDetails extends Ride {
   current_user_signup_status: 'confirmed' | 'waitlisted' | null;
   current_user_waitlist_position: number | null;
   weather: RideWeatherSnapshot | null;
+}
+
+export interface Membership {
+  id: string;
+  user_id: string;
+  member_number: string | null;
+  membership_type: string | null;
+  membership_subtype: string | null;
+  status: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MembershipClubAffiliation {
+  id: string;
+  membership_id: string;
+  club_id: string;
+  created_at: string;
 }

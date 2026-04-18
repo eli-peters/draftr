@@ -8,9 +8,19 @@ import { createContext, useContext } from 'react';
  * through the whole-page edit flow.
  */
 export interface ProfileFormFields {
+  first_name: string;
+  last_name: string;
   bio: string;
   preferred_pace_group: string;
   phone_number: string;
+  date_of_birth: string;
+  gender: string;
+  street_address_line_1: string;
+  street_address_line_2: string;
+  city: string;
+  province: string;
+  postal_code: string;
+  country: string;
   emergency_contact_name: string;
   emergency_contact_phone: string;
   emergency_contact_relationship: string;

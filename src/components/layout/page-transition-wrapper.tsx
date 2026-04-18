@@ -49,11 +49,6 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
   }, [pathname, direction, isMobile]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  // Scroll to top on route change
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-
   // Suppress CSS animation during active swipe (gesture drives the transform)
   const effectiveAnimClass = isSwiping ? '' : animClass;
 

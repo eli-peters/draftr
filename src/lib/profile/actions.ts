@@ -14,9 +14,19 @@ import {
 const { common, errors, profile: profileContent } = appContent;
 
 interface UpdateProfileData {
+  first_name?: string;
+  last_name?: string;
   bio?: string;
   preferred_pace_group?: string;
   phone_number?: string;
+  date_of_birth?: string;
+  gender?: string;
+  street_address_line_1?: string;
+  street_address_line_2?: string;
+  city?: string;
+  province?: string;
+  postal_code?: string;
+  country?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
   emergency_contact_relationship?: string;
@@ -38,11 +48,41 @@ export async function updateProfile(data: UpdateProfileData) {
     updated_at: new Date().toISOString(),
   };
 
+  if ('first_name' in data) {
+    updates.first_name = data.first_name || null;
+  }
+  if ('last_name' in data) {
+    updates.last_name = data.last_name || null;
+  }
   if ('bio' in data) {
     updates.bio = data.bio || null;
   }
   if ('preferred_pace_group' in data) {
     updates.preferred_pace_group = data.preferred_pace_group || null;
+  }
+  if ('date_of_birth' in data) {
+    updates.date_of_birth = data.date_of_birth || null;
+  }
+  if ('gender' in data) {
+    updates.gender = data.gender || null;
+  }
+  if ('street_address_line_1' in data) {
+    updates.street_address_line_1 = data.street_address_line_1 || null;
+  }
+  if ('street_address_line_2' in data) {
+    updates.street_address_line_2 = data.street_address_line_2 || null;
+  }
+  if ('city' in data) {
+    updates.city = data.city || null;
+  }
+  if ('province' in data) {
+    updates.province = data.province || null;
+  }
+  if ('postal_code' in data) {
+    updates.postal_code = data.postal_code || null;
+  }
+  if ('country' in data) {
+    updates.country = data.country || null;
   }
   if ('phone_number' in data) {
     let normalized = data.phone_number || null;

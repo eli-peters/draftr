@@ -8,7 +8,7 @@ import { routes } from '@/config/routes';
 import { MemberStatus } from '@/config/statuses';
 import { getInitials } from '@/lib/utils';
 import { dateFormats } from '@/config/formatting';
-import { getUserProfile } from '@/lib/profile/queries';
+import { getUserProfile, getUserMemberships } from '@/lib/profile/queries';
 import { getProfileViewerAccess } from '@/lib/profile/access';
 import { ProfilePage } from '@/components/profile/profile-page';
 import { ProfileStatsSection } from '@/components/profile/profile-stats-section';
@@ -69,7 +69,7 @@ export default async function PublicProfilePage({
     );
   }
 
-  const [profile, { data: paceGroups }, access] = await Promise.all([
+  const [profile, { data: paceGroups }, access, memberships] = await Promise.all([
     getUserProfile(userId),
     supabase
       .from('pace_groups')
@@ -81,6 +81,7 @@ export default async function PublicProfilePage({
       subjectId: userId,
       now: new Date(),
     }),
+    getUserMemberships(userId),
   ]);
 
   if (!profile) notFound();
@@ -89,6 +90,8 @@ export default async function PublicProfilePage({
     <ProfilePage
       subject={{
         id: profile.id,
+        firstName: profile.first_name,
+        lastName: profile.last_name,
         fullName: profile.full_name,
         email: profile.email,
         avatarUrl: profile.avatar_url,
@@ -97,12 +100,21 @@ export default async function PublicProfilePage({
         bio: profile.bio ?? '',
         preferredPaceGroup: profile.preferred_pace_group ?? '',
         phoneNumber: profile.phone_number ?? '',
+        dateOfBirth: profile.date_of_birth ?? '',
+        gender: profile.gender ?? '',
+        streetAddress1: profile.street_address_line_1 ?? '',
+        streetAddress2: profile.street_address_line_2 ?? '',
+        city: profile.city ?? '',
+        province: profile.province ?? '',
+        postalCode: profile.postal_code ?? '',
+        country: profile.country ?? '',
         emergencyContactName: profile.emergency_contact_name ?? '',
         emergencyContactPhone: profile.emergency_contact_phone ?? '',
         emergencyContactRelationship: profile.emergency_contact_relationship ?? '',
       }}
       access={access}
       paceGroups={paceGroups ?? []}
+      memberships={memberships}
       statsSlot={
         <Suspense
           fallback={

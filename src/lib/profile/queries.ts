@@ -31,11 +31,21 @@ export async function getLayoutProfile(userId: string) {
 
 export interface UserProfile {
   id: string;
+  first_name: string;
+  last_name: string;
   full_name: string;
   email: string;
   avatar_url: string | null;
   bio: string | null;
   phone_number: string | null;
+  date_of_birth: string | null;
+  gender: string | null;
+  street_address_line_1: string | null;
+  street_address_line_2: string | null;
+  city: string | null;
+  province: string | null;
+  postal_code: string | null;
+  country: string | null;
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
   emergency_contact_relationship: string | null;
@@ -43,6 +53,15 @@ export interface UserProfile {
   created_at: string;
   role: string;
   club_name: string | null;
+}
+
+export interface UserMembership {
+  id: string;
+  member_number: string | null;
+  membership_type: string | null;
+  membership_subtype: string | null;
+  status: string | null;
+  club_affiliations: { club_id: string; club_name: string }[];
 }
 
 /**
@@ -57,13 +76,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
 
       const [{ data: user, error: userError }, { data: membership, error: membershipError }] =
         await Promise.all([
-          supabase
-            .from('users')
-            .select(
-              'id, full_name, email, avatar_url, bio, phone_number, emergency_contact_name, emergency_contact_phone, emergency_contact_relationship, preferred_pace_group, created_at',
-            )
-            .eq('id', userId)
-            .single(),
+          supabase.from('users').select('*').eq('id', userId).single(),
           supabase
             .from('club_memberships')
             .select('role, club:clubs(name)')
@@ -83,9 +96,35 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
       }
 
       const club = membership?.club as unknown as { name: string } | null;
+      const u = user as Record<string, unknown>;
+
+      // Derive first_name / last_name from full_name if the migration hasn't landed yet
+      const fullName = (u.full_name as string) ?? '';
+      const spaceIdx = fullName.indexOf(' ');
 
       return {
-        ...user,
+        id: u.id as string,
+        first_name:
+          (u.first_name as string) ?? (spaceIdx > 0 ? fullName.slice(0, spaceIdx) : fullName),
+        last_name: (u.last_name as string) ?? (spaceIdx > 0 ? fullName.slice(spaceIdx + 1) : ''),
+        full_name: fullName,
+        email: (u.email as string) ?? '',
+        avatar_url: (u.avatar_url as string | null) ?? null,
+        bio: (u.bio as string | null) ?? null,
+        phone_number: (u.phone_number as string | null) ?? null,
+        date_of_birth: (u.date_of_birth as string | null) ?? null,
+        gender: (u.gender as string | null) ?? null,
+        street_address_line_1: (u.street_address_line_1 as string | null) ?? null,
+        street_address_line_2: (u.street_address_line_2 as string | null) ?? null,
+        city: (u.city as string | null) ?? null,
+        province: (u.province as string | null) ?? null,
+        postal_code: (u.postal_code as string | null) ?? null,
+        country: (u.country as string | null) ?? null,
+        emergency_contact_name: (u.emergency_contact_name as string | null) ?? null,
+        emergency_contact_phone: (u.emergency_contact_phone as string | null) ?? null,
+        emergency_contact_relationship: (u.emergency_contact_relationship as string | null) ?? null,
+        preferred_pace_group: (u.preferred_pace_group as string | null) ?? null,
+        created_at: (u.created_at as string) ?? '',
         role: membership?.role ?? 'rider',
         club_name: club?.name ?? null,
       };
@@ -247,6 +286,46 @@ export async function getUserRecentRides(userId: string, limit = 5): Promise<Rec
       elevation_m: raw.elevation_m,
       route_polyline: raw.route_polyline,
       pace_group: paceGroup,
+    };
+  });
+}
+
+/**
+ * Fetch external memberships (CCN/OCA) for a user, with club affiliations.
+ */
+export async function getUserMemberships(userId: string): Promise<UserMembership[]> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from('memberships')
+    .select(
+      `
+      id, member_number, membership_type, membership_subtype, status,
+      affiliations:membership_club_affiliations(club_id, club:clubs(name))
+    `,
+    )
+    .eq('user_id', userId);
+
+  if (error?.message) {
+    console.error('[profile] Error fetching memberships:', error.message);
+    return [];
+  }
+
+  return (data ?? []).map((m) => {
+    const affiliations = (m.affiliations ?? []) as unknown as {
+      club_id: string;
+      club: { name: string } | { name: string }[];
+    }[];
+    return {
+      id: m.id,
+      member_number: m.member_number,
+      membership_type: m.membership_type,
+      membership_subtype: m.membership_subtype,
+      status: m.status,
+      club_affiliations: affiliations.map((a) => ({
+        club_id: a.club_id,
+        club_name: Array.isArray(a.club) ? (a.club[0]?.name ?? '') : (a.club?.name ?? ''),
+      })),
     };
   });
 }

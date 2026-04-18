@@ -4,6 +4,12 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { tagAnnouncements, tagManage } from '@/lib/cache-tags';
 import type { AnnouncementType } from '@/types/database';
 
+export interface ClubMemberMembership {
+  member_number: string | null;
+  membership_type: string | null;
+  status: string | null;
+}
+
 export interface ClubMember {
   user_id: string;
   full_name: string;
@@ -14,28 +20,56 @@ export interface ClubMember {
   role: string;
   status: string;
   joined_at: string;
+  membership: ClubMemberMembership | null;
 }
 
 /**
- * Fetch all members of a club with user details.
+ * Fetch all members of a club with user details and their external membership info.
  */
 export async function getClubMembers(clubId: string): Promise<ClubMember[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from('club_memberships')
-    .select(
-      `
+  const [{ data, error }, { data: affiliations, error: affError }] = await Promise.all([
+    supabase
+      .from('club_memberships')
+      .select(
+        `
       user_id, role, status, joined_at,
       user:users!club_memberships_user_id_fkey(full_name, email, avatar_url, phone_number, preferred_pace_group)
     `,
-    )
-    .eq('club_id', clubId)
-    .order('joined_at', { ascending: true });
+      )
+      .eq('club_id', clubId)
+      .order('joined_at', { ascending: true }),
+    supabase
+      .from('membership_club_affiliations')
+      .select('membership:memberships(user_id, member_number, membership_type, status)')
+      .eq('club_id', clubId),
+  ]);
 
   if (error?.message) {
     console.error('Error fetching club members:', error.message, error.code, error.details);
     return [];
+  }
+  if (affError?.message) {
+    console.error('Error fetching memberships:', affError.message);
+  }
+
+  // Build a lookup of user_id → membership info
+  const membershipByUser = new Map<string, ClubMemberMembership>();
+  for (const aff of affiliations ?? []) {
+    const m = aff.membership as unknown as {
+      user_id: string;
+      member_number: string | null;
+      membership_type: string | null;
+      status: string | null;
+    };
+    if (m) {
+      membershipByUser.set(m.user_id, {
+        member_number: m.member_number,
+        membership_type: m.membership_type,
+        status: m.status,
+      });
+    }
   }
 
   return (data ?? []).map((m) => {
@@ -56,6 +90,7 @@ export async function getClubMembers(clubId: string): Promise<ClubMember[]> {
       role: m.role,
       status: m.status,
       joined_at: m.joined_at,
+      membership: membershipByUser.get(m.user_id) ?? null,
     };
   });
 }

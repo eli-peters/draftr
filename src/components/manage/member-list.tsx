@@ -54,6 +54,11 @@ interface MemberData {
   role: string;
   status: string;
   joined_at: string;
+  membership: {
+    member_number: string | null;
+    membership_type: string | null;
+    status: string | null;
+  } | null;
 }
 
 interface PaceGroupInfo {
@@ -293,6 +298,9 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                   <th className="hidden p-3 text-overline font-sans text-(--text-secondary) lg:table-cell">
                     {content.memberActions.phoneColumn}
                   </th>
+                  <th className="hidden p-3 text-overline font-sans text-(--text-secondary) xl:table-cell">
+                    {content.memberActions.ccnColumn}
+                  </th>
                   <th className="w-10 p-3" />
                 </tr>
               </thead>
@@ -435,6 +443,11 @@ export function MemberList({ members, clubId, currentUserId, paceGroups = [] }: 
                         {/* Phone — responsive, lg+ only */}
                         <td className="hidden p-3 font-sans text-xs text-(--text-secondary) lg:table-cell">
                           {member.phone_number ? formatPhoneDisplay(member.phone_number) : '—'}
+                        </td>
+
+                        {/* CCN # — xl+ only */}
+                        <td className="hidden p-3 font-sans text-xs text-(--text-secondary) xl:table-cell">
+                          {member.membership?.member_number ?? '—'}
                         </td>
 
                         {/* Kebab menu — always visible */}
