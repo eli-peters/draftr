@@ -3,10 +3,17 @@
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
+import { DotsThree } from '@phosphor-icons/react/dist/ssr';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { getInitials } from '@/lib/utils';
@@ -205,15 +212,22 @@ function SignupRow({
       )}
 
       {canRemove && onRemove && (
-        <Button
-          variant="muted"
-          size="xs"
-          onClick={() => onRemove(signup.user_id, signup.user_name)}
-          aria-label={ridesContent.roster.removeConfirmTitle(signup.user_name)}
-          className="hover:text-destructive"
-        >
-          {ridesContent.roster.removeRider}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label={ridesContent.roster.removeConfirmTitle(signup.user_name)}
+            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+          >
+            <DotsThree className="h-4 w-4" weight="bold" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => onRemove(signup.user_id, signup.user_name)}
+            >
+              {ridesContent.roster.removeRider}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
     </motion.div>
   );

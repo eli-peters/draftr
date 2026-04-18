@@ -11,7 +11,6 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { FloatingField } from '@/components/ui/floating-field';
 import { ContentCard } from '@/components/ui/content-card';
 import { useCompositionSafe } from '@/hooks/use-composition-safe';
 import {
@@ -288,29 +287,24 @@ function AddCommentForm({ rideId }: { rideId: string }) {
   }
 
   return (
-    <FloatingField
-      label={content.placeholder}
-      htmlFor="add-comment"
-      hasValue={body.length > 0}
-      className="mt-3"
-    >
-      <div className="relative border-b border-input transition-colors focus-within:border-ring">
+    <div className="mt-4 rounded-(--radius-xl) border border-(--border-subtle) bg-(--surface-default) px-2 py-1.5 transition-colors focus-within:border-ring">
+      <div className="flex items-end gap-1">
         <Textarea
           id="add-comment"
           ref={textareaRef}
           value={body}
           {...commentCompositionProps}
           onKeyDown={handleKeyDown}
-          placeholder=" "
+          placeholder={content.placeholder}
           maxLength={CHAR_LIMIT}
           rows={1}
           style={{ maxHeight: `${MAX_ROWS * 1.5}rem` }}
-          className="w-full resize-none border-0 bg-transparent pr-10 text-sm shadow-none focus-visible:outline-none focus-visible:ring-0"
+          className="min-h-9 w-full resize-none border-0 bg-transparent px-2 py-1.5 text-sm shadow-none focus-visible:outline-none focus-visible:ring-0"
         />
         <Button
-          size="icon"
+          size="icon-sm"
           variant="ghost"
-          className="absolute bottom-0 right-0 shrink-0 text-muted-foreground hover:bg-action-primary-subtle-bg hover:text-primary"
+          className="shrink-0 text-muted-foreground"
           disabled={isPending || !body.trim()}
           onClick={handleSubmit}
           aria-label={content.sendAriaLabel}
@@ -318,6 +312,6 @@ function AddCommentForm({ rideId }: { rideId: string }) {
           {isPending ? <ButtonSpinner /> : <PaperPlaneTilt className="size-4" />}
         </Button>
       </div>
-    </FloatingField>
+    </div>
   );
 }
