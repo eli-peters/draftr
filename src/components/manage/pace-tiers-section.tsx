@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { routes } from '@/config/routes';
-import { Plus, Check, X, ArrowCounterClockwise, DotsThree } from '@phosphor-icons/react/dist/ssr';
+import { Plus, Check, X, ArrowCounterClockwise } from '@phosphor-icons/react/dist/ssr';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMotionPresets } from '@/lib/motion';
 import { InlineEditTransition } from '@/components/motion/inline-edit-transition';
@@ -12,12 +12,14 @@ import { Button } from '@/components/ui/button';
 import { ButtonSpinner } from '@/components/ui/button-spinner';
 import { Input } from '@/components/ui/input';
 import { SectionHeading } from '@/components/ui/section-heading';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from '@/components/ui/dropdown-menu';
+  AdminTable,
+  AdminTableHead,
+  AdminTableHeaderCell,
+  AdminTableKebab,
+  adminTableRowClasses,
+} from '@/components/manage/admin-table';
 import { appContent } from '@/content/app';
 import {
   addPaceTier,
@@ -235,149 +237,22 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
     <div className="space-y-3">
       <SectionHeading as="h3">{content.heading}</SectionHeading>
 
-      <div className="overflow-x-auto rounded-md border border-(--border-default)">
-        <table className="w-full text-left">
-          <thead className="sticky top-0 z-10 bg-(--surface-sunken)">
-            <tr className="border-b border-(--border-default)">
-              <th className="w-8 p-3" />
-              <th className="p-3 text-overline font-sans text-(--text-secondary)">
-                {content.nameColumn}
-              </th>
-              <th className="p-3 text-overline font-sans text-(--text-secondary)">
-                {content.paceRangeColumn}
-              </th>
-              <th className="p-3 text-overline font-sans text-(--text-secondary)">
-                {content.distanceColumn}
-              </th>
-              <th className="p-3 text-overline font-sans text-(--text-secondary)">
-                {content.ridesColumn}
-              </th>
-              <th className="w-10 p-3" />
-            </tr>
-          </thead>
-          <tbody>
-            <AnimatePresence initial={false}>
-              {tiers.map((tier, index) => {
-                const swatchClass = PACE_SWATCH_CLASSES[Math.min(index, MAX_PACE_TIERS - 1)];
-                const isEditing = editingTierId === tier.id;
+      <AdminTable>
+        <AdminTableHead>
+          <th className="w-8 p-3" />
+          <AdminTableHeaderCell>{content.nameColumn}</AdminTableHeaderCell>
+          <AdminTableHeaderCell>{content.paceRangeColumn}</AdminTableHeaderCell>
+          <AdminTableHeaderCell>{content.distanceColumn}</AdminTableHeaderCell>
+          <AdminTableHeaderCell>{content.ridesColumn}</AdminTableHeaderCell>
+          <th className="w-10 p-3" />
+        </AdminTableHead>
+        <tbody>
+          <AnimatePresence initial={false}>
+            {tiers.map((tier, index) => {
+              const swatchClass = PACE_SWATCH_CLASSES[Math.min(index, MAX_PACE_TIERS - 1)];
+              const isEditing = editingTierId === tier.id;
 
-                if (isEditing) {
-                  return (
-                    <motion.tr
-                      key={tier.id}
-                      layout
-                      variants={listItem}
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
-                      className="border-b border-(--border-subtle) last:border-b-0 bg-muted/30"
-                      onKeyDown={handleKeyDown}
-                    >
-                      <td className="p-3">
-                        <div className={`h-4 w-4 rounded-full ${swatchClass}`} />
-                      </td>
-                      <td className="p-3">
-                        <Input
-                          value={edit.name}
-                          onChange={(e) => setEdit({ ...edit, name: e.target.value })}
-                          className="h-7 w-32 font-sans text-sm"
-                          autoFocus
-                        />
-                      </td>
-                      <td className="p-3">
-                        <div className="flex items-center gap-1.5">
-                          <Input
-                            type="number"
-                            value={edit.movingPaceMin}
-                            onChange={(e) => setEdit({ ...edit, movingPaceMin: e.target.value })}
-                            className="h-7 w-16 font-sans text-sm"
-                            placeholder={content.minPlaceholder}
-                            min={content.paceRange.min}
-                            max={content.paceRange.max}
-                            step={content.paceRange.step}
-                          />
-                          <span className="text-xs text-(--text-tertiary)">–</span>
-                          <Input
-                            type="number"
-                            value={edit.movingPaceMax}
-                            onChange={(e) => setEdit({ ...edit, movingPaceMax: e.target.value })}
-                            className="h-7 w-16 font-sans text-sm"
-                            placeholder={content.maxPlaceholder}
-                            min={content.paceRange.min}
-                            max={content.paceRange.max}
-                            step={content.paceRange.step}
-                          />
-                          <span className="text-xs text-(--text-tertiary)">
-                            {content.rangeUnit}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        <div className="flex items-center gap-1.5">
-                          <Input
-                            type="number"
-                            value={edit.distanceMin}
-                            onChange={(e) => setEdit({ ...edit, distanceMin: e.target.value })}
-                            className="h-7 w-16 font-sans text-sm"
-                            placeholder={content.minPlaceholder}
-                            min={content.distanceRange.min}
-                            max={content.distanceRange.max}
-                            step={content.distanceRange.step}
-                          />
-                          <span className="text-xs text-(--text-tertiary)">–</span>
-                          <Input
-                            type="number"
-                            value={edit.distanceMax}
-                            onChange={(e) => setEdit({ ...edit, distanceMax: e.target.value })}
-                            className="h-7 w-16 font-sans text-sm"
-                            placeholder={content.maxPlaceholder}
-                            min={content.distanceRange.min}
-                            max={content.distanceRange.max}
-                            step={content.distanceRange.step}
-                          />
-                          <span className="text-xs text-(--text-tertiary)">
-                            {content.distanceUnit}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-3 font-sans text-xs text-(--text-primary)">
-                        {tier.upcoming_ride_count}
-                      </td>
-                      <td className="p-3">
-                        <div className="flex items-center gap-0.5">
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={handleSaveEdit}
-                            disabled={isPending}
-                          >
-                            {isPending ? (
-                              <ButtonSpinner className="size-3.5" />
-                            ) : (
-                              <Check className="h-3.5 w-3.5" />
-                            )}
-                          </Button>
-                          <Button variant="ghost" size="icon-sm" onClick={cancelEdit}>
-                            <X className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  );
-                }
-
-                // Static display row
-                const paceRange = formatRange(
-                  tier.moving_pace_min,
-                  tier.moving_pace_max,
-                  content.rangeUnit,
-                );
-                const distanceRange = formatRange(
-                  tier.typical_distance_min,
-                  tier.typical_distance_max,
-                  content.distanceUnit,
-                );
-
+              if (isEditing) {
                 return (
                   <motion.tr
                     key={tier.id}
@@ -386,68 +261,179 @@ export function PaceTiersSection({ clubId, initialTiers }: PaceTiersSectionProps
                     initial="hidden"
                     animate="visible"
                     exit="exit"
-                    className="group border-b border-(--border-subtle) last:border-b-0 hover:bg-muted/50"
+                    className="border-b border-(--border-subtle) last:border-b-0 bg-muted/30"
+                    onKeyDown={handleKeyDown}
                   >
                     <td className="p-3">
                       <div className={`h-4 w-4 rounded-full ${swatchClass}`} />
                     </td>
-                    <td className="p-3 font-sans text-xs font-medium text-(--text-primary)">
-                      {tier.name}
-                    </td>
-                    <td className="p-3 font-sans text-xs tabular-nums text-(--text-primary)">
-                      {paceRange}
-                    </td>
-                    <td className="p-3 font-sans text-xs tabular-nums text-(--text-primary)">
-                      {distanceRange}
-                    </td>
-                    <td className="p-3 font-sans text-xs tabular-nums text-(--text-primary)">
-                      {tier.upcoming_ride_count > 0 ? (
-                        <Link href={`${routes.manageRides}?pace=${tier.id}`}>
-                          <Button variant="ghost" size="xs" className="text-(--text-tertiary)">
-                            {tier.upcoming_ride_count}
-                          </Button>
-                        </Link>
-                      ) : (
-                        '0'
-                      )}
+                    <td className="p-3">
+                      <Input
+                        value={edit.name}
+                        onChange={(e) => setEdit({ ...edit, name: e.target.value })}
+                        className="h-7 w-32 font-sans text-sm"
+                        autoFocus
+                      />
                     </td>
                     <td className="p-3">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
-                          <DotsThree className="h-4 w-4" weight="bold" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => startEdit(tier)}>
-                            {content.edit}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleMove(index, 'up')}
-                            disabled={index === 0}
-                          >
-                            {content.moveUp}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleMove(index, 'down')}
-                            disabled={index === tiers.length - 1}
-                          >
-                            {content.moveDown}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => handleDelete(tier)}
-                          >
-                            {content.delete}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className="flex items-center gap-1.5">
+                        <Input
+                          type="number"
+                          value={edit.movingPaceMin}
+                          onChange={(e) => setEdit({ ...edit, movingPaceMin: e.target.value })}
+                          className="h-7 w-16 font-sans text-sm"
+                          placeholder={content.minPlaceholder}
+                          min={content.paceRange.min}
+                          max={content.paceRange.max}
+                          step={content.paceRange.step}
+                        />
+                        <span className="text-xs text-(--text-tertiary)">–</span>
+                        <Input
+                          type="number"
+                          value={edit.movingPaceMax}
+                          onChange={(e) => setEdit({ ...edit, movingPaceMax: e.target.value })}
+                          className="h-7 w-16 font-sans text-sm"
+                          placeholder={content.maxPlaceholder}
+                          min={content.paceRange.min}
+                          max={content.paceRange.max}
+                          step={content.paceRange.step}
+                        />
+                        <span className="text-xs text-(--text-tertiary)">{content.rangeUnit}</span>
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-1.5">
+                        <Input
+                          type="number"
+                          value={edit.distanceMin}
+                          onChange={(e) => setEdit({ ...edit, distanceMin: e.target.value })}
+                          className="h-7 w-16 font-sans text-sm"
+                          placeholder={content.minPlaceholder}
+                          min={content.distanceRange.min}
+                          max={content.distanceRange.max}
+                          step={content.distanceRange.step}
+                        />
+                        <span className="text-xs text-(--text-tertiary)">–</span>
+                        <Input
+                          type="number"
+                          value={edit.distanceMax}
+                          onChange={(e) => setEdit({ ...edit, distanceMax: e.target.value })}
+                          className="h-7 w-16 font-sans text-sm"
+                          placeholder={content.maxPlaceholder}
+                          min={content.distanceRange.min}
+                          max={content.distanceRange.max}
+                          step={content.distanceRange.step}
+                        />
+                        <span className="text-xs text-(--text-tertiary)">
+                          {content.distanceUnit}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-3 font-sans text-xs text-(--text-primary)">
+                      {tier.upcoming_ride_count}
+                    </td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-0.5">
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={handleSaveEdit}
+                          disabled={isPending}
+                        >
+                          {isPending ? (
+                            <ButtonSpinner className="size-3.5" />
+                          ) : (
+                            <Check className="h-3.5 w-3.5" />
+                          )}
+                        </Button>
+                        <Button variant="ghost" size="icon-sm" onClick={cancelEdit}>
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </td>
                   </motion.tr>
                 );
-              })}
-            </AnimatePresence>
-          </tbody>
-        </table>
-      </div>
+              }
+
+              // Static display row
+              const paceRange = formatRange(
+                tier.moving_pace_min,
+                tier.moving_pace_max,
+                content.rangeUnit,
+              );
+              const distanceRange = formatRange(
+                tier.typical_distance_min,
+                tier.typical_distance_max,
+                content.distanceUnit,
+              );
+
+              return (
+                <motion.tr
+                  key={tier.id}
+                  layout
+                  variants={listItem}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className={adminTableRowClasses}
+                >
+                  <td className="p-3">
+                    <div className={`h-4 w-4 rounded-full ${swatchClass}`} />
+                  </td>
+                  <td className="p-3 font-sans text-xs font-medium text-(--text-primary)">
+                    {tier.name}
+                  </td>
+                  <td className="p-3 font-sans text-xs tabular-nums text-(--text-primary)">
+                    {paceRange}
+                  </td>
+                  <td className="p-3 font-sans text-xs tabular-nums text-(--text-primary)">
+                    {distanceRange}
+                  </td>
+                  <td className="p-3 font-sans text-xs tabular-nums text-(--text-primary)">
+                    {tier.upcoming_ride_count > 0 ? (
+                      <Link href={`${routes.manageRides}?pace=${tier.id}`}>
+                        <Button variant="ghost" size="xs" className="text-(--text-tertiary)">
+                          {tier.upcoming_ride_count}
+                        </Button>
+                      </Link>
+                    ) : (
+                      '0'
+                    )}
+                  </td>
+                  <td className="p-3">
+                    <DropdownMenu>
+                      <AdminTableKebab />
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => startEdit(tier)}>
+                          {content.edit}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleMove(index, 'up')}
+                          disabled={index === 0}
+                        >
+                          {content.moveUp}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleMove(index, 'down')}
+                          disabled={index === tiers.length - 1}
+                        >
+                          {content.moveDown}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => handleDelete(tier)}
+                        >
+                          {content.delete}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </motion.tr>
+              );
+            })}
+          </AnimatePresence>
+        </tbody>
+      </AdminTable>
 
       <InlineEditTransition
         editing={isAdding}

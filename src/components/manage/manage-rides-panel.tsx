@@ -4,20 +4,25 @@ import { useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { DotsThree } from '@phosphor-icons/react/dist/ssr';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarColourClasses } from '@/lib/avatar-colours';
 import { Badge } from '@/components/ui/badge';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { ButtonSpinner } from '@/components/ui/button-spinner';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import {
+  AdminTable,
+  AdminTableHead,
+  AdminTableHeaderCell,
+  AdminTableKebab,
+  adminTableRowClasses,
+} from '@/components/manage/admin-table';
 import {
   AlertDialog,
   AlertDialogClose,
@@ -227,50 +232,43 @@ export function ManageRidesPanel({
       ) : (
         <>
           {/* Desktop table */}
-          <div className="overflow-x-auto rounded-md border border-(--border-default)">
-            <table className="w-full bg-(--surface-default) text-left">
-              <thead className="sticky top-0 z-10 bg-(--surface-sunken)">
-                <tr className="border-b border-(--border-default)">
-                  <SortableHeader label={content.rides.dateColumn} sortKey="date" {...sortProps} />
-                  <SortableHeader label={ridesContent.form.title} sortKey="title" {...sortProps} />
-                  <SortableHeader
-                    label={ridesContent.form.paceGroup}
-                    sortKey="pace"
-                    {...sortProps}
-                  />
-                  <SortableHeader label={ridesContent.card.riders} sortKey="spots" {...sortProps} />
-                  <SortableHeader
-                    label={ridesContent.form.meetingLocation}
-                    sortKey="location"
-                    {...sortProps}
-                  />
-                  {!isLeader && (
-                    <SortableHeader
-                      label={content.rides.leaderColumn}
-                      sortKey="leader"
-                      {...sortProps}
-                    />
-                  )}
-                  <th className="p-3 text-overline font-sans text-(--text-secondary)">
-                    {content.rides.statusColumn}
-                  </th>
-                  <th className="w-10 p-3" />
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedRides.map((ride) => (
-                  <DesktopRideRow key={ride.id} ride={ride} isLeader={isLeader} today={today} />
-                ))}
-              </tbody>
-            </table>
-            <TablePagination
-              totalItems={visibleRides.length}
-              page={page}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
-            />
-          </div>
+          <AdminTable
+            footer={
+              <TablePagination
+                totalItems={visibleRides.length}
+                page={page}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+              />
+            }
+          >
+            <AdminTableHead>
+              <SortableHeader label={content.rides.dateColumn} sortKey="date" {...sortProps} />
+              <SortableHeader label={ridesContent.form.title} sortKey="title" {...sortProps} />
+              <SortableHeader label={ridesContent.form.paceGroup} sortKey="pace" {...sortProps} />
+              <SortableHeader label={ridesContent.card.riders} sortKey="spots" {...sortProps} />
+              <SortableHeader
+                label={ridesContent.form.meetingLocation}
+                sortKey="location"
+                {...sortProps}
+              />
+              {!isLeader && (
+                <SortableHeader
+                  label={content.rides.leaderColumn}
+                  sortKey="leader"
+                  {...sortProps}
+                />
+              )}
+              <AdminTableHeaderCell>{content.rides.statusColumn}</AdminTableHeaderCell>
+              <th className="w-10 p-3" />
+            </AdminTableHead>
+            <tbody>
+              {paginatedRides.map((ride) => (
+                <DesktopRideRow key={ride.id} ride={ride} isLeader={isLeader} today={today} />
+              ))}
+            </tbody>
+          </AdminTable>
         </>
       )}
     </div>
@@ -346,7 +344,8 @@ function DesktopRideRow({
       tabIndex={0}
       role="link"
       className={cn(
-        'group cursor-pointer border-b border-(--border-subtle) last:border-b-0 hover:bg-muted/50',
+        adminTableRowClasses,
+        'cursor-pointer',
         isCancelled && 'opacity-disabled',
         isPending && 'opacity-pending pointer-events-none',
       )}
@@ -415,9 +414,7 @@ function DesktopRideRow({
       <td className={cn('p-3 font-sans text-xs', statusClass)}>{statusLabel}</td>
       <td className="p-3" onClick={(e) => e.stopPropagation()}>
         <DropdownMenu>
-          <DropdownMenuTrigger className={buttonVariants({ variant: 'ghost', size: 'icon-sm' })}>
-            <DotsThree className="h-4 w-4" weight="bold" />
-          </DropdownMenuTrigger>
+          <AdminTableKebab />
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={handleClick}>
               {ridesContent.actionBar.editRide}

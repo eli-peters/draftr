@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
-import { PushPin, Plus, DotsThree, Megaphone } from '@phosphor-icons/react/dist/ssr';
+import { PushPin, Plus, Megaphone } from '@phosphor-icons/react/dist/ssr';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMotionPresets } from '@/lib/motion';
 import { Badge } from '@/components/ui/badge';
@@ -29,11 +29,17 @@ import {
 import { ResponsiveDrawer } from '@/components/ui/responsive-drawer';
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import {
+  AdminTable,
+  AdminTableHead,
+  AdminTableHeaderCell,
+  AdminTableKebab,
+  adminTableRowClasses,
+} from '@/components/manage/admin-table';
 import { AdminFilterToolbar } from './admin-filter-toolbar';
 import { TablePagination } from './table-pagination';
 import { cn } from '@/lib/utils';
@@ -199,117 +205,110 @@ export function AnnouncementsPanel({ announcements, clubId }: AnnouncementsPanel
         />
       ) : (
         <>
-          {/* Desktop table — matches Members / Rides chrome */}
-          <div className="overflow-x-auto rounded-md border border-(--border-default)">
-            <table className="w-full bg-(--surface-default) text-left">
-              <thead className="sticky top-0 z-10 bg-(--surface-sunken)">
-                <tr className="border-b border-(--border-default)">
-                  <SortableHeader
-                    label={content.announcements.titleColumn}
-                    sortKey="title"
-                    {...sortProps}
-                  />
-                  <th className="p-3 text-overline font-sans text-(--text-secondary)">
-                    {content.announcements.typeColumn}
-                  </th>
-                  <SortableHeader
-                    label={content.announcements.dateColumn}
-                    sortKey="published"
-                    {...sortProps}
-                  />
-                  <th className="p-3 text-overline font-sans text-(--text-secondary)">
-                    {content.announcements.pinned}
-                  </th>
-                  <th className="w-10 p-3" />
-                </tr>
-              </thead>
-              <tbody>
-                <AnimatePresence initial={false}>
-                  {paginatedAnnouncements.map((a) => (
-                    <motion.tr
-                      key={a.id}
-                      layout
-                      variants={listItem}
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
-                      onClick={() => handleEdit(a)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          handleEdit(a);
-                        }
-                      }}
-                      tabIndex={0}
-                      role="button"
-                      className="group cursor-pointer border-b border-(--border-subtle) last:border-b-0 hover:bg-muted/50"
-                    >
-                      {/* Title */}
-                      <td className="min-w-0 p-3">
-                        <p className="truncate font-sans text-xs font-semibold text-(--text-primary)">
-                          {a.title}
-                        </p>
-                      </td>
+          {/* Desktop table */}
+          <AdminTable
+            footer={
+              <TablePagination
+                totalItems={visibleAnnouncements.length}
+                page={page}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+              />
+            }
+          >
+            <AdminTableHead>
+              <SortableHeader
+                label={content.announcements.titleColumn}
+                sortKey="title"
+                {...sortProps}
+              />
+              <AdminTableHeaderCell>{content.announcements.typeColumn}</AdminTableHeaderCell>
+              <SortableHeader
+                label={content.announcements.dateColumn}
+                sortKey="published"
+                {...sortProps}
+              />
+              <AdminTableHeaderCell>{content.announcements.pinned}</AdminTableHeaderCell>
+              <th className="w-10 p-3" />
+            </AdminTableHead>
+            <tbody>
+              <AnimatePresence initial={false}>
+                {paginatedAnnouncements.map((a) => (
+                  <motion.tr
+                    key={a.id}
+                    layout
+                    variants={listItem}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    onClick={() => handleEdit(a)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleEdit(a);
+                      }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    className={cn(adminTableRowClasses, 'cursor-pointer')}
+                  >
+                    {/* Title */}
+                    <td className="min-w-0 p-3">
+                      <p className="truncate font-sans text-xs font-semibold text-(--text-primary)">
+                        {a.title}
+                      </p>
+                    </td>
 
-                      {/* Type badge */}
-                      <td className="p-3">
-                        <Badge variant={typeBadgeVariant[a.announcement_type]} size="sm">
-                          {content.announcements.typeOptions[a.announcement_type]}
-                        </Badge>
-                      </td>
+                    {/* Type badge */}
+                    <td className="p-3">
+                      <Badge variant={typeBadgeVariant[a.announcement_type]} size="sm">
+                        {content.announcements.typeOptions[a.announcement_type]}
+                      </Badge>
+                    </td>
 
-                      {/* Published */}
-                      <td className="p-3">
-                        <span className="whitespace-nowrap font-sans text-xs tabular-nums text-(--text-tertiary)">
-                          {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
-                        </span>
-                      </td>
+                    {/* Published */}
+                    <td className="p-3">
+                      <span className="whitespace-nowrap font-sans text-xs tabular-nums text-(--text-tertiary)">
+                        {formatDistanceToNow(new Date(a.published_at), { addSuffix: true })}
+                      </span>
+                    </td>
 
-                      {/* Pinned — clickable toggle */}
-                      <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => handleTogglePin(a.id, a.is_pinned)}
-                          className="text-(--text-tertiary) hover:text-(--text-primary)"
-                        >
-                          <PushPin className="size-4" weight={a.is_pinned ? 'fill' : 'light'} />
-                        </Button>
-                      </td>
+                    {/* Pinned — clickable toggle */}
+                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => handleTogglePin(a.id, a.is_pinned)}
+                        className="text-(--text-tertiary) hover:text-(--text-primary)"
+                      >
+                        <PushPin className="size-4" weight={a.is_pinned ? 'fill' : 'light'} />
+                      </Button>
+                    </td>
 
-                      {/* Actions — kebab menu */}
-                      <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-md text-(--text-tertiary) hover:bg-muted/50 hover:text-(--text-primary)">
-                            <DotsThree className="h-4 w-4" weight="bold" />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEdit(a)}>
-                              {content.announcements.edit}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              variant="destructive"
-                              onClick={() => handleDelete(a.id)}
-                            >
-                              {content.announcements.delete}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </AnimatePresence>
-              </tbody>
-            </table>
-            <TablePagination
-              totalItems={visibleAnnouncements.length}
-              page={page}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
-            />
-          </div>
+                    {/* Actions — kebab menu */}
+                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenu>
+                        <AdminTableKebab />
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEdit(a)}>
+                            {content.announcements.edit}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => handleDelete(a.id)}
+                          >
+                            {content.announcements.delete}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </motion.tr>
+                ))}
+              </AnimatePresence>
+            </tbody>
+          </AdminTable>
         </>
       )}
 
