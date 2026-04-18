@@ -1571,20 +1571,20 @@
     "notification": {
       "bg": {
         "$type": "color",
-        "$description": "Notification badge and unread-dot background — secondary brand colour",
-        "$value": "{color.secondary.500}",
+        "$description": "Notification badge and unread-dot background — primary brand colour (magenta) to signal attention",
+        "$value": "{color.primary.500}",
         "$extensions": {
           "com.figma": {
             "modes": {
-              "Light": "{color.secondary.500}",
-              "Dark": "{color.secondary.500}"
+              "Light": "{color.primary.500}",
+              "Dark": "{color.primary.500}"
             }
           }
         }
       },
       "text": {
         "$type": "color",
-        "$description": "Notification badge text — white on secondary",
+        "$description": "Notification badge text — white on magenta",
         "$value": "{color.neutral.0}",
         "$extensions": {
           "com.figma": {
