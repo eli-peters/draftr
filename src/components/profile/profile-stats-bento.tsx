@@ -18,13 +18,13 @@ interface StatProps {
 
 function Stat({ icon: Icon, label, value }: StatProps) {
   return (
-    <div className="flex flex-1 items-center gap-3 p-4">
-      <Icon className="size-5 shrink-0 text-muted-foreground" weight="regular" />
-      <div className="flex min-w-0 flex-col">
-        <span className="text-overline font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-          {label}
-        </span>
-        <span className="font-display text-2xl font-bold tabular-nums leading-tight text-foreground">
+    <div className="flex flex-1 flex-col gap-1 p-4">
+      <span className="text-overline font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+        {label}
+      </span>
+      <div className="flex items-center gap-2">
+        <Icon className="size-5 shrink-0 text-muted-foreground" weight="regular" />
+        <span className="font-display text-2xl font-bold tabular-nums leading-none text-foreground">
           {value}
         </span>
       </div>
