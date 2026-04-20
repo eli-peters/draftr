@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { createClient, getUser } from '@/lib/supabase/server';
 import { appContent } from '@/content/app';
+import { getSiteUrl } from '@/config/routes';
 
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
@@ -68,7 +69,7 @@ export async function sendPasswordResetEmail() {
     return { error: appContent.common.notAuthenticated };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const siteUrl = getSiteUrl();
 
   const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
     redirectTo: `${siteUrl}/auth/callback?type=recovery`,
@@ -178,7 +179,7 @@ export async function inviteMember(formData: FormData) {
     return { error: 'already_invited' };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const siteUrl = getSiteUrl();
 
   // Generate invite link without sending email (avoids Supabase free-tier rate limits)
   const { data, error } = await adminSupabase.auth.admin.generateLink({

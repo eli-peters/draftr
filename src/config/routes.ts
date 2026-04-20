@@ -63,12 +63,26 @@ export const routes = {
 } as const;
 
 /**
+ * Resolve the current site's base URL.
+ *
+ * Prefers NEXT_PUBLIC_APP_URL (prod) → VERCEL_BRANCH_URL (stable per-branch
+ * preview URL) → VERCEL_URL (per-deployment URL) → localhost (dev). The Vercel
+ * vars are auto-injected on Vercel builds, so preview deployments self-configure
+ * without needing a per-project NEXT_PUBLIC_APP_URL.
+ */
+export function getSiteUrl(): string {
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
+  if (process.env.VERCEL_BRANCH_URL) return `https://${process.env.VERCEL_BRANCH_URL}`;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return 'http://localhost:3000';
+}
+
+/**
  * Build a full URL on the app subdomain (go.draftr.app in production).
  * Use for cross-subdomain links from marketing → app.
  */
 export function appUrl(path: string): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  return `${base}${path}`;
+  return `${getSiteUrl()}${path}`;
 }
 
 /**

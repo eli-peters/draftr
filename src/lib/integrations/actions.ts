@@ -5,6 +5,7 @@ import { getUser } from '@/lib/supabase/server';
 import { invalidateProfile } from '@/lib/cache-tags';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { integrations, OAUTH_STATE_COOKIE, OAUTH_STATE_MAX_AGE } from '@/config/integrations';
+import { getSiteUrl } from '@/config/routes';
 import { deauthorize as stravaDeauthorize } from '@/lib/strava/api';
 import { deauthorize as rwgpsDeauthorize } from '@/lib/ridewithgps/api';
 import { appContent } from '@/content/app';
@@ -39,7 +40,7 @@ export async function initiateConnect(service: IntegrationService) {
   });
 
   // Build authorize URL
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  const siteUrl = getSiteUrl();
   const redirectUri = `${siteUrl}${config.callbackPath}`;
 
   const params = new URLSearchParams({

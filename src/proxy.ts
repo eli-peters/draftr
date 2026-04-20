@@ -23,8 +23,14 @@ export async function proxy(request: NextRequest) {
   const ctx = resolveSubdomain(host);
   const { pathname } = request.nextUrl;
 
-  // ── LOCALHOST / IP ADDRESS — treat as app to preserve dev experience ──
-  if (host.startsWith('localhost') || /^\d+\.\d+\.\d+\.\d+/.test(host)) {
+  // ── LOCALHOST / IP / VERCEL PREVIEW — treat as app ──
+  // vercel.app hosts are for branch previews; they don't have the go/marketing
+  // subdomain split, so route straight to the app like we do in dev.
+  if (
+    host.startsWith('localhost') ||
+    /^\d+\.\d+\.\d+\.\d+/.test(host) ||
+    host.endsWith('.vercel.app')
+  ) {
     return updateSession(request);
   }
 
