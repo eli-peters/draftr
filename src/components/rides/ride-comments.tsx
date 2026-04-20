@@ -54,7 +54,7 @@ export function RideComments({
   return (
     <ContentCard heading={content.heading} icon={ChatCircle}>
       {comments.length === 0 && (
-        <p className="text-center text-sm text-muted-foreground">{content.noComments}</p>
+        <p className="text-sm text-muted-foreground">{content.noComments}</p>
       )}
 
       {comments.length > 0 && (

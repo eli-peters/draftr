@@ -8,6 +8,10 @@ import {
   isSameDay,
   isToday as dateIsToday,
   getDate,
+  subDays,
+  addDays,
+  isSameMonth,
+  startOfDay,
 } from 'date-fns';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { DURATIONS, EASE } from '@/lib/motion';
@@ -17,15 +21,19 @@ import type { CalendarRide } from '@/lib/rides/queries';
 
 const { calendar: content } = appContent;
 
+/** Total cells in the grid — 6 weeks × 7 days. Fixed height avoids layout shift between months. */
+const GRID_CELLS = 42;
+const DAYS_PER_WEEK = 7;
+const WEEK_COUNT = 6;
+
 interface CalendarGridProps {
   currentMonth: Date;
-  selectedDate: Date | null;
+  selectedDate: Date;
   monthRides: CalendarRide[];
   direction: number;
   onSelectDate: (date: Date) => void;
 }
 
-/** Map rides by date string for O(1) lookup. */
 function groupRidesByDate(rides: CalendarRide[]): Map<string, CalendarRide[]> {
   const map = new Map<string, CalendarRide[]>();
   for (const ride of rides) {
@@ -44,7 +52,6 @@ function mondayIndex(date: Date): number {
   return (getDay(date) + 6) % 7;
 }
 
-/** Format date as YYYY-MM-DD for ride lookup. */
 function toDateKey(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -81,26 +88,48 @@ export function CalendarGrid({
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
-  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  // Leading empty cells (Mon=0, so if month starts on Wed, 2 empty cells)
-  const leadingBlanks = mondayIndex(monthStart);
+  const leadingCount = mondayIndex(monthStart);
+  const leadingDays: Date[] = [];
+  for (let i = leadingCount; i > 0; i--) {
+    leadingDays.push(subDays(monthStart, i));
+  }
 
-  // Key for AnimatePresence — unique per month
+  const trailingCount = GRID_CELLS - leadingCount - monthDays.length;
+  const trailingDays: Date[] = [];
+  for (let i = 1; i <= trailingCount; i++) {
+    trailingDays.push(addDays(monthEnd, i));
+  }
+
+  const allDays = [...leadingDays, ...monthDays, ...trailingDays];
+
+  // Build up to 6 rows, then drop any trailing row whose cells are entirely
+  // next-month days — iOS Calendar omits that phantom row and so do we.
+  const rows: Date[][] = [];
+  for (let w = 0; w < WEEK_COUNT; w++) {
+    const rowDays = allDays.slice(w * DAYS_PER_WEEK, (w + 1) * DAYS_PER_WEEK);
+    if (rowDays.some((d) => isSameMonth(d, currentMonth))) {
+      rows.push(rowDays);
+    }
+  }
+
+  const todayStart = startOfDay(new Date());
   const monthKey = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}`;
 
   return (
-    <div className="mt-3">
-      {/* Weekday headers */}
-      <div className="grid grid-cols-7 mb-1">
+    <div className="mt-4">
+      <div className="mb-1 grid grid-cols-7">
         {content.weekdays.map((day, i) => (
-          <div key={i} className="text-center text-xs font-medium text-muted-foreground">
+          <div
+            key={i}
+            className="text-center font-sans text-[11px] font-medium uppercase tracking-wide text-muted-foreground"
+          >
             {day}
           </div>
         ))}
       </div>
 
-      {/* Day cells — animated on month change */}
       <AnimatePresence mode="popLayout" custom={direction} initial={false}>
         <motion.div
           key={monthKey}
@@ -109,33 +138,38 @@ export function CalendarGrid({
           initial={shouldReduce ? { opacity: 0 } : 'enter'}
           animate={shouldReduce ? { opacity: 1 } : 'center'}
           exit={shouldReduce ? { opacity: 0 } : 'exit'}
-          className="grid grid-cols-7"
+          className="overflow-hidden"
         >
-          {/* Leading blanks */}
-          {Array.from({ length: leadingBlanks }).map((_, i) => (
-            <div key={`blank-${i}`} />
+          {rows.map((rowDays, rowIdx) => (
+            <div key={rowIdx} className="grid grid-cols-7">
+              {rowDays.map((date) => {
+                const dateKey = toDateKey(date);
+                const isCurrentMonth = isSameMonth(date, currentMonth);
+                const dayRides = isCurrentMonth ? (ridesByDate.get(dateKey) ?? []) : [];
+                const isUserDay = dayRides.some((r) => r.user_has_signup || r.user_is_leader);
+                const isToday = dateIsToday(date);
+                const isSelected = isSameDay(date, selectedDate);
+                const isFilled = isCurrentMonth && isSelected;
+                const isPast = startOfDay(date) < todayStart;
+
+                return (
+                  <CalendarDayCell
+                    key={dateKey}
+                    date={date}
+                    dayNumber={getDate(date)}
+                    rides={dayRides}
+                    isToday={isToday}
+                    isSelected={isSelected}
+                    isCurrentMonth={isCurrentMonth}
+                    isUserDay={isUserDay}
+                    isPast={isPast}
+                    isFilled={isFilled}
+                    onClick={() => onSelectDate(date)}
+                  />
+                );
+              })}
+            </div>
           ))}
-
-          {/* Day cells */}
-          {days.map((date) => {
-            const dateKey = toDateKey(date);
-            const dayRides = ridesByDate.get(dateKey) ?? [];
-            const isUserDay = dayRides.some((r) => r.user_has_signup || r.user_is_leader);
-
-            return (
-              <CalendarDayCell
-                key={dateKey}
-                date={date}
-                dayNumber={getDate(date)}
-                rides={dayRides}
-                isToday={dateIsToday(date)}
-                isSelected={selectedDate !== null && isSameDay(date, selectedDate)}
-                isCurrentMonth={true}
-                isUserDay={isUserDay}
-                onClick={() => onSelectDate(date)}
-              />
-            );
-          })}
         </motion.div>
       </AnimatePresence>
     </div>

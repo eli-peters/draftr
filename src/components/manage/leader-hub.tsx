@@ -16,7 +16,7 @@ interface LeaderHubProps {
 export function LeaderHub({ userId, clubId }: LeaderHubProps) {
   return (
     <DashboardShell>
-      <PageHeader centered={false} title={content.heading} actions={<LeaderCreateRideCta />} />
+      <PageHeader title={content.heading} actions={<LeaderCreateRideCta />} />
 
       <div className="mt-2 min-w-0 space-y-card-stack">
         {/* Stats bento — same component as admin dashboard, leader-scoped data */}

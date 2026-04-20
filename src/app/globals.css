@@ -271,9 +271,10 @@
   --card-radius: var(--radius-2xl);
   --card-radius-lg: var(--radius-3xl);
   --card-border-width: 0px;
-  --card-shadow: var(--shadow-md);
+  --card-shadow: var(--shadow-sm);
   --card-padding: 1rem;
   --card-padding-md: 1.25rem;
+  --card-status-stripe-width: 1.5rem;
 
   /* Card stack gap — canonical vertical spacing between stacked cards.
    * Registered as --spacing-card-stack so gap-card-stack, space-y-card-stack,

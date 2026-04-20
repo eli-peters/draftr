@@ -85,12 +85,12 @@ function ContentCard({
       {...props}
     >
       {(icon || heading) && (
-        <div data-slot="content-card-header" className={cn(children && 'mb-3 md:mb-4')}>
+        <div data-slot="content-card-header" className={cn(children && 'mb-5 md:mb-5')}>
           <div className="flex items-center gap-2">
             {icon &&
               React.createElement(icon, {
-                weight: 'regular',
-                className: 'size-5 shrink-0 text-muted-foreground',
+                weight: 'duotone',
+                className: 'size-6 shrink-0 text-primary',
               })}
             {heading && (
               <h3

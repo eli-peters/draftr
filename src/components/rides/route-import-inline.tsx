@@ -251,9 +251,7 @@ function RouteListFetcher({
       {/* Route list */}
       <div className="min-h-0 flex-1 overflow-y-auto">
         {filteredRoutes.length === 0 && searchQuery.trim() ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">
-            {content.noSearchResults}
-          </p>
+          <p className="py-6 text-sm text-muted-foreground">{content.noSearchResults}</p>
         ) : (
           <div className="flex flex-col gap-2">
             {filteredRoutes.map((route) => (

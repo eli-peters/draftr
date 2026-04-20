@@ -25,7 +25,7 @@ export default async function ManageSettingsPage() {
   return (
     <MobileGate>
       <DashboardShell>
-        <PageHeader centered={false} title={content.sections.club} />
+        <PageHeader title={content.sections.club} />
         <div className="mt-4 space-y-4">
           <ContentCard
             variant="admin"

@@ -15,6 +15,7 @@ import {
 } from '@phosphor-icons/react/dist/ssr';
 import { RiderAvatar, RiderAvatarOverflow, RiderAvatarStack } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { RideWeatherBadge } from '@/components/weather/ride-weather-badge';
 import { useUserPrefs } from '@/components/user-prefs-provider';
 import { cn } from '@/lib/utils';
@@ -63,7 +64,7 @@ export type CardState =
   | 'completed'
   | 'default';
 
-interface CardStateStyle {
+export interface CardStateStyle {
   /** Muted status border for the card outline (300 light / 700 dark) */
   borderClass: string;
   /** Status-coloured stroke between banner and content, if any */
@@ -242,6 +243,81 @@ export function StateCardBanner({
       bgClass={style.bannerBg}
       borderClass={style.bannerBorderClass ?? undefined}
     />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// StateCardStripe — left-edge vertical variant of the status accent
+// ---------------------------------------------------------------------------
+
+/**
+ * Vertical stripe variant of the card status accent for compact cards.
+ * Renders the state's background + icon as a full-height left stripe instead
+ * of a top banner. Returns null when the state has no banner config.
+ */
+export function StateCardStripe({
+  style,
+  labelOverride,
+}: {
+  style: CardStateStyle;
+  labelOverride?: string;
+}) {
+  if (!style.bannerBg || !style.bannerIcon || !style.bannerLabel) return null;
+  return (
+    <div
+      role="img"
+      aria-label={labelOverride ?? style.bannerLabel}
+      className={cn(
+        'flex w-(--card-status-stripe-width) shrink-0 items-center justify-center self-stretch',
+        style.bannerBg,
+      )}
+    >
+      {style.bannerIcon}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// StateCardShell — unified card frame for ride + concern cards
+//
+// Card outline + left status stripe + content slot + optional footer.
+// Used by both hero (homepage action bar) and list (rides page) ride cards,
+// and the shape future non-ride concern cards (weather alerts,
+// announcements, admin nudges) share so they read as siblings of rides.
+// ---------------------------------------------------------------------------
+
+interface StateCardShellProps {
+  stateStyle: CardStateStyle;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+  /** Aria-label override for the stripe (e.g. "Waitlisted · #3"). */
+  stripeLabelOverride?: string;
+  /** Extra classes merged onto the outer Card. */
+  className?: string;
+}
+
+export function StateCardShell({
+  stateStyle,
+  children,
+  footer,
+  stripeLabelOverride,
+  className,
+}: StateCardShellProps) {
+  return (
+    <Card
+      className={cn(
+        'flex flex-row items-stretch overflow-clip p-0',
+        stateStyle.borderClass,
+        stateStyle.glowClass,
+        className,
+      )}
+    >
+      <StateCardStripe style={stateStyle} labelOverride={stripeLabelOverride} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex-1">{children}</div>
+        {footer && <CardFooterSection>{footer}</CardFooterSection>}
+      </div>
+    </Card>
   );
 }
 
@@ -532,6 +608,12 @@ interface CardContentSectionProps {
   durationDisplay?: string | null;
   locationName?: string | null;
   weather?: RideWeatherSnapshot | null;
+  /**
+   * Small uppercase concern-type label at the top of the card
+   * (e.g. "Your Next Ride", "Next Club Ride"). Hero variant only.
+   * §8 capline: Option A — revisit placement after visual review
+   */
+  capline?: string;
   /** Extra content between description and metadata (e.g. waitlist position) */
   children?: React.ReactNode;
   className?: string;
@@ -549,11 +631,14 @@ export function CardContentSection({
   durationDisplay,
   locationName,
   weather,
+  capline,
   children,
   className,
 }: CardContentSectionProps) {
   return (
     <div className={cn('flex flex-col gap-3', className)}>
+      {capline && <span className={cn(OVERLINE, 'text-muted-foreground')}>{capline}</span>}
+
       {/* Top row: date/time · weather */}
       <div className="flex items-center gap-1.5">
         <DateTimeRow date={date} time={time} />

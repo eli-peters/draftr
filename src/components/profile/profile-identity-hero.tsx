@@ -2,22 +2,13 @@
 
 import { PencilSimple } from '@phosphor-icons/react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { ProfileAvatarEditor } from '@/components/profile/profile-avatar-editor';
 import { useProfileForm } from '@/hooks/use-profile-form-state';
 import { getInitials } from '@/lib/utils';
-import { getPaceBadgeVariant } from '@/config/formatting';
 import { appContent } from '@/content/app';
 import type { ProfileViewerAccess } from '@/lib/profile/access';
 
@@ -28,8 +19,6 @@ interface ProfileIdentityHeroProps {
   avatarUrl: string | null;
   memberSince: string;
   initialBio: string;
-  initialPace: string;
-  paceGroups: { id: string; name: string; sort_order: number }[];
   access: ProfileViewerAccess;
 }
 
@@ -38,19 +27,16 @@ export function ProfileIdentityHero({
   avatarUrl,
   memberSince,
   initialBio,
-  initialPace,
-  paceGroups,
   access,
 }: ProfileIdentityHeroProps) {
   const { isEditing, beginEdit, values, setField } = useProfileForm();
   const initials = getInitials(fullName);
   const showBio = isEditing || initialBio.length > 0;
-  const paceSortOrder = paceGroups.find((pg) => pg.name === initialPace)?.sort_order ?? null;
 
   return (
-    <section className="flex flex-col items-center gap-8 text-center md:flex-row md:items-start md:gap-12 md:text-left">
-      {/* Left — avatar */}
-      <div className="shrink-0">
+    <section className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-6 gap-y-4 md:gap-x-6 lg:gap-x-12">
+      {/* Column 1 — avatar */}
+      <div className="flex shrink-0 flex-col items-start gap-3">
         {access.canEdit ? (
           <ProfileAvatarEditor avatarUrl={avatarUrl} fullName={fullName} initials={initials} />
         ) : (
@@ -63,10 +49,10 @@ export function ProfileIdentityHero({
         )}
       </div>
 
-      {/* Right — name/pace/member since/bio + top-right Edit CTA */}
-      <div className="flex min-w-0 flex-1 flex-col items-center gap-4 md:items-stretch">
-        {/* Top row: name + Edit CTA (desktop top-right, mobile below name) */}
-        <div className="flex w-full flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-6">
+      {/* Column 2 — name, member since, Edit CTA (and bio on desktop) */}
+      <div className="flex min-w-0 flex-col items-start gap-1">
+        {/* Top row: name + Edit CTA (icon-only on mobile, labeled on desktop) */}
+        <div className="flex w-full flex-row items-start justify-between gap-3 lg:gap-6">
           {isEditing ? (
             <div className="flex w-full gap-3 md:max-w-md">
               <FloatingField
@@ -90,53 +76,43 @@ export function ProfileIdentityHero({
               </FloatingField>
             </div>
           ) : (
-            <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
+            <h1 className="line-clamp-2 min-w-0 font-display text-3xl leading-10 font-extrabold tracking-tight wrap-break-word hyphens-auto text-foreground lg:text-5xl lg:leading-13">
               {fullName}
             </h1>
           )}
           {access.canEdit && !isEditing && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={beginEdit}
-              className="shrink-0 self-center"
-            >
-              <PencilSimple weight="regular" />
-              {content.editProfile}
-            </Button>
+            <div className="flex h-10 shrink-0 items-center lg:h-13">
+              <Button
+                type="button"
+                variant="ghost"
+                size="default"
+                onClick={beginEdit}
+                aria-label={content.editProfile}
+              >
+                <PencilSimple weight="regular" />
+                <span className="hidden lg:inline">{content.editProfile}</span>
+              </Button>
+            </div>
           )}
-        </div>
-
-        {/* Pace pill (own row, below name) */}
-        <div className="flex w-full justify-center md:justify-start">
-          <PaceTag
-            isEditing={isEditing}
-            value={values.preferred_pace_group}
-            initialValue={initialPace}
-            initialSortOrder={paceSortOrder}
-            paceGroups={paceGroups}
-            onChange={(v) => setField('preferred_pace_group', v)}
-          />
         </div>
 
         {/* Member since */}
         <p className="text-base text-muted-foreground">
           {content.sections.memberSince(memberSince)}
         </p>
-
-        {/* Bio */}
-        {showBio && (
-          <div className="w-full max-w-prose">
-            <BioBlock
-              isEditing={isEditing}
-              value={values.bio}
-              initialValue={initialBio}
-              onChange={(v) => setField('bio', v)}
-            />
-          </div>
-        )}
       </div>
+
+      {/* Bio — spans full width on mobile, sits in column 2 on desktop */}
+      {showBio && (
+        <div className="col-span-2 w-full max-w-prose lg:col-span-1 lg:col-start-2">
+          <BioBlock
+            isEditing={isEditing}
+            value={values.bio}
+            initialValue={initialBio}
+            onChange={(v) => setField('bio', v)}
+          />
+        </div>
+      )}
     </section>
   );
 }
@@ -170,47 +146,5 @@ function BioBlock({
         maxLength={300}
       />
     </FloatingField>
-  );
-}
-
-function PaceTag({
-  isEditing,
-  value,
-  initialValue,
-  initialSortOrder,
-  paceGroups,
-  onChange,
-}: {
-  isEditing: boolean;
-  value: string;
-  initialValue: string;
-  initialSortOrder: number | null;
-  paceGroups: { id: string; name: string; sort_order: number }[];
-  onChange: (v: string) => void;
-}) {
-  if (isEditing) {
-    return (
-      <Select value={value} onValueChange={onChange} size="sm">
-        <SelectTrigger className="min-w-40">
-          <SelectValue placeholder={auth.setupProfile.noPreference} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="">{auth.setupProfile.noPreference}</SelectItem>
-          {paceGroups.map((pg) => (
-            <SelectItem key={pg.id} value={pg.name}>
-              {pg.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    );
-  }
-
-  if (!initialValue) return null;
-
-  return (
-    <Badge variant={initialSortOrder ? getPaceBadgeVariant(initialSortOrder) : 'secondary'}>
-      {initialValue}
-    </Badge>
   );
 }

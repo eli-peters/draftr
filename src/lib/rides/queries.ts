@@ -36,11 +36,39 @@ type JoinedPaceGroup = { name: string; sort_order: number } | null;
 /** Join shape for ride_signups(status) — used to count active signups in JS. */
 type JoinedSignupStatus = { status: string }[];
 
+/** Join shape for ride_signups with user info — used to derive avatar stacks. */
+type JoinedSignupWithUser = {
+  status: string;
+  signed_up_at: string;
+  user: Pick<User, 'avatar_url' | 'full_name'>;
+}[];
+
 /** Count signups that are confirmed or checked-in. */
 function countActiveSignups(signups: JoinedSignupStatus): number {
   return signups.filter(
     (s) => s.status === SignupStatus.CONFIRMED || s.status === SignupStatus.CHECKED_IN,
   ).length;
+}
+
+/**
+ * Derive the first-N avatar stack + total confirmed count from a joined
+ * ride_signups row. Mirrors the logic used in `toRideWithDetails` so action-bar
+ * cards show the same avatars as the main ride feed.
+ */
+function deriveSignupAvatars(signups: JoinedSignupWithUser | null | undefined): {
+  signup_avatars: SignupAvatar[];
+  signup_count: number;
+} {
+  const confirmed = (signups ?? [])
+    .filter((s) => s.status === SignupStatus.CONFIRMED || s.status === SignupStatus.CHECKED_IN)
+    .sort((a, b) => new Date(a.signed_up_at).getTime() - new Date(b.signed_up_at).getTime());
+  return {
+    signup_count: confirmed.length,
+    signup_avatars: confirmed.slice(0, 4).map((s) => ({
+      avatar_url: s.user.avatar_url,
+      full_name: s.user.full_name,
+    })),
+  };
 }
 
 /** Common ride row returned by action-bar queries with location/pace/weather joins. */
@@ -53,6 +81,7 @@ interface ActionBarRideRow {
   distance_km: number | null;
   start_location_name: string | null;
   pace_group: JoinedPaceGroup;
+  ride_signups: JoinedSignupWithUser;
   ride_weather_snapshots: RideWeatherSnapshot | null;
 }
 
@@ -69,6 +98,7 @@ function toActionBarResult(row: ActionBarRideRow) {
     pace_group_name: row.pace_group?.name ?? null,
     pace_group_sort_order: row.pace_group?.sort_order ?? null,
     weather: row.ride_weather_snapshots ?? null,
+    ...deriveSignupAvatars(row.ride_signups),
   };
 }
 
@@ -156,8 +186,11 @@ function toRideWithDetails(ride: RawRideRow, currentUserId?: string): RideWithDe
   };
 }
 
+/** Days of history included in the "upcoming rides" window — lets the rides page surface completed rides for a tapped past date without a second query. */
+const PAST_RIDES_WINDOW_DAYS = 90;
+
 /**
- * Fetch upcoming rides for a club, with joined relations.
+ * Fetch upcoming + recent rides for a club, with joined relations.
  * Cached across requests; invalidated via TAG_RIDES.
  */
 export async function getUpcomingRides(
@@ -166,6 +199,9 @@ export async function getUpcomingRides(
   timezone: string = 'America/Toronto',
 ): Promise<RideWithDetails[]> {
   const today = todayInTimezone(timezone);
+  const windowStartDate = new Date(today);
+  windowStartDate.setDate(windowStartDate.getDate() - PAST_RIDES_WINDOW_DAYS);
+  const windowStart = windowStartDate.toISOString().slice(0, 10);
 
   const data = await unstable_cache(
     async () => {
@@ -174,7 +210,7 @@ export async function getUpcomingRides(
         .from('rides')
         .select(RIDE_WITH_DETAILS_SELECT)
         .eq('club_id', clubId)
-        .gte('ride_date', today)
+        .gte('ride_date', windowStart)
         .order('ride_date', { ascending: true })
         .order('start_time', { ascending: true });
 
@@ -185,7 +221,7 @@ export async function getUpcomingRides(
 
       return data ?? [];
     },
-    ['upcoming-rides', clubId, today],
+    ['upcoming-rides', clubId, today, String(PAST_RIDES_WINDOW_DAYS)],
     { tags: [TAG_RIDES], revalidate: 300 },
   )();
 
@@ -277,7 +313,7 @@ export async function getUserNextSignup(userId: string, clubId: string, timezone
             id, title, ride_date, start_time, end_time, status, capacity, distance_km, elevation_m,
             start_location_name,
             pace_group:pace_groups(name, sort_order),
-            ride_signups(status),
+            ride_signups(status, signed_up_at, user:users!inner(avatar_url, full_name)),
             ride_weather_snapshots(*)
           )
         `,
@@ -303,7 +339,7 @@ export async function getUserNextSignup(userId: string, clubId: string, timezone
         elevation_m: number | null;
         start_location_name: string | null;
         pace_group: { name: string; sort_order: number } | null;
-        ride_signups: JoinedSignupStatus;
+        ride_signups: JoinedSignupWithUser;
         ride_weather_snapshots: RideWeatherSnapshot | null;
       };
 
@@ -323,7 +359,7 @@ export async function getUserNextSignup(userId: string, clubId: string, timezone
           pace_group_sort_order: ride.pace_group?.sort_order ?? null,
           distance_km: ride.distance_km,
           elevation_m: ride.elevation_m,
-          signup_count: countActiveSignups(ride.ride_signups ?? []),
+          ...deriveSignupAvatars(ride.ride_signups),
           capacity: ride.capacity,
           weather: ride.ride_weather_snapshots ?? null,
         };
@@ -353,7 +389,7 @@ export async function getLeaderNextLedRide(userId: string, clubId: string, timez
           id, title, ride_date, start_time, end_time, capacity, distance_km, elevation_m,
           start_location_name,
           pace_group:pace_groups(name, sort_order),
-          ride_signups(status),
+          ride_signups(status, signed_up_at, user:users!inner(avatar_url, full_name)),
           ride_weather_snapshots(*)
         `,
         )
@@ -370,7 +406,7 @@ export async function getLeaderNextLedRide(userId: string, clubId: string, timez
       type LedRideRow = ActionBarRideRow & {
         elevation_m: number | null;
         capacity: number | null;
-        ride_signups: JoinedSignupStatus;
+        ride_signups: JoinedSignupWithUser;
       };
 
       for (const row of data as unknown as LedRideRow[]) {
@@ -379,7 +415,6 @@ export async function getLeaderNextLedRide(userId: string, clubId: string, timez
         return {
           ...toActionBarResult(row),
           elevation_m: row.elevation_m,
-          signup_count: countActiveSignups(row.ride_signups ?? []),
           capacity: row.capacity,
         };
       }
@@ -410,7 +445,8 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string, 
             id, title, ride_date, start_time, end_time, status,
             distance_km, elevation_m,
             start_location_name,
-            pace_group:pace_groups(name, sort_order)
+            pace_group:pace_groups(name, sort_order),
+            ride_signups(status, signed_up_at, user:users!inner(avatar_url, full_name))
           )
         `,
         )
@@ -434,6 +470,7 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string, 
         elevation_m: number | null;
         start_location_name: string | null;
         pace_group: { name: string; sort_order: number } | null;
+        ride_signups: JoinedSignupWithUser;
       };
 
       // Find the first non-completed waitlisted ride without sequential per-ride queries.
@@ -471,6 +508,7 @@ export async function getUserNextWaitlistedRide(userId: string, clubId: string, 
         pace_group_name: ride.pace_group?.name ?? null,
         pace_group_sort_order: ride.pace_group?.sort_order ?? null,
         waitlist_position: count ?? 1,
+        ...deriveSignupAvatars(ride.ride_signups),
       };
     },
     ['user-next-waitlisted', userId, clubId, today],
@@ -525,6 +563,7 @@ export async function getLeaderWeatherWatchRide(userId: string, clubId: string, 
           id, title, ride_date, start_time, end_time, distance_km,
           start_location_name,
           pace_group:pace_groups(name, sort_order),
+          ride_signups(status, signed_up_at, user:users!inner(avatar_url, full_name)),
           ride_weather_snapshots(*)
         `,
         )
@@ -572,6 +611,7 @@ export async function getNextAvailableRide(
           id, title, ride_date, start_time, end_time, distance_km,
           start_location_name,
           pace_group:pace_groups(name, sort_order),
+          ride_signups(status, signed_up_at, user:users!inner(avatar_url, full_name)),
           ride_weather_snapshots(*)
         `,
         )

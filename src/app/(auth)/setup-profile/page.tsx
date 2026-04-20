@@ -15,7 +15,7 @@ export default async function SetupProfilePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="text-center">
+      <div>
         <h1 className="text-2xl font-bold text-foreground">{setupProfile.heading}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{setupProfile.subheading}</p>
       </div>

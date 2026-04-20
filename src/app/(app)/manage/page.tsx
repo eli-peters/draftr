@@ -38,7 +38,7 @@ export default async function ManagePage() {
   // Admin dashboard
   return (
     <DashboardShell>
-      <PageHeader centered={false} title={content.heading} />
+      <PageHeader title={content.heading} />
       <div className="mt-2 min-w-0 space-y-card-stack">
         <Suspense
           fallback={

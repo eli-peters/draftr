@@ -101,7 +101,6 @@ export async function DashboardActionContent({
           nextLedRide={dedupedNextLedRide}
           nextWaitlistedRide={nextWaitlistedRide}
           weatherWatchRide={weatherWatchRide}
-          nextAvailableRide={nextAvailableRide}
           pendingMemberCount={typeof pendingMemberCount === 'number' ? pendingMemberCount : 0}
           ridesNeedingLeaderCount={
             typeof ridesNeedingLeaderCount === 'number' ? ridesNeedingLeaderCount : 0

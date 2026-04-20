@@ -53,7 +53,7 @@ export function SidebarNav({ items, isAdmin = false }: SidebarNavProps) {
 
                 {/* Sub-navigation — always visible when any manage route is active */}
                 {isManageActive && (
-                  <div className="ml-[1.375rem] mt-0.5 flex flex-col gap-0.5 border-l border-(--border-subtle) pl-3">
+                  <div className="ml-[1.6rem] mt-0.5 flex flex-col gap-0.5 border-l border-(--border-subtle) pl-3">
                     {manageSubNav.map((child) => {
                       const isChildActive =
                         pathname === child.href || pathname.startsWith(`${child.href}/`);

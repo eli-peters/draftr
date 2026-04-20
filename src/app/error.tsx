@@ -14,9 +14,9 @@ export default function RootError({
 }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
-      <div className="text-center px-4">
+      <div className="px-4">
         <h2 className="text-lg font-semibold">{common.error}</h2>
-        <p className="mt-2 text-base text-muted-foreground max-w-80 mx-auto">
+        <p className="mt-2 text-base text-muted-foreground max-w-80">
           {error.message || common.errorDescription}
         </p>
         <Button onClick={reset} className="mt-6">

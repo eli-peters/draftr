@@ -27,7 +27,6 @@ export default async function ManageAnnouncementsPage() {
     <MobileGate>
       <DashboardShell>
         <PageHeader
-          centered={false}
           title={content.announcements.heading}
           actions={
             <span className="hidden md:block">

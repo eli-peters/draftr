@@ -24,10 +24,8 @@ export default async function HomePage() {
       {/* Greeting streams first — only needs the user's name */}
       <Suspense
         fallback={
-          <div className="relative mb-8 text-center">
-            <div className="inline-flex items-center gap-3">
-              <div className="h-9 w-56 skeleton-shimmer" />
-            </div>
+          <div className="relative mb-8">
+            <div className="h-9 w-56 skeleton-shimmer" />
           </div>
         }
       >

@@ -75,7 +75,6 @@ interface ProfilePageProps {
 export function ProfilePage({
   subject,
   access,
-  paceGroups,
   memberships,
   statsSlot,
   recentRidesSlot,
@@ -185,15 +184,17 @@ export function ProfilePage({
           avatarUrl={subject.avatarUrl}
           memberSince={subject.memberSince}
           initialBio={subject.bio}
-          initialPace={subject.preferredPaceGroup}
-          paceGroups={paceGroups}
           access={access}
         />
 
         {showSidebar ? (
-          <div className="mt-card-stack grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
-            <aside className="flex flex-col gap-card-stack">
-              {canSeePersonalInfo && (
+          <div className="mt-card-stack flex flex-col gap-card-stack lg:grid lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-x-8 lg:gap-y-card-stack">
+            {/* Stats — mobile order 1 / desktop col 2 row 1 */}
+            <div className="order-1 lg:order-0 lg:col-start-2">{statsBento}</div>
+
+            {/* Personal Info or Contact — mobile order 2 / desktop col 1 row 1 */}
+            {canSeePersonalInfo && (
+              <div className="order-2 lg:order-0 lg:col-start-1">
                 <ProfilePersonalInfoCard
                   email={subject.email}
                   initialPhone={subject.phoneNumber}
@@ -206,27 +207,38 @@ export function ProfilePage({
                   initialPostalCode={subject.postalCode}
                   initialCountry={subject.country}
                 />
-              )}
-              {!canSeePersonalInfo && access.canSeeContact && (
+              </div>
+            )}
+            {!canSeePersonalInfo && access.canSeeContact && (
+              <div className="order-2 lg:order-0 lg:col-start-1">
                 <ProfileContactCard
                   email={subject.email}
                   initialPhone={subject.phoneNumber}
                   access={access}
                 />
-              )}
-              {access.canSeeEmergency && (
+              </div>
+            )}
+
+            {/* Emergency Contact — mobile order 3 / desktop col 1 row 2 */}
+            {access.canSeeEmergency && (
+              <div className="order-3 lg:order-0 lg:col-start-1">
                 <ProfileEmergencyCard
                   initialName={subject.emergencyContactName}
                   initialPhone={subject.emergencyContactPhone}
                   initialRelationship={subject.emergencyContactRelationship}
                 />
-              )}
-            </aside>
-            <div className="flex flex-col gap-card-stack">
-              {statsBento}
-              {canSeePersonalInfo && <ProfileMembershipCard memberships={memberships} />}
-              {recentRidesSlot}
-            </div>
+              </div>
+            )}
+
+            {/* Membership — mobile order 4 / desktop col 2 row 2 */}
+            {canSeePersonalInfo && (
+              <div className="order-4 lg:order-0 lg:col-start-2">
+                <ProfileMembershipCard memberships={memberships} />
+              </div>
+            )}
+
+            {/* Recent Rides — mobile order 5 / desktop col 2 row 3 */}
+            <div className="order-5 lg:order-0 lg:col-start-2">{recentRidesSlot}</div>
           </div>
         ) : (
           <div className="mt-card-stack flex flex-col gap-card-stack">

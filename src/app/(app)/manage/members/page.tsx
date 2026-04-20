@@ -28,7 +28,6 @@ export default async function ManageMembersPage() {
     <MobileGate>
       <DashboardShell>
         <PageHeader
-          centered={false}
           title={content.members.heading}
           actions={
             <span className="hidden md:block">

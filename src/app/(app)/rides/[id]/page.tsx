@@ -96,7 +96,6 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
     <DashboardShell className={!availability.isCancelled ? 'pb-(--bar-clearance)' : undefined}>
       <PageHeader
         title={ride.title}
-        centered={!showManageActions}
         actions={
           showManageActions ? (
             <RideKebabMenu
@@ -120,7 +119,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
       {/* Sign-ups closed message — shown when CTA is hidden and rider isn't signed up */}
       {!availability.canSignUp && !availability.isCancelled && !isSignedUp && (
-        <div className="mt-6 text-center">
+        <div className="mt-6">
           <p className="text-sm font-medium text-muted-foreground">
             {appContent.rides.status.signupClosed}
           </p>

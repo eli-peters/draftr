@@ -48,7 +48,7 @@ export function ActivityFeed({ events }: ActivityFeedProps) {
     return (
       <div>
         <h3 className="mb-3 text-sm font-semibold text-foreground">{content.activity.heading}</h3>
-        <div className="min-w-0 overflow-hidden rounded-md border border-(--border-subtle) px-3 py-8 text-center">
+        <div className="min-w-0 overflow-hidden rounded-md border border-(--border-subtle) px-3 py-8">
           <p className="text-sm text-muted-foreground">{content.activity.empty}</p>
         </div>
       </div>

@@ -2,28 +2,151 @@
 
 import Link from 'next/link';
 import {
-  Alarm,
-  CalendarDots,
-  CloudWarning,
   FlagBanner,
   FlagPennant,
   HandsPraying,
+  MapPin,
   UserPlus,
 } from '@phosphor-icons/react/dist/ssr';
+import { formatDistanceToNowStrict } from 'date-fns';
 import { motion, useReducedMotion } from 'framer-motion';
 import { DURATIONS, EASE, SPRINGS } from '@/lib/motion';
-import { Card } from '@/components/ui/card';
-import { CardBanner, CardContentSection, PulsatingDot } from '@/components/rides/ride-card-parts';
+import { Badge } from '@/components/ui/badge';
+import {
+  DateTimeRow,
+  RiderAvatarGroup,
+  StateCardShell,
+  getCardStateStyle,
+  resolveCardState,
+  type CardStateStyle,
+} from '@/components/rides/ride-card-parts';
 import { useUserPrefs } from '@/components/user-prefs-provider';
 import { appContent } from '@/content/app';
-import { formatTime, parseLocalDate } from '@/config/formatting';
+import {
+  formatDistance,
+  formatTime,
+  getPaceBadgeVariant,
+  parseLocalDate,
+} from '@/config/formatting';
 import { getRideLifecycle } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
+import { RideStatus, SignupStatus } from '@/config/statuses';
 import { cn, getRelativeDay } from '@/lib/utils';
 import type { UserRole } from '@/config/navigation';
-import type { RideWeatherSnapshot } from '@/types/database';
+import type { RideWeatherSnapshot, SignupAvatar } from '@/types/database';
 
 const STATUS_ICON_CLASS = 'size-3.5 shrink-0 text-status-label-text';
+const HERO_CONTENT_CLASS = 'px-5 py-5';
+
+/**
+ * Hero ride card content — stacked rows with a magenta uppercase date/time
+ * eyebrow, the name on its own full-width line, pace/distance, and an
+ * optional location + countdown row. Mirrors list card DNA where they
+ * overlap (pace + distance, type scale) while letting the name breathe.
+ *
+ * §6 Weather: inline weather intentionally omitted — it lives above the
+ * card in the greeting/intro section on the homepage.
+ */
+function HeroCardContent({
+  title,
+  date,
+  time,
+  paceGroupName,
+  paceGroupSortOrder,
+  distanceKm,
+  locationName,
+  countdown,
+}: {
+  title: string;
+  date: string;
+  time: string;
+  paceGroupName: string | null;
+  paceGroupSortOrder: number | null;
+  distanceKm: number | null;
+  locationName: string | null;
+  countdown: string | null;
+}) {
+  const prefs = useUserPrefs();
+  const hasBottomRow = Boolean(locationName || countdown);
+
+  return (
+    <div className={cn('flex flex-col gap-3', HERO_CONTENT_CLASS)}>
+      <div className="flex flex-col gap-1">
+        <DateTimeRow date={date} time={time} />
+        <h3 className="truncate font-sans text-xl font-bold text-foreground">{title}</h3>
+      </div>
+
+      <div className="flex items-center justify-between gap-3">
+        {paceGroupName ? (
+          <Badge
+            variant={paceGroupSortOrder ? getPaceBadgeVariant(paceGroupSortOrder) : 'secondary'}
+          >
+            {paceGroupName}
+          </Badge>
+        ) : (
+          <span />
+        )}
+        {distanceKm != null && (
+          <span className="shrink-0 font-sans text-base font-bold text-foreground tabular-nums">
+            {formatDistance(distanceKm, prefs.distance_unit)}
+          </span>
+        )}
+      </div>
+
+      {hasBottomRow && (
+        <div className="flex items-center justify-between gap-3">
+          {locationName ? (
+            <span className="flex min-w-0 items-center gap-1.5 font-sans text-sm text-muted-foreground">
+              <MapPin className="size-3.5 shrink-0" />
+              <span className="truncate">{locationName}</span>
+            </span>
+          ) : (
+            <span />
+          )}
+          {countdown && (
+            <span className="shrink-0 font-sans text-sm text-muted-foreground">{countdown}</span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Short "in X hours" / "in 3 days" string for upcoming rides. Returns null
+ * for rides that aren't `upcoming` or `about_to_start` — we don't want
+ * countdowns on live or finished rides.
+ */
+function rideCountdown(
+  rideDate: string,
+  startTime: string,
+  lifecycle: ReturnType<typeof getRideLifecycle>,
+): string | null {
+  if (lifecycle !== 'upcoming' && lifecycle !== 'about_to_start') return null;
+  const dt = new Date(`${rideDate}T${startTime}`);
+  if (Number.isNaN(dt.getTime())) return null;
+  return formatDistanceToNowStrict(dt, { addSuffix: true });
+}
+
+function heroContentFor(
+  ride: ActionBarRide,
+  dateLabel: string,
+  timeFormat: '12h' | '24h',
+  countdown: string | null,
+) {
+  return (
+    <HeroCardContent
+      title={ride.title}
+      date={dateLabel}
+      time={formatTime(ride.start_time, timeFormat)}
+      paceGroupName={ride.pace_group_name}
+      paceGroupSortOrder={ride.pace_group_sort_order}
+      distanceKm={ride.distance_km}
+      locationName={ride.start_location_name}
+      countdown={countdown}
+    />
+  );
+}
 
 const MotionLink = motion.create(Link);
 
@@ -41,12 +164,13 @@ interface ActionBarRide {
   pace_group_name: string | null;
   pace_group_sort_order: number | null;
   weather?: RideWeatherSnapshot | null;
+  signup_count: number;
+  signup_avatars: SignupAvatar[];
 }
 
-/** Ride with signup count + capacity (for your-next-ride / led-ride cards). */
+/** Ride with capacity + elevation (for your-next-ride / led-ride cards). */
 interface ActionBarRideWithSignups extends ActionBarRide {
   elevation_m: number | null;
-  signup_count: number;
   capacity: number | null;
   weather: RideWeatherSnapshot | null;
 }
@@ -63,69 +187,71 @@ interface ActionBarProps {
   pendingMemberCount?: number;
   ridesNeedingLeaderCount?: number;
   weatherWatchRide?: ActionBarRide | null;
-  nextAvailableRide?: ActionBarRide | null;
   userRole?: UserRole;
   timezone: string;
 }
 
 /**
- * Resolve lifecycle state into banner label, icon, and color classes.
- * Extracts the repeated ternary logic from each ride card block.
+ * Build a CardStateStyle for concerns that don't map to a ride CardState
+ * (led-ride framing, admin nudges, closed waitlist). Ride-state-driven cards
+ * use getCardStateStyle(resolveCardState(...)).
  */
-function getLifecycleBannerProps(
-  ride: { ride_date: string; start_time: string; end_time: string | null },
-  timezone: string,
-  defaults: {
-    label: string;
-    icon: React.ReactNode;
-    bgClass: string;
-    borderClass: string;
-  },
-) {
-  const lifecycle = getRideLifecycle(ride.ride_date, ride.start_time, ride.end_time, timezone);
-  const isLive = lifecycle === 'in_progress' || lifecycle === 'about_to_start';
-
-  if (!isLive) return { ...defaults, isLive: false };
-
-  if (lifecycle === 'in_progress') {
-    return {
-      label: appContent.rides.status.inProgress,
-      icon: <PulsatingDot />,
-      bgClass: 'bg-status-inProgress-bg',
-      borderClass: 'border-card-border-info',
-      isLive: true,
-    };
-  }
-
+function concernStyle(bgClass: string, icon: React.ReactNode, label: string): CardStateStyle {
   return {
-    label: appContent.rides.status.aboutToStart,
-    icon: <Alarm weight="fill" className={STATUS_ICON_CLASS} />,
-    bgClass: 'bg-status-aboutToStart-bg',
-    borderClass: 'border-card-border-info',
-    isLive: true,
+    borderClass: 'border-border-default',
+    bannerBorderClass: null,
+    bannerBg: bgClass,
+    bannerIcon: icon,
+    bannerLabel: label,
+    glowClass: null,
   };
 }
 
-function ActionCard({
-  label,
-  icon,
+/**
+ * If the ride is live (in_progress / about_to_start) the lifecycle urgency
+ * state takes over; otherwise fall back to the caller's concern framing.
+ */
+function liveOrConcern(
+  lifecycle: ReturnType<typeof getRideLifecycle>,
+  fallback: CardStateStyle,
+): CardStateStyle {
+  const state = resolveCardState({ lifecycle });
+  return state === 'default' ? fallback : getCardStateStyle(state);
+}
+
+function rideFooter(ride: { signup_avatars: SignupAvatar[]; signup_count: number }) {
+  return (
+    <RiderAvatarGroup
+      avatars={ride.signup_avatars}
+      totalCount={ride.signup_count}
+      surface="var(--surface-card-footer-soft)"
+    />
+  );
+}
+
+/**
+ * Motion wrapper shared by every action-bar card. Renders the section
+ * heading outside the card per §2, keeps staggered entrance + hover dim.
+ */
+function ActionCardShell({
+  heading,
   href,
-  bgClass,
-  borderClass,
-  bannerBorderClass,
+  stateStyle,
+  stripeLabelOverride,
   children,
+  footer,
 }: {
-  label: string;
-  icon: React.ReactNode;
+  heading: string;
   href: string;
-  bgClass: string;
-  borderClass?: string;
-  bannerBorderClass?: string;
+  stateStyle: CardStateStyle;
+  stripeLabelOverride?: string;
   children: React.ReactNode;
+  footer?: React.ReactNode;
 }) {
   const shouldReduce = useReducedMotion();
   return (
     <motion.div
+      className="flex flex-col gap-3"
       variants={{
         hidden: shouldReduce ? { opacity: 0 } : { opacity: 0, y: 14 },
         visible: {
@@ -135,6 +261,7 @@ function ActionCard({
         },
       }}
     >
+      <h2 className="font-display text-xl font-semibold text-foreground">{heading}</h2>
       <div className="transition-opacity duration-(--duration-normal) group-hover:opacity-40 hover:!opacity-100">
         <MotionLink
           href={href}
@@ -143,15 +270,13 @@ function ActionCard({
           transition={SPRINGS.gentle}
           className="group block cursor-pointer"
         >
-          <Card className={cn('overflow-clip p-0', borderClass)}>
-            <CardBanner
-              icon={icon}
-              label={label}
-              bgClass={bgClass}
-              borderClass={bannerBorderClass}
-            />
-            <div className="px-5 pt-3 pb-4">{children}</div>
-          </Card>
+          <StateCardShell
+            stateStyle={stateStyle}
+            stripeLabelOverride={stripeLabelOverride}
+            footer={footer}
+          >
+            {children}
+          </StateCardShell>
         </MotionLink>
       </div>
     </motion.div>
@@ -165,7 +290,6 @@ export function ActionBar({
   pendingMemberCount = 0,
   ridesNeedingLeaderCount = 0,
   weatherWatchRide,
-  nextAvailableRide,
   userRole,
   timezone,
 }: ActionBarProps) {
@@ -178,8 +302,7 @@ export function ActionBar({
     nextWaitlistedRide ||
     (isAdmin && pendingMemberCount > 0) ||
     (isAdmin && ridesNeedingLeaderCount > 0) ||
-    weatherWatchRide ||
-    nextAvailableRide;
+    weatherWatchRide;
 
   if (!hasItems) return null;
 
@@ -191,40 +314,41 @@ export function ActionBar({
         hidden: {},
         visible: { transition: { staggerChildren: 0.07, delayChildren: 0.04 } },
       }}
-      className="group flex flex-col gap-6"
+      className="group flex flex-col gap-8"
     >
       {/* Rider: your next confirmed ride */}
       {nextSignup &&
         (() => {
-          const banner = getLifecycleBannerProps(nextSignup, timezone, {
-            label: content.actionBar.yourNextRide,
-            icon: <CalendarDots weight="fill" className={STATUS_ICON_CLASS} />,
-            bgClass: 'bg-status-confirmed-bg',
-            borderClass: 'border-card-border-success',
+          const lifecycle = getRideLifecycle(
+            nextSignup.ride_date,
+            nextSignup.start_time,
+            nextSignup.end_time,
+            timezone,
+          );
+          const cardState = resolveCardState({
+            signupStatus: SignupStatus.CONFIRMED,
+            lifecycle,
           });
+          const stateStyle = getCardStateStyle(cardState);
           return (
-            <ActionCard
-              label={banner.label}
-              icon={banner.icon}
+            <ActionCardShell
+              heading={content.actionBar.yourNextRide}
               href={routes.ride(nextSignup.id)}
-              bgClass={banner.bgClass}
-              borderClass={banner.borderClass}
+              stateStyle={stateStyle}
+              footer={rideFooter(nextSignup)}
             >
-              <CardContentSection
-                date={getRelativeDay(parseLocalDate(nextSignup.ride_date))}
-                time={formatTime(nextSignup.start_time, prefs.time_format)}
-                title={nextSignup.title}
-                paceGroupName={nextSignup.pace_group_name}
-                paceGroupSortOrder={nextSignup.pace_group_sort_order}
-                distanceKm={nextSignup.distance_km}
-                locationName={nextSignup.start_location_name}
-                weather={nextSignup.weather}
-              />
-            </ActionCard>
+              {heroContentFor(
+                nextSignup,
+                getRelativeDay(parseLocalDate(nextSignup.ride_date)),
+                prefs.time_format,
+                rideCountdown(nextSignup.ride_date, nextSignup.start_time, lifecycle),
+              )}
+            </ActionCardShell>
           );
         })()}
 
       {/* Rider: waitlisted ride */}
+      {/* Round 2 §4/§7 TODO: step 4 single-card consolidation may fold this into "Your Next Ride" */}
       {nextWaitlistedRide &&
         (() => {
           const lifecycle = getRideLifecycle(
@@ -234,130 +358,135 @@ export function ActionBar({
             timezone,
           );
           const waitlistClosed = lifecycle !== 'upcoming';
-          const label = waitlistClosed
+          const stateStyle = waitlistClosed
+            ? concernStyle(
+                'bg-status-completed-bg',
+                <HandsPraying weight="fill" className={STATUS_ICON_CLASS} />,
+                content.actionBar.waitlistClosed,
+              )
+            : getCardStateStyle(resolveCardState({ signupStatus: SignupStatus.WAITLISTED }));
+          const waitlistedLabel = waitlistClosed
             ? content.actionBar.waitlistClosed
             : appContent.schedule.status.waitlisted(nextWaitlistedRide.waitlist_position);
           return (
-            <ActionCard
-              label={label}
-              icon={<HandsPraying weight="fill" className={STATUS_ICON_CLASS} />}
+            <ActionCardShell
+              heading={waitlistedLabel}
               href={routes.ride(nextWaitlistedRide.id)}
-              bgClass={waitlistClosed ? 'bg-status-completed-bg' : 'bg-status-waitlisted-bg'}
-              borderClass={waitlistClosed ? 'border-border-default' : 'border-card-border-warning'}
+              stateStyle={stateStyle}
+              stripeLabelOverride={waitlistClosed ? undefined : waitlistedLabel}
+              footer={rideFooter(nextWaitlistedRide)}
             >
-              <CardContentSection
-                date={getRelativeDay(parseLocalDate(nextWaitlistedRide.ride_date))}
-                time={formatTime(nextWaitlistedRide.start_time, prefs.time_format)}
-                title={nextWaitlistedRide.title}
-                paceGroupName={nextWaitlistedRide.pace_group_name}
-                paceGroupSortOrder={nextWaitlistedRide.pace_group_sort_order}
-                distanceKm={nextWaitlistedRide.distance_km}
-                locationName={nextWaitlistedRide.start_location_name}
-              />
-            </ActionCard>
+              {heroContentFor(
+                nextWaitlistedRide,
+                getRelativeDay(parseLocalDate(nextWaitlistedRide.ride_date)),
+                prefs.time_format,
+                rideCountdown(
+                  nextWaitlistedRide.ride_date,
+                  nextWaitlistedRide.start_time,
+                  lifecycle,
+                ),
+              )}
+            </ActionCardShell>
           );
         })()}
 
       {/* Leader: next led ride */}
       {nextLedRide &&
         (() => {
-          const banner = getLifecycleBannerProps(nextLedRide, timezone, {
-            label: content.actionBar.nextLedRide,
-            icon: <FlagBanner weight="fill" className={STATUS_ICON_CLASS} />,
-            bgClass: 'bg-status-ledRide-bg',
-            borderClass: 'border-border-default',
-          });
+          const lifecycle = getRideLifecycle(
+            nextLedRide.ride_date,
+            nextLedRide.start_time,
+            nextLedRide.end_time,
+            timezone,
+          );
+          const stateStyle = liveOrConcern(
+            lifecycle,
+            concernStyle(
+              'bg-status-ledRide-bg',
+              <FlagBanner weight="fill" className={STATUS_ICON_CLASS} />,
+              content.actionBar.nextLedRide,
+            ),
+          );
           return (
-            <ActionCard
-              label={banner.label}
-              icon={banner.icon}
+            <ActionCardShell
+              heading={content.actionBar.nextLedRide}
               href={routes.ride(nextLedRide.id)}
-              bgClass={banner.bgClass}
-              borderClass={banner.borderClass}
+              stateStyle={stateStyle}
+              footer={rideFooter(nextLedRide)}
             >
-              <CardContentSection
-                date={getRelativeDay(parseLocalDate(nextLedRide.ride_date))}
-                time={formatTime(nextLedRide.start_time, prefs.time_format)}
-                title={nextLedRide.title}
-                paceGroupName={nextLedRide.pace_group_name}
-                paceGroupSortOrder={nextLedRide.pace_group_sort_order}
-                distanceKm={nextLedRide.distance_km}
-                locationName={nextLedRide.start_location_name}
-                weather={nextLedRide.weather}
-              />
-            </ActionCard>
+              {heroContentFor(
+                nextLedRide,
+                getRelativeDay(parseLocalDate(nextLedRide.ride_date)),
+                prefs.time_format,
+                rideCountdown(nextLedRide.ride_date, nextLedRide.start_time, lifecycle),
+              )}
+            </ActionCardShell>
           );
         })()}
 
       {/* Leader: weather watch */}
-      {weatherWatchRide && (
-        <ActionCard
-          label={content.actionBar.weatherWatch}
-          icon={<CloudWarning weight="fill" className={STATUS_ICON_CLASS} />}
-          href={routes.ride(weatherWatchRide.id)}
-          bgClass="bg-status-weatherWatch-bg"
-          borderClass="border-card-border-warning"
-        >
-          <CardContentSection
-            date={getRelativeDay(parseLocalDate(weatherWatchRide.ride_date))}
-            time={formatTime(weatherWatchRide.start_time, prefs.time_format)}
-            title={weatherWatchRide.title}
-            paceGroupName={weatherWatchRide.pace_group_name}
-            paceGroupSortOrder={weatherWatchRide.pace_group_sort_order}
-            distanceKm={weatherWatchRide.distance_km}
-            locationName={weatherWatchRide.start_location_name}
-            weather={weatherWatchRide.weather}
-          />
-        </ActionCard>
-      )}
+      {/* Round 2 §1 TODO: homepage scope is strictly rider's own rides — revisit whether this leader-facing concern belongs here */}
+      {weatherWatchRide &&
+        (() => {
+          const lifecycle = getRideLifecycle(
+            weatherWatchRide.ride_date,
+            weatherWatchRide.start_time,
+            weatherWatchRide.end_time,
+            timezone,
+          );
+          return (
+            <ActionCardShell
+              heading={content.actionBar.weatherWatch}
+              href={routes.ride(weatherWatchRide.id)}
+              stateStyle={getCardStateStyle(
+                resolveCardState({ rideStatus: RideStatus.WEATHER_WATCH }),
+              )}
+              footer={rideFooter(weatherWatchRide)}
+            >
+              {heroContentFor(
+                weatherWatchRide,
+                getRelativeDay(parseLocalDate(weatherWatchRide.ride_date)),
+                prefs.time_format,
+                rideCountdown(weatherWatchRide.ride_date, weatherWatchRide.start_time, lifecycle),
+              )}
+            </ActionCardShell>
+          );
+        })()}
 
       {/* Admin: pending member approvals */}
+      {/* Round 2 §1 TODO: admin concerns aren't "rides" — revisit homepage placement */}
       {isAdmin && pendingMemberCount > 0 && (
-        <ActionCard
-          label={content.actionBar.pendingApprovals}
-          icon={<UserPlus weight="fill" className={STATUS_ICON_CLASS} />}
+        <ActionCardShell
+          heading={content.actionBar.pendingApprovals}
           href={routes.manageTab('members')}
-          bgClass="bg-status-adminNudge-bg"
+          stateStyle={concernStyle(
+            'bg-status-adminNudge-bg',
+            <UserPlus weight="fill" className={STATUS_ICON_CLASS} />,
+            content.actionBar.pendingApprovals,
+          )}
         >
-          <p className="text-sm text-muted-foreground">
+          <p className={cn(HERO_CONTENT_CLASS, 'text-sm text-muted-foreground')}>
             {content.actionBar.pendingApprovalsCount(pendingMemberCount)}
           </p>
-        </ActionCard>
+        </ActionCardShell>
       )}
 
       {/* Admin: rides needing a leader */}
+      {/* Round 2 §1 TODO: admin concerns aren't "rides" — revisit homepage placement */}
       {isAdmin && ridesNeedingLeaderCount > 0 && (
-        <ActionCard
-          label={content.actionBar.ridesNeedingLeader}
-          icon={<FlagPennant weight="fill" className={STATUS_ICON_CLASS} />}
+        <ActionCardShell
+          heading={content.actionBar.ridesNeedingLeader}
           href={routes.manageTab('rides')}
-          bgClass="bg-status-adminNudge-bg"
+          stateStyle={concernStyle(
+            'bg-status-adminNudge-bg',
+            <FlagPennant weight="fill" className={STATUS_ICON_CLASS} />,
+            content.actionBar.ridesNeedingLeader,
+          )}
         >
-          <p className="text-sm text-muted-foreground">
+          <p className={cn(HERO_CONTENT_CLASS, 'text-sm text-muted-foreground')}>
             {content.actionBar.ridesNeedingLeaderCount(ridesNeedingLeaderCount)}
           </p>
-        </ActionCard>
-      )}
-
-      {/* Next club ride the user doesn't already have a card for */}
-      {nextAvailableRide && (
-        <ActionCard
-          label={content.nudge.heading}
-          icon={<CalendarDots weight="fill" className={STATUS_ICON_CLASS} />}
-          href={routes.ride(nextAvailableRide.id)}
-          bgClass="bg-status-completed-bg"
-        >
-          <CardContentSection
-            date={getRelativeDay(parseLocalDate(nextAvailableRide.ride_date))}
-            time={formatTime(nextAvailableRide.start_time, prefs.time_format)}
-            title={nextAvailableRide.title}
-            paceGroupName={nextAvailableRide.pace_group_name}
-            paceGroupSortOrder={nextAvailableRide.pace_group_sort_order}
-            distanceKm={nextAvailableRide.distance_km}
-            locationName={nextAvailableRide.start_location_name}
-            weather={nextAvailableRide.weather}
-          />
-        </ActionCard>
+        </ActionCardShell>
       )}
     </motion.div>
   );

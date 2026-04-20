@@ -3,22 +3,24 @@
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import { SPRINGS } from '@/lib/motion';
-import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   CardContentSection,
-  CardFooterSection,
-  StateCardBanner,
-  RiderAvatarGroup,
+  StateCardShell,
   getCardStateStyle,
   resolveCardState,
-  type CardState,
 } from '@/components/rides/ride-card-parts';
-import { CardSignupButton } from '@/components/rides/card-signup-button';
 import { useUserPrefs } from '@/components/user-prefs-provider';
 import { appContent } from '@/content/app';
-import { cn, getRelativeDay } from '@/lib/utils';
-import { dateFormats, formatTime, parseLocalDate } from '@/config/formatting';
-import { getRideAvailability, getRideLifecycle } from '@/lib/rides/lifecycle';
+import { getRelativeDay } from '@/lib/utils';
+import {
+  dateFormats,
+  formatDistance,
+  formatTime,
+  getPaceBadgeVariant,
+  parseLocalDate,
+} from '@/config/formatting';
+import { getRideLifecycle } from '@/lib/rides/lifecycle';
 import { routes } from '@/config/routes';
 import type { RideWithDetails } from '@/types/database';
 
@@ -45,9 +47,12 @@ export function RideCard({ ride, variant = 'rides', timezone }: RideCardProps) {
   const stateStyle = getCardStateStyle(cardState);
 
   const isHome = variant === 'home';
-  const homeSuppressed: CardState[] = ['confirmed'];
-  const isBannerSuppressed = isHome && homeSuppressed.includes(cardState);
   const shouldReduce = useReducedMotion();
+
+  const waitlistLabelOverride =
+    cardState === 'waitlisted' && ride.current_user_waitlist_position
+      ? appContent.schedule.status.waitlisted(ride.current_user_waitlist_position)
+      : undefined;
 
   return (
     <MotionLink
@@ -57,38 +62,17 @@ export function RideCard({ ride, variant = 'rides', timezone }: RideCardProps) {
       transition={SPRINGS.gentle}
       className="group block cursor-pointer"
     >
-      <Card
-        className={cn(
-          'overflow-clip p-0',
-          isBannerSuppressed ? 'border-border-default' : stateStyle.borderClass,
-          !isBannerSuppressed && stateStyle.glowClass,
-        )}
-      >
-        <StateCardBanner
-          style={stateStyle}
-          state={cardState}
-          suppressStates={isHome ? homeSuppressed : undefined}
-          labelOverride={
-            cardState === 'waitlisted' && ride.current_user_waitlist_position
-              ? appContent.schedule.status.waitlisted(ride.current_user_waitlist_position)
-              : undefined
-          }
-        />
+      <StateCardShell stateStyle={stateStyle} stripeLabelOverride={waitlistLabelOverride}>
         {isHome ? (
-          <HomeLayout
-            ride={ride}
-            hasBanner={!!stateStyle.bannerBg && !isBannerSuppressed}
-            timeFormat={prefs.time_format}
-          />
+          <HomeLayout ride={ride} timeFormat={prefs.time_format} />
         ) : (
           <RidesLayout
             ride={ride}
-            hasBanner={!!stateStyle.bannerBg}
-            timezone={timezone}
             timeFormat={prefs.time_format}
+            distanceUnit={prefs.distance_unit}
           />
         )}
-      </Card>
+      </StateCardShell>
     </MotionLink>
   );
 }
@@ -97,20 +81,12 @@ export function RideCard({ ride, variant = 'rides', timezone }: RideCardProps) {
 // Home Layout — compact / glanceable
 // ---------------------------------------------------------------------------
 
-function HomeLayout({
-  ride,
-  hasBanner,
-  timeFormat,
-}: {
-  ride: RideWithDetails;
-  hasBanner: boolean;
-  timeFormat: '12h' | '24h';
-}) {
+function HomeLayout({ ride, timeFormat }: { ride: RideWithDetails; timeFormat: '12h' | '24h' }) {
   const rideDate = parseLocalDate(ride.ride_date);
 
   return (
     <CardContentSection
-      className={cn('px-5 pt-5 pb-5', hasBanner && 'pt-4')}
+      className="px-5 py-5"
       date={getRelativeDay(rideDate, dateFormats.dayShort, true)}
       time={formatTime(ride.start_time, timeFormat)}
       title={ride.title}
@@ -122,59 +98,47 @@ function HomeLayout({
   );
 }
 
+// §6 Option A — list card stays stripped: name + time (row 1), pace + distance (row 2).
+// No avatars/weather/location here; density is the point.
 // ---------------------------------------------------------------------------
-// Rides Layout — rich / decision-making (two-section: content + footer)
+// Rides Layout — compact two-row panel (title/time · pace/distance)
 // ---------------------------------------------------------------------------
 
 function RidesLayout({
   ride,
-  hasBanner,
-  timezone,
   timeFormat,
+  distanceUnit,
 }: {
   ride: RideWithDetails;
-  hasBanner: boolean;
-  timezone: string;
   timeFormat: '12h' | '24h';
+  distanceUnit: 'km' | 'mi';
 }) {
-  const rideDate = parseLocalDate(ride.ride_date);
-  const availability = getRideAvailability(ride, ride.rider_count, timezone);
+  const time = formatTime(ride.start_time, timeFormat);
+  const paceName = ride.pace_group?.name ?? null;
+  const paceSortOrder = ride.pace_group?.sort_order ?? null;
 
   return (
-    <>
-      {/* Content section */}
-      <CardContentSection
-        className={cn('px-5 pt-5 pb-5', hasBanner && 'pt-4')}
-        date={getRelativeDay(rideDate, dateFormats.dayShort, true)}
-        time={formatTime(ride.start_time, timeFormat)}
-        title={ride.title}
-        description={ride.description}
-        paceGroupName={ride.pace_group?.name ?? null}
-        paceGroupSortOrder={ride.pace_group?.sort_order ?? null}
-        distanceKm={ride.distance_km}
-        locationName={ride.start_location_name ?? null}
-        weather={ride.weather}
-      />
-
-      {/* Footer section */}
-      <CardFooterSection>
-        <div className="flex items-center justify-between gap-4">
-          <RiderAvatarGroup
-            avatars={ride.signup_avatars}
-            totalCount={ride.signup_count}
-            cancelled={ride.status === 'cancelled'}
-            surface="var(--surface-card-footer-soft)"
-          />
-          {availability.canSignUp && (
-            <CardSignupButton
-              rideId={ride.id}
-              rideName={ride.title}
-              isFull={availability.isFull}
-              userStatus={ride.current_user_signup_status}
-            />
-          )}
-        </div>
-      </CardFooterSection>
-    </>
+    <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 px-4 py-3">
+      <div className="flex items-baseline gap-3">
+        <h3 className="min-w-0 flex-1 truncate font-sans text-base font-bold text-foreground">
+          {ride.title}
+        </h3>
+        <span className="shrink-0 font-sans text-base font-bold text-foreground">{time}</span>
+      </div>
+      <div className="flex items-center justify-between gap-3">
+        {paceName ? (
+          <Badge variant={paceSortOrder ? getPaceBadgeVariant(paceSortOrder) : 'secondary'}>
+            {paceName}
+          </Badge>
+        ) : (
+          <span />
+        )}
+        {ride.distance_km != null && (
+          <span className="shrink-0 font-sans text-sm text-muted-foreground">
+            {formatDistance(ride.distance_km, distanceUnit)}
+          </span>
+        )}
+      </div>
+    </div>
   );
 }

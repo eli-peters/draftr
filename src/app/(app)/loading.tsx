@@ -4,13 +4,9 @@ export default function AppLoading() {
   return (
     <div className="flex min-w-0 flex-1 flex-col overflow-hidden px-4 pt-8 pb-12 md:px-6 md:pt-10 md:pb-16">
       <SkeletonGroup>
-        {/* Greeting skeleton — matches PageHeader centered layout */}
+        {/* Greeting skeleton — matches PageHeader */}
         <div className="relative mb-8">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-3">
-              <div className="h-9 w-56 skeleton-shimmer" />
-            </div>
-          </div>
+          <div className="h-9 w-56 skeleton-shimmer" />
         </div>
 
         {/* Weather widget skeleton */}

@@ -481,11 +481,8 @@ export const appContent = {
   },
 
   calendar: {
-    todayButton: 'Today',
-    showAllUpcoming: 'Show all upcoming',
     noRidesOnDay: 'No rides scheduled',
-    signedUpFilter: 'Signed up',
-    weekdays: ['M', 'T', 'W', 'T', 'F', 'S', 'S'] as const,
+    weekdays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const,
   },
 
   schedule: {

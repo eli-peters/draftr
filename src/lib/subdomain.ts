@@ -4,7 +4,7 @@ import { type NextRequest } from 'next/server';
  * Root domains the app runs on. The subdomain is whatever precedes these.
  * Order matters — check longer suffixes first to avoid partial matches.
  */
-const ROOT_DOMAINS = ['draftr.app', 'lvh.me', 'localhost'];
+const ROOT_DOMAINS = ['draftr.app', 'lvh.me', 'vercel.app', 'localhost'];
 
 /** Reserved subdomain that serves the authenticated app. */
 export const APP_SUBDOMAIN = 'go';

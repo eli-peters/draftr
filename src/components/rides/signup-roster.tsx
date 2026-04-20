@@ -52,11 +52,7 @@ export function SignupRoster({
   onRemoveRider,
 }: SignupRosterProps) {
   if (signups.length === 0) {
-    return (
-      <p className="py-4 text-center text-sm text-muted-foreground">
-        {ridesContent.roster.noSignups}
-      </p>
-    );
+    return <p className="py-4 text-sm text-muted-foreground">{ridesContent.roster.noSignups}</p>;
   }
 
   const confirmed = signups.filter(

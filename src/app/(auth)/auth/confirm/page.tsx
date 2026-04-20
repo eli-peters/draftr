@@ -45,7 +45,7 @@ export default function AuthConfirmPage() {
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="text-center">
+        <div>
           <h2 className="text-lg font-semibold text-foreground">{common.error}</h2>
           <p className="mt-2 text-base text-muted-foreground">{auth.confirm.expiredLink}</p>
         </div>
@@ -55,9 +55,7 @@ export default function AuthConfirmPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="text-center">
-        <p className="text-base text-muted-foreground">{common.loading}</p>
-      </div>
+      <p className="text-base text-muted-foreground">{common.loading}</p>
     </div>
   );
 }

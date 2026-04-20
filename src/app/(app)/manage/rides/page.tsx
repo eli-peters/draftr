@@ -36,7 +36,6 @@ export default async function ManageRidesPage({
     <MobileGate>
       <DashboardShell>
         <PageHeader
-          centered={false}
           title={isAdmin ? content.headingAdmin : content.headingLeader}
           actions={
             <span className="hidden md:block">

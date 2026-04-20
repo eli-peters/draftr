@@ -157,7 +157,7 @@ export function NotificationBell({ notifications, unreadCount }: NotificationBel
                   })}
                 </div>
               ) : (
-                <div className="px-4 py-8 text-center">
+                <div className="px-4 py-8">
                   <p className="text-sm text-muted-foreground">{header.noNotifications}</p>
                 </div>
               )}

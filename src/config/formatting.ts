@@ -9,6 +9,8 @@ export const dateFormats = {
   monthDay: 'MMM d',
   /** "Mon, Jan 5" */
   dayMonthDay: 'EEE, MMM d',
+  /** "Monday, January 5" */
+  dayLong: 'EEEE, MMMM d',
   /** "Monday, January 5, 2025" */
   full: 'EEEE, MMMM d, yyyy',
   /** "Jan 2025" */

@@ -105,15 +105,14 @@ export function AvatarMenu({ userName, userInitials, avatarUrl, userRole }: Avat
               <DrawerDescription className="sr-only">
                 {appContent.header.profileMenu}
               </DrawerDescription>
-              {/* Centered avatar + name + role */}
-              <div className="flex flex-col items-center gap-4">
+              <div className="flex items-center gap-4">
                 <Avatar className="size-[60px]">
                   {avatarUrl && <AvatarImage src={avatarUrl} alt={userName} />}
                   <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold">
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>
-                <div className="text-center">
+                <div className="min-w-0">
                   <p className="font-display text-xl font-semibold tracking-tight text-foreground">
                     {userName}
                   </p>

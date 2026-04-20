@@ -27,7 +27,7 @@ export function ProfileRecentRides({
   return (
     <ContentCard icon={Bicycle} heading={content.recentRides}>
       {rides.length === 0 ? (
-        <p className="text-center text-base text-muted-foreground">{content.noRidesYet}</p>
+        <p className="text-base text-muted-foreground">{content.noRidesYet}</p>
       ) : (
         <>
           <ul className="divide-y divide-border-subtle">
@@ -44,7 +44,7 @@ export function ProfileRecentRides({
           </ul>
           <Link
             href={routes.profileHistory}
-            className="mt-4 flex items-center justify-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+            className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
           >
             {content.history.viewAll}
             <CaretRight className="h-3.5 w-3.5" />
