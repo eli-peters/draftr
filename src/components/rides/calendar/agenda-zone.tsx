@@ -8,21 +8,6 @@ import { appContent } from '@/content/app';
 import { dateFormats, parseLocalDate } from '@/config/formatting';
 import type { RideWithDetails } from '@/types/database';
 
-/**
- * Compact ride-count pill. Primary-tinted to echo the filled selected-date circle.
- * Restrained on purpose — just the digit, no unit noise, tabular-nums for alignment.
- */
-function RideCountPill({ count }: { count: number }) {
-  return (
-    <span
-      aria-label={`${count} rides`}
-      className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-action-primary-subtle-bg px-1.5 font-sans text-xs font-semibold text-action-primary-subtle-text tabular-nums"
-    >
-      {count}
-    </span>
-  );
-}
-
 const { calendar: calendarContent } = appContent;
 
 interface AgendaZoneProps {
@@ -63,10 +48,7 @@ export function AgendaZone({ rides, selectedDate, timezone }: AgendaZoneProps) {
         const isEmpty = groupRides.length === 0;
         return (
           <div key={dateKey} className="flex flex-col gap-3">
-            <h3 className="flex items-center gap-2 py-1 font-display text-lg font-semibold text-foreground">
-              {heading}
-              {!isEmpty && <RideCountPill count={groupRides.length} />}
-            </h3>
+            <h3 className="py-1 font-display text-lg font-semibold text-foreground">{heading}</h3>
             {isEmpty ? (
               <p className="text-sm text-muted-foreground">{calendarContent.noRidesOnDay}</p>
             ) : (
