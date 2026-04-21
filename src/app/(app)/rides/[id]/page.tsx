@@ -11,7 +11,10 @@ import {
 import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { RideSignupSection } from '@/components/rides/ride-signup-section';
 import { RideSignupActionBar } from '@/components/rides/ride-signup-action-bar';
-import { RideDetailCard } from '@/components/rides/ride-detail-card';
+import { RideDetailCard, RideDetailCardBody } from '@/components/rides/ride-detail-card';
+import { MapBackdropSheet } from '@/components/rides/map-backdrop-sheet';
+import { RouteMapBackdropLoader } from '@/components/rides/route-map-backdrop-loader';
+import { RideDetailResponsive } from '@/components/rides/ride-detail-responsive';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { RideKebabMenu } from '@/components/rides/ride-kebab-menu';
@@ -24,6 +27,7 @@ import { appContent } from '@/content/app';
 import { SignupStatus } from '@/config/statuses';
 import { computeRideActionState } from '@/lib/rides/action-bar-state';
 
+import type { ReactNode } from 'react';
 import type { UserRole } from '@/config/navigation';
 import type { Club } from '@/types/database';
 
@@ -91,23 +95,85 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   });
 
   const showManageActions = hasEditRole && !availability.isCancelled;
+  const showSignupClosed = !availability.canSignUp && !availability.isCancelled && !isSignedUp;
+  const showRoster = signups.length > 0;
+  const rosterHeading = `${detail.spotsCount(riderConfirmedCount, ride.capacity)}${waitlistedCount > 0 ? ` · ${detail.waitlistedCount(waitlistedCount)}` : ''}`;
 
-  return (
-    <DashboardShell className={!availability.isCancelled ? 'pb-(--bar-clearance)' : undefined}>
-      <PageHeader
-        title={ride.title}
-        actions={
-          showManageActions ? (
-            <RideKebabMenu
-              rideId={ride.id}
-              canCancel={availability.canCancel}
-              signupCount={activeSignupCount}
-            />
-          ) : undefined
-        }
+  const header = (
+    <PageHeader
+      title={ride.title}
+      actions={
+        showManageActions ? (
+          <RideKebabMenu
+            rideId={ride.id}
+            canCancel={availability.canCancel}
+            signupCount={activeSignupCount}
+          />
+        ) : undefined
+      }
+    />
+  );
+
+  const signupClosedBlock: ReactNode = showSignupClosed ? (
+    <div className="mt-6">
+      <p className="text-sm font-medium text-muted-foreground">
+        {appContent.rides.status.signupClosed}
+      </p>
+      <p className="mt-1 text-xs text-muted-foreground">{detail.signupClosedContact}</p>
+    </div>
+  ) : null;
+
+  const rosterBlock: ReactNode = showRoster ? (
+    <ContentCard padding="compact" className="mt-card-stack" icon={Users} heading={rosterHeading}>
+      <RideSignupSection
+        rideId={ride.id}
+        signups={signups}
+        createdBy={ride.created_by}
+        coLeaderIds={coLeaders.map((cl) => cl.user_id)}
+        currentUserId={currentUserId}
+        canRemoveRiders={userRole === 'admin'}
       />
+    </ContentCard>
+  ) : null;
 
-      {/* Main ride detail card */}
+  const commentsBlock = (
+    <div className="mt-card-stack">
+      <Suspense fallback={<CommentsSkeleton />}>
+        <ContentTransition>
+          <RideCommentsSection
+            rideId={ride.id}
+            currentUserId={currentUserId}
+            userRole={userRole}
+            isCancelled={availability.isCancelled}
+          />
+        </ContentTransition>
+      </Suspense>
+    </div>
+  );
+
+  const mobileTree = (
+    <MapBackdropSheet
+      backdrop={
+        <RouteMapBackdropLoader
+          polylineStr={ride.route_polyline}
+          routeUrl={ride.route_url}
+          routeName={ride.route_name}
+        />
+      }
+    >
+      <div className="px-5 pt-6 pb-(--bar-clearance)">
+        {header}
+        <RideDetailCardBody ride={ride} weather={ride.weather} includeRouteMap={false} />
+        {signupClosedBlock}
+        {rosterBlock}
+        {commentsBlock}
+      </div>
+    </MapBackdropSheet>
+  );
+
+  const desktopTree = (
+    <DashboardShell className={!availability.isCancelled ? 'pb-(--bar-clearance)' : undefined}>
+      {header}
       <RideDetailCard
         ride={ride}
         isSignedUp={isSignedUp}
@@ -116,49 +182,15 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
         lifecycle={availability.lifecycle}
         weather={ride.weather}
       />
+      {signupClosedBlock}
+      {rosterBlock}
+      {commentsBlock}
+    </DashboardShell>
+  );
 
-      {/* Sign-ups closed message — shown when CTA is hidden and rider isn't signed up */}
-      {!availability.canSignUp && !availability.isCancelled && !isSignedUp && (
-        <div className="mt-6">
-          <p className="text-sm font-medium text-muted-foreground">
-            {appContent.rides.status.signupClosed}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">{detail.signupClosedContact}</p>
-        </div>
-      )}
-
-      {/* Riders roster + signup/cancel actions */}
-      {signups.length > 0 && (
-        <ContentCard
-          padding="compact"
-          className="mt-card-stack"
-          icon={Users}
-          heading={`${detail.spotsCount(riderConfirmedCount, ride.capacity)}${waitlistedCount > 0 ? ` · ${detail.waitlistedCount(waitlistedCount)}` : ''}`}
-        >
-          <RideSignupSection
-            rideId={ride.id}
-            signups={signups}
-            createdBy={ride.created_by}
-            coLeaderIds={coLeaders.map((cl) => cl.user_id)}
-            currentUserId={currentUserId}
-            canRemoveRiders={userRole === 'admin'}
-          />
-        </ContentCard>
-      )}
-
-      {/* Comments — streamed via Suspense to avoid blocking initial paint */}
-      <div className="mt-card-stack">
-        <Suspense fallback={<CommentsSkeleton />}>
-          <ContentTransition>
-            <RideCommentsSection
-              rideId={ride.id}
-              currentUserId={currentUserId}
-              userRole={userRole}
-              isCancelled={availability.isCancelled}
-            />
-          </ContentTransition>
-        </Suspense>
-      </div>
+  return (
+    <>
+      <RideDetailResponsive mobile={mobileTree} desktop={desktopTree} />
 
       {/* Signup action bar — pinned to viewport bottom on both breakpoints. */}
       {!availability.isCancelled && (
@@ -170,6 +202,6 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
           signupCount={activeSignupCount}
         />
       )}
-    </DashboardShell>
+    </>
   );
 }

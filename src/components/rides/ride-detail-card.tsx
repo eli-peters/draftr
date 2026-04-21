@@ -50,9 +50,6 @@ export function RideDetailCard({
   lifecycle,
   weather,
 }: RideDetailCardProps) {
-  const prefs = useUserPrefs();
-  const rideDate = parseLocalDate(ride.ride_date);
-
   // Resolve unified card state
   const cardState = resolveCardState({
     rideStatus: ride.status,
@@ -77,79 +74,109 @@ export function RideDetailCard({
 
       {/* Card body */}
       <div className="flex flex-col gap-4 px-6 pb-6 pt-5">
-        {/* Start location */}
-        {ride.start_location_name && (
-          <StartLocationDisplay
-            name={ride.start_location_name}
-            address={ride.start_location_address ?? ''}
-            latitude={ride.start_latitude}
-            longitude={ride.start_longitude}
-          />
-        )}
+        <RideDetailCardBody ride={ride} weather={weather} includeRouteMap />
+      </div>
+    </Card>
+  );
+}
 
-        {/* Weather — forecast for ride date/time */}
-        <RideWeatherSummary weather={weather} />
+// ---------------------------------------------------------------------------
+// Reusable body — same inner content without the outer Card / banner chrome.
+// Used by the mobile map-backdrop layout, which renders the route map as the
+// page backdrop and omits the inline route preview.
+// ---------------------------------------------------------------------------
 
-        <div className="border-t border-border" />
+interface RideDetailCardBodyProps {
+  ride: RideWithDetails;
+  weather: RideWeatherSnapshot | null;
+  /**
+   * When true, render the inline route map / placeholder at the bottom.
+   * Set to false when the route map is rendered elsewhere (e.g. as a backdrop).
+   */
+  includeRouteMap?: boolean;
+  className?: string;
+}
 
-        {/* Metadata rows */}
-        <div className="space-y-1">
+export function RideDetailCardBody({
+  ride,
+  weather,
+  includeRouteMap = true,
+  className,
+}: RideDetailCardBodyProps) {
+  const prefs = useUserPrefs();
+  const rideDate = parseLocalDate(ride.ride_date);
+
+  return (
+    <div className={cn('flex flex-col gap-4', className)}>
+      {/* Start location */}
+      {ride.start_location_name && (
+        <StartLocationDisplay
+          name={ride.start_location_name}
+          address={ride.start_location_address ?? ''}
+          latitude={ride.start_latitude}
+          longitude={ride.start_longitude}
+        />
+      )}
+
+      {/* Weather — forecast for ride date/time */}
+      <RideWeatherSummary weather={weather} />
+
+      <div className="border-t border-border" />
+
+      {/* Metadata rows */}
+      <div className="space-y-1">
+        <div className="flex items-center gap-2 text-base text-foreground">
+          <CalendarBlank className="size-4 shrink-0 text-muted-foreground" />
+          <span>{format(rideDate, dateFormats.full)}</span>
+        </div>
+        <div className="flex items-center gap-2 text-base text-foreground">
+          <Clock className="size-4 shrink-0 text-muted-foreground" />
+          <span className="tabular-nums">
+            {formatTime(ride.start_time, prefs.time_format)}
+            {ride.end_time && (
+              <>
+                {separators.dash}
+                {formatTime(ride.end_time, prefs.time_format)}
+              </>
+            )}
+          </span>
+        </div>
+        {ride.distance_km != null && (
           <div className="flex items-center gap-2 text-base text-foreground">
-            <CalendarBlank className="size-4 shrink-0 text-muted-foreground" />
-            <span>{format(rideDate, dateFormats.full)}</span>
-          </div>
-          <div className="flex items-center gap-2 text-base text-foreground">
-            <Clock className="size-4 shrink-0 text-muted-foreground" />
+            <Path className="size-4 shrink-0 text-muted-foreground" />
             <span className="tabular-nums">
-              {formatTime(ride.start_time, prefs.time_format)}
-              {ride.end_time && (
-                <>
-                  {separators.dash}
-                  {formatTime(ride.end_time, prefs.time_format)}
-                </>
-              )}
+              {formatDistance(ride.distance_km, prefs.distance_unit)}
             </span>
           </div>
-          {ride.distance_km != null && (
-            <div className="flex items-center gap-2 text-base text-foreground">
-              <Path className="size-4 shrink-0 text-muted-foreground" />
-              <span className="tabular-nums">
-                {formatDistance(ride.distance_km, prefs.distance_unit)}
-              </span>
-            </div>
-          )}
-          {ride.elevation_m != null && (
-            <div className="flex items-center gap-2 text-base text-foreground">
-              <Mountains className="size-4 shrink-0 text-muted-foreground" />
-              <span className="tabular-nums">
-                {formatElevation(ride.elevation_m, prefs.elevation_unit)}
-              </span>
-            </div>
-          )}
-          {ride.pace_group && (
-            <div className="flex items-center gap-2 text-base text-foreground">
-              <Gauge className="size-4 shrink-0 text-muted-foreground" />
-              <span className="min-w-0 wrap-break-word">{ride.pace_group.name}</span>
-              <Badge
-                variant={ride.is_drop_ride ? 'destructive' : 'secondary'}
-                size="sm"
-                shape="pill"
-              >
-                {ride.is_drop_ride ? detail.dropRide : detail.noDrop}
-              </Badge>
-            </div>
-          )}
-        </div>
-
-        {/* Description — full text, reads as prose after the metadata */}
-        {ride.description && (
-          <p className="select-text whitespace-pre-line text-base leading-relaxed text-muted-foreground">
-            {ride.description}
-          </p>
         )}
+        {ride.elevation_m != null && (
+          <div className="flex items-center gap-2 text-base text-foreground">
+            <Mountains className="size-4 shrink-0 text-muted-foreground" />
+            <span className="tabular-nums">
+              {formatElevation(ride.elevation_m, prefs.elevation_unit)}
+            </span>
+          </div>
+        )}
+        {ride.pace_group && (
+          <div className="flex items-center gap-2 text-base text-foreground">
+            <Gauge className="size-4 shrink-0 text-muted-foreground" />
+            <span className="min-w-0 wrap-break-word">{ride.pace_group.name}</span>
+            <Badge variant={ride.is_drop_ride ? 'destructive' : 'secondary'} size="sm" shape="pill">
+              {ride.is_drop_ride ? detail.dropRide : detail.noDrop}
+            </Badge>
+          </div>
+        )}
+      </div>
 
-        {/* Route map — full map when polyline exists, link-only placeholder otherwise */}
-        {ride.route_polyline ? (
+      {/* Description — full text, reads as prose after the metadata */}
+      {ride.description && (
+        <p className="select-text whitespace-pre-line text-base leading-relaxed text-muted-foreground">
+          {ride.description}
+        </p>
+      )}
+
+      {includeRouteMap &&
+        (ride.route_polyline ? (
           <RouteMapLoader
             polylineStr={ride.route_polyline}
             routeUrl={ride.route_url}
@@ -158,8 +185,7 @@ export function RideDetailCard({
           />
         ) : ride.route_url ? (
           <RouteMapPlaceholder routeUrl={ride.route_url} />
-        ) : null}
-      </div>
-    </Card>
+        ) : null)}
+    </div>
   );
 }
