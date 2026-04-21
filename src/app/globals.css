@@ -912,6 +912,45 @@
   border-bottom-color: var(--input-border-invalid);
 }
 
+/* ── Native date/time inputs — blend with floating-field + theme ──
+   Native <input type="date"|"time"> ships with its own calendar-picker
+   indicator and locale-formatted placeholder. Hide the indicator (icon
+   is drawn separately) and suppress the placeholder text while empty so
+   it doesn't double-draw under the floating label. color-scheme makes
+   the iOS/Android wheel sheet honour system dark mode. */
+input[type='time'],
+input[type='date'] {
+  color-scheme: light dark;
+  /* iOS Safari gives date/time inputs an intrinsic min-content width that
+     ignores width:100% on the input. Force -webkit-appearance reset so the
+     input sizes like a normal text field. */
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type='time']::-webkit-calendar-picker-indicator,
+input[type='date']::-webkit-calendar-picker-indicator {
+  display: none;
+}
+/* Shadow-DOM wrappers inside the native input. iOS Safari in particular
+   makes ::-webkit-date-and-time-value a max-content flex cell that pushes
+   the input past its container. Pin it to 100% width with no minimum so
+   the input can actually shrink to fit grid/flex cells. */
+input[type='time']::-webkit-date-and-time-value,
+input[type='date']::-webkit-date-and-time-value {
+  min-width: 0;
+  width: 100%;
+  text-align: start;
+  margin: 0;
+}
+input[type='time']::-webkit-datetime-edit,
+input[type='date']::-webkit-datetime-edit {
+  padding: 0;
+}
+.floating-field:not([data-has-value]):not(:focus-within) input[type='time']::-webkit-datetime-edit,
+.floating-field:not([data-has-value]):not(:focus-within) input[type='date']::-webkit-datetime-edit {
+  color: transparent;
+}
+
 /* Validation error message entrance animation */
 @keyframes field-error-in {
   from {

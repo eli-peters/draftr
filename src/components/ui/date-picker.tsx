@@ -1,12 +1,8 @@
 'use client';
 
 import { CalendarBlank } from '@phosphor-icons/react/dist/ssr';
-import { format, parse } from 'date-fns';
-import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface DatePickerProps {
   /** Controlled value in YYYY-MM-DD format */
@@ -17,7 +13,7 @@ interface DatePickerProps {
   min?: string;
   /** Maximum selectable date in YYYY-MM-DD format */
   max?: string;
-  /** HTML name attribute for hidden input (form submission) */
+  /** HTML name attribute */
   name?: string;
   /** HTML id attribute */
   id?: string;
@@ -28,15 +24,6 @@ interface DatePickerProps {
   /** Whether the field has a validation error */
   'aria-invalid'?: boolean;
   className?: string;
-}
-
-function parseDate(dateStr: string | undefined): Date | undefined {
-  if (!dateStr) return undefined;
-  return parse(dateStr, 'yyyy-MM-dd', new Date());
-}
-
-function formatIso(date: Date): string {
-  return format(date, 'yyyy-MM-dd');
 }
 
 function DatePicker({
@@ -51,50 +38,30 @@ function DatePicker({
   'aria-invalid': ariaInvalid,
   className,
 }: DatePickerProps) {
-  const [open, setOpen] = useState(false);
-  const selected = parseDate(value);
-  const fromDate = parseDate(min);
-  const toDate = parseDate(max);
-
   return (
     <div className="relative">
-      {name && <input type="hidden" name={name} value={value ?? ''} />}
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger
-          id={id}
-          disabled={disabled}
-          aria-invalid={ariaInvalid}
-          data-slot="picker-trigger"
-          className={cn(
-            'flex h-12 w-full items-center justify-between rounded-none border-0 border-b border-input bg-transparent px-3 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-0 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
-            ariaInvalid && 'border-destructive focus-visible:border-destructive',
-            !value && 'text-muted-foreground',
-            className,
-          )}
-        >
-          {selected ? <span>{format(selected, 'MMM d, yyyy')}</span> : <span />}
-          <CalendarBlank className="size-4 shrink-0 text-muted-foreground" />
-        </PopoverTrigger>
-        <PopoverContent className="w-(--anchor-width) gap-0 p-0" align="start">
-          <Calendar
-            mode="single"
-            fixedWeeks
-            selected={selected}
-            onSelect={(date: Date | undefined) => {
-              if (date) {
-                onChange?.(formatIso(date));
-              }
-              setOpen(false);
-            }}
-            disabled={[
-              ...(fromDate ? [{ before: fromDate }] : []),
-              ...(toDate ? [{ after: toDate }] : []),
-            ]}
-            defaultMonth={selected ?? fromDate}
-            required={required}
-          />
-        </PopoverContent>
-      </Popover>
+      <input
+        type="date"
+        id={id}
+        name={name}
+        value={value ?? ''}
+        onChange={(e) => onChange?.(e.target.value)}
+        min={min}
+        max={max}
+        required={required}
+        disabled={disabled}
+        aria-invalid={ariaInvalid}
+        data-slot="picker-trigger"
+        className={cn(
+          'h-12 w-full min-w-0 cursor-pointer rounded-none border-0 border-b border-input bg-transparent px-3 pr-9 text-base text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-0 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+          ariaInvalid && 'border-destructive focus-visible:border-destructive',
+          className,
+        )}
+      />
+      <CalendarBlank
+        aria-hidden
+        className="pointer-events-none absolute right-3 top-8.5 size-4 -translate-y-1/2 text-muted-foreground"
+      />
     </div>
   );
 }
