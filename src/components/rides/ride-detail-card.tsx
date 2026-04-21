@@ -1,7 +1,9 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { format } from 'date-fns';
 import { CalendarBlank, Clock, Gauge, Mountains, Path } from '@phosphor-icons/react/dist/ssr';
+import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import {
@@ -123,48 +125,46 @@ export function RideDetailCardBody({
 
       <div className="border-t border-border" />
 
-      {/* Metadata rows */}
-      <div className="space-y-1">
-        <div className="flex items-center gap-2 text-base text-foreground">
-          <CalendarBlank className="size-4 shrink-0 text-muted-foreground" />
-          <span>{format(rideDate, dateFormats.full)}</span>
-        </div>
-        <div className="flex items-center gap-2 text-base text-foreground">
-          <Clock className="size-4 shrink-0 text-muted-foreground" />
-          <span className="tabular-nums">
-            {formatTime(ride.start_time, prefs.time_format)}
-            {ride.end_time && (
-              <>
-                {separators.dash}
-                {formatTime(ride.end_time, prefs.time_format)}
-              </>
-            )}
-          </span>
-        </div>
+      {/* Metadata rows — bold value with expressive icon; no label required */}
+      <div className="space-y-3">
+        <StatRow icon={CalendarBlank} value={format(rideDate, dateFormats.full)} />
+        <StatRow
+          icon={Clock}
+          value={
+            <>
+              {formatTime(ride.start_time, prefs.time_format)}
+              {ride.end_time && (
+                <>
+                  {separators.dash}
+                  {formatTime(ride.end_time, prefs.time_format)}
+                </>
+              )}
+            </>
+          }
+        />
         {ride.distance_km != null && (
-          <div className="flex items-center gap-2 text-base text-foreground">
-            <Path className="size-4 shrink-0 text-muted-foreground" />
-            <span className="tabular-nums">
-              {formatDistance(ride.distance_km, prefs.distance_unit)}
-            </span>
-          </div>
+          <StatRow icon={Path} value={formatDistance(ride.distance_km, prefs.distance_unit)} />
         )}
         {ride.elevation_m != null && (
-          <div className="flex items-center gap-2 text-base text-foreground">
-            <Mountains className="size-4 shrink-0 text-muted-foreground" />
-            <span className="tabular-nums">
-              {formatElevation(ride.elevation_m, prefs.elevation_unit)}
-            </span>
-          </div>
+          <StatRow
+            icon={Mountains}
+            value={formatElevation(ride.elevation_m, prefs.elevation_unit)}
+          />
         )}
         {ride.pace_group && (
-          <div className="flex items-center gap-2 text-base text-foreground">
-            <Gauge className="size-4 shrink-0 text-muted-foreground" />
-            <span className="min-w-0 wrap-break-word">{ride.pace_group.name}</span>
-            <Badge variant={ride.is_drop_ride ? 'destructive' : 'secondary'} size="sm" shape="pill">
-              {ride.is_drop_ride ? detail.dropRide : detail.noDrop}
-            </Badge>
-          </div>
+          <StatRow
+            icon={Gauge}
+            value={ride.pace_group.name}
+            trailing={
+              <Badge
+                variant={ride.is_drop_ride ? 'destructive' : 'status-confirmed'}
+                shape="pill"
+                size="sm"
+              >
+                {ride.is_drop_ride ? detail.dropRide : detail.noDrop}
+              </Badge>
+            }
+          />
         )}
       </div>
 
@@ -186,6 +186,24 @@ export function RideDetailCardBody({
         ) : ride.route_url ? (
           <RouteMapPlaceholder routeUrl={ride.route_url} />
         ) : null)}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+
+interface StatRowProps {
+  icon: PhosphorIcon;
+  value: ReactNode;
+  trailing?: ReactNode;
+}
+
+function StatRow({ icon: Icon, value, trailing }: StatRowProps) {
+  return (
+    <div className="flex items-center gap-3">
+      <Icon className="size-5 shrink-0 text-muted-foreground" weight="duotone" />
+      <span className="min-w-0 text-base font-semibold tabular-nums text-foreground">{value}</span>
+      {trailing}
     </div>
   );
 }

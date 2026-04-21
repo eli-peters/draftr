@@ -193,8 +193,6 @@ export const appContent = {
         'Your spot will be released and the next person on the waitlist will be promoted.',
       cancelConfirmAction: 'Cancel Sign-Up',
       cancelConfirmKeep: 'Keep My Spot',
-      distanceLabel: 'Distance',
-      elevationLabel: 'Elevation',
       routeMapPlaceholder: 'Route map coming soon',
       goingCount: (total: number) => `${total} going`,
       spotsCount: (confirmed: number, capacity: number | null) =>

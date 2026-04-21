@@ -13,13 +13,8 @@ const RouteMapBackdrop = dynamic(
 interface RouteMapBackdropLoaderProps {
   polylineStr?: string | null;
   routeUrl?: string | null;
-  routeName?: string | null;
 }
 
-export function RouteMapBackdropLoader({
-  polylineStr,
-  routeUrl,
-  routeName,
-}: RouteMapBackdropLoaderProps) {
-  return <RouteMapBackdrop polylineStr={polylineStr} routeUrl={routeUrl} routeName={routeName} />;
+export function RouteMapBackdropLoader({ polylineStr, routeUrl }: RouteMapBackdropLoaderProps) {
+  return <RouteMapBackdrop polylineStr={polylineStr} routeUrl={routeUrl} />;
 }

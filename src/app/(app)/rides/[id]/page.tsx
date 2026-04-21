@@ -15,6 +15,7 @@ import { RideDetailCard, RideDetailCardBody } from '@/components/rides/ride-deta
 import { MapBackdropSheet } from '@/components/rides/map-backdrop-sheet';
 import { RouteMapBackdropLoader } from '@/components/rides/route-map-backdrop-loader';
 import { RideDetailResponsive } from '@/components/rides/ride-detail-responsive';
+import { RideDetailScrollReset } from '@/components/rides/ride-detail-scroll-reset';
 import { DashboardShell } from '@/components/dashboard/dashboard-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { RideKebabMenu } from '@/components/rides/ride-kebab-menu';
@@ -154,11 +155,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   const mobileTree = (
     <MapBackdropSheet
       backdrop={
-        <RouteMapBackdropLoader
-          polylineStr={ride.route_polyline}
-          routeUrl={ride.route_url}
-          routeName={ride.route_name}
-        />
+        <RouteMapBackdropLoader polylineStr={ride.route_polyline} routeUrl={ride.route_url} />
       }
     >
       <div className="px-5 pt-6 pb-(--bar-clearance)">
@@ -190,6 +187,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
 
   return (
     <>
+      <RideDetailScrollReset rideId={ride.id} />
       <RideDetailResponsive mobile={mobileTree} desktop={desktopTree} />
 
       {/* Signup action bar — pinned to viewport bottom on both breakpoints. */}

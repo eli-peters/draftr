@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { MapBackdropContext, type MapBackdropMetrics } from './map-backdrop-context';
 import { cn } from '@/lib/utils';
 
 interface MapBackdropSheetProps {
@@ -36,7 +37,9 @@ export function MapBackdropSheet({
   maxScrimOpacity = 0.55,
   className,
 }: MapBackdropSheetProps) {
-  const peekPx = usePeekPixels(peekHeight);
+  const peekPx = useDvhPixels(peekHeight);
+  const backdropPx = useDvhPixels(backdropHeight);
+  const metrics = useMemo<MapBackdropMetrics>(() => ({ peekPx, backdropPx }), [peekPx, backdropPx]);
   const { scrollY } = useScroll();
 
   // Parallax completes over the full peek distance.
@@ -67,46 +70,48 @@ export function MapBackdropSheet({
   } as CSSProperties;
 
   return (
-    <div className={cn('relative min-h-dvh', className)} style={style}>
-      <motion.div
-        style={{ y: mapY, filter: blur }}
-        className="fixed inset-x-0 top-0 z-0 h-(--map-backdrop-height) will-change-transform"
-      >
-        {backdrop}
-      </motion.div>
-      <motion.div
-        style={{ opacity: scrimOpacity }}
-        className="pointer-events-none fixed inset-x-0 top-0 z-0 h-(--map-backdrop-height) bg-background"
-        aria-hidden
-      />
-      <section className="relative z-10 mt-(--map-peek) min-h-dvh rounded-t-3xl bg-background shadow-[0_-16px_40px_-8px_rgba(0,0,0,0.18)]">
-        {children}
-      </section>
-    </div>
+    <MapBackdropContext.Provider value={metrics}>
+      <div className={cn('relative min-h-dvh', className)} style={style}>
+        <motion.div
+          style={{ y: mapY, filter: blur }}
+          className="fixed inset-x-0 top-0 z-0 h-(--map-backdrop-height) will-change-transform"
+        >
+          {backdrop}
+        </motion.div>
+        <motion.div
+          style={{ opacity: scrimOpacity }}
+          className="pointer-events-none fixed inset-x-0 top-0 z-0 h-(--map-backdrop-height) bg-background"
+          aria-hidden
+        />
+        <section className="relative z-10 mt-(--map-peek) min-h-dvh rounded-t-3xl bg-background shadow-[0_-16px_40px_-8px_rgba(0,0,0,0.18)]">
+          {children}
+        </section>
+      </div>
+    </MapBackdropContext.Provider>
   );
 }
 
 /**
- * Resolve the peek height (CSS string like "38dvh") into a pixel value that
+ * Resolve a CSS length string (e.g. "38dvh") into a pixel value that
  * Framer Motion can interpolate against. Re-measured on viewport resize.
  */
-function usePeekPixels(peekHeight: string): number {
-  const [peekPx, setPeekPx] = useState(0);
+function useDvhPixels(cssHeight: string): number {
+  const [px, setPx] = useState(0);
 
   useEffect(() => {
     const measure = () => {
       const probe = document.createElement('div');
       probe.style.position = 'absolute';
       probe.style.visibility = 'hidden';
-      probe.style.height = peekHeight;
+      probe.style.height = cssHeight;
       document.body.appendChild(probe);
-      setPeekPx(probe.getBoundingClientRect().height);
+      setPx(probe.getBoundingClientRect().height);
       document.body.removeChild(probe);
     };
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
-  }, [peekHeight]);
+  }, [cssHeight]);
 
-  return peekPx;
+  return px;
 }

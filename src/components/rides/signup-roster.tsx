@@ -79,7 +79,7 @@ export function SignupRoster({
   const confirmedRiders = sortedConfirmed.filter((s) => !leaderIds.has(s.user_id));
 
   return (
-    <div className="space-y-1">
+    <div>
       {canRemoveRiders ? (
         <>
           {confirmedLeaders.length > 0 && (
@@ -172,22 +172,22 @@ function SignupRow({
       initial="hidden"
       animate="visible"
       exit="exit"
-      className="flex items-center gap-3 rounded-lg px-2 py-2"
+      className="flex items-center gap-3 px-2 py-3"
     >
       <Link
         href={routes.publicProfile(signup.user_id)}
         className="flex flex-1 items-center gap-3 transition-colors hover:opacity-80"
       >
-        <Avatar className="h-8 w-8">
+        <Avatar className="h-10 w-10">
           {signup.avatar_url && <AvatarImage src={signup.avatar_url} alt={signup.user_name} />}
           <AvatarFallback
-            className={`text-xs font-medium ${getAvatarColourClasses(signup.user_name)}`}
+            className={`text-sm font-semibold ${getAvatarColourClasses(signup.user_name)}`}
           >
             {initials}
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-foreground">{signup.user_name}</p>
+          <p className="truncate text-base font-semibold text-foreground">{signup.user_name}</p>
           {signup.signed_up_at && (
             <p className="text-xs text-muted-foreground">
               {ridesContent.roster.joined(formatDistanceToNow(new Date(signup.signed_up_at)))}
@@ -196,7 +196,7 @@ function SignupRow({
         </div>
       </Link>
       {isLeader && (
-        <Badge variant="default" className="text-xs">
+        <Badge variant="role-leader" className="text-xs">
           {ridesContent.roster.leader}
         </Badge>
       )}
