@@ -3,7 +3,7 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   experimental: {
-    optimizePackageImports: ['@phosphor-icons/react', 'date-fns'],
+    optimizePackageImports: ['@phosphor-icons/react', 'date-fns', '@base-ui/react'],
   },
   // Allow dev server access from LAN devices (e.g. mobile testing at 10.88.x.x).
   // Without this, Next.js blocks cross-origin server action POSTs as CSRF,

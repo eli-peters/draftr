@@ -76,7 +76,17 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
 
       const [{ data: user, error: userError }, { data: membership, error: membershipError }] =
         await Promise.all([
-          supabase.from('users').select('*').eq('id', userId).single(),
+          supabase
+            .from('users')
+            .select(
+              `id, first_name, last_name, full_name, email, avatar_url, bio,
+               phone_number, date_of_birth, gender,
+               street_address_line_1, street_address_line_2, city, province, postal_code, country,
+               emergency_contact_name, emergency_contact_phone, emergency_contact_relationship,
+               preferred_pace_group, created_at`,
+            )
+            .eq('id', userId)
+            .single(),
           supabase
             .from('club_memberships')
             .select('role, club:clubs(name)')
@@ -292,40 +302,47 @@ export async function getUserRecentRides(userId: string, limit = 5): Promise<Rec
 
 /**
  * Fetch external memberships (CCN/OCA) for a user, with club affiliations.
+ * Cached per user; invalidated via tagProfile(userId).
  */
 export async function getUserMemberships(userId: string): Promise<UserMembership[]> {
-  const supabase = createAdminClient();
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient();
 
-  const { data, error } = await supabase
-    .from('memberships')
-    .select(
-      `
-      id, member_number, membership_type, membership_subtype, status,
-      affiliations:membership_club_affiliations(club_id, club:clubs(name))
-    `,
-    )
-    .eq('user_id', userId);
+      const { data, error } = await supabase
+        .from('memberships')
+        .select(
+          `
+          id, member_number, membership_type, membership_subtype, status,
+          affiliations:membership_club_affiliations(club_id, club:clubs(name))
+        `,
+        )
+        .eq('user_id', userId);
 
-  if (error?.message) {
-    console.error('[profile] Error fetching memberships:', error.message);
-    return [];
-  }
+      if (error?.message) {
+        console.error('[profile] Error fetching memberships:', error.message);
+        return [];
+      }
 
-  return (data ?? []).map((m) => {
-    const affiliations = (m.affiliations ?? []) as unknown as {
-      club_id: string;
-      club: { name: string } | { name: string }[];
-    }[];
-    return {
-      id: m.id,
-      member_number: m.member_number,
-      membership_type: m.membership_type,
-      membership_subtype: m.membership_subtype,
-      status: m.status,
-      club_affiliations: affiliations.map((a) => ({
-        club_id: a.club_id,
-        club_name: Array.isArray(a.club) ? (a.club[0]?.name ?? '') : (a.club?.name ?? ''),
-      })),
-    };
-  });
+      return (data ?? []).map((m) => {
+        const affiliations = (m.affiliations ?? []) as unknown as {
+          club_id: string;
+          club: { name: string } | { name: string }[];
+        }[];
+        return {
+          id: m.id,
+          member_number: m.member_number,
+          membership_type: m.membership_type,
+          membership_subtype: m.membership_subtype,
+          status: m.status,
+          club_affiliations: affiliations.map((a) => ({
+            club_id: a.club_id,
+            club_name: Array.isArray(a.club) ? (a.club[0]?.name ?? '') : (a.club?.name ?? ''),
+          })),
+        };
+      });
+    },
+    ['user-memberships', userId],
+    { tags: [tagProfile(userId)], revalidate: 600 },
+  )();
 }

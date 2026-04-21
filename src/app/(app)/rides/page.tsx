@@ -14,10 +14,10 @@ export default async function RidesPage() {
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
 
-  const [rides, monthRides] = await Promise.all([
-    getUpcomingRides(membership.club_id, membership.user_id, timezone),
-    getRidesForMonth(membership.club_id, membership.user_id, year, month),
-  ]);
+  // Calendar grid needs month data to render dots. Stream the upcoming-rides
+  // agenda so the grid paints before the heavier query resolves.
+  const monthRides = await getRidesForMonth(membership.club_id, membership.user_id, year, month);
+  const upcomingRidesPromise = getUpcomingRides(membership.club_id, membership.user_id, timezone);
 
   return (
     <DashboardShell>
@@ -30,7 +30,11 @@ export default async function RidesPage() {
        * enough context on its own.
        */}
       <h1 className="sr-only">{appContent.nav.rides}</h1>
-      <RidesCalendar initialMonthRides={monthRides} upcomingRides={rides} timezone={timezone} />
+      <RidesCalendar
+        initialMonthRides={monthRides}
+        upcomingRidesPromise={upcomingRidesPromise}
+        timezone={timezone}
+      />
     </DashboardShell>
   );
 }

@@ -1,10 +1,10 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
 import { createClient, getUser } from '@/lib/supabase/server';
 import { appContent } from '@/content/app';
 import { getSiteUrl } from '@/config/routes';
+import { invalidateManage } from '@/lib/cache-tags';
 
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
@@ -223,7 +223,7 @@ export async function inviteMember(formData: FormData) {
     }
   }
 
-  revalidatePath('/manage');
+  invalidateManage(clubId);
 
   // Build our own invite URL using the hashed_token from generateLink.
   // This goes directly to our /auth/callback route which verifies server-side via verifyOtp.

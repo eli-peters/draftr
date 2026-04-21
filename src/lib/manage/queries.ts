@@ -231,77 +231,91 @@ export async function getSectionCardStats(clubId: string): Promise<SectionCardSt
 
 /**
  * Fetch announcements for a club (admin panel).
+ * Cached per club; invalidated via tagAnnouncements(clubId).
  */
 export async function getClubAnnouncements(clubId: string) {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('announcements')
-    .select(
-      `
-      id, title, body, is_pinned, published_at, announcement_type, is_dismissible,
-      creator:users!announcements_created_by_fkey(full_name)
-    `,
-    )
-    .eq('club_id', clubId)
-    .order('is_pinned', { ascending: false })
-    .order('published_at', { ascending: false });
+  return unstable_cache(
+    async () => {
+      const supabase = await createClient();
+      const { data, error } = await supabase
+        .from('announcements')
+        .select(
+          `
+          id, title, body, is_pinned, published_at, announcement_type, is_dismissible,
+          creator:users!announcements_created_by_fkey(full_name)
+        `,
+        )
+        .eq('club_id', clubId)
+        .order('is_pinned', { ascending: false })
+        .order('published_at', { ascending: false });
 
-  if (error?.message) {
-    console.error('Error fetching announcements:', error.message, error.code, error.details);
-    return [];
-  }
+      if (error?.message) {
+        console.error('Error fetching announcements:', error.message, error.code, error.details);
+        return [];
+      }
 
-  return (data ?? []).map((a) => {
-    const creator = a.creator as unknown as {
-      full_name: string;
-    } | null;
-    return {
-      id: a.id,
-      title: a.title,
-      body: a.body,
-      is_pinned: a.is_pinned,
-      published_at: a.published_at,
-      announcement_type: (a.announcement_type as AnnouncementType) ?? 'general',
-      is_dismissible: a.is_dismissible,
-      created_by_name: creator?.full_name ?? null,
-    };
-  });
+      return (data ?? []).map((a) => {
+        const creator = a.creator as unknown as {
+          full_name: string;
+        } | null;
+        return {
+          id: a.id,
+          title: a.title,
+          body: a.body,
+          is_pinned: a.is_pinned,
+          published_at: a.published_at,
+          announcement_type: (a.announcement_type as AnnouncementType) ?? 'general',
+          is_dismissible: a.is_dismissible,
+          created_by_name: creator?.full_name ?? null,
+        };
+      });
+    },
+    ['club-announcements', clubId],
+    { tags: [tagAnnouncements(clubId)], revalidate: 300 },
+  )();
 }
 
 /**
  * Fetch ride templates for a club.
+ * Cached per club; invalidated via tagManage(clubId).
  */
 export async function getClubRideTemplates(clubId: string) {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('ride_templates')
-    .select(
-      `
-      id, title, description, day_of_week, start_time, is_drop_ride, is_active, recurrence,
-      default_distance_km, default_capacity, default_route_url, default_route_name,
-      default_start_location_name,
-      season_start_date, season_end_date,
-      pace_group:pace_groups(name)
-    `,
-    )
-    .eq('club_id', clubId)
-    .order('is_active', { ascending: false })
-    .order('title');
+  return unstable_cache(
+    async () => {
+      const supabase = await createClient();
+      const { data, error } = await supabase
+        .from('ride_templates')
+        .select(
+          `
+          id, title, description, day_of_week, start_time, is_drop_ride, is_active, recurrence,
+          default_distance_km, default_capacity, default_route_url, default_route_name,
+          default_start_location_name,
+          season_start_date, season_end_date,
+          pace_group:pace_groups(name)
+        `,
+        )
+        .eq('club_id', clubId)
+        .order('is_active', { ascending: false })
+        .order('title');
 
-  if (error?.message) {
-    console.error('Error fetching ride templates:', error.message, error.code, error.details);
-    return [];
-  }
+      if (error?.message) {
+        console.error('Error fetching ride templates:', error.message, error.code, error.details);
+        return [];
+      }
 
-  return (data ?? []).map((t) => {
-    const pace = t.pace_group as unknown as { name: string } | null;
-    const raw = t as Record<string, unknown>;
-    return {
-      ...t,
-      start_location_name: (raw.default_start_location_name as string) ?? null,
-      pace_group_name: pace?.name ?? null,
-    };
-  });
+      return (data ?? []).map((t) => {
+        const pace = t.pace_group as unknown as { name: string } | null;
+        const raw = t as Record<string, unknown>;
+        return {
+          ...t,
+          start_location_name: (raw.default_start_location_name as string) ?? null,
+          pace_group_name: pace?.name ?? null,
+        };
+      });
+    },
+    ['club-ride-templates', clubId],
+    { tags: [tagManage(clubId)], revalidate: 600 },
+  )();
 }
 
 /**
@@ -541,27 +555,25 @@ export async function getClubStats(clubId: string): Promise<ClubStats> {
   weekAgo.setDate(weekAgo.getDate() - 7);
   const weekAgoStr = weekAgo.toISOString();
 
-  // Total rides for this club (non-cancelled)
-  const { count: totalRides } = await supabase
-    .from('rides')
-    .select('*', { count: 'exact', head: true })
-    .eq('club_id', clubId)
-    .neq('status', 'cancelled');
-
-  // Active members
-  const { count: activeMembers } = await supabase
-    .from('club_memberships')
-    .select('*', { count: 'exact', head: true })
-    .eq('club_id', clubId)
-    .eq('status', 'active');
-
-  // Signups this week
-  const { count: signupsThisWeek } = await supabase
-    .from('ride_signups')
-    .select('*, ride:rides!inner(club_id)', { count: 'exact', head: true })
-    .eq('ride.club_id', clubId)
-    .eq('status', 'confirmed')
-    .gte('signed_up_at', weekAgoStr);
+  const [{ count: totalRides }, { count: activeMembers }, { count: signupsThisWeek }] =
+    await Promise.all([
+      supabase
+        .from('rides')
+        .select('*', { count: 'exact', head: true })
+        .eq('club_id', clubId)
+        .neq('status', 'cancelled'),
+      supabase
+        .from('club_memberships')
+        .select('*', { count: 'exact', head: true })
+        .eq('club_id', clubId)
+        .eq('status', 'active'),
+      supabase
+        .from('ride_signups')
+        .select('*, ride:rides!inner(club_id)', { count: 'exact', head: true })
+        .eq('ride.club_id', clubId)
+        .eq('status', 'confirmed')
+        .gte('signed_up_at', weekAgoStr),
+    ]);
 
   return {
     totalRides: totalRides ?? 0,

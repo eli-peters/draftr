@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, Suspense, use } from 'react';
 import {
   addMonths,
   subMonths,
@@ -15,12 +15,13 @@ import {
 import { CalendarHeader } from './calendar-header';
 import { CalendarGrid } from './calendar-grid';
 import { AgendaZone } from './agenda-zone';
+import { SkeletonGroup } from '@/components/motion/skeleton-group';
 import type { CalendarRide } from '@/lib/rides/queries';
 import type { RideWithDetails } from '@/types/database';
 
 interface RidesCalendarProps {
   initialMonthRides: CalendarRide[];
-  upcomingRides: RideWithDetails[];
+  upcomingRidesPromise: Promise<RideWithDetails[]>;
   timezone: string;
 }
 
@@ -38,7 +39,37 @@ function monthCacheKey(date: Date): string {
 const SWIPE_THRESHOLD = 50;
 const EDGE_ZONE = 24;
 
-export function RidesCalendar({ initialMonthRides, upcomingRides, timezone }: RidesCalendarProps) {
+function AgendaSkeleton() {
+  return (
+    <div className="mt-6">
+      <SkeletonGroup>
+        <div className="h-5 w-40 skeleton-shimmer rounded" />
+        {[0, 1].map((i) => (
+          <div key={i} className="h-36 skeleton-shimmer rounded-(--card-radius)" />
+        ))}
+      </SkeletonGroup>
+    </div>
+  );
+}
+
+interface AgendaStreamingProps {
+  upcomingRidesPromise: Promise<RideWithDetails[]>;
+  selectedDate: Date;
+  timezone: string;
+}
+
+function AgendaStreaming({ upcomingRidesPromise, selectedDate, timezone }: AgendaStreamingProps) {
+  const upcomingRides = use(upcomingRidesPromise);
+  const anchorKey = toDateKey(selectedDate);
+  const listedRides = upcomingRides.filter((ride) => ride.ride_date >= anchorKey);
+  return <AgendaZone rides={listedRides} selectedDate={selectedDate} timezone={timezone} />;
+}
+
+export function RidesCalendar({
+  initialMonthRides,
+  upcomingRidesPromise,
+  timezone,
+}: RidesCalendarProps) {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(startOfMonth(today));
   const [selectedDate, setSelectedDate] = useState<Date>(() => startOfDay(today));
@@ -150,9 +181,6 @@ export function RidesCalendar({ initialMonthRides, upcomingRides, timezone }: Ri
     [goNextMonth, goPrevMonth],
   );
 
-  const anchorKey = toDateKey(selectedDate);
-  const listedRides = upcomingRides.filter((ride) => ride.ride_date >= anchorKey);
-
   return (
     <div ref={containerRef} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <CalendarHeader
@@ -171,7 +199,13 @@ export function RidesCalendar({ initialMonthRides, upcomingRides, timezone }: Ri
         onSelectDate={handleSelectDate}
       />
 
-      <AgendaZone rides={listedRides} selectedDate={selectedDate} timezone={timezone} />
+      <Suspense fallback={<AgendaSkeleton />}>
+        <AgendaStreaming
+          upcomingRidesPromise={upcomingRidesPromise}
+          selectedDate={selectedDate}
+          timezone={timezone}
+        />
+      </Suspense>
     </div>
   );
 }

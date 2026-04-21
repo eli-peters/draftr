@@ -1,6 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { createClient, getUser } from '@/lib/supabase/server';
 import { invalidateProfile } from '@/lib/cache-tags';
 import { appContent } from '@/content/app';
@@ -150,7 +149,6 @@ export async function updateUserPreferences(prefs: Partial<UserPreferences>) {
   if (error) return { error: error.message };
 
   invalidateProfile(user.id);
-  revalidatePath('/settings');
   return { success: true };
 }
 
