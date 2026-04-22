@@ -1,5 +1,8 @@
+'use client';
+
 import { MapPin } from '@phosphor-icons/react/dist/ssr';
 import { buildDirectionsUrl } from '@/lib/maps/directions';
+import { useMapsPlatform } from '@/hooks/use-maps-platform';
 import { shortenAddress } from '@/lib/utils';
 import { appContent } from '@/content/app';
 
@@ -23,12 +26,14 @@ export function StartLocationDisplay({
   isGeocoding,
   hasRoute,
 }: StartLocationDisplayProps) {
+  const platform = useMapsPlatform();
+
   if (isGeocoding) {
     return <p className="text-status-label text-muted-foreground">{form.startLocationFromRoute}</p>;
   }
 
   if (name) {
-    const directionsUrl = buildDirectionsUrl({ latitude, longitude, address, name });
+    const directionsUrl = buildDirectionsUrl({ latitude, longitude, address, name, platform });
     const Wrapper = directionsUrl ? 'a' : 'div';
     const wrapperProps = directionsUrl
       ? { href: directionsUrl, target: '_blank' as const, rel: 'noopener noreferrer' }
