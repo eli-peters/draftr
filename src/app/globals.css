@@ -646,8 +646,6 @@
   body {
     @apply bg-background text-foreground;
     text-rendering: optimizeLegibility;
-    user-select: none;
-    -webkit-user-select: none;
     -webkit-touch-callout: none;
     -webkit-tap-highlight-color: transparent;
   }
@@ -664,6 +662,11 @@
   }
 
   a,
+  button {
+    touch-action: manipulation;
+  }
+
+  a,
   button,
   [role='button'],
   [data-slot='filter-chip'],
@@ -677,6 +680,11 @@
   }
 
   @media (pointer: coarse) {
+    body {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
     /* 16px minimum prevents iOS auto-zoom on input focus */
     input,
     select,
