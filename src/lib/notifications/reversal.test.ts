@@ -10,7 +10,6 @@ const mocks = vi.hoisted(() => {
   return chain;
 });
 
-vi.mock('server-only', () => ({}));
 vi.mock('@/lib/cache-tags', () => ({ invalidateNotifications: mocks.invalidateNotifications }));
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({

@@ -12,6 +12,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // `server-only` is unreachable from test files under pnpm's strict
+      // hoisting — stub it so server modules can be imported directly.
+      'server-only': path.resolve(__dirname, './src/test/stubs/server-only.ts'),
     },
   },
 });
