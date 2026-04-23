@@ -3,6 +3,38 @@ import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { fetchForecastForRide } from '@/lib/weather/api';
 import { DEFAULT_POP_THRESHOLD, DEFAULT_TIMEZONE } from '@/config/weather';
+import { createNotifications } from '@/lib/notifications/create';
+import { appContent } from '@/content/app';
+
+/**
+ * Notify all active signups when a ride transitions into weather_watch status.
+ * Called from both the on-demand single-ride sync and the batch cron route.
+ * Fire-and-forget — failures are logged inside `createNotifications`.
+ */
+export async function notifyWeatherWatchTransition(
+  rideId: string,
+  rideTitle: string,
+): Promise<void> {
+  const admin = createAdminClient();
+  const { data: signups } = await admin
+    .from('ride_signups')
+    .select('user_id')
+    .eq('ride_id', rideId)
+    .in('status', ['confirmed', 'waitlisted', 'checked_in']);
+
+  if (!signups || signups.length === 0) return;
+
+  const { weatherWatch } = appContent.notificationMessages;
+  await createNotifications(
+    signups.map((s) => ({
+      userId: s.user_id,
+      type: 'weather_watch' as const,
+      title: weatherWatch.title(rideTitle),
+      body: weatherWatch.body,
+      rideId,
+    })),
+  );
+}
 
 /**
  * Fetch and store weather for a single ride on-demand.
@@ -20,7 +52,7 @@ export async function syncWeatherForRide(rideId: string): Promise<void> {
       .from('rides')
       .select(
         `
-        id, ride_date, start_time, status, weather_watch_auto, club_id,
+        id, title, ride_date, start_time, status, weather_watch_auto, club_id,
         start_latitude, start_longitude,
         club:clubs(timezone)
       `,
@@ -76,6 +108,7 @@ export async function syncWeatherForRide(rideId: string): Promise<void> {
         .from('rides')
         .update({ status: 'weather_watch', weather_watch_auto: true })
         .eq('id', ride.id);
+      await notifyWeatherWatchTransition(ride.id, ride.title);
     } else if (
       forecast.pop < popThreshold &&
       ride.status === 'weather_watch' &&

@@ -4,6 +4,7 @@ import { formatDistanceToNow } from 'date-fns';
 import {
   CloudRain,
   CalendarCheck,
+  CalendarPlus,
   XCircle,
   ArrowCircleUp,
   Megaphone,
@@ -15,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { appContent } from '@/content/app';
 
 export type NotificationType = keyof typeof appContent.notifications.types;
+export type NotificationPriority = 'urgent' | 'normal' | 'low';
 
 export interface Notification {
   id: string;
@@ -23,11 +25,13 @@ export interface Notification {
   body: string | null;
   ride_id: string | null;
   is_read: boolean;
+  priority: NotificationPriority;
   sent_at: string;
 }
 
 export const notificationIcons: Record<NotificationType, React.ElementType> = {
   ride_update: Info,
+  new_ride: CalendarPlus,
   ride_cancelled: XCircle,
   weather_watch: CloudRain,
   signup_confirmed: CalendarCheck,
@@ -38,16 +42,17 @@ export const notificationIcons: Record<NotificationType, React.ElementType> = {
   leader_promoted: ArrowCircleUp,
 };
 
-export const notificationStyles: Record<NotificationType, string> = {
-  ride_update: 'text-primary bg-primary/10',
-  ride_cancelled: 'text-destructive bg-destructive/10',
-  weather_watch: 'text-warning bg-warning/10',
-  signup_confirmed: 'text-success bg-success/10',
-  waitlist_promoted: 'text-primary bg-primary/10',
-  waitlist_joined: 'text-warning bg-warning/10',
-  announcement: 'text-foreground bg-muted',
-  rider_removed: 'text-destructive bg-destructive/10',
-  leader_promoted: 'text-success bg-success/10',
+const notificationAccent: Record<NotificationType, string> = {
+  ride_update: 'text-muted-foreground',
+  new_ride: 'text-success',
+  ride_cancelled: 'text-destructive',
+  weather_watch: 'text-warning',
+  signup_confirmed: 'text-success',
+  waitlist_promoted: 'text-success',
+  waitlist_joined: 'text-muted-foreground',
+  announcement: 'text-muted-foreground',
+  rider_removed: 'text-destructive',
+  leader_promoted: 'text-success',
 };
 
 interface NotificationItemProps {
@@ -56,36 +61,27 @@ interface NotificationItemProps {
 }
 
 /**
- * Shared notification item used in both the full page and the header dropdown.
- * `compact` mode reduces padding and hides the body text for the dropdown.
+ * Shared notification item used in both the full page and the header popover.
+ * `compact` reduces padding + title size and hides the body.
  */
 export function NotificationItem({ notification, compact }: NotificationItemProps) {
   const Icon = notificationIcons[notification.type];
-  const iconStyle = notificationStyles[notification.type];
+  const accent = notificationAccent[notification.type];
   const timeAgo = formatDistanceToNow(new Date(notification.sent_at), { addSuffix: true });
 
   return (
-    <div
-      className={cn(
-        'flex gap-3 transition-opacity duration-(--duration-fast)',
-        compact && 'px-3 py-2.5',
-      )}
-    >
-      {/* Icon */}
-      <div
-        className={`flex ${compact ? 'h-7 w-7' : 'h-10 w-10'} shrink-0 items-center justify-center rounded-xl ${iconStyle}`}
-      >
-        <Icon className={compact ? 'h-3.5 w-3.5' : 'h-4.5 w-4.5'} />
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2">
+    <div className={cn('flex items-start gap-3', compact && 'px-3 py-2.5')}>
+      <Icon
+        weight="fill"
+        aria-hidden="true"
+        className={cn('mt-0.5 shrink-0', compact ? 'size-4' : 'size-5', accent)}
+      />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start gap-2">
           <h3
             className={cn(
-              'leading-tight text-foreground',
-              compact ? 'text-xs line-clamp-1' : 'text-sm line-clamp-2',
-              notification.is_read ? 'font-medium' : 'font-semibold',
+              'min-w-0 flex-1 font-normal leading-snug text-foreground',
+              compact ? 'text-sm line-clamp-1' : 'text-base line-clamp-2',
             )}
           >
             {notification.title}
@@ -93,20 +89,19 @@ export function NotificationItem({ notification, compact }: NotificationItemProp
           {!notification.is_read && (
             <span
               aria-hidden="true"
-              className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-badge-notification-bg"
+              className={cn(
+                'mt-1.5 shrink-0 rounded-full bg-badge-notification-bg',
+                compact ? 'size-1.5' : 'size-2',
+              )}
             />
           )}
         </div>
         {!compact && notification.body && (
-          <p className="mt-1 text-compact text-muted-foreground leading-relaxed">
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground line-clamp-2">
             {notification.body}
           </p>
         )}
-        <p
-          className={`${compact ? 'mt-1' : 'mt-2'} text-xs font-medium uppercase tracking-wide text-muted-foreground`}
-        >
-          {timeAgo}
-        </p>
+        <p className={cn('text-xs text-muted-foreground', compact ? 'mt-1' : 'mt-2')}>{timeAgo}</p>
       </div>
     </div>
   );

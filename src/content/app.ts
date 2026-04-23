@@ -732,6 +732,7 @@ export const appContent = {
     },
     types: {
       ride_update: 'Ride Update',
+      new_ride: 'New Ride',
       ride_cancelled: 'Ride Cancelled',
       weather_watch: 'Weather Watch',
       signup_confirmed: 'Sign-Up Confirmed',
@@ -1151,6 +1152,10 @@ export const appContent = {
     riderRemoved: {
       title: (rideTitle: string) => `Removed from ${rideTitle}`,
       body: 'A ride leader removed you from this ride. Your spot has been released.',
+    },
+    weatherWatch: {
+      title: (rideTitle: string) => `Weather watch: ${rideTitle}`,
+      body: 'The forecast looks rough for this ride. Check the ride page for details.',
     },
   },
 } as const;

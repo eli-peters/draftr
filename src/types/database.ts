@@ -196,6 +196,7 @@ export interface Notification {
   ride_id: string | null;
   is_read: boolean;
   channel: 'push' | 'email' | 'both';
+  priority: 'urgent' | 'normal' | 'low';
   sent_at: string;
 }
 

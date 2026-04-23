@@ -4,7 +4,6 @@ import {
   invalidateRideSignup,
   invalidateRideMutation,
   invalidateRideDetail,
-  invalidateNotifications,
 } from '@/lib/cache-tags';
 import { createClient, getUser } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -14,6 +13,8 @@ import { getRideAvailability } from '@/lib/rides/lifecycle';
 import { estimateEndTime } from '@/lib/rides/estimate-duration';
 import { todayInTimezone } from '@/config/formatting';
 import { syncWeatherForRide } from '@/lib/weather/sync';
+import { createNotification, createNotifications } from '@/lib/notifications/create';
+import { removeUnreadReversible } from '@/lib/notifications/reversal';
 
 const { errors, common, notificationMessages: notif, rides: ridesContent } = appContent;
 
@@ -137,43 +138,26 @@ export async function signUpForRide(rideId: string) {
     return { error: error.message };
   }
 
-  // Create notification for the rider
-  // Uses admin client — RLS INSERT policy doesn't allow riders to insert for themselves
   if (!isFull) {
-    const admin = createAdminClient();
-    const { error: notifError } = await admin.from('notifications').insert({
-      user_id: user.id,
+    await createNotification({
+      userId: user.id,
       type: 'signup_confirmed',
       title: notif.signupConfirmed.title(ride.title),
-      body: null,
-      ride_id: rideId,
-      channel: 'push',
+      rideId,
     });
-    if (notifError?.message) {
-      console.error('Failed to create signup notification:', notifError.message);
-    }
-    invalidateNotifications(user.id);
   }
 
-  // Notify the ride leader when a rider joins the waitlist
-  // Uses admin client — RLS doesn't allow riders to insert notifications for other users
   if (isFull) {
-    const admin = createAdminClient();
-    const { error: notifError } = await admin.from('notifications').insert({
-      user_id: ride.created_by,
+    await createNotification({
+      userId: ride.created_by,
       type: 'waitlist_joined',
       title: notif.waitlistJoined.title(ride.title),
       body: notif.waitlistJoined.body,
-      ride_id: rideId,
-      channel: 'push',
+      rideId,
     });
-    if (notifError?.message) {
-      console.error('Failed to create waitlist notification:', notifError.message);
-    }
   }
 
   invalidateRideSignup(rideId, user.id);
-  if (isFull) invalidateNotifications(ride.created_by);
   return { success: true, status: isFull ? 'waitlisted' : 'confirmed' };
 }
 
@@ -242,6 +226,7 @@ export async function cancelSignUp(rideId: string) {
     .single();
 
   const wasConfirmed = currentSignup?.status === 'confirmed';
+  const wasWaitlisted = currentSignup?.status === 'waitlisted';
 
   const { error } = await supabase
     .from('ride_signups')
@@ -254,6 +239,19 @@ export async function cancelSignUp(rideId: string) {
 
   if (error) {
     return { error: error.message };
+  }
+
+  // Action-reversal dedup: the user just undid the action that produced these
+  // unread notifications, so remove them rather than leaving stale spam.
+  if (wasConfirmed) {
+    await removeUnreadReversible({ userId: user.id, type: 'signup_confirmed', rideId });
+  }
+  if (wasWaitlisted && ride?.created_by) {
+    await removeUnreadReversible({
+      userId: ride.created_by,
+      type: 'waitlist_joined',
+      rideId,
+    });
   }
 
   // Co-leader leaving — remove from ride_leaders table so they don't ghost-block succession
@@ -321,19 +319,15 @@ export async function cancelSignUp(rideId: string) {
         .eq('ride_id', rideId)
         .eq('user_id', firstCoLeader.user_id);
 
-      // Notify the promoted leader (ride.title already fetched above)
       if (ride?.title) {
-        await admin.from('notifications').insert({
-          user_id: firstCoLeader.user_id,
+        await createNotification({
+          userId: firstCoLeader.user_id,
           type: 'leader_promoted',
           title: notif.leaderPromoted.title(ride.title),
           body: notif.leaderPromoted.body,
-          ride_id: rideId,
-          channel: 'push',
+          rideId,
         });
       }
-
-      invalidateNotifications(firstCoLeader.user_id);
     }
   }
 
@@ -358,26 +352,21 @@ export async function cancelSignUp(rideId: string) {
         })
         .eq('id', nextWaitlisted.id);
 
-      // Notify the promoted rider
-      // Uses admin client — the canceling rider can't insert notifications for other users via RLS
-      const { data: ride } = await supabase.from('rides').select('title').eq('id', rideId).single();
+      const { data: promotedRide } = await supabase
+        .from('rides')
+        .select('title')
+        .eq('id', rideId)
+        .single();
 
-      if (ride) {
-        const admin = createAdminClient();
-        const { error: notifError } = await admin.from('notifications').insert({
-          user_id: nextWaitlisted.user_id,
+      if (promotedRide) {
+        await createNotification({
+          userId: nextWaitlisted.user_id,
           type: 'waitlist_promoted',
-          title: notif.waitlistPromoted.title(ride.title),
+          title: notif.waitlistPromoted.title(promotedRide.title),
           body: notif.waitlistPromoted.body,
-          ride_id: rideId,
-          channel: 'push',
+          rideId,
         });
-        if (notifError?.message) {
-          console.error('Failed to create waitlist promotion notification:', notifError.message);
-        }
       }
-
-      invalidateNotifications(nextWaitlisted.user_id);
     }
   }
 
@@ -475,34 +464,28 @@ export async function removeRiderFromRide(rideId: string, targetUserId: string) 
         .eq('id', nextWaitlisted.id);
 
       if (rideInfo) {
-        const admin = createAdminClient();
-        await admin.from('notifications').insert({
-          user_id: nextWaitlisted.user_id,
+        await createNotification({
+          userId: nextWaitlisted.user_id,
           type: 'waitlist_promoted',
           title: notif.waitlistPromoted.title(rideInfo.title),
           body: notif.waitlistPromoted.body,
-          ride_id: rideId,
-          channel: 'push',
+          rideId,
         });
       }
     }
   }
 
-  // Notify the removed rider
   if (rideInfo) {
-    const admin = createAdminClient();
-    await admin.from('notifications').insert({
-      user_id: targetUserId,
+    await createNotification({
+      userId: targetUserId,
       type: 'rider_removed',
       title: notif.riderRemoved.title(rideInfo.title),
       body: notif.riderRemoved.body,
-      ride_id: rideId,
-      channel: 'push',
+      rideId,
     });
   }
 
   invalidateRideSignup(rideId, targetUserId);
-  invalidateNotifications(targetUserId);
   return { success: true };
 }
 
@@ -710,25 +693,17 @@ export async function createRide(data: CreateRideData) {
     .eq('status', 'active');
 
   if (clubMembers && clubMembers.length > 0) {
-    const notifications = clubMembers
-      .filter((m) => m.user_id !== user.id && !coLeaderIds.includes(m.user_id))
-      .map((m) => ({
-        user_id: m.user_id,
-        type: 'ride_update',
-        title: notif.newRidePosted.title(data.title),
-        body: notif.newRidePosted.body,
-        ride_id: ride.id,
-        channel: 'push',
-      }));
-
-    if (notifications.length > 0) {
-      const admin = createAdminClient();
-      const { error: notifError } = await admin.from('notifications').insert(notifications);
-      if (notifError?.message) {
-        console.error('Failed to create new ride notifications:', notifError.message);
-      }
-      notifications.forEach((n) => invalidateNotifications(n.user_id));
-    }
+    await createNotifications(
+      clubMembers
+        .filter((m) => m.user_id !== user.id && !coLeaderIds.includes(m.user_id))
+        .map((m) => ({
+          userId: m.user_id,
+          type: 'new_ride' as const,
+          title: notif.newRidePosted.title(data.title),
+          body: notif.newRidePosted.body,
+          rideId: ride.id,
+        })),
+    );
   }
 
   // Fetch weather for the new ride (errors swallowed internally by syncWeatherForRide)
@@ -856,25 +831,17 @@ export async function updateRide(rideId: string, data: UpdateRideData) {
     .in('status', ['confirmed', 'waitlisted']);
 
   if (signups && signups.length > 0) {
-    const notifications = signups
-      .filter((s) => s.user_id !== user.id)
-      .map((s) => ({
-        user_id: s.user_id,
-        type: 'ride_update',
-        title: notif.rideUpdated.title(data.title),
-        body: notif.rideUpdated.body,
-        ride_id: rideId,
-        channel: 'push',
-      }));
-
-    if (notifications.length > 0) {
-      const admin = createAdminClient();
-      const { error: notifError } = await admin.from('notifications').insert(notifications);
-      if (notifError?.message) {
-        console.error('Failed to create ride update notifications:', notifError.message);
-      }
-      notifications.forEach((n) => invalidateNotifications(n.user_id));
-    }
+    await createNotifications(
+      signups
+        .filter((s) => s.user_id !== user.id)
+        .map((s) => ({
+          userId: s.user_id,
+          type: 'ride_update' as const,
+          title: notif.rideUpdated.title(data.title),
+          body: notif.rideUpdated.body,
+          rideId,
+        })),
+    );
   }
 
   // Re-sync weather in case date/time/location changed (errors swallowed internally)
@@ -1002,18 +969,16 @@ export async function cancelRide(rideId: string, reason: string) {
     .in('status', ['confirmed', 'waitlisted']);
 
   if (signups && signups.length > 0 && ride) {
-    const notifications = signups.map((s) => ({
-      user_id: s.user_id,
-      type: 'ride_cancelled',
-      title: notif.rideCancelled.title(ride.title),
-      body: reason || notif.rideCancelled.defaultBody,
-      ride_id: rideId,
-      channel: 'both' as const,
-    }));
-
-    const admin = createAdminClient();
-    await admin.from('notifications').insert(notifications);
-    signups.forEach((s) => invalidateNotifications(s.user_id));
+    await createNotifications(
+      signups.map((s) => ({
+        userId: s.user_id,
+        type: 'ride_cancelled' as const,
+        title: notif.rideCancelled.title(ride.title),
+        body: reason || notif.rideCancelled.defaultBody,
+        rideId,
+        channel: 'both' as const,
+      })),
+    );
   }
 
   // Cancel all active signups for this ride

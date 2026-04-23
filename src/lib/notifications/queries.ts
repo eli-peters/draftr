@@ -14,7 +14,7 @@ export async function getUserNotifications(userId: string): Promise<Notification
 
       const { data, error } = await supabase
         .from('notifications')
-        .select('id, type, title, body, ride_id, is_read, sent_at')
+        .select('id, type, title, body, ride_id, is_read, priority, sent_at')
         .eq('user_id', userId)
         .order('sent_at', { ascending: false })
         .limit(50);

@@ -5,11 +5,10 @@ import { createClient, getUser } from '@/lib/supabase/server';
 import {
   invalidateAnnouncements,
   invalidateManage,
-  invalidateNotifications,
   invalidatePaceGroups,
   TAG_RIDES,
 } from '@/lib/cache-tags';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createNotifications } from '@/lib/notifications/create';
 import { appContent } from '@/content/app';
 import type { AnnouncementType, MemberRole, MemberStatus } from '@/types/database';
 import { parseLocalDate } from '@/config/formatting';
@@ -202,22 +201,16 @@ export async function createAnnouncement(
     .eq('status', 'active');
 
   if (members && members.length > 0) {
-    const notifications = members
-      .filter((m) => m.user_id !== user.id)
-      .map((m) => ({
-        user_id: m.user_id,
-        type: 'announcement',
-        title: data.title,
-        body: data.body.slice(0, 200),
-        ride_id: null,
-        channel: 'push',
-      }));
-
-    if (notifications.length > 0) {
-      const admin = createAdminClient();
-      await admin.from('notifications').insert(notifications);
-      notifications.forEach((n) => invalidateNotifications(n.user_id));
-    }
+    await createNotifications(
+      members
+        .filter((m) => m.user_id !== user.id)
+        .map((m) => ({
+          userId: m.user_id,
+          type: 'announcement' as const,
+          title: data.title,
+          body: data.body.slice(0, 200),
+        })),
+    );
   }
 
   invalidateAnnouncements(clubId);

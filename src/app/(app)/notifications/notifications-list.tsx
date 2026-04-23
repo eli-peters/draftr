@@ -4,14 +4,11 @@ import Link from 'next/link';
 import { isToday, isYesterday, isThisWeek, format } from 'date-fns';
 import { BellSimple } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeader } from '@/components/layout/page-header';
 import { SectionHeading } from '@/components/ui/section-heading';
-import { cn, formatBadgeCount } from '@/lib/utils';
 import { NotificationItem } from '@/components/notifications/notification-item';
 import { markNotificationRead, markAllNotificationsRead } from '@/lib/notifications/actions';
-import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
 import type { Notification } from '@/components/notifications/notification-item';
 
@@ -44,6 +41,8 @@ interface NotificationsListProps {
   emptyDescription: string;
 }
 
+const rowClass = '-mx-5 block px-5 py-3 transition-colors hover:bg-muted/40 md:-mx-6 md:px-6';
+
 export function NotificationsList({
   notifications,
   heading,
@@ -52,7 +51,6 @@ export function NotificationsList({
   emptyDescription,
 }: NotificationsListProps) {
   const unreadCount = notifications.filter((n) => !n.is_read).length;
-  const displayCount = formatBadgeCount(unreadCount);
 
   async function handleMarkAllRead() {
     await markAllNotificationsRead();
@@ -66,16 +64,7 @@ export function NotificationsList({
     <>
       <PageHeader
         title={heading}
-        badge={
-          unreadCount > 0 ? (
-            <span
-              aria-label={appContent.notifications.badge.ariaLabel(displayCount)}
-              className="flex h-6 min-w-6 items-center justify-center rounded-full bg-badge-notification-bg px-2 text-sm font-bold text-badge-notification-text tabular-nums"
-            >
-              {displayCount}
-            </span>
-          ) : undefined
-        }
+        className="items-center"
         actions={
           unreadCount > 0 ? (
             <Button
@@ -98,38 +87,27 @@ export function NotificationsList({
           className="mt-12 flex-1"
         />
       ) : (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-card-stack">
           {groupByDay(notifications).map((group) => (
             <section key={group.label} className="flex flex-col gap-2">
               <SectionHeading as="h2" className="px-1">
                 {group.label}
               </SectionHeading>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col">
                 {group.items.map((notification) => {
-                  const content = (
-                    <Card
-                      className={cn(
-                        'relative p-5 pl-6 transition-opacity',
-                        notification.is_read
-                          ? 'opacity-muted'
-                          : 'cursor-pointer before:absolute before:left-0 before:top-3 before:bottom-3 before:w-[3px] before:rounded-r-full before:bg-(--badge-notification-bg)',
-                      )}
-                      onClick={
-                        !notification.is_read ? () => handleMarkRead(notification.id) : undefined
-                      }
-                    >
-                      <NotificationItem notification={notification} />
-                    </Card>
-                  );
-
                   const href = getNotificationHref(notification);
+                  const onClick = !notification.is_read
+                    ? () => handleMarkRead(notification.id)
+                    : undefined;
 
                   return href ? (
-                    <Link key={notification.id} href={href} className="block">
-                      {content}
+                    <Link key={notification.id} href={href} className={rowClass} onClick={onClick}>
+                      <NotificationItem notification={notification} />
                     </Link>
                   ) : (
-                    <div key={notification.id}>{content}</div>
+                    <div key={notification.id} className={rowClass} onClick={onClick}>
+                      <NotificationItem notification={notification} />
+                    </div>
                   );
                 })}
               </div>

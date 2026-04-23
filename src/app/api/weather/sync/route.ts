@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { fetchCurrentWeather, fetchForecastForRide } from '@/lib/weather/api';
 import type { RideForecastData } from '@/lib/weather/api';
 import { DEFAULT_POP_THRESHOLD, DEFAULT_TIMEZONE, FORECAST_MAX_DAYS } from '@/config/weather';
+import { notifyWeatherWatchTransition } from '@/lib/weather/sync';
 
 /**
  * Weather sync API route — called by Vercel Cron daily at 6 AM UTC.
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
       .from('rides')
       .select(
         `
-        id, ride_date, start_time, end_time, status, weather_watch_auto, club_id,
+        id, title, ride_date, start_time, end_time, status, weather_watch_auto, club_id,
         start_latitude, start_longitude,
         club:clubs(timezone)
       `,
@@ -175,6 +176,7 @@ export async function POST(request: Request) {
               .from('rides')
               .update({ status: 'weather_watch', weather_watch_auto: true })
               .eq('id', ride.id);
+            await notifyWeatherWatchTransition(ride.id, ride.title);
             results.watchSet++;
           } else if (
             forecast.pop < popThreshold &&
