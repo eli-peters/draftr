@@ -19,6 +19,48 @@ import { removeUnreadReversible } from '@/lib/notifications/reversal';
 const { errors, common, notificationMessages: notif, rides: ridesContent } = appContent;
 
 /**
+ * Promote the oldest waitlisted rider to confirmed and notify them.
+ * No-op if the ride has no waitlist. `rideTitle` can be passed to skip a
+ * redundant lookup when the caller already has it.
+ */
+async function promoteNextWaitlisted(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  rideId: string,
+  rideTitle?: string,
+): Promise<void> {
+  const { data: nextWaitlisted } = await supabase
+    .from('ride_signups')
+    .select('id, user_id')
+    .eq('ride_id', rideId)
+    .eq('status', 'waitlisted')
+    .order('signed_up_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (!nextWaitlisted) return;
+
+  await supabase
+    .from('ride_signups')
+    .update({ status: 'confirmed', waitlist_position: null })
+    .eq('id', nextWaitlisted.id);
+
+  let title = rideTitle;
+  if (!title) {
+    const { data: ride } = await supabase.from('rides').select('title').eq('id', rideId).single();
+    title = ride?.title;
+  }
+  if (!title) return;
+
+  await createNotification({
+    userId: nextWaitlisted.user_id,
+    type: 'waitlist_promoted',
+    title: notif.waitlistPromoted.title(title),
+    body: notif.waitlistPromoted.body,
+    rideId,
+  });
+}
+
+/**
  * Verify the caller has permission to modify a ride.
  * Returns an error string if denied, null if allowed.
  */
@@ -333,41 +375,7 @@ export async function cancelSignUp(rideId: string) {
 
   // Auto-promote first waitlisted rider if a confirmed spot opened up
   if (wasConfirmed) {
-    const { data: nextWaitlisted } = await supabase
-      .from('ride_signups')
-      .select('id, user_id')
-      .eq('ride_id', rideId)
-      .eq('status', 'waitlisted')
-      .order('signed_up_at', { ascending: true })
-      .limit(1)
-      .maybeSingle();
-
-    if (nextWaitlisted) {
-      // Promote to confirmed
-      await supabase
-        .from('ride_signups')
-        .update({
-          status: 'confirmed',
-          waitlist_position: null,
-        })
-        .eq('id', nextWaitlisted.id);
-
-      const { data: promotedRide } = await supabase
-        .from('rides')
-        .select('title')
-        .eq('id', rideId)
-        .single();
-
-      if (promotedRide) {
-        await createNotification({
-          userId: nextWaitlisted.user_id,
-          type: 'waitlist_promoted',
-          title: notif.waitlistPromoted.title(promotedRide.title),
-          body: notif.waitlistPromoted.body,
-          rideId,
-        });
-      }
-    }
+    await promoteNextWaitlisted(supabase, rideId, ride?.title);
   }
 
   invalidateRideSignup(rideId, user.id);
@@ -448,31 +456,7 @@ export async function removeRiderFromRide(rideId: string, targetUserId: string) 
 
   // Auto-promote first waitlisted rider if a confirmed spot opened up
   if (wasConfirmed) {
-    const { data: nextWaitlisted } = await supabase
-      .from('ride_signups')
-      .select('id, user_id')
-      .eq('ride_id', rideId)
-      .eq('status', 'waitlisted')
-      .order('signed_up_at', { ascending: true })
-      .limit(1)
-      .maybeSingle();
-
-    if (nextWaitlisted) {
-      await supabase
-        .from('ride_signups')
-        .update({ status: 'confirmed', waitlist_position: null })
-        .eq('id', nextWaitlisted.id);
-
-      if (rideInfo) {
-        await createNotification({
-          userId: nextWaitlisted.user_id,
-          type: 'waitlist_promoted',
-          title: notif.waitlistPromoted.title(rideInfo.title),
-          body: notif.waitlistPromoted.body,
-          rideId,
-        });
-      }
-    }
+    await promoteNextWaitlisted(supabase, rideId, rideInfo?.title);
   }
 
   if (rideInfo) {

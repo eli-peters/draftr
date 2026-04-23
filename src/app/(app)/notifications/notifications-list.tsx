@@ -10,6 +10,7 @@ import { SectionHeading } from '@/components/ui/section-heading';
 import { NotificationItem } from '@/components/notifications/notification-item';
 import { markNotificationRead, markAllNotificationsRead } from '@/lib/notifications/actions';
 import { routes } from '@/config/routes';
+import { cn } from '@/lib/utils';
 import type { Notification } from '@/components/notifications/notification-item';
 
 function groupByDay(notifications: Notification[]): { label: string; items: Notification[] }[] {
@@ -41,7 +42,8 @@ interface NotificationsListProps {
   emptyDescription: string;
 }
 
-const rowClass = '-mx-5 block px-5 py-3 transition-colors hover:bg-muted/40 md:-mx-6 md:px-6';
+const rowBase = '-mx-5 block px-5 py-3 transition-colors hover:bg-muted/40 md:-mx-6 md:px-6';
+const rowUnread = 'bg-(--badge-notification-bg)/[0.04]';
 
 export function NotificationsList({
   notifications,
@@ -96,16 +98,38 @@ export function NotificationsList({
               <div className="flex flex-col">
                 {group.items.map((notification) => {
                   const href = getNotificationHref(notification);
-                  const onClick = !notification.is_read
-                    ? () => handleMarkRead(notification.id)
-                    : undefined;
+                  const unread = !notification.is_read;
+                  const rowClass = cn(rowBase, unread && rowUnread);
+                  const onClick = unread ? () => handleMarkRead(notification.id) : undefined;
 
-                  return href ? (
-                    <Link key={notification.id} href={href} className={rowClass} onClick={onClick}>
-                      <NotificationItem notification={notification} />
-                    </Link>
-                  ) : (
-                    <div key={notification.id} className={rowClass} onClick={onClick}>
+                  if (href) {
+                    return (
+                      <Link
+                        key={notification.id}
+                        href={href}
+                        className={rowClass}
+                        onClick={onClick}
+                      >
+                        <NotificationItem notification={notification} />
+                      </Link>
+                    );
+                  }
+
+                  if (unread) {
+                    return (
+                      <button
+                        key={notification.id}
+                        type="button"
+                        className={cn(rowClass, 'w-full text-left')}
+                        onClick={onClick}
+                      >
+                        <NotificationItem notification={notification} />
+                      </button>
+                    );
+                  }
+
+                  return (
+                    <div key={notification.id} className={rowClass}>
                       <NotificationItem notification={notification} />
                     </div>
                   );

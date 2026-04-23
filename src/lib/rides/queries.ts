@@ -43,6 +43,21 @@ type JoinedSignupWithUser = {
   user: Pick<User, 'avatar_url' | 'full_name'>;
 }[];
 
+/** Full signup row as joined under RIDE_WITH_DETAILS_SELECT (adds user_id + waitlist_position). */
+type JoinedRideSignup = {
+  status: string;
+  user_id: string;
+  waitlist_position: number | null;
+  signed_up_at: string;
+  user: Pick<User, 'avatar_url' | 'full_name'>;
+};
+
+/** Leader join shape under RIDE_WITH_DETAILS_SELECT. */
+type JoinedRideLeader = {
+  user_id: string;
+  user: Pick<User, 'full_name' | 'avatar_url'>;
+};
+
 /** Count signups that are confirmed or checked-in. */
 function countActiveSignups(signups: JoinedSignupStatus): number {
   return signups.filter(
@@ -106,21 +121,8 @@ function toActionBarResult(row: ActionBarRideRow) {
 interface RawRideRow extends Ride {
   pace_group: PaceGroup | null;
   creator: Pick<User, 'id' | 'full_name' | 'avatar_url'> | null;
-  ride_signups:
-    | {
-        status: string;
-        user_id: string;
-        waitlist_position: number | null;
-        signed_up_at: string;
-        user: Pick<User, 'avatar_url' | 'full_name'>;
-      }[]
-    | null;
-  ride_leaders:
-    | {
-        user_id: string;
-        user: Pick<User, 'full_name' | 'avatar_url'>;
-      }[]
-    | null;
+  ride_signups: JoinedRideSignup[] | null;
+  ride_leaders: JoinedRideLeader[] | null;
   ride_weather_snapshots: RideWeatherSnapshot | null;
 }
 
@@ -1085,7 +1087,8 @@ function aggregateReactions(
   rows: Array<{
     reaction: string;
     user_id: string;
-    user: unknown;
+    // Supabase !inner on a FK singular target still types the join as an array.
+    user: { full_name: string } | { full_name: string }[];
   }>,
   currentUserId: string | null,
 ): ReactionSummary[] {
@@ -1093,7 +1096,7 @@ function aggregateReactions(
 
   for (const row of rows) {
     const reaction = row.reaction as ReactionType;
-    const userName = (row.user as { full_name: string }).full_name;
+    const userName = Array.isArray(row.user) ? (row.user[0]?.full_name ?? '') : row.user.full_name;
     const existing = map.get(reaction) ?? { count: 0, userNames: [], hasReacted: false };
     existing.count++;
     existing.userNames.push(userName);

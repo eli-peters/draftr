@@ -2,6 +2,7 @@ import { unstable_cache } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { tagProfile } from '@/lib/cache-tags';
+import type { Gender, MemberRole } from '@/types/database';
 
 /**
  * Lightweight profile for the app layout shell (nav avatar, preferences, onboarding check).
@@ -39,7 +40,7 @@ export interface UserProfile {
   bio: string | null;
   phone_number: string | null;
   date_of_birth: string | null;
-  gender: string | null;
+  gender: Gender | null;
   street_address_line_1: string | null;
   street_address_line_2: string | null;
   city: string | null;
@@ -51,7 +52,7 @@ export interface UserProfile {
   emergency_contact_relationship: string | null;
   preferred_pace_group: string | null;
   created_at: string;
-  role: string;
+  role: MemberRole;
   club_name: string | null;
 }
 
@@ -123,7 +124,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
         bio: (u.bio as string | null) ?? null,
         phone_number: (u.phone_number as string | null) ?? null,
         date_of_birth: (u.date_of_birth as string | null) ?? null,
-        gender: (u.gender as string | null) ?? null,
+        gender: (u.gender as Gender | null) ?? null,
         street_address_line_1: (u.street_address_line_1 as string | null) ?? null,
         street_address_line_2: (u.street_address_line_2 as string | null) ?? null,
         city: (u.city as string | null) ?? null,
@@ -135,7 +136,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
         emergency_contact_relationship: (u.emergency_contact_relationship as string | null) ?? null,
         preferred_pace_group: (u.preferred_pace_group as string | null) ?? null,
         created_at: (u.created_at as string) ?? '',
-        role: membership?.role ?? 'rider',
+        role: (membership?.role as MemberRole | undefined) ?? 'rider',
         club_name: club?.name ?? null,
       };
     },

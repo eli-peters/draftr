@@ -36,16 +36,13 @@ const { rides: ridesContent } = appContent;
 // ---------------------------------------------------------------------------
 
 /** overline token: 11→12 px fluid, semibold, uppercase, tracked */
-export const OVERLINE = 'font-sans text-overline font-semibold uppercase tracking-[0.06em]';
+const OVERLINE = 'font-sans text-overline font-semibold uppercase tracking-[0.06em]';
 
 /** body/sm token: 13→14 px fluid, regular weight */
-export const BODY_SM = 'font-sans text-xs';
-
-/** label/sm token: same size as overline, without uppercase */
-export const LABEL_SM = 'font-sans text-overline';
+const BODY_SM = 'font-sans text-xs';
 
 /** caption/sm token: 10→11 px fluid, mono for small data labels */
-export const CAPTION_SM = 'font-sans text-caption-sm';
+const CAPTION_SM = 'font-sans text-caption-sm';
 
 /** data/sm token: 12→13 px fluid, mono, regular weight */
 export const DATA_SM = 'font-sans text-xs';

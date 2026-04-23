@@ -146,8 +146,8 @@ function RouteListFetcher({
         const res = await fetch(`${routes.importRoutes}?${params}`);
 
         if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          if (data.expired) {
+          const data = await res.json().catch(() => null);
+          if (data?.expired) {
             setError(content.errorDisconnected(serviceLabels[service]));
           } else {
             setError(content.errorFetch);

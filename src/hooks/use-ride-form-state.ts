@@ -312,7 +312,8 @@ export function useRideFormState({
       ? (() => {
           try {
             return decodeStartPoint(route.polyline);
-          } catch {
+          } catch (err) {
+            console.warn('[ride-form] polyline decode failed:', err);
             return null;
           }
         })()
@@ -344,7 +345,8 @@ export function useRideFormState({
           type: 'GEOCODING_COMPLETE',
           payload: location ? { name: location.name, address: location.address } : null,
         });
-      } catch {
+      } catch (err) {
+        console.warn('[ride-form] reverseGeocode failed:', err);
         dispatch({ type: 'GEOCODING_COMPLETE', payload: null });
       }
     }

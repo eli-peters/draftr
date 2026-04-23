@@ -44,8 +44,9 @@ export function NotificationBell({ notifications, unreadCount }: NotificationBel
   async function handleMarkAllRead() {
     try {
       await markAllNotificationsRead();
-    } catch {
-      // Silently fail — notification state will sync on next page load
+    } catch (err) {
+      // Don't block the UI — state will sync on next page load.
+      console.error('[notifications] markAllNotificationsRead failed:', err);
     }
   }
 
@@ -53,8 +54,9 @@ export function NotificationBell({ notifications, unreadCount }: NotificationBel
     if (!notification.is_read) {
       try {
         await markNotificationRead(notification.id);
-      } catch {
-        // Best-effort — don't block navigation
+      } catch (err) {
+        // Don't block navigation — state will sync on next page load.
+        console.error('[notifications] markNotificationRead failed:', err);
       }
     }
   }
