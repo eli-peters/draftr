@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Outfit, DM_Sans } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
+import { SplashScreen } from '@/components/layout/splash-screen';
 import { COLOR_MODE_SCRIPT } from '@/lib/color-mode-script';
 import { metaColors } from '@/config/colors';
 import { appContent } from '@/content/app';
@@ -64,6 +65,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <ThemeProvider>
+          <SplashScreen />
           {children}
           <Toaster />
         </ThemeProvider>
