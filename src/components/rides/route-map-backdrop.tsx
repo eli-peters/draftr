@@ -1,10 +1,12 @@
 'use client';
 
-import { useRef, useCallback, useEffect, useMemo, useState } from 'react';
+import { useRef, useCallback, useEffect, useMemo, useState, type KeyboardEvent } from 'react';
 import Map, { Source, Layer, type MapRef } from 'react-map-gl/mapbox';
 import polyline from '@mapbox/polyline';
 import './map-styles';
-import { integrations } from '@/config/integrations';
+import { integrations, serviceLabels } from '@/config/integrations';
+import { parseRouteUrl } from '@/lib/rides/parse-route-url';
+import { appContent } from '@/content/app';
 import { useMapBackdropMetrics } from './map-backdrop-context';
 import { cn } from '@/lib/utils';
 
@@ -38,11 +40,7 @@ export function RouteMapBackdrop({ polylineStr, routeUrl, className }: RouteMapB
     return <div className={cn('absolute inset-0 bg-muted', className)} aria-hidden />;
   }
 
-  return (
-    <div className={cn('absolute inset-0', className)}>
-      <MapInner polylineStr={polylineStr} routeUrl={routeUrl} />
-    </div>
-  );
+  return <MapInner polylineStr={polylineStr} routeUrl={routeUrl} className={className} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -50,12 +48,13 @@ export function RouteMapBackdrop({ polylineStr, routeUrl, className }: RouteMapB
 interface MapInnerProps {
   polylineStr: string;
   routeUrl?: string | null;
+  className?: string;
 }
 
 const EDGE_PADDING_PX = 16;
 const TOP_PADDING_PX = 56;
 
-function MapInner({ polylineStr, routeUrl }: MapInnerProps) {
+function MapInner({ polylineStr, routeUrl, className }: MapInnerProps) {
   const mapRef = useRef<MapRef>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
@@ -140,27 +139,70 @@ function MapInner({ polylineStr, routeUrl }: MapInnerProps) {
 
   // Mapbox's click event fires on tap but not on drag — safe to use for
   // deep-linking to the external route without interfering with pan/zoom.
-  const onClick = useCallback(() => {
+  // Dispatch via a synthetic anchor click (not window.open) so iOS / Android
+  // can intercept the URL as a universal / app link before a browser window
+  // is materialised — otherwise an installed PWA is left with a blank in-app
+  // Safari overlay sitting on top of it after the handoff.
+  const openRoute = useCallback(() => {
     if (!routeUrl) return;
-    window.open(routeUrl, '_blank', 'noopener,noreferrer');
+    const a = document.createElement('a');
+    a.href = routeUrl;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }, [routeUrl]);
 
+  const onKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLDivElement>) => {
+      if (!routeUrl) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openRoute();
+      }
+    },
+    [routeUrl, openRoute],
+  );
+
+  const serviceName = useMemo(() => {
+    if (!routeUrl) return null;
+    const parsed = parseRouteUrl(routeUrl);
+    return parsed ? serviceLabels[parsed.service] : null;
+  }, [routeUrl]);
+
+  const { detail } = appContent.rides;
+  const ariaLabel = routeUrl
+    ? serviceName
+      ? detail.viewRouteOn(serviceName)
+      : detail.viewRoute
+    : undefined;
+
   return (
-    <Map
-      ref={mapRef}
-      mapboxAccessToken={MAPBOX_TOKEN}
-      mapStyle={isDark ? DARK_STYLE : LIGHT_STYLE}
-      style={{ position: 'absolute', inset: 0 }}
-      scrollZoom={false}
-      doubleClickZoom={false}
-      attributionControl={false}
-      onLoad={onLoad}
-      onClick={onClick}
-      cursor={routeUrl ? 'pointer' : 'grab'}
+    <div
+      className={cn('absolute inset-0', routeUrl && 'focus-ring-inset', className)}
+      role={routeUrl ? 'link' : undefined}
+      aria-label={ariaLabel}
+      tabIndex={routeUrl ? 0 : undefined}
+      onKeyDown={onKeyDown}
     >
-      <Source id="route" type="geojson" data={geojson}>
-        <Layer {...ROUTE_LAYER_STYLE} />
-      </Source>
-    </Map>
+      <Map
+        ref={mapRef}
+        mapboxAccessToken={MAPBOX_TOKEN}
+        mapStyle={isDark ? DARK_STYLE : LIGHT_STYLE}
+        style={{ position: 'absolute', inset: 0 }}
+        scrollZoom={false}
+        doubleClickZoom={false}
+        attributionControl={false}
+        onLoad={onLoad}
+        onClick={openRoute}
+        cursor={routeUrl ? 'pointer' : 'grab'}
+      >
+        <Source id="route" type="geojson" data={geojson}>
+          <Layer {...ROUTE_LAYER_STYLE} />
+        </Source>
+      </Map>
+    </div>
   );
 }

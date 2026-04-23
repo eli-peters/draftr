@@ -2,7 +2,7 @@
  * Top-level routes show bottom nav + logo header on mobile.
  * Any route NOT in this set is a "child" route (back arrow header, no bottom nav).
  */
-const topLevelRoutes = new Set(['/', '/rides', '/manage', '/notifications']);
+const topLevelRoutes = new Set(['/', '/rides', '/manage']);
 
 /**
  * Routes that can serve as a back-navigation target for deeper children,
