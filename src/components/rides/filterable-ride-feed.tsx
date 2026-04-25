@@ -98,7 +98,7 @@ export function FilterableRideFeed({
         <EmptyState
           title={hasFilter ? ridesContent.filter.noResults.title : emptyTitle}
           description={hasFilter ? ridesContent.filter.noResults.description : emptyDescription}
-          icon={Bicycle}
+          icon={<Bicycle weight="duotone" />}
           className="mt-12"
         />
       )}

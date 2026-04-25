@@ -84,7 +84,7 @@ export async function DashboardActionContent({
               ? dashboard.nudge.noSignupsDescription
               : dashboard.nudge.noRidesDescription
           }
-          icon={Bicycle}
+          icon={<Bicycle weight="duotone" />}
           className="mt-10"
         >
           {nextAvailableRide && (

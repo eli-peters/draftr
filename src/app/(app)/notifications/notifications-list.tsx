@@ -85,7 +85,7 @@ export function NotificationsList({
         <EmptyState
           title={emptyTitle}
           description={emptyDescription}
-          icon={BellSimple}
+          icon={<BellSimple weight="duotone" />}
           className="mt-12 flex-1"
         />
       ) : (

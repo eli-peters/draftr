@@ -220,7 +220,7 @@ function RouteListFetcher({
     const emptyContent = type === 'routes' ? content.noRoutes : content.noActivities;
     return (
       <EmptyState
-        icon={MapTrifold}
+        icon={<MapTrifold weight="duotone" />}
         title={emptyContent.title}
         description={emptyContent.description}
       />

@@ -77,7 +77,7 @@ function ContentCard({
         interactive && [
           'cursor-pointer',
           'transition-[transform,box-shadow] duration-(--duration-normal) ease-(--ease-in-out)',
-          'hover:-translate-y-0.5 hover:shadow-lg',
+          'hover:-translate-y-0.5 hover:shadow-sm',
           'active:scale-[0.98]',
         ],
         className,

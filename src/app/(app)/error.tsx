@@ -18,7 +18,7 @@ export default function AppError({
     <EmptyState
       title={common.error}
       description={error.message || common.errorDescription}
-      icon={WarningCircle}
+      icon={<WarningCircle weight="duotone" />}
       variant="destructive"
       className="flex-1 px-4 py-16"
     >

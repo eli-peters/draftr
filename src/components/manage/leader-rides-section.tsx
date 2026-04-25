@@ -29,7 +29,7 @@ export async function LeaderRidesSection({ userId, clubId, timezone }: LeaderRid
 
         {upcoming.length === 0 ? (
           <EmptyState
-            icon={Bicycle}
+            icon={<Bicycle weight="duotone" />}
             title={content.emptyTitle}
             description={content.emptyDescription}
           />

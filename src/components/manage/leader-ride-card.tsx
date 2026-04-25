@@ -52,7 +52,7 @@ export function LeaderRideCard({ ride, timezone }: LeaderRideCardProps) {
     <div className="relative">
       <Link
         href={routes.ride(ride.id)}
-        className="group block cursor-pointer rounded-(--card-radius) focus-ring transition-[transform,box-shadow] duration-(--duration-normal) ease-(--ease-in-out) hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]"
+        className="group block cursor-pointer rounded-(--card-radius) focus-ring transition-[transform,box-shadow] duration-(--duration-normal) ease-(--ease-in-out) hover:-translate-y-0.5 hover:shadow-sm active:scale-[0.98]"
       >
         <Card className={cn('overflow-clip p-0', stateStyle.borderClass, stateStyle.glowClass)}>
           <StateCardBanner style={stateStyle} state={cardState} />

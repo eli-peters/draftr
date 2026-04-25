@@ -23,7 +23,7 @@ export function RideHistoryList({ rides, timezone }: RideHistoryListProps) {
       <EmptyState
         title={profileContent.history.emptyState.title}
         description={profileContent.history.emptyState.description}
-        icon={Bicycle}
+        icon={<Bicycle weight="duotone" />}
         className="mt-12"
       />
     );

@@ -144,7 +144,7 @@ interface SectionCardProps {
 // Shared card surface: stroke-only at rest (admin spec), neutral hover lift, active press.
 // Magenta is reserved for the page-level CTA (Create Ride etc.) — never on hover here.
 const cardSurface =
-  'rounded-(--card-radius) border border-(--border-default) bg-card transition-[transform,box-shadow,border-color] duration-(--duration-normal) ease-(--ease-in-out) hover:-translate-y-0.5 hover:border-(--border-strong) hover:shadow-lg active:scale-[0.98]';
+  'rounded-(--card-radius) border border-(--border-default) bg-card transition-[transform,box-shadow,border-color] duration-(--duration-normal) ease-(--ease-in-out) hover:-translate-y-0.5 hover:border-(--border-strong) hover:shadow-sm active:scale-[0.98]';
 
 function SectionCard({
   icon: Icon,

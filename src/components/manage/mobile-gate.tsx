@@ -15,7 +15,7 @@ export function MobileGate({ children }: { children: React.ReactNode }) {
     <>
       <div className="md:hidden">
         <EmptyState
-          icon={Laptop}
+          icon={<Laptop weight="duotone" />}
           title={content.mobileGateTitle}
           description={content.mobileGateDescription}
         />
