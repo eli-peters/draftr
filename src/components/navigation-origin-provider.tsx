@@ -72,16 +72,19 @@ export function NavigationOriginProvider({ children }: { children: React.ReactNo
     });
   }, [pathname]);
 
-  // Capacitor iOS: gate WKWebView.allowsBackForwardNavigationGestures on the
-  // same rule. No-op in browsers — window.webkit is only injected by WKWebView.
+  // Capacitor iOS: WKWebView's native back-forward gesture doesn't snapshot
+  // SPA route changes, so the peel reveals a blank page and the goBack call
+  // lands on a URL Next.js can't restore from cache. Keep the gesture off
+  // until we replace it with a JS/CSS swipe driven by the existing page
+  // transition machinery.
   useEffect(() => {
     const handler = (
       window as unknown as {
         webkit?: { messageHandlers?: { swipeGate?: { postMessage: (msg: unknown) => void } } };
       }
     ).webkit?.messageHandlers?.swipeGate;
-    handler?.postMessage({ enabled: state.canSwipeBack });
-  }, [state.canSwipeBack]);
+    handler?.postMessage({ enabled: false });
+  }, []);
 
   return (
     <NavigationOriginContext.Provider value={state}>{children}</NavigationOriginContext.Provider>
