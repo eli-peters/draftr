@@ -2,19 +2,16 @@
 
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { getParentRoute, isChildRoute } from '@/config/routes';
+import { isChildRoute } from '@/config/routes';
 
 interface NavigationOriginState {
-  /** Whether the user arrived at this child page from its structural parent. */
-  arrivedFromParent: boolean;
-  /** Whether swipe-back should be enabled (child route + arrived from parent). */
+  /** Whether swipe-back should be enabled. True on any child route reached via in-app navigation. */
   canSwipeBack: boolean;
   /** Whether there is any referrer in the navigation stack (for back button behavior). */
   hasReferrer: boolean;
 }
 
 const DEFAULT_STATE: NavigationOriginState = {
-  arrivedFromParent: false,
   canSwipeBack: false,
   hasReferrer: false,
 };
@@ -24,13 +21,13 @@ const NavigationOriginContext = createContext<NavigationOriginState>(DEFAULT_STA
 const MAX_STACK_DEPTH = 20;
 
 /**
- * Tracks a referrer stack across client-side navigations to determine
- * whether the user arrived at the current page from its structural parent.
+ * Tracks a referrer stack across client-side navigations.
  *
- * Forward navigation pushes the previous path onto the stack.
- * Back navigation (popstate) pops from the stack.
- * `canSwipeBack` is true when the top of the stack is the current page's
- * structural parent — meaning the user drilled down, not jumped laterally.
+ * Forward navigation pushes the previous path onto the stack; back (popstate)
+ * pops from it. `canSwipeBack` is true on any child route (L2+) when the user
+ * has at least one referrer — i.e., they drilled in from somewhere else in
+ * the app rather than landing here on a fresh load. This covers Home→detail,
+ * Rides→detail, and deeper L3→L2 hops without enumerating each pair.
  */
 export function NavigationOriginProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -50,7 +47,7 @@ export function NavigationOriginProvider({ children }: { children: React.ReactNo
   }, []);
 
   // On pathname change, update the referrer stack and derive state
-  /* eslint-disable react-hooks/set-state-in-effect -- derive navigation origin from pathname changes */
+
   useEffect(() => {
     if (pathname === prevPathnameRef.current) return;
 
@@ -68,18 +65,23 @@ export function NavigationOriginProvider({ children }: { children: React.ReactNo
 
     prevPathnameRef.current = pathname;
 
-    // Compute whether the referrer (top of stack) is the structural parent
-    const referrer = stack.length > 0 ? stack[stack.length - 1] : null;
-    const parentRoute = getParentRoute(pathname);
-    const fromParent = referrer !== null && referrer === parentRoute;
-
+    const hasReferrer = stack.length > 0;
     setState({
-      arrivedFromParent: fromParent,
-      canSwipeBack: isChildRoute(pathname) && fromParent,
-      hasReferrer: referrer !== null,
+      canSwipeBack: isChildRoute(pathname) && hasReferrer,
+      hasReferrer,
     });
   }, [pathname]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+
+  // Capacitor iOS: gate WKWebView.allowsBackForwardNavigationGestures on the
+  // same rule. No-op in browsers — window.webkit is only injected by WKWebView.
+  useEffect(() => {
+    const handler = (
+      window as unknown as {
+        webkit?: { messageHandlers?: { swipeGate?: { postMessage: (msg: unknown) => void } } };
+      }
+    ).webkit?.messageHandlers?.swipeGate;
+    handler?.postMessage({ enabled: state.canSwipeBack });
+  }, [state.canSwipeBack]);
 
   return (
     <NavigationOriginContext.Provider value={state}>{children}</NavigationOriginContext.Provider>

@@ -799,11 +799,6 @@
   animation: page-slide-in-from-left var(--duration-slow) var(--ease-out);
 }
 
-/* Disable pointer events on all children during active swipe gesture */
-.swipe-active * {
-  pointer-events: none !important;
-}
-
 /*
  * Floating field — Material Design-style floating label pattern
  * =============================================================

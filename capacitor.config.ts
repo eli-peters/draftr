@@ -9,7 +9,15 @@ const config: CapacitorConfig = {
     allowNavigation: ['*.supabase.co'],
   },
   ios: {
-    contentInset: 'always',
+    contentInset: 'never',
+    backgroundColor: '#ffffff',
+  },
+  plugins: {
+    Keyboard: {
+      resize: 'body',
+      style: 'DEFAULT',
+      resizeOnFullScreen: true,
+    },
   },
 };
 
