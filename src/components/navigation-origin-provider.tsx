@@ -72,19 +72,18 @@ export function NavigationOriginProvider({ children }: { children: React.ReactNo
     });
   }, [pathname]);
 
-  // Capacitor iOS: WKWebView's native back-forward gesture doesn't snapshot
-  // SPA route changes, so the peel reveals a blank page and the goBack call
-  // lands on a URL Next.js can't restore from cache. Keep the gesture off
-  // until we replace it with a JS/CSS swipe driven by the existing page
-  // transition machinery.
+  // Capacitor iOS: arm the WKWebView native edge-swipe gesture only on
+  // child routes reached via in-app navigation. Sibling L1 tabs share the
+  // WKWebView history but aren't a hierarchical relationship, so swiping
+  // between them shouldn't trigger a back navigation.
   useEffect(() => {
     const handler = (
       window as unknown as {
         webkit?: { messageHandlers?: { swipeGate?: { postMessage: (msg: unknown) => void } } };
       }
     ).webkit?.messageHandlers?.swipeGate;
-    handler?.postMessage({ enabled: false });
-  }, []);
+    handler?.postMessage({ enabled: state.canSwipeBack });
+  }, [state.canSwipeBack]);
 
   return (
     <NavigationOriginContext.Provider value={state}>{children}</NavigationOriginContext.Provider>
