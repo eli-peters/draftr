@@ -1097,6 +1097,11 @@ export const appContent = {
     tomorrow: 'Tomorrow',
   },
 
+  system: {
+    offline: 'You are offline',
+    backOnline: 'Back online',
+  },
+
   errors: {
     accountDeactivated: 'Your account has been deactivated. Please contact your club admin.',
     signInFailed: 'Sign-in failed',

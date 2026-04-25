@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Outfit, DM_Sans } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
+import { NativeBridge } from '@/components/native-bridge';
 import { Toaster } from '@/components/ui/sonner';
 import { COLOR_MODE_SCRIPT } from '@/lib/color-mode-script';
 import { metaColors } from '@/config/colors';
@@ -64,6 +65,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <ThemeProvider>
+          <NativeBridge />
           {children}
           <Toaster />
         </ThemeProvider>
