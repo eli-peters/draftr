@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { getWeatherCondition } from '@/config/weather';
+import { FORECAST_MAX_DAYS, getWeatherCondition } from '@/config/weather';
 
 /**
  * Open-Meteo weather API client.
@@ -177,7 +177,9 @@ export async function fetchForecastForRide(
       wind_speed_unit: 'kmh',
       precipitation_unit: 'mm',
       timezone: clubTimezone,
-      forecast_days: '7',
+      // +1 because Open-Meteo returns hours starting at 00:00 of day 0;
+      // a ride exactly FORECAST_MAX_DAYS out lands on the next day's hours.
+      forecast_days: String(FORECAST_MAX_DAYS + 1),
     });
 
     const res = await fetch(`${BASE_URL}?${params}`, {
@@ -191,15 +193,50 @@ export async function fetchForecastForRide(
 
     const data: OpenMeteoResponse = await res.json();
     const h = data.hourly;
-    if (!h || h.time.length === 0) return null;
+    if (!h || h.time.length === 0) {
+      console.warn('[weather] Empty hourly forecast', {
+        lat,
+        lon,
+        rideDate,
+        rideTime,
+        clubTimezone,
+      });
+      return null;
+    }
 
     // Build target hour string: "2026-03-24T06:00"
     const rideHour = rideTime.slice(0, 2);
     const targetTime = `${rideDate}T${rideHour}:00`;
 
-    // Find exact hourly match
-    const idx = h.time.indexOf(targetTime);
-    if (idx === -1) return null;
+    // Find exact hourly match, falling back to the closest hour within ±90 min.
+    // The fallback covers DST transitions and any minor format drift between
+    // the target string and Open-Meteo's hourly timestamps.
+    let idx = h.time.indexOf(targetTime);
+    if (idx === -1) {
+      const targetMs = Date.parse(targetTime);
+      if (Number.isFinite(targetMs)) {
+        let bestDelta = Infinity;
+        for (let i = 0; i < h.time.length; i++) {
+          const delta = Math.abs(Date.parse(h.time[i]) - targetMs);
+          if (delta < bestDelta) {
+            bestDelta = delta;
+            idx = i;
+          }
+        }
+        if (bestDelta > 90 * 60_000) idx = -1;
+      }
+      if (idx === -1) {
+        console.warn('[weather] No hourly match for ride', {
+          rideDate,
+          rideTime,
+          targetTime,
+          clubTimezone,
+          firstHour: h.time[0],
+          lastHour: h.time[h.time.length - 1],
+        });
+        return null;
+      }
+    }
 
     const isDay = h.is_day[idx] === 1;
 

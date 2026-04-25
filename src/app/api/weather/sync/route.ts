@@ -140,6 +140,16 @@ export async function POST(request: Request) {
         }
       }
 
+      if (!forecast) {
+        console.warn('[weather-sync] No forecast for ride', {
+          rideId: ride.id,
+          rideDate: ride.ride_date,
+          startTime: ride.start_time,
+          timezone,
+          state: hasStarted ? 'in-progress' : 'future',
+        });
+      }
+
       if (forecast) {
         // Upsert weather snapshot
         await supabase.from('ride_weather_snapshots').upsert(

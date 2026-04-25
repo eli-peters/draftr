@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { SignupStatus } from '@/config/statuses';
 import { todayInTimezone } from '@/config/formatting';
 import { isRideCompleted } from '@/lib/rides/lifecycle';
+import { scheduleStaleWeatherRefresh } from '@/lib/weather/refresh';
 import {
   TAG_RIDES,
   tagRide,
@@ -227,6 +228,7 @@ export async function getUpcomingRides(
     { tags: [TAG_RIDES], revalidate: 300 },
   )();
 
+  scheduleStaleWeatherRefresh(data);
   return data.map((ride) => toRideWithDetails(ride, userId));
 }
 
@@ -252,6 +254,7 @@ export async function getRideById(rideId: string): Promise<RideWithDetails | nul
   )();
 
   if (!data) return null;
+  scheduleStaleWeatherRefresh([data]);
   return toRideWithDetails(data);
 }
 

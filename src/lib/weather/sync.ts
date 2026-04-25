@@ -78,7 +78,15 @@ export async function syncWeatherForRide(rideId: string): Promise<void> {
       timezone,
     );
 
-    if (!forecast) return;
+    if (!forecast) {
+      console.warn('[weather] On-demand sync: no forecast for ride', {
+        rideId: ride.id,
+        rideDate: ride.ride_date,
+        startTime: ride.start_time,
+        timezone,
+      });
+      return;
+    }
 
     // Upsert weather snapshot
     await supabase.from('ride_weather_snapshots').upsert(

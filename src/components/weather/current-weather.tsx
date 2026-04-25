@@ -31,7 +31,6 @@ export function CurrentWeather() {
     const CACHE_KEY = 'draftr-weather';
     const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
-    // Check sessionStorage for cached weather response
     try {
       const cached = sessionStorage.getItem(CACHE_KEY);
       if (cached) {
@@ -51,32 +50,74 @@ export function CurrentWeather() {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          const res = await fetch(`/api/weather/current?lat=${latitude}&lon=${longitude}`);
-          if (res.ok) {
-            const data = await res.json();
-            setWeather(data);
-            try {
-              sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
-            } catch {
-              // Storage full — non-critical
+    let cancelled = false;
+    let permissionStatus: PermissionStatus | null = null;
+
+    const requestPosition = () => {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          if (cancelled) return;
+          try {
+            const { latitude, longitude } = position.coords;
+            const res = await fetch(`/api/weather/current?lat=${latitude}&lon=${longitude}`);
+            if (res.ok) {
+              const data = await res.json();
+              if (cancelled) return;
+              setWeather(data);
+              try {
+                sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+              } catch {
+                // Storage full — non-critical
+              }
             }
+          } catch {
+            // Silently fail — weather is non-critical
+          } finally {
+            if (!cancelled) setLoading(false);
           }
-        } catch {
-          // Silently fail — weather is non-critical
-        } finally {
-          setLoading(false);
-        }
-      },
-      () => {
-        // Geolocation denied or unavailable — show nothing
-        setLoading(false);
-      },
-      { timeout: GEOLOCATION_TIMEOUT_MS, maximumAge: GEOLOCATION_MAX_AGE_MS },
-    );
+        },
+        () => {
+          // First call may fail because the user hasn't granted permission yet
+          // (especially on fresh install). Permission-change listener below
+          // will retry once the user grants access.
+          if (!cancelled) setLoading(false);
+        },
+        { timeout: GEOLOCATION_TIMEOUT_MS, maximumAge: GEOLOCATION_MAX_AGE_MS },
+      );
+    };
+
+    const onPermissionChange = () => {
+      if (cancelled || !permissionStatus) return;
+      if (permissionStatus.state === 'granted') {
+        setLoading(true);
+        requestPosition();
+      }
+    };
+
+    if (typeof navigator.permissions?.query === 'function') {
+      navigator.permissions
+        .query({ name: 'geolocation' })
+        .then((status) => {
+          if (cancelled) return;
+          permissionStatus = status;
+          status.addEventListener('change', onPermissionChange);
+          if (status.state === 'denied') {
+            setLoading(false);
+            return;
+          }
+          requestPosition();
+        })
+        .catch(() => {
+          if (!cancelled) requestPosition();
+        });
+    } else {
+      requestPosition();
+    }
+
+    return () => {
+      cancelled = true;
+      permissionStatus?.removeEventListener('change', onPermissionChange);
+    };
   }, []);
 
   if (loading) {
