@@ -113,7 +113,7 @@ export function HeaderBar({
           aria-hidden
         />
       )}
-      <div className="relative flex items-center justify-between px-5 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 md:px-8">
+      <div className="relative flex items-center justify-between px-5 pt-[env(safe-area-inset-top)] pb-3 md:px-8 md:pt-3">
         {/* Left: back arrow on child pages (mobile), logo on parent pages */}
         {showBackNav ? (
           backButton
