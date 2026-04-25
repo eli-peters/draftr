@@ -33,7 +33,8 @@ export function NativeBridge() {
       try {
         const url = new URL(event.url);
         const path = `${url.pathname}${url.search}${url.hash}`;
-        if (path) router.push(path);
+        const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        if (path && path !== currentPath) router.push(path);
       } catch {
         // ignore malformed URLs
       }
