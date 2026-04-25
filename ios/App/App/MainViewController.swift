@@ -20,9 +20,6 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
         // here is what produced the gap above the header.
         webView.scrollView.contentInsetAdjustmentBehavior = .never
 
-        webView.isOpaque = false
-        webView.backgroundColor = .clear
-
         // Native edge-swipe-back. Off by default — the web layer flips it on
         // for hierarchical child routes (L2/L3) via the `swipeGate` handler
         // below. Keeping it gated prevents swipe-back between L1 tabs, which
