@@ -3,8 +3,9 @@
 import { User } from '@phosphor-icons/react/dist/ssr';
 import type { ReactNode } from 'react';
 import { ContentCard } from '@/components/ui/content-card';
-import { Input } from '@/components/ui/input';
 import { FloatingField } from '@/components/ui/floating-field';
+import { FormControl, FormField, FormItem } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -12,8 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { formatPhoneDisplay, formatPhoneLive, stripToDigits } from '@/lib/phone';
 import { useProfileForm } from '@/hooks/use-profile-form-state';
+import { nativeInputPresets } from '@/lib/forms';
+import { formatPhoneDisplay, formatPhoneLive, stripToDigits } from '@/lib/phone';
 import { appContent } from '@/content/app';
 
 const { profile: content } = appContent;
@@ -43,17 +45,18 @@ export function ProfilePersonalInfoCard({
   initialPostalCode,
   initialCountry,
 }: ProfilePersonalInfoCardProps) {
-  const { isEditing, values, setField } = useProfileForm();
-
-  const country = isEditing ? values.country : initialCountry;
-  const provinceLabel =
-    country === 'US' ? content.personalInfo.stateLabel : content.personalInfo.provinceLabel;
-  const postalLabel =
-    country === 'US' ? content.personalInfo.zipCodeLabel : content.personalInfo.postalCodeLabel;
-  const regionOptions =
-    country === 'US' ? content.personalInfo.states : content.personalInfo.provinces;
+  const { isEditing, form } = useProfileForm();
+  const watchedCountry = form.watch('country');
 
   if (isEditing) {
+    const country = watchedCountry || '';
+    const provinceLabel =
+      country === 'US' ? content.personalInfo.stateLabel : content.personalInfo.provinceLabel;
+    const postalLabel =
+      country === 'US' ? content.personalInfo.zipCodeLabel : content.personalInfo.postalCodeLabel;
+    const regionOptions =
+      country === 'US' ? content.personalInfo.states : content.personalInfo.provinces;
+
     return (
       <ContentCard icon={User} heading={content.personalInfo.heading}>
         <div className="flex flex-col gap-3">
@@ -63,134 +66,210 @@ export function ProfilePersonalInfoCard({
           </Row>
 
           {/* Date of birth */}
-          <FloatingField label={content.personalInfo.dateOfBirthLabel} htmlFor="profile_dob">
-            <Input
-              id="profile_dob"
-              type="date"
-              value={values.date_of_birth}
-              onChange={(e) => setField('date_of_birth', e.target.value)}
-              placeholder=" "
-            />
-          </FloatingField>
+          <FormField
+            control={form.control}
+            name="date_of_birth"
+            render={({ field }) => (
+              <FormItem>
+                <FloatingField label={content.personalInfo.dateOfBirthLabel}>
+                  <FormControl>
+                    <Input type="date" placeholder=" " {...field} value={field.value ?? ''} />
+                  </FormControl>
+                </FloatingField>
+              </FormItem>
+            )}
+          />
 
           {/* Gender */}
-          <FloatingField
-            label={content.personalInfo.genderLabel}
-            htmlFor="profile_gender"
-            hasValue={!!values.gender}
-          >
-            <Select value={values.gender} onValueChange={(v) => setField('gender', v)}>
-              <SelectTrigger id="profile_gender">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="male">{content.personalInfo.genderOptions.male}</SelectItem>
-                <SelectItem value="female">{content.personalInfo.genderOptions.female}</SelectItem>
-              </SelectContent>
-            </Select>
-          </FloatingField>
+          <FormField
+            control={form.control}
+            name="gender"
+            render={({ field }) => (
+              <FormItem>
+                <FloatingField label={content.personalInfo.genderLabel} hasValue={!!field.value}>
+                  <Select value={field.value ?? ''} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">
+                        {content.personalInfo.genderOptions.male}
+                      </SelectItem>
+                      <SelectItem value="female">
+                        {content.personalInfo.genderOptions.female}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FloatingField>
+              </FormItem>
+            )}
+          />
 
           {/* Phone */}
-          <FloatingField label={content.contactInfo.phoneLabel} htmlFor="profile_phone">
-            <Input
-              id="profile_phone"
-              inputMode="tel"
-              value={formatPhoneLive(values.phone_number)}
-              onChange={(e) => setField('phone_number', stripToDigits(e.target.value).slice(0, 10))}
-              placeholder=" "
-            />
-          </FloatingField>
+          <FormField
+            control={form.control}
+            name="phone_number"
+            render={({ field }) => (
+              <FormItem>
+                <FloatingField label={content.contactInfo.phoneLabel}>
+                  <FormControl>
+                    <Input
+                      {...nativeInputPresets.phone}
+                      placeholder=" "
+                      value={formatPhoneLive(field.value ?? '')}
+                      onChange={(e) => field.onChange(stripToDigits(e.target.value).slice(0, 10))}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
+                    />
+                  </FormControl>
+                </FloatingField>
+              </FormItem>
+            )}
+          />
 
           {/* Country — first in address section so labels adapt */}
-          <FloatingField
-            label={content.personalInfo.countryLabel}
-            htmlFor="profile_country"
-            hasValue={!!values.country}
-          >
-            <Select
-              value={values.country}
-              onValueChange={(v) => {
-                setField('country', v);
-                // Reset province and postal when country changes
-                setField('province', '');
-                setField('postal_code', '');
-              }}
-            >
-              <SelectTrigger id="profile_country">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="CA">{content.personalInfo.countryOptions.CA}</SelectItem>
-                <SelectItem value="US">{content.personalInfo.countryOptions.US}</SelectItem>
-              </SelectContent>
-            </Select>
-          </FloatingField>
+          <FormField
+            control={form.control}
+            name="country"
+            render={({ field }) => (
+              <FormItem>
+                <FloatingField label={content.personalInfo.countryLabel} hasValue={!!field.value}>
+                  <Select
+                    value={field.value ?? ''}
+                    onValueChange={(v) => {
+                      field.onChange(v);
+                      // Reset region + postal when country changes
+                      form.setValue('province', '', { shouldValidate: false });
+                      form.setValue('postal_code', '', { shouldValidate: false });
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="CA">{content.personalInfo.countryOptions.CA}</SelectItem>
+                      <SelectItem value="US">{content.personalInfo.countryOptions.US}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FloatingField>
+              </FormItem>
+            )}
+          />
 
           {/* Street address 1 */}
-          <FloatingField label={content.personalInfo.streetAddress1Label} htmlFor="profile_street1">
-            <Input
-              id="profile_street1"
-              value={values.street_address_line_1}
-              onChange={(e) => setField('street_address_line_1', e.target.value)}
-              placeholder=" "
-            />
-          </FloatingField>
+          <FormField
+            control={form.control}
+            name="street_address_line_1"
+            render={({ field }) => (
+              <FormItem>
+                <FloatingField label={content.personalInfo.streetAddress1Label}>
+                  <FormControl>
+                    <Input
+                      autoCapitalize="words"
+                      autoComplete="address-line1"
+                      placeholder=" "
+                      {...field}
+                      value={field.value ?? ''}
+                    />
+                  </FormControl>
+                </FloatingField>
+              </FormItem>
+            )}
+          />
 
           {/* Street address 2 */}
-          <FloatingField label={content.personalInfo.streetAddress2Label} htmlFor="profile_street2">
-            <Input
-              id="profile_street2"
-              value={values.street_address_line_2}
-              onChange={(e) => setField('street_address_line_2', e.target.value)}
-              placeholder=" "
-            />
-          </FloatingField>
+          <FormField
+            control={form.control}
+            name="street_address_line_2"
+            render={({ field }) => (
+              <FormItem>
+                <FloatingField label={content.personalInfo.streetAddress2Label}>
+                  <FormControl>
+                    <Input
+                      autoCapitalize="words"
+                      autoComplete="address-line2"
+                      placeholder=" "
+                      {...field}
+                      value={field.value ?? ''}
+                    />
+                  </FormControl>
+                </FloatingField>
+              </FormItem>
+            )}
+          />
 
           {/* City */}
-          <FloatingField label={content.personalInfo.cityLabel} htmlFor="profile_city">
-            <Input
-              id="profile_city"
-              value={values.city}
-              onChange={(e) => setField('city', e.target.value)}
-              placeholder=" "
-            />
-          </FloatingField>
+          <FormField
+            control={form.control}
+            name="city"
+            render={({ field }) => (
+              <FormItem>
+                <FloatingField label={content.personalInfo.cityLabel}>
+                  <FormControl>
+                    <Input
+                      autoCapitalize="words"
+                      autoComplete="address-level2"
+                      placeholder=" "
+                      {...field}
+                      value={field.value ?? ''}
+                    />
+                  </FormControl>
+                </FloatingField>
+              </FormItem>
+            )}
+          />
 
           {/* Province / State */}
-          <FloatingField
-            label={provinceLabel}
-            htmlFor="profile_province"
-            hasValue={!!values.province}
-          >
-            <Select value={values.province} onValueChange={(v) => setField('province', v)}>
-              <SelectTrigger id="profile_province">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(regionOptions).map(([code, name]) => (
-                  <SelectItem key={code} value={code}>
-                    {name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FloatingField>
+          <FormField
+            control={form.control}
+            name="province"
+            render={({ field }) => (
+              <FormItem>
+                <FloatingField label={provinceLabel} hasValue={!!field.value}>
+                  <Select value={field.value ?? ''} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(regionOptions).map(([code, name]) => (
+                        <SelectItem key={code} value={code}>
+                          {name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FloatingField>
+              </FormItem>
+            )}
+          />
 
           {/* Postal / Zip code */}
-          <FloatingField label={postalLabel} htmlFor="profile_postal">
-            <Input
-              id="profile_postal"
-              value={values.postal_code}
-              onChange={(e) => setField('postal_code', e.target.value)}
-              placeholder=" "
-            />
-          </FloatingField>
+          <FormField
+            control={form.control}
+            name="postal_code"
+            render={({ field }) => (
+              <FormItem>
+                <FloatingField label={postalLabel}>
+                  <FormControl>
+                    <Input
+                      autoCapitalize="characters"
+                      autoComplete="postal-code"
+                      placeholder=" "
+                      {...field}
+                      value={field.value ?? ''}
+                    />
+                  </FormControl>
+                </FloatingField>
+              </FormItem>
+            )}
+          />
         </div>
       </ContentCard>
     );
   }
 
-  // View mode — always show all fields, "Not set" placeholder for empty ones
+  // View mode — all fields shown, "Not set" for empty ones
   const notSet = (
     <span className="text-base italic text-muted-foreground">{content.personalInfo.notSet}</span>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { RideFormActionBar } from '@/components/rides/ride-form-action-bar';
+import { Form } from '@/components/ui/form';
 import { todayDateString } from '@/config/formatting';
 import { useRideFormState } from '@/hooks/use-ride-form-state';
 import { StepRoute, StepDetails, StepCoLeaders } from '@/components/rides/form-steps';
@@ -37,6 +38,7 @@ export function RideForm({
 
   const {
     state,
+    form,
     setField,
     pasteUrlRef,
     isEdit,
@@ -55,76 +57,78 @@ export function RideForm({
   });
 
   return (
-    <form onSubmit={handleSubmit}>
-      <fieldset disabled={state.isFetchingRoute} className="min-w-0 space-y-5">
-        {/* ── Step 1: Route ────────────────────────────────────────── */}
-        <div>
-          <StepRoute
-            importedRouteName={state.importedRouteName}
-            routePolyline={state.routePolyline}
-            routeUrl={state.routeUrl}
-            detectedService={state.detectedService}
-            connectedServices={connectedServices}
-            onSelectRoute={handleRouteImport}
-            onClearRoute={clearRouteData}
-            pasteUrlRef={pasteUrlRef}
-            isFetchingRoute={state.isFetchingRoute}
-            fetchRouteError={state.fetchRouteError}
-            onPasteUrl={handlePasteUrlBlur}
-            routeError={state.fieldErrors.routeUrl}
-            distanceKm={state.distanceKm}
-            elevationM={state.elevationM}
-            startLocationName={state.startLocationName}
-            startLocationAddress={state.startLocationAddress}
-            startLatitude={state.startLatitude}
-            startLongitude={state.startLongitude}
-            isGeocodingLocation={state.isGeocodingLocation}
+    <Form {...form}>
+      <form onSubmit={handleSubmit} noValidate>
+        <fieldset disabled={state.isFetchingRoute} className="min-w-0 space-y-5">
+          {/* ── Step 1: Route ────────────────────────────────────────── */}
+          <div>
+            <StepRoute
+              importedRouteName={state.importedRouteName}
+              routePolyline={state.routePolyline}
+              routeUrl={state.routeUrl}
+              detectedService={state.detectedService}
+              connectedServices={connectedServices}
+              onSelectRoute={handleRouteImport}
+              onClearRoute={clearRouteData}
+              pasteUrlRef={pasteUrlRef}
+              isFetchingRoute={state.isFetchingRoute}
+              fetchRouteError={state.fetchRouteError}
+              onPasteUrl={handlePasteUrlBlur}
+              routeError={state.fieldErrors.routeUrl}
+              distanceKm={state.distanceKm}
+              elevationM={state.elevationM}
+              startLocationName={state.startLocationName}
+              startLocationAddress={state.startLocationAddress}
+              startLatitude={state.startLatitude}
+              startLongitude={state.startLongitude}
+              isGeocodingLocation={state.isGeocodingLocation}
+            />
+          </div>
+
+          {/* ── Step 2: Ride Details ─────────────────────────────────── */}
+          <StepDetails
+            title={state.title}
+            description={state.description}
+            capacity={state.capacity}
+            paceGroupId={state.paceGroupId}
+            isDropRide={state.isDropRide}
+            paceGroups={paceGroups}
+            fieldErrors={state.fieldErrors}
+            onFieldChange={(field, value) => {
+              if (typeof value === 'boolean') {
+                setField(field as 'isDropRide', value);
+              } else {
+                setField(field as 'title' | 'description' | 'paceGroupId', value);
+              }
+            }}
+            onCapacityChange={(v) => setField('capacity', v)}
+            rideDate={state.rideDate}
+            startTime={state.startTime}
+            dateMin={effectiveMin}
+            dateMax={seasonEnd || undefined}
+            onDateChange={(v) => setField('rideDate', v)}
+            onTimeChange={(v) => setField('startTime', v)}
           />
-        </div>
 
-        {/* ── Step 2: Ride Details ─────────────────────────────────── */}
-        <StepDetails
-          title={state.title}
-          description={state.description}
-          capacity={state.capacity}
-          paceGroupId={state.paceGroupId}
-          isDropRide={state.isDropRide}
-          paceGroups={paceGroups}
-          fieldErrors={state.fieldErrors}
-          onFieldChange={(field, value) => {
-            if (typeof value === 'boolean') {
-              setField(field as 'isDropRide', value);
-            } else {
-              setField(field as 'title' | 'description' | 'paceGroupId', value);
+          {/* ── Step 3: Co-Leaders ────────────────────────────────────── */}
+          <StepCoLeaders
+            eligibleLeaders={eligibleLeaders}
+            selectedCoLeaders={state.selectedCoLeaders}
+            coLeaderConflicts={state.coLeaderConflicts}
+            onToggleCoLeader={(userId) =>
+              setField(
+                'selectedCoLeaders',
+                state.selectedCoLeaders.includes(userId)
+                  ? state.selectedCoLeaders.filter((id) => id !== userId)
+                  : [...state.selectedCoLeaders, userId],
+              )
             }
-          }}
-          onCapacityChange={(v) => setField('capacity', v)}
-          rideDate={state.rideDate}
-          startTime={state.startTime}
-          dateMin={effectiveMin}
-          dateMax={seasonEnd || undefined}
-          onDateChange={(v) => setField('rideDate', v)}
-          onTimeChange={(v) => setField('startTime', v)}
-        />
+          />
+        </fieldset>
 
-        {/* ── Step 3: Co-Leaders ────────────────────────────────────── */}
-        <StepCoLeaders
-          eligibleLeaders={eligibleLeaders}
-          selectedCoLeaders={state.selectedCoLeaders}
-          coLeaderConflicts={state.coLeaderConflicts}
-          onToggleCoLeader={(userId) =>
-            setField(
-              'selectedCoLeaders',
-              state.selectedCoLeaders.includes(userId)
-                ? state.selectedCoLeaders.filter((id) => id !== userId)
-                : [...state.selectedCoLeaders, userId],
-            )
-          }
-        />
-      </fieldset>
-
-      {/* ── Action Bar — outside fieldset, matches ride-detail pattern ── */}
-      <RideFormActionBar isEdit={isEdit} isPending={state.isPending} error={state.error} />
-    </form>
+        {/* ── Action Bar — outside fieldset, matches ride-detail pattern ── */}
+        <RideFormActionBar isEdit={isEdit} isPending={state.isPending} error={state.error} />
+      </form>
+    </Form>
   );
 }

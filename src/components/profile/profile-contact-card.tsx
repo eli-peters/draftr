@@ -3,10 +3,12 @@
 import { AddressBook } from '@phosphor-icons/react/dist/ssr';
 import type { ReactNode } from 'react';
 import { ContentCard } from '@/components/ui/content-card';
-import { Input } from '@/components/ui/input';
 import { FloatingField } from '@/components/ui/floating-field';
-import { formatPhoneDisplay, formatPhoneLive, stripToDigits } from '@/lib/phone';
+import { FormControl, FormField, FormItem } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { useProfileForm } from '@/hooks/use-profile-form-state';
+import { nativeInputPresets } from '@/lib/forms';
+import { formatPhoneDisplay, formatPhoneLive, stripToDigits } from '@/lib/phone';
 import { appContent } from '@/content/app';
 import type { ProfileViewerAccess } from '@/lib/profile/access';
 
@@ -19,24 +21,34 @@ interface ProfileContactCardProps {
 }
 
 export function ProfileContactCard({ email, initialPhone, access }: ProfileContactCardProps) {
-  const { isEditing, values, setField } = useProfileForm();
+  const { isEditing, form } = useProfileForm();
 
   return (
     <ContentCard icon={AddressBook} heading={content.sections.contactInfo}>
       <dl className="flex flex-col gap-3">
         <Row label={content.contactInfo.phoneLabel}>
           {isEditing ? (
-            <FloatingField label={content.contactInfo.phoneLabel} htmlFor="profile_phone">
-              <Input
-                id="profile_phone"
-                inputMode="tel"
-                value={formatPhoneLive(values.phone_number)}
-                onChange={(e) =>
-                  setField('phone_number', stripToDigits(e.target.value).slice(0, 10))
-                }
-                placeholder=" "
-              />
-            </FloatingField>
+            <FormField
+              control={form.control}
+              name="phone_number"
+              render={({ field }) => (
+                <FormItem>
+                  <FloatingField label={content.contactInfo.phoneLabel}>
+                    <FormControl>
+                      <Input
+                        {...nativeInputPresets.phone}
+                        placeholder=" "
+                        value={formatPhoneLive(field.value ?? '')}
+                        onChange={(e) => field.onChange(stripToDigits(e.target.value).slice(0, 10))}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
+                      />
+                    </FormControl>
+                  </FloatingField>
+                </FormItem>
+              )}
+            />
           ) : initialPhone ? (
             <span className="select-text text-base font-semibold text-foreground">
               {formatPhoneDisplay(initialPhone)}

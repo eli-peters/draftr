@@ -5,19 +5,27 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { PushPin, Plus, Megaphone } from '@phosphor-icons/react/dist/ssr';
 import { AnimatePresence, motion } from 'framer-motion';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { useMotionPresets } from '@/lib/motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ButtonSpinner } from '@/components/ui/button-spinner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FloatingField } from '@/components/ui/floating-field';
+import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useCompositionSafe } from '@/hooks/use-composition-safe';
 import { Textarea } from '@/components/ui/textarea';
 import { CardIconHeader } from '@/components/ui/card-icon-header';
 import { Label } from '@/components/ui/label';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { Switch } from '@/components/ui/switch';
+import { FormRootError, nativeInputPresets, useFormSubmit } from '@/lib/forms';
+import {
+  ANNOUNCEMENT_BODY_MAX,
+  announcementSchema,
+  type AnnouncementValues,
+} from '@/lib/forms/schemas';
 import {
   DrawerBody,
   DrawerClose,
@@ -55,7 +63,6 @@ import {
 
 const { manage: content, common } = appContent;
 
-const ANNOUNCEMENT_BODY_LIMIT = 500;
 const announcementTypes: AnnouncementType[] = ['general', 'event', 'urgent'];
 
 const announcementTypeOptions = announcementTypes.map((t) => ({
@@ -343,6 +350,14 @@ interface AnnouncementFormDrawerProps {
   onSuccess?: () => void;
 }
 
+const DEFAULT_ANNOUNCEMENT_VALUES: AnnouncementValues = {
+  title: '',
+  body: '',
+  announcement_type: 'general',
+  is_dismissible: true,
+  is_pinned: false,
+};
+
 export function AnnouncementFormDrawer({
   open,
   onOpenChange,
@@ -352,74 +367,68 @@ export function AnnouncementFormDrawer({
   initialValues,
   onSuccess,
 }: AnnouncementFormDrawerProps) {
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
-  const [announcementType, setAnnouncementType] = useState<AnnouncementType>('general');
-  const [isDismissible, setIsDismissible] = useState(true);
-  const [isPinned, setIsPinned] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const titleCompositionProps = useCompositionSafe(setTitle);
-  const bodyCompositionProps = useCompositionSafe(setBody);
+  const form = useForm<AnnouncementValues>({
+    resolver: zodResolver(announcementSchema),
+    defaultValues: DEFAULT_ANNOUNCEMENT_VALUES,
+    mode: 'onTouched',
+  });
 
-  function resetForm() {
-    setTitle('');
-    setBody('');
-    setAnnouncementType('general');
-    setIsDismissible(true);
-    setIsPinned(false);
-  }
+  // Sync form values when drawer opens — initialValues only meaningful in edit mode.
 
-  // Sync form state when drawer opens
-  /* eslint-disable react-hooks/set-state-in-effect -- sync initial values on open */
   useEffect(() => {
-    if (open && initialValues) {
-      setTitle(initialValues.title);
-      setBody(initialValues.body);
-      setAnnouncementType(initialValues.announcementType);
-      setIsDismissible(initialValues.isDismissible);
-      setIsPinned(initialValues.isPinned);
-    } else if (open) {
-      resetForm();
+    if (!open) return;
+    if (initialValues) {
+      form.reset({
+        title: initialValues.title,
+        body: initialValues.body,
+        announcement_type: initialValues.announcementType,
+        is_dismissible: initialValues.isDismissible,
+        is_pinned: initialValues.isPinned,
+      });
+    } else {
+      form.reset(DEFAULT_ANNOUNCEMENT_VALUES);
     }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
-  /* eslint-enable react-hooks/set-state-in-effect */
 
-  function handleSubmit() {
-    if (!title.trim() || !body.trim()) return;
-    startTransition(async () => {
-      const createPayload = {
-        title,
-        body,
-        announcement_type: announcementType,
-        is_dismissible: isDismissible,
-      };
-      const updatePayload = {
-        title,
-        body,
-        announcement_type: announcementType,
-        is_dismissible: isDismissible,
-        is_pinned: isPinned,
-      };
-
-      const result =
-        mode === 'create'
-          ? await createAnnouncement(clubId!, createPayload)
-          : await updateAnnouncement(announcementId!, updatePayload);
+  const onSubmit = useFormSubmit({
+    form,
+    onSubmit: async (values) => {
+      const result = await new Promise<{ error?: string } | void>((resolve) => {
+        startTransition(async () => {
+          const createPayload = {
+            title: values.title,
+            body: values.body,
+            announcement_type: values.announcement_type,
+            is_dismissible: values.is_dismissible,
+          };
+          const updatePayload = {
+            ...createPayload,
+            is_pinned: values.is_pinned,
+          };
+          const r =
+            mode === 'create'
+              ? await createAnnouncement(clubId!, createPayload)
+              : await updateAnnouncement(announcementId!, updatePayload);
+          resolve(r);
+        });
+      });
 
       if (result?.error) {
         toast.error(result.error);
-        return;
+        return { error: result.error };
       }
       onOpenChange(false);
-      resetForm();
+      form.reset(DEFAULT_ANNOUNCEMENT_VALUES);
       onSuccess?.();
-    });
-  }
+    },
+  });
 
   const headerText = mode === 'create' ? content.announcements.create : content.announcements.edit;
   const submitText =
     mode === 'create' ? content.announcements.create : content.announcements.update;
+  const submitting = isPending || form.formState.isSubmitting;
 
   return (
     <ResponsiveDrawer open={open} onOpenChange={onOpenChange} size="auto" className="overflow-clip">
@@ -428,70 +437,101 @@ export function AnnouncementFormDrawer({
         <DrawerDescription className="sr-only">{content.announcements.bodyLabel}</DrawerDescription>
         <CardIconHeader icon={Megaphone} title={headerText} />
       </DrawerHeader>
-      <DrawerBody className="space-y-6 pt-2">
-        <FloatingField
-          label={content.announcements.titleLabel}
-          htmlFor={`${mode}-announcement-title`}
-          hasValue={!!title}
-        >
-          <Input
-            id={`${mode}-announcement-title`}
-            value={title}
-            {...titleCompositionProps}
-            placeholder=" "
-          />
-        </FloatingField>
-        <FloatingField
-          label={content.announcements.bodyLabel}
-          htmlFor={`${mode}-announcement-body`}
-          hasValue={!!body}
-          maxLength={ANNOUNCEMENT_BODY_LIMIT}
-        >
-          <Textarea
-            id={`${mode}-announcement-body`}
-            value={body}
-            {...bodyCompositionProps}
-            placeholder=" "
-            rows={4}
-            maxLength={ANNOUNCEMENT_BODY_LIMIT}
-          />
-        </FloatingField>
-        <SegmentedControl
-          value={announcementType}
-          onValueChange={(v) => setAnnouncementType(v as AnnouncementType)}
-          options={announcementTypeOptions}
-          ariaLabel="Announcement type"
-          className="w-full"
-        />
-        <div className="rounded-2xl bg-surface-sunken p-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor={`${mode}-dismissible-toggle`}>
-              {content.announcements.dismissibleLabel}
-            </Label>
-            <Switch
-              id={`${mode}-dismissible-toggle`}
-              checked={isDismissible}
-              onCheckedChange={setIsDismissible}
+      <Form {...form}>
+        <form id={`${mode}-announcement-form`} onSubmit={onSubmit} noValidate className="contents">
+          <DrawerBody className="space-y-6 pt-2">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FloatingField label={content.announcements.titleLabel} hasValue={!!field.value}>
+                    <FormControl>
+                      <Input {...nativeInputPresets.prose} placeholder=" " {...field} />
+                    </FormControl>
+                  </FloatingField>
+                </FormItem>
+              )}
             />
-          </div>
-        </div>
-      </DrawerBody>
-      <DrawerFooter>
-        <Button
-          size="lg"
-          className="w-full"
-          onClick={handleSubmit}
-          disabled={isPending || !title.trim() || !body.trim()}
-        >
-          {isPending ? <ButtonSpinner className="size-5" /> : null}
-          {submitText}
-        </Button>
-        <DrawerClose asChild>
-          <Button variant="ghost" size="lg" className="w-full">
-            {common.cancel}
-          </Button>
-        </DrawerClose>
-      </DrawerFooter>
+
+            <FormField
+              control={form.control}
+              name="body"
+              render={({ field }) => (
+                <FormItem>
+                  <FloatingField
+                    label={content.announcements.bodyLabel}
+                    hasValue={!!field.value}
+                    maxLength={ANNOUNCEMENT_BODY_MAX}
+                  >
+                    <FormControl>
+                      <Textarea
+                        {...nativeInputPresets.composer}
+                        placeholder=" "
+                        rows={4}
+                        maxLength={ANNOUNCEMENT_BODY_MAX}
+                        {...field}
+                      />
+                    </FormControl>
+                  </FloatingField>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="announcement_type"
+              render={({ field }) => (
+                <SegmentedControl
+                  value={field.value}
+                  onValueChange={(v) => field.onChange(v as AnnouncementType)}
+                  options={announcementTypeOptions}
+                  ariaLabel={content.announcements.typeAriaLabel}
+                  className="w-full"
+                />
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="is_dismissible"
+              render={({ field }) => (
+                <div className="rounded-2xl bg-surface-sunken p-4">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor={`${mode}-dismissible-toggle`}>
+                      {content.announcements.dismissibleLabel}
+                    </Label>
+                    <Switch
+                      id={`${mode}-dismissible-toggle`}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </div>
+                </div>
+              )}
+            />
+
+            <FormRootError />
+          </DrawerBody>
+          <DrawerFooter>
+            <Button
+              type="submit"
+              form={`${mode}-announcement-form`}
+              size="lg"
+              className="w-full"
+              disabled={submitting}
+            >
+              {submitting ? <ButtonSpinner className="size-5" /> : null}
+              {submitText}
+            </Button>
+            <DrawerClose asChild>
+              <Button variant="ghost" size="lg" className="w-full">
+                {common.cancel}
+              </Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </form>
+      </Form>
     </ResponsiveDrawer>
   );
 }

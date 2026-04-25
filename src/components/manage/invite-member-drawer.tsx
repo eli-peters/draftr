@@ -1,9 +1,13 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { CheckCircle, EnvelopeSimple, Copy, Check, UserPlus } from '@phosphor-icons/react/dist/ssr';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+
 import { Button } from '@/components/ui/button';
 import { FloatingField } from '@/components/ui/floating-field';
+import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { CardIconHeader } from '@/components/ui/card-icon-header';
 import { SegmentedControl } from '@/components/ui/segmented-control';
@@ -18,6 +22,8 @@ import {
 import { ResponsiveDrawer } from '@/components/ui/responsive-drawer';
 import { inviteMember } from '@/lib/auth/actions';
 import { appContent } from '@/content/app';
+import { FormRootError, nativeInputPresets, useFormSubmit } from '@/lib/forms';
+import { inviteMemberSchema, type InviteMemberValues } from '@/lib/forms/schemas';
 
 const { manage: content, common } = appContent;
 const inviteContent = content.members.invite;
@@ -49,24 +55,27 @@ export function InviteMemberDrawer({
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
 
-  const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [, setSentEmail] = useState('');
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [role, setRole] = useState<'rider' | 'ride_leader' | 'admin'>('rider');
-  const formRef = useRef<HTMLFormElement>(null);
+
+  const form = useForm<InviteMemberValues>({
+    resolver: zodResolver(inviteMemberSchema),
+    defaultValues: { email: '', role: 'rider' },
+    mode: 'onTouched',
+  });
+
+  function resetState() {
+    setSuccess(false);
+    setSentEmail('');
+    setInviteLink(null);
+    setCopied(false);
+    form.reset({ email: '', role: 'rider' });
+  }
 
   function handleOpenChange(isOpen: boolean) {
-    if (isOpen) {
-      setError(null);
-      setSuccess(false);
-      setSentEmail('');
-      setInviteLink(null);
-      setCopied(false);
-      setRole('rider');
-    }
+    if (isOpen) resetState();
     if (isControlled) {
       controlledOnOpenChange?.(isOpen);
     } else {
@@ -74,35 +83,29 @@ export function InviteMemberDrawer({
     }
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setIsPending(true);
-    setError(null);
-    setSuccess(false);
-
-    const formData = new FormData(e.currentTarget);
-    formData.set('club_id', clubId);
-    formData.set('role', role);
-    const email = formData.get('email') as string;
-
-    const result = await inviteMember(formData);
-    setIsPending(false);
-
-    if (result.error) {
-      const errorMap: Record<string, string> = {
-        already_invited: inviteContent.alreadyInvited,
-        rate_limited: inviteContent.rateLimited,
-      };
-      setError(errorMap[result.error] ?? result.error);
-    } else {
+  const onSubmit = useFormSubmit({
+    form,
+    onSubmit: async (values) => {
+      const fd = new FormData();
+      fd.set('email', values.email.trim().toLowerCase());
+      fd.set('role', values.role);
+      fd.set('club_id', clubId);
+      const result = await inviteMember(fd);
+      if (result?.error) {
+        const errorMap: Record<string, string> = {
+          already_invited: inviteContent.alreadyInvited,
+          rate_limited: inviteContent.rateLimited,
+        };
+        return { error: errorMap[result.error] ?? result.error };
+      }
       setSuccess(true);
-      setSentEmail(email);
+      setSentEmail(values.email);
       setInviteLink(result.inviteLink ?? null);
       setCopied(false);
-      formRef.current?.reset();
       onSuccess?.();
-    }
-  }
+      return result;
+    },
+  });
 
   return (
     <>
@@ -176,14 +179,7 @@ export function InviteMemberDrawer({
             </DrawerBody>
             <DrawerFooter>
               <div className="flex w-full gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => {
-                    setSuccess(false);
-                    setSentEmail('');
-                  }}
-                >
+                <Button variant="outline" className="flex-1" onClick={resetState}>
                   {inviteContent.inviteAnother}
                 </Button>
                 <DrawerClose asChild>
@@ -200,45 +196,49 @@ export function InviteMemberDrawer({
               <CardIconHeader icon={UserPlus} title={content.members.inviteButton} />
             </DrawerHeader>
             <DrawerBody className="pt-2">
-              <form
-                ref={formRef}
-                id="invite-member-form"
-                onSubmit={handleSubmit}
-                className="space-y-8"
-              >
-                <FloatingField label={inviteContent.emailLabel} htmlFor="invite-email">
-                  <Input
-                    id="invite-email"
+              <Form {...form}>
+                <form id="invite-member-form" onSubmit={onSubmit} className="space-y-8" noValidate>
+                  <FormField
+                    control={form.control}
                     name="email"
-                    type="email"
-                    required
-                    inputMode="email"
-                    autoComplete="email"
-                    enterKeyHint="send"
-                    placeholder=" "
+                    render={({ field }) => (
+                      <FormItem>
+                        <FloatingField label={inviteContent.emailLabel}>
+                          <FormControl>
+                            <Input {...nativeInputPresets.email} placeholder=" " {...field} />
+                          </FormControl>
+                        </FloatingField>
+                      </FormItem>
+                    )}
                   />
-                </FloatingField>
 
-                <SegmentedControl
-                  value={role}
-                  onValueChange={setRole}
-                  options={roleOptions}
-                  ariaLabel={inviteContent.roleLabel}
-                  className="w-full"
-                />
+                  <FormField
+                    control={form.control}
+                    name="role"
+                    render={({ field }) => (
+                      <SegmentedControl
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        options={roleOptions}
+                        ariaLabel={inviteContent.roleLabel}
+                        className="w-full"
+                      />
+                    )}
+                  />
 
-                {error && <p className="text-sm text-destructive">{error}</p>}
-              </form>
+                  <FormRootError />
+                </form>
+              </Form>
             </DrawerBody>
             <DrawerFooter>
               <Button
                 type="submit"
                 form="invite-member-form"
-                disabled={isPending}
+                disabled={form.formState.isSubmitting}
                 size="lg"
                 className="w-full"
               >
-                {isPending ? common.loading : inviteContent.sendButton}
+                {form.formState.isSubmitting ? common.loading : inviteContent.sendButton}
               </Button>
               <DrawerClose asChild>
                 <Button variant="ghost" size="lg" className="w-full">

@@ -1,10 +1,15 @@
 'use client';
 
-import { useReducer, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, type UseFormReturn } from 'react-hook-form';
 import { toast } from 'sonner';
+
 import { appContent } from '@/content/app';
 import { routes } from '@/config/routes';
+import { focusFirstError } from '@/lib/forms';
+import { rideSchema, type RideValues } from '@/lib/forms/schemas';
 import { parseRouteUrl } from '@/lib/rides/parse-route-url';
 import { decodeStartPoint } from '@/lib/maps/decode-start-point';
 import { reverseGeocode } from '@/lib/maps/reverse-geocode';
@@ -23,11 +28,12 @@ const { rides: ridesContent } = appContent;
 const form = ridesContent.form;
 
 // ---------------------------------------------------------------------------
-// State shape
+// State shape projected from RHF + UI state. Field names match the legacy
+// reducer state so step components don't need to be rewritten — we just feed
+// them a snapshot derived from RHF on every render.
 // ---------------------------------------------------------------------------
 
 export interface RideFormState {
-  // Route
   routeUrl: string;
   routeName: string;
   routePolyline: string;
@@ -36,7 +42,6 @@ export interface RideFormState {
   isFetchingRoute: boolean;
   fetchRouteError: string | null;
 
-  // Details (controlled)
   title: string;
   description: string;
   distanceKm: string;
@@ -45,7 +50,6 @@ export interface RideFormState {
   paceGroupId: string;
   isDropRide: boolean;
 
-  // When & Where
   rideDate: string;
   startTime: string;
   startLocationName: string;
@@ -54,170 +58,19 @@ export interface RideFormState {
   startLongitude: number | null;
   isGeocodingLocation: boolean;
 
-  // Riders
   selectedCoLeaders: string[];
   coLeaderConflicts: LeaderConflict[];
 
-  // Form
   isPending: boolean;
   error: string | null;
   fieldErrors: Record<string, string>;
 }
 
-// ---------------------------------------------------------------------------
-// Actions
-// ---------------------------------------------------------------------------
-
-type RideFormAction =
-  | { type: 'SET_FIELD'; field: keyof RideFormState; value: RideFormState[keyof RideFormState] }
-  | {
-      type: 'APPLY_ROUTE_DATA';
-      payload: {
-        routeUrl: string;
-        routeName: string;
-        routePolyline: string;
-        title?: string;
-        description?: string;
-        distanceKm?: string;
-        elevationM?: string;
-        startLatitude?: number | null;
-        startLongitude?: number | null;
-        detectedService?: IntegrationService | null;
-      };
-    }
-  | { type: 'CLEAR_ROUTE_DATA'; preserveUrl?: boolean }
-  | { type: 'GEOCODING_START' }
-  | {
-      type: 'GEOCODING_COMPLETE';
-      payload: { name: string; address: string } | null;
-    }
-  | { type: 'TOGGLE_CO_LEADER'; userId: string }
-  | { type: 'SET_CO_LEADER_CONFLICTS'; conflicts: LeaderConflict[] }
-  | { type: 'SET_PENDING'; value: boolean }
-  | { type: 'SET_ERROR'; value: string | null }
-  | { type: 'SET_FIELD_ERRORS'; errors: Record<string, string> }
-  | { type: 'SET_LINK_ONLY'; routeName: string; detectedService?: IntegrationService | null };
-
-// ---------------------------------------------------------------------------
-// Reducer
-// ---------------------------------------------------------------------------
-
-function rideFormReducer(state: RideFormState, action: RideFormAction): RideFormState {
-  switch (action.type) {
-    case 'SET_FIELD': {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { [action.field]: _cleared, ...remainingErrors } = state.fieldErrors;
-      return { ...state, [action.field]: action.value, fieldErrors: remainingErrors };
-    }
-
-    case 'APPLY_ROUTE_DATA': {
-      const { payload } = action;
-      return {
-        ...state,
-        routeUrl: payload.routeUrl,
-        routeName: payload.routeName,
-        routePolyline: payload.routePolyline,
-        importedRouteName: payload.routeName,
-        detectedService: payload.detectedService ?? state.detectedService,
-        // Only overwrite title if currently empty
-        title: state.title ? state.title : (payload.title ?? state.title),
-        // Only overwrite description if currently empty — truncate to 250 chars
-        description: state.description
-          ? state.description
-          : (payload.description?.slice(0, 250) ?? state.description),
-        distanceKm: payload.distanceKm ?? state.distanceKm,
-        elevationM: payload.elevationM ?? state.elevationM,
-        startLatitude: payload.startLatitude ?? state.startLatitude,
-        startLongitude: payload.startLongitude ?? state.startLongitude,
-        fetchRouteError: null,
-        isFetchingRoute: false,
-      };
-    }
-
-    case 'CLEAR_ROUTE_DATA':
-      return {
-        ...state,
-        importedRouteName: null,
-        routeName: '',
-        routePolyline: '',
-        detectedService: null,
-        routeUrl: action.preserveUrl ? state.routeUrl : '',
-        title: '',
-        distanceKm: '',
-        elevationM: '',
-        description: '',
-        startLocationName: '',
-        startLocationAddress: '',
-        startLatitude: null,
-        startLongitude: null,
-      };
-
-    case 'GEOCODING_START':
-      return { ...state, isGeocodingLocation: true };
-
-    case 'GEOCODING_COMPLETE':
-      return {
-        ...state,
-        isGeocodingLocation: false,
-        ...(action.payload
-          ? {
-              startLocationName: action.payload.name,
-              startLocationAddress: action.payload.address,
-            }
-          : {}),
-      };
-
-    case 'TOGGLE_CO_LEADER': {
-      const isSelected = state.selectedCoLeaders.includes(action.userId);
-      return {
-        ...state,
-        selectedCoLeaders: isSelected
-          ? state.selectedCoLeaders.filter((id) => id !== action.userId)
-          : [...state.selectedCoLeaders, action.userId],
-      };
-    }
-
-    case 'SET_CO_LEADER_CONFLICTS':
-      return { ...state, coLeaderConflicts: action.conflicts };
-
-    case 'SET_PENDING':
-      return { ...state, isPending: action.value };
-
-    case 'SET_ERROR':
-      return { ...state, error: action.value };
-
-    case 'SET_FIELD_ERRORS':
-      return { ...state, fieldErrors: action.errors };
-
-    case 'SET_LINK_ONLY':
-      return {
-        ...state,
-        importedRouteName: action.routeName,
-        detectedService: action.detectedService ?? state.detectedService,
-        isFetchingRoute: false,
-      };
-
-    default:
-      return state;
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Initial state builder
-// ---------------------------------------------------------------------------
-
-function buildInitialState(initialData?: RideFormInitialData): RideFormState {
+function buildDefaultValues(initialData?: RideFormInitialData): RideValues {
   return {
-    // Route
     routeUrl: initialData?.route_url ?? '',
     routeName: initialData?.route_name ?? '',
     routePolyline: initialData?.route_polyline ?? '',
-    importedRouteName: initialData?.route_name || null,
-    detectedService: null,
-    isFetchingRoute: false,
-    fetchRouteError: null,
-
-    // Details
     title: initialData?.title ?? '',
     description: initialData?.description ?? '',
     distanceKm: initialData?.distance_km ?? '',
@@ -225,30 +78,15 @@ function buildInitialState(initialData?: RideFormInitialData): RideFormState {
     capacity: initialData?.capacity ?? '',
     paceGroupId: initialData?.pace_group_id ?? '',
     isDropRide: initialData?.is_drop_ride ?? false,
-
-    // When & Where
     rideDate: initialData?.ride_date ?? '',
     startTime: initialData?.start_time?.slice(0, 5) ?? '',
     startLocationName: initialData?.start_location_name ?? '',
     startLocationAddress: initialData?.start_location_address ?? '',
     startLatitude: initialData?.start_latitude ?? null,
     startLongitude: initialData?.start_longitude ?? null,
-    isGeocodingLocation: false,
-
-    // Riders
     selectedCoLeaders: [],
-    coLeaderConflicts: [],
-
-    // Form
-    isPending: false,
-    error: null,
-    fieldErrors: {},
   };
 }
-
-// ---------------------------------------------------------------------------
-// Hook
-// ---------------------------------------------------------------------------
 
 interface UseRideFormStateOptions {
   initialData?: RideFormInitialData;
@@ -260,6 +98,19 @@ interface UseRideFormStateOptions {
   returnTo?: string;
 }
 
+export interface UseRideFormStateReturn {
+  state: RideFormState;
+  /** RHF instance — wrap the form with `<Form {...form}>` to provide context. */
+  form: UseFormReturn<RideValues>;
+  setField: <K extends keyof RideFormState>(field: K, value: RideFormState[K]) => void;
+  pasteUrlRef: React.RefObject<HTMLInputElement | null>;
+  isEdit: boolean;
+  handleRouteImport: (route: ImportableRoute) => Promise<void>;
+  handlePasteUrlBlur: () => Promise<void>;
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  clearRouteData: (preserveUrl?: boolean) => void;
+}
+
 export function useRideFormState({
   initialData,
   rideId,
@@ -268,45 +119,143 @@ export function useRideFormState({
   eligibleLeaders,
   initialCoLeaderIds,
   returnTo,
-}: UseRideFormStateOptions) {
+}: UseRideFormStateOptions): UseRideFormStateReturn {
   const router = useRouter();
   const isEdit = !!rideId;
 
-  const [state, dispatch] = useReducer(rideFormReducer, initialData, buildInitialState);
+  // ── RHF instance ───────────────────────────────────────────────────────
+  const formInstance = useForm<RideValues>({
+    resolver: zodResolver(rideSchema),
+    defaultValues: useMemo(() => buildDefaultValues(initialData), [initialData]),
+    mode: 'onTouched',
+  });
 
-  // Paste URL ref stays as a ref (ephemeral drawer input)
+  // ── Watched values — every render produces a fresh snapshot ────────────
+  const watched = formInstance.watch();
+
+  // ── UI-only state (not part of the validated form payload) ─────────────
+  const [importedRouteName, setImportedRouteName] = useState<string | null>(
+    initialData?.route_name || null,
+  );
+  const [detectedService, setDetectedService] = useState<IntegrationService | null>(null);
+  const [isFetchingRoute, setIsFetchingRoute] = useState(false);
+  const [isGeocodingLocation, setIsGeocodingLocation] = useState(false);
+  const [fetchRouteError, setFetchRouteError] = useState<string | null>(null);
+  const [coLeaderConflicts, setCoLeaderConflicts] = useState<LeaderConflict[]>([]);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [isPending, setIsPending] = useState(false);
+
   const pasteUrlRef = useRef<HTMLInputElement>(null);
 
-  // Pre-select co-leaders when editing
+  // ── Pre-select co-leaders when editing ─────────────────────────────────
   const didInitCoLeaders = useRef(false);
   useEffect(() => {
     if (initialCoLeaderIds?.length && !didInitCoLeaders.current) {
       didInitCoLeaders.current = true;
-      dispatch({ type: 'SET_FIELD', field: 'selectedCoLeaders', value: initialCoLeaderIds });
+      formInstance.setValue('selectedCoLeaders', initialCoLeaderIds);
     }
-  }, [initialCoLeaderIds]);
+  }, [initialCoLeaderIds, formInstance]);
 
-  // ── Co-leader conflict fetching ─────────────────────────────────────────
-
+  // ── Co-leader conflict fetching when ride date changes ─────────────────
   const fetchConflicts = useCallback(
     async (date: string) => {
       if (!date || eligibleLeaders.length === 0) {
-        dispatch({ type: 'SET_CO_LEADER_CONFLICTS', conflicts: [] });
+        setCoLeaderConflicts([]);
         return;
       }
       const ids = eligibleLeaders.map((l) => l.user_id);
       const conflicts = await getLeaderRideConflicts(date, ids, rideId);
-      dispatch({ type: 'SET_CO_LEADER_CONFLICTS', conflicts });
+      setCoLeaderConflicts(conflicts);
     },
     [eligibleLeaders, rideId],
   );
 
   useEffect(() => {
-    fetchConflicts(state.rideDate);
-  }, [state.rideDate, fetchConflicts]);
+    fetchConflicts(watched.rideDate ?? '');
+  }, [watched.rideDate, fetchConflicts]);
 
-  // ── Route data application (async — handles geocoding) ─────────────────
+  // ── Project RHF values + UI state into the legacy `state` shape ────────
+  const fieldErrorMap = useMemo(() => {
+    const mapped: Record<string, string> = {};
+    for (const [key, err] of Object.entries(formInstance.formState.errors)) {
+      const message = (err as { message?: string } | undefined)?.message;
+      if (message) mapped[key] = message;
+    }
+    return mapped;
+  }, [formInstance.formState.errors]);
 
+  const state: RideFormState = {
+    routeUrl: watched.routeUrl ?? '',
+    routeName: watched.routeName ?? '',
+    routePolyline: watched.routePolyline ?? '',
+    importedRouteName,
+    detectedService,
+    isFetchingRoute,
+    fetchRouteError,
+
+    title: watched.title ?? '',
+    description: watched.description ?? '',
+    distanceKm: watched.distanceKm ?? '',
+    elevationM: watched.elevationM ?? '',
+    capacity: watched.capacity ?? '',
+    paceGroupId: watched.paceGroupId ?? '',
+    isDropRide: watched.isDropRide ?? false,
+
+    rideDate: watched.rideDate ?? '',
+    startTime: watched.startTime ?? '',
+    startLocationName: watched.startLocationName ?? '',
+    startLocationAddress: watched.startLocationAddress ?? '',
+    startLatitude: watched.startLatitude ?? null,
+    startLongitude: watched.startLongitude ?? null,
+    isGeocodingLocation,
+
+    selectedCoLeaders: watched.selectedCoLeaders ?? [],
+    coLeaderConflicts,
+
+    isPending,
+    error: serverError,
+    fieldErrors: fieldErrorMap,
+  };
+
+  // ── Field setter — preserves the legacy step-component contract ────────
+  const setField = useCallback(
+    <K extends keyof RideFormState>(field: K, value: RideFormState[K]) => {
+      // Map legacy field keys to RHF field paths. UI-only fields go to local state.
+      switch (field) {
+        case 'importedRouteName':
+          setImportedRouteName(value as string | null);
+          return;
+        case 'detectedService':
+          setDetectedService(value as IntegrationService | null);
+          return;
+        case 'isFetchingRoute':
+          setIsFetchingRoute(value as boolean);
+          return;
+        case 'fetchRouteError':
+          setFetchRouteError(value as string | null);
+          return;
+        case 'isGeocodingLocation':
+          setIsGeocodingLocation(value as boolean);
+          return;
+        case 'coLeaderConflicts':
+          setCoLeaderConflicts(value as LeaderConflict[]);
+          return;
+        case 'fieldErrors':
+        case 'isPending':
+        case 'error':
+          // No-op — these are derived in the new model.
+          return;
+        default:
+          formInstance.setValue(field as keyof RideValues, value as never, {
+            shouldValidate: false,
+            shouldDirty: true,
+          });
+      }
+    },
+    [formInstance],
+  );
+
+  // ── Apply route data after import or scrape ────────────────────────────
   async function applyRouteData(route: ImportableRoute) {
     const startCoords = route.polyline
       ? (() => {
@@ -321,41 +270,51 @@ export function useRideFormState({
         ? { latitude: route.start_latitude, longitude: route.start_longitude }
         : null;
 
-    dispatch({
-      type: 'APPLY_ROUTE_DATA',
-      payload: {
-        routeUrl: route.source_url,
-        routeName: route.name,
-        routePolyline: route.polyline || '',
-        title: route.name,
-        description: route.description || undefined,
-        distanceKm: route.distance_m ? (route.distance_m / 1000).toFixed(1) : undefined,
-        elevationM: route.elevation_m ? String(Math.round(route.elevation_m)) : undefined,
-        startLatitude: startCoords?.latitude ?? null,
-        startLongitude: startCoords?.longitude ?? null,
-        detectedService: route.service ?? null,
-      },
-    });
+    const currentTitle = formInstance.getValues('title');
+    const currentDescription = formInstance.getValues('description') ?? '';
+
+    formInstance.setValue('routeUrl', route.source_url);
+    formInstance.setValue('routeName', route.name);
+    formInstance.setValue('routePolyline', route.polyline || '');
+    if (!currentTitle) formInstance.setValue('title', route.name);
+    if (!currentDescription && route.description) {
+      formInstance.setValue('description', route.description.slice(0, 250));
+    }
+    if (route.distance_m) {
+      formInstance.setValue('distanceKm', (route.distance_m / 1000).toFixed(1));
+    }
+    if (route.elevation_m) {
+      formInstance.setValue('elevationM', String(Math.round(route.elevation_m)));
+    }
+    formInstance.setValue('startLatitude', startCoords?.latitude ?? null);
+    formInstance.setValue('startLongitude', startCoords?.longitude ?? null);
+
+    setImportedRouteName(route.name);
+    setDetectedService(route.service ?? null);
+    setFetchRouteError(null);
+    setIsFetchingRoute(false);
+
+    // Clear any pre-existing routeUrl validation error.
+    formInstance.clearErrors('routeUrl');
 
     if (startCoords) {
-      dispatch({ type: 'GEOCODING_START' });
+      setIsGeocodingLocation(true);
       try {
         const location = await reverseGeocode(startCoords.latitude, startCoords.longitude);
-        dispatch({
-          type: 'GEOCODING_COMPLETE',
-          payload: location ? { name: location.name, address: location.address } : null,
-        });
+        if (location) {
+          formInstance.setValue('startLocationName', location.name);
+          formInstance.setValue('startLocationAddress', location.address);
+        }
       } catch (err) {
         console.warn('[ride-form] reverseGeocode failed:', err);
-        dispatch({ type: 'GEOCODING_COMPLETE', payload: null });
+      } finally {
+        setIsGeocodingLocation(false);
       }
     }
   }
 
-  // ── Route import handler ────────────────────────────���───────────────────
-
+  // ── Route import handler ───────────────────────────────────────────────
   async function handleRouteImport(route: ImportableRoute) {
-    // If the route has no polyline, fetch full details
     if (!route.polyline) {
       const rawId = route.id.replace(`${route.service}:`, '');
       const type = route.source_type === 'activity' ? 'trip' : 'route';
@@ -375,16 +334,13 @@ export function useRideFormState({
         // Fall through to apply what we have
       }
     }
-
     await applyRouteData(route);
     toast.success(appContent.rides.importRoute.imported);
   }
 
-  // ── Paste URL handler ───────────────────────────────────────────────────
-
-  /** Try to scrape route details from a URL. Returns true if successful. */
+  // ── Paste URL handler ──────────────────────────────────────────────────
   async function tryScrapeAndApply(url: string): Promise<boolean> {
-    dispatch({ type: 'SET_FIELD', field: 'isFetchingRoute', value: true });
+    setIsFetchingRoute(true);
     try {
       const res = await fetch(`${routes.scrapeRoute}?url=${encodeURIComponent(url)}`);
       if (res.ok) {
@@ -401,46 +357,45 @@ export function useRideFormState({
     return false;
   }
 
+  function setLinkOnly(routeName: string, service?: IntegrationService | null) {
+    setImportedRouteName(routeName);
+    if (service !== undefined) setDetectedService(service);
+    setIsFetchingRoute(false);
+  }
+
   async function handlePasteUrlBlur() {
     const url = pasteUrlRef.current?.value?.trim();
     if (!url) return;
 
-    dispatch({ type: 'SET_FIELD', field: 'fetchRouteError', value: null });
+    setFetchRouteError(null);
+    formInstance.clearErrors('routeUrl');
+    formInstance.setValue('routeUrl', url);
+
     const parsed = parseRouteUrl(url);
 
-    // Always store the URL
-    dispatch({ type: 'SET_FIELD', field: 'routeUrl', value: url });
-
-    // Unrecognized service — try scraping
     if (!parsed) {
       if (!(await tryScrapeAndApply(url))) {
-        dispatch({ type: 'SET_LINK_ONLY', routeName: form.routeLinkAdded });
+        setLinkOnly(form.routeLinkAdded);
       }
       return;
     }
 
-    // No connection for this service — try scraping
     if (!connectedServices.includes(parsed.service)) {
-      dispatch({ type: 'SET_FIELD', field: 'detectedService', value: parsed.service });
+      setDetectedService(parsed.service);
       if (!(await tryScrapeAndApply(url))) {
-        dispatch({
-          type: 'SET_LINK_ONLY',
-          routeName: form.routeLinkAdded,
-          detectedService: parsed.service,
-        });
+        setLinkOnly(form.routeLinkAdded, parsed.service);
       }
       return;
     }
 
-    // Connected — fetch via API
-    dispatch({ type: 'SET_FIELD', field: 'isFetchingRoute', value: true });
+    setIsFetchingRoute(true);
     try {
       const res = await fetch(
         `${routes.importRouteById(parsed.id)}?service=${parsed.service}&type=${parsed.type}`,
       );
       if (!res.ok) {
-        dispatch({ type: 'SET_FIELD', field: 'fetchRouteError', value: form.fetchRouteError });
-        dispatch({ type: 'SET_LINK_ONLY', routeName: form.routeLinkAdded });
+        setFetchRouteError(form.fetchRouteError);
+        setLinkOnly(form.routeLinkAdded);
         return;
       }
       const data = await res.json();
@@ -449,106 +404,104 @@ export function useRideFormState({
         toast.success(appContent.rides.importRoute.imported);
       }
     } catch {
-      dispatch({ type: 'SET_FIELD', field: 'fetchRouteError', value: form.fetchRouteError });
-      dispatch({ type: 'SET_LINK_ONLY', routeName: form.routeLinkAdded });
+      setFetchRouteError(form.fetchRouteError);
+      setLinkOnly(form.routeLinkAdded);
     }
   }
 
-  // ── Clear route data ────────────────────────────────────────────────────
-
+  // ── Clear route data ───────────────────────────────────────────────────
   function clearRouteData(preserveUrl = false) {
-    dispatch({ type: 'CLEAR_ROUTE_DATA', preserveUrl });
+    setImportedRouteName(null);
+    setDetectedService(null);
+    formInstance.setValue('routeName', '');
+    formInstance.setValue('routePolyline', '');
+    if (!preserveUrl) formInstance.setValue('routeUrl', '');
+    formInstance.setValue('title', '');
+    formInstance.setValue('description', '');
+    formInstance.setValue('distanceKm', '');
+    formInstance.setValue('elevationM', '');
+    formInstance.setValue('startLocationName', '');
+    formInstance.setValue('startLocationAddress', '');
+    formInstance.setValue('startLatitude', null);
+    formInstance.setValue('startLongitude', null);
   }
 
-  // ── Form submission ─────────────────────────────────────────────────────
+  // ── Submission ─────────────────────────────────────────────────────────
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      formInstance.handleSubmit(async (values) => {
+        setIsPending(true);
+        setServerError(null);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    dispatch({ type: 'SET_PENDING', value: true });
-    dispatch({ type: 'SET_ERROR', value: null });
+        const shared = {
+          title: values.title,
+          description: values.description || undefined,
+          ride_date: values.rideDate,
+          start_time: values.startTime,
+          pace_group_id: values.paceGroupId,
+          distance_km: values.distanceKm ? Number(values.distanceKm) : undefined,
+          elevation_m: values.elevationM ? Number(values.elevationM) : undefined,
+          capacity: Number(values.capacity),
+          route_url: values.routeUrl,
+          route_name: values.routeName || undefined,
+          route_polyline: values.routePolyline || undefined,
+          is_drop_ride: values.isDropRide ?? false,
+          start_location_name: values.startLocationName || undefined,
+          start_location_address: values.startLocationAddress || undefined,
+          start_latitude: values.startLatitude ?? undefined,
+          start_longitude: values.startLongitude ?? undefined,
+        };
 
-    const errors: Record<string, string> = {};
-    if (!state.routeUrl) errors.routeUrl = form.fieldRequired;
-    if (!state.title) errors.title = form.fieldRequired;
-    if (!state.rideDate) errors.rideDate = form.fieldRequired;
-    if (!state.startTime) errors.startTime = form.fieldRequired;
-    if (!state.paceGroupId) errors.paceGroupId = form.fieldRequired;
-    if (!state.capacity) errors.capacity = form.fieldRequired;
+        let result: { error?: string; success?: boolean; rideId?: string };
+        try {
+          if (isEdit) {
+            result = await updateRide(rideId!, {
+              ...shared,
+              co_leader_ids: values.selectedCoLeaders,
+            } as UpdateRideData);
+          } else {
+            result = await createRide({
+              ...shared,
+              club_id: clubId,
+              co_leader_ids:
+                values.selectedCoLeaders.length > 0 ? values.selectedCoLeaders : undefined,
+            } as CreateRideData);
+          }
+        } catch (err) {
+          // Re-throw NEXT_REDIRECT so the framework navigates.
+          if (
+            err &&
+            typeof err === 'object' &&
+            'digest' in err &&
+            typeof (err as { digest?: unknown }).digest === 'string' &&
+            (err as { digest: string }).digest.startsWith('NEXT_REDIRECT')
+          ) {
+            throw err;
+          }
+          setIsPending(false);
+          setServerError(appContent.validation.generic.submitFailed);
+          return;
+        }
 
-    if (Object.keys(errors).length > 0) {
-      dispatch({ type: 'SET_FIELD_ERRORS', errors });
-      dispatch({ type: 'SET_PENDING', value: false });
-      // Scroll to first errored field
-      requestAnimationFrame(() => {
-        document
-          .querySelector('[aria-invalid="true"]')
-          ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-      return;
-    }
-
-    const shared = {
-      title: state.title,
-      description: state.description || undefined,
-      ride_date: state.rideDate,
-      start_time: state.startTime,
-      pace_group_id: state.paceGroupId,
-      distance_km: state.distanceKm ? Number(state.distanceKm) : undefined,
-      elevation_m: state.elevationM ? Number(state.elevationM) : undefined,
-      capacity: Number(state.capacity),
-      route_url: state.routeUrl,
-      route_name: state.routeName || undefined,
-      route_polyline: state.routePolyline || undefined,
-      is_drop_ride: state.isDropRide,
-      start_location_name: state.startLocationName || undefined,
-      start_location_address: state.startLocationAddress || undefined,
-      start_latitude: state.startLatitude ?? undefined,
-      start_longitude: state.startLongitude ?? undefined,
-    };
-
-    let result: { error?: string; success?: boolean; rideId?: string };
-
-    if (isEdit) {
-      result = await updateRide(rideId!, {
-        ...shared,
-        co_leader_ids: state.selectedCoLeaders,
-      } as UpdateRideData);
-    } else {
-      result = await createRide({
-        ...shared,
-        club_id: clubId,
-        co_leader_ids: state.selectedCoLeaders.length > 0 ? state.selectedCoLeaders : undefined,
-      } as CreateRideData);
-    }
-
-    dispatch({ type: 'SET_PENDING', value: false });
-
-    if (result.error) {
-      dispatch({ type: 'SET_ERROR', value: result.error });
-    } else {
-      if (!isEdit && result.rideId) {
-        router.push(routes.ride(result.rideId));
-      } else {
-        router.push(returnTo && returnTo.startsWith('/') ? returnTo : routes.manageRides);
-      }
-    }
-  }
-
-  // ── Convenience field setter ────────────────────────────────────────────
-
-  function setField<K extends keyof RideFormState>(field: K, value: RideFormState[K]) {
-    dispatch({ type: 'SET_FIELD', field, value: value as RideFormState[keyof RideFormState] });
-  }
+        setIsPending(false);
+        if (result.error) {
+          setServerError(result.error);
+        } else if (!isEdit && result.rideId) {
+          router.push(routes.ride(result.rideId));
+        } else {
+          router.push(returnTo && returnTo.startsWith('/') ? returnTo : routes.manageRides);
+        }
+      }, focusFirstError(formInstance))(e);
+    },
+    [formInstance, isEdit, rideId, clubId, returnTo, router],
+  );
 
   return {
     state,
+    form: formInstance,
     setField,
     pasteUrlRef,
-
-    // Derived
     isEdit,
-
-    // Handlers
     handleRouteImport,
     handlePasteUrlBlur,
     handleSubmit,

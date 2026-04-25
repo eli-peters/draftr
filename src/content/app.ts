@@ -997,6 +997,7 @@ export const appContent = {
         event: 'Event',
         urgent: 'Urgent',
       },
+      typeAriaLabel: 'Announcement type',
       searchPlaceholder: 'Search announcements...',
       typeColumn: 'Type',
       titleColumn: 'Title',
@@ -1161,6 +1162,67 @@ export const appContent = {
     weatherWatch: {
       title: (rideTitle: string) => `Weather watch: ${rideTitle}`,
       body: 'The forecast looks rough for this ride. Check the ride page for details.',
+    },
+  },
+
+  validation: {
+    generic: {
+      required: 'Required',
+      invalid: 'Invalid value',
+      tooShort: (min: number) => `Must be at least ${min} characters`,
+      tooLong: (max: number) => `Must be no more than ${max} characters`,
+      submitFailed: 'Something went wrong. Please try again.',
+      fixErrorsAbove: 'Please fix the errors above',
+    },
+    email: {
+      required: 'Email is required',
+      invalid: 'Enter a valid email address',
+    },
+    password: {
+      required: 'Password is required',
+      tooShort: 'Password must be at least 8 characters',
+      mismatch: 'Passwords do not match',
+    },
+    phone: {
+      invalid: 'Enter a valid phone number',
+    },
+    name: {
+      firstRequired: 'First name is required',
+      lastRequired: 'Last name is required',
+      fullNameInvalid: 'Enter your first and last name',
+      tooLong: 'Name is too long',
+    },
+    ride: {
+      titleRequired: 'Ride title is required',
+      titleTooLong: 'Ride title is too long',
+      dateRequired: 'Date is required',
+      dateInPast: 'Date must be in the future',
+      timeRequired: 'Start time is required',
+      meetingLocationRequired: 'Meeting location is required',
+      routeRequired: 'A route link is required',
+      routeInvalid: 'Enter a valid Strava or Ride With GPS link',
+      paceRequired: 'Pace group is required',
+      capacityInvalid: 'Capacity must be at least 1',
+      descriptionTooLong: 'Description is too long',
+    },
+    profile: {
+      bioTooLong: 'Bio is too long',
+      emergencyNameRequired: 'Emergency contact name is required',
+      emergencyPhoneRequired: 'Emergency contact phone is required',
+      emergencyRelationshipRequired: 'Relationship is required',
+    },
+    invite: {
+      emailRequired: 'Email is required to send an invite',
+      roleRequired: 'Select a role',
+    },
+    announcement: {
+      titleRequired: 'Announcement title is required',
+      titleTooLong: 'Announcement title is too long',
+      bodyRequired: 'Announcement message is required',
+      bodyTooLong: 'Announcement is too long',
+    },
+    waitlist: {
+      emailRequired: 'Enter your email to join the waitlist',
     },
   },
 } as const;

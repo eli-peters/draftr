@@ -1,11 +1,16 @@
 'use client';
 
-import { useActionState } from 'react';
-import { setupProfile } from '@/lib/auth/actions';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+
 import { Button } from '@/components/ui/button';
 import { FloatingField } from '@/components/ui/floating-field';
+import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { appContent } from '@/content/app';
+import { setupProfile } from '@/lib/auth/actions';
+import { FormRootError, nativeInputPresets, useFormSubmit } from '@/lib/forms';
+import { setupProfileSchema, type SetupProfileValues } from '@/lib/forms/schemas';
 
 const { setupProfile: content } = appContent.auth;
 
@@ -14,58 +19,78 @@ interface ProfileSetupFormProps {
 }
 
 export function ProfileSetupForm({ userEmail }: ProfileSetupFormProps) {
-  const [state, formAction, isPending] = useActionState(
-    async (_prev: { error?: string } | null, formData: FormData) => {
-      const result = await setupProfile(formData);
-      return result ?? null;
+  const form = useForm<SetupProfileValues>({
+    resolver: zodResolver(setupProfileSchema),
+    defaultValues: { password: '', full_name: '', bio: '' },
+    mode: 'onTouched',
+  });
+
+  const onSubmit = useFormSubmit({
+    form,
+    onSubmit: async (values) => {
+      const fd = new FormData();
+      fd.set('password', values.password);
+      fd.set('full_name', values.full_name);
+      fd.set('bio', values.bio ?? '');
+      return await setupProfile(fd);
     },
-    null,
-  );
+  });
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
-      <FloatingField label={appContent.auth.signIn.emailLabel} htmlFor="email" hasValue={true}>
-        <Input id="email" type="email" value={userEmail} disabled className="opacity-pending" />
-      </FloatingField>
+    <Form {...form}>
+      <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+        <FloatingField label={appContent.auth.signIn.emailLabel} htmlFor="email" hasValue>
+          <Input id="email" type="email" value={userEmail} disabled className="opacity-pending" />
+        </FloatingField>
 
-      <FloatingField label={content.passwordLabel} htmlFor="password">
-        <Input
-          id="password"
+        <FormField
+          control={form.control}
           name="password"
-          type="password"
-          required
-          minLength={6}
-          placeholder=" "
-          autoComplete="new-password"
+          render={({ field }) => (
+            <FormItem>
+              <FloatingField label={content.passwordLabel}>
+                <FormControl>
+                  <Input {...nativeInputPresets.password.new} placeholder=" " {...field} />
+                </FormControl>
+              </FloatingField>
+            </FormItem>
+          )}
         />
-      </FloatingField>
 
-      <FloatingField
-        label={content.nameLabel}
-        htmlFor="full_name"
-        helperText={content.nameHelperText}
-      >
-        <Input
-          id="full_name"
+        <FormField
+          control={form.control}
           name="full_name"
-          type="text"
-          required
-          pattern=".*\S+\s+\S+.*"
-          title={content.nameValidationError}
-          autoComplete="name"
-          placeholder=" "
+          render={({ field }) => (
+            <FormItem>
+              <FloatingField label={content.nameLabel} helperText={content.nameHelperText}>
+                <FormControl>
+                  <Input {...nativeInputPresets.fullName} placeholder=" " {...field} />
+                </FormControl>
+              </FloatingField>
+            </FormItem>
+          )}
         />
-      </FloatingField>
 
-      <FloatingField label={content.bioLabel} htmlFor="bio">
-        <Input id="bio" name="bio" type="text" placeholder=" " />
-      </FloatingField>
+        <FormField
+          control={form.control}
+          name="bio"
+          render={({ field }) => (
+            <FormItem>
+              <FloatingField label={content.bioLabel}>
+                <FormControl>
+                  <Input {...nativeInputPresets.prose} placeholder=" " {...field} />
+                </FormControl>
+              </FloatingField>
+            </FormItem>
+          )}
+        />
 
-      {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+        <FormRootError />
 
-      <Button type="submit" disabled={isPending} className="w-full">
-        {isPending ? appContent.common.loading : content.submitButton}
-      </Button>
-    </form>
+        <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
+          {form.formState.isSubmitting ? appContent.common.loading : content.submitButton}
+        </Button>
+      </form>
+    </Form>
   );
 }

@@ -1,44 +1,33 @@
 'use client';
 
 import { createContext, useContext } from 'react';
+import type { UseFormReturn } from 'react-hook-form';
+
+import type { ProfileValues } from '@/lib/forms/schemas';
 
 /**
- * Editable fields on the profile page. Avatar is excluded on purpose — it
- * commits immediately on file selection via a separate server action, not
- * through the whole-page edit flow.
+ * Editable fields on the profile page. Mirrors the database columns so values
+ * flow directly to the updateProfile server action. Avatar is excluded — it
+ * commits immediately on file selection via a separate flow.
  */
-export interface ProfileFormFields {
-  first_name: string;
-  last_name: string;
-  bio: string;
-  preferred_pace_group: string;
-  phone_number: string;
-  date_of_birth: string;
-  gender: string;
-  street_address_line_1: string;
-  street_address_line_2: string;
-  city: string;
-  province: string;
-  postal_code: string;
-  country: string;
-  emergency_contact_name: string;
-  emergency_contact_phone: string;
-  emergency_contact_relationship: string;
-}
+export type ProfileFormFields = ProfileValues;
 
+/**
+ * Context exposed to all profile cards. Wraps a single shared RHF instance
+ * (provided by `<ProfilePageProvider>`) plus the page-level edit-mode toggle
+ * that all cards observe in lockstep.
+ */
 export interface ProfileFormContextValue {
   /** Is the whole page currently in edit mode? */
   isEditing: boolean;
   /** Is a save in flight? */
   isPending: boolean;
-  /** Current working values — what the user has typed. */
-  values: ProfileFormFields;
-  /** Update a single field. No-op when not editing. */
-  setField: <K extends keyof ProfileFormFields>(key: K, value: ProfileFormFields[K]) => void;
-  /** Enter edit mode. */
+  /** Enter edit mode. Resets RHF values to the last-saved subject snapshot. */
   beginEdit: () => void;
   /** Revert all fields to the last-saved values and exit edit mode. */
   cancelEdit: () => void;
+  /** Underlying react-hook-form instance — use `form.control` with `<FormField>`. */
+  form: UseFormReturn<ProfileFormFields>;
 }
 
 export const ProfileFormContext = createContext<ProfileFormContextValue | null>(null);

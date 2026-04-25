@@ -1,55 +1,73 @@
 'use client';
 
-import { useActionState } from 'react';
-import { signIn } from '@/lib/auth/actions';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+
 import { Button } from '@/components/ui/button';
 import { FloatingField } from '@/components/ui/floating-field';
+import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { appContent } from '@/content/app';
+import { signIn } from '@/lib/auth/actions';
+import { FormRootError, nativeInputPresets, useFormSubmit } from '@/lib/forms';
+import { signInSchema, type SignInValues } from '@/lib/forms/schemas';
 
 const { signIn: content } = appContent.auth;
 
 export function SignInForm() {
-  const [state, formAction, isPending] = useActionState(
-    async (_prev: { error?: string } | null, formData: FormData) => {
-      const result = await signIn(formData);
-      return result ?? null;
+  const form = useForm<SignInValues>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: { email: '', password: '' },
+    mode: 'onTouched',
+  });
+
+  const onSubmit = useFormSubmit({
+    form,
+    onSubmit: async (values) => {
+      const fd = new FormData();
+      fd.set('email', values.email);
+      fd.set('password', values.password);
+      return await signIn(fd);
     },
-    null,
-  );
+  });
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
-      <FloatingField label={content.emailLabel} htmlFor="email">
-        <Input
-          id="email"
+    <Form {...form}>
+      <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+        <FormField
+          control={form.control}
           name="email"
-          type="email"
-          required
-          autoComplete="email"
-          inputMode="email"
-          enterKeyHint="next"
-          placeholder=" "
+          render={({ field }) => (
+            <FormItem>
+              <FloatingField label={content.emailLabel}>
+                <FormControl>
+                  <Input {...nativeInputPresets.email} placeholder=" " {...field} />
+                </FormControl>
+              </FloatingField>
+            </FormItem>
+          )}
         />
-      </FloatingField>
 
-      <FloatingField label={content.passwordLabel} htmlFor="password">
-        <Input
-          id="password"
+        <FormField
+          control={form.control}
           name="password"
-          type="password"
-          required
-          autoComplete="current-password"
-          enterKeyHint="go"
-          placeholder=" "
+          render={({ field }) => (
+            <FormItem>
+              <FloatingField label={content.passwordLabel}>
+                <FormControl>
+                  <Input {...nativeInputPresets.password.current} placeholder=" " {...field} />
+                </FormControl>
+              </FloatingField>
+            </FormItem>
+          )}
         />
-      </FloatingField>
 
-      {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+        <FormRootError />
 
-      <Button type="submit" disabled={isPending} className="w-full">
-        {isPending ? appContent.common.loading : content.submitButton}
-      </Button>
-    </form>
+        <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
+          {form.formState.isSubmitting ? appContent.common.loading : content.submitButton}
+        </Button>
+      </form>
+    </Form>
   );
 }

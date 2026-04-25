@@ -2,10 +2,12 @@
 
 import { FirstAid } from '@phosphor-icons/react/dist/ssr';
 import { ContentCard, ContentCardFooter } from '@/components/ui/content-card';
-import { Input } from '@/components/ui/input';
 import { FloatingField } from '@/components/ui/floating-field';
-import { formatPhoneDisplay, formatPhoneLive, stripToDigits } from '@/lib/phone';
+import { FormControl, FormField, FormItem } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { useProfileForm } from '@/hooks/use-profile-form-state';
+import { nativeInputPresets } from '@/lib/forms';
+import { formatPhoneDisplay, formatPhoneLive, stripToDigits } from '@/lib/phone';
 import { appContent } from '@/content/app';
 
 const { profile: content } = appContent;
@@ -21,48 +23,70 @@ export function ProfileEmergencyCard({
   initialPhone,
   initialRelationship,
 }: ProfileEmergencyCardProps) {
-  const { isEditing, values, setField } = useProfileForm();
+  const { isEditing, form } = useProfileForm();
 
   return (
     <ContentCard variant="alert" icon={FirstAid} heading={content.sections.emergencyContact}>
       {isEditing ? (
         <div className="flex flex-col gap-3">
-          <FloatingField
-            label={content.emergencyContact.nameLabel}
-            htmlFor="profile_emergency_name"
-          >
-            <Input
-              id="profile_emergency_name"
-              value={values.emergency_contact_name}
-              onChange={(e) => setField('emergency_contact_name', e.target.value)}
-              placeholder=" "
-            />
-          </FloatingField>
-          <FloatingField
-            label={content.emergencyContact.relationshipLabel}
-            htmlFor="profile_emergency_relationship"
-          >
-            <Input
-              id="profile_emergency_relationship"
-              value={values.emergency_contact_relationship}
-              onChange={(e) => setField('emergency_contact_relationship', e.target.value)}
-              placeholder=" "
-            />
-          </FloatingField>
-          <FloatingField
-            label={content.emergencyContact.phoneLabel}
-            htmlFor="profile_emergency_phone"
-          >
-            <Input
-              id="profile_emergency_phone"
-              inputMode="tel"
-              value={formatPhoneLive(values.emergency_contact_phone)}
-              onChange={(e) =>
-                setField('emergency_contact_phone', stripToDigits(e.target.value).slice(0, 10))
-              }
-              placeholder=" "
-            />
-          </FloatingField>
+          <FormField
+            control={form.control}
+            name="emergency_contact_name"
+            render={({ field }) => (
+              <FormItem>
+                <FloatingField label={content.emergencyContact.nameLabel}>
+                  <FormControl>
+                    <Input
+                      {...nativeInputPresets.fullName}
+                      placeholder=" "
+                      {...field}
+                      value={field.value ?? ''}
+                    />
+                  </FormControl>
+                </FloatingField>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="emergency_contact_relationship"
+            render={({ field }) => (
+              <FormItem>
+                <FloatingField label={content.emergencyContact.relationshipLabel}>
+                  <FormControl>
+                    <Input
+                      autoCapitalize="words"
+                      autoCorrect="off"
+                      placeholder=" "
+                      {...field}
+                      value={field.value ?? ''}
+                    />
+                  </FormControl>
+                </FloatingField>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="emergency_contact_phone"
+            render={({ field }) => (
+              <FormItem>
+                <FloatingField label={content.emergencyContact.phoneLabel}>
+                  <FormControl>
+                    <Input
+                      {...nativeInputPresets.phone}
+                      placeholder=" "
+                      value={formatPhoneLive(field.value ?? '')}
+                      onChange={(e) => field.onChange(stripToDigits(e.target.value).slice(0, 10))}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
+                    />
+                  </FormControl>
+                </FloatingField>
+              </FormItem>
+            )}
+          />
         </div>
       ) : initialName ? (
         <dl className="flex flex-col gap-3">

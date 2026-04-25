@@ -1,6 +1,11 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+
+import { nativeInputPresets } from '@/lib/forms';
+import { waitlistSchema, type WaitlistValues } from '@/lib/forms/schemas';
 
 const LOGO_SVG = `<svg viewBox="0 0 432 99" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M205.627 26.1045C216.174 26.1045 223.03 31.3778 225.667 38.6289L227.249 28.082H253.222L245.839 75.4131C244.388 84.5096 243.861 91.2334 244.388 97.0342H218.679C218.152 94.1341 218.284 89.3873 218.284 85.5645C213.406 93.8705 206.813 98.749 197.188 98.749C182.687 98.7488 172.667 88.0694 172.667 69.3477C172.667 42.0572 187.565 26.1045 205.627 26.1045ZM346.861 28.082H359.914L357.277 45.4854H344.225L340.137 70.7988C339.346 76.4674 341.456 78.3134 345.938 78.3135C347.651 78.3135 350.025 77.9179 352.267 77.127L349.234 96.5078C346.202 97.6938 341.85 98.749 336.313 98.749C319.702 98.7489 310.869 91.1015 314.033 71.7217L318.252 45.4854H310.21L312.846 28.082H320.889L323.262 13.9756H349.103L346.861 28.082ZM57.5322 0.0341797C90.9047 0.0341797 108 15.4457 108 41.499C108 78.0526 84.7517 97.5527 50.832 97.5527H8.9834L20.1533 27.0596C15.7889 25.3381 12.0771 22.1458 9.7666 17.918L3.49902 6.44043L0 0.0341797H57.5322ZM180 27.0352C178.096 34.3823 172.5 51.5006 164 51.5352C162.991 51.4791 162.051 51.4143 161.177 51.3457C147.716 50.9978 140.271 55.2652 138.378 67.5029L133.632 97.0342H107.659L114.91 51.0225C116.493 41.0026 117.152 34.4104 117.415 28.082H142.729C142.729 31.5099 142.465 38.2341 141.806 43.9033C147.08 32.3013 155.5 27 166.5 27L166.499 27.002C166.662 27.0006 166.829 26.9993 167 27L180 27.0352ZM300.12 0C306.58 1.49469e-05 309.744 0.79095 312.908 1.97754L310.271 18.9854C308.426 18.3262 306.975 17.9307 304.075 17.9307C298.933 17.9307 296.56 20.8309 295.901 24.6543L295.242 28.082H308.688L305.921 45.4854H292.473L284.299 97.0342H258.458L266.632 45.4854H258.194L260.831 28.082H269.269L269.928 23.9951C272.565 7.25132 285.09 0 300.12 0ZM432 27.0352C430.096 34.3822 424.5 51.5005 416 51.5352C415.317 51.4972 414.666 51.4539 414.045 51.4102L414.044 51.418C399.41 50.6269 391.368 54.7141 389.39 67.5029L384.644 97.0342H358.671L365.923 51.0225C367.505 41.0026 368.164 34.4104 368.428 28.082H393.741C393.741 31.5099 393.477 38.2341 392.818 43.9033C397.719 33.122 405.01 27.8053 415.327 27.2129C416.267 27.0728 417.462 26.9947 419 27.001L432 27.0352ZM212.878 45.2217C204.704 45.2217 199.299 53.7907 199.299 66.7109C199.299 74.6211 202.463 79.4999 209.055 79.5C217.097 79.5 222.766 70.0076 222.766 57.7461C222.766 49.8357 219.339 45.2217 212.878 45.2217ZM43.7197 73.958H51.1094C66.9749 73.9579 75.8633 62.9112 75.8633 42.8594C75.8632 30.3111 69.71 23.4952 56.8506 23.4951H51.791L43.7197 73.958Z" fill="currentColor"/>
@@ -25,24 +30,27 @@ const landingContent = {
 type FormStatus = 'idle' | 'submitting' | 'success' | 'duplicate' | 'error';
 
 export default function LandingPage() {
-  const [email, setEmail] = useState('');
   const [status, setStatus] = useState<FormStatus>('idle');
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    if (!email.trim() || status === 'submitting') return;
+  const form = useForm<WaitlistValues>({
+    resolver: zodResolver(waitlistSchema),
+    defaultValues: { email: '' },
+    mode: 'onSubmit',
+  });
 
+  const onSubmit = form.handleSubmit(async (values) => {
+    if (status === 'submitting') return;
     setStatus('submitting');
     try {
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+        body: JSON.stringify({ email: values.email.trim().toLowerCase() }),
       });
 
       if (res.ok) {
         setStatus('success');
-        setEmail('');
+        form.reset({ email: '' });
       } else if (res.status === 409) {
         setStatus('duplicate');
       } else {
@@ -51,7 +59,7 @@ export default function LandingPage() {
     } catch {
       setStatus('error');
     }
-  }
+  });
 
   const showForm = status === 'idle' || status === 'error' || status === 'submitting';
 
@@ -365,19 +373,19 @@ export default function LandingPage() {
           <div className="landing-form-wrap">
             {showForm ? (
               <>
-                <form className="landing-form" onSubmit={handleSubmit}>
+                <form className="landing-form" onSubmit={onSubmit} noValidate>
                   <input
                     className="landing-input"
-                    type="email"
-                    required
+                    {...nativeInputPresets.email}
                     placeholder={landingContent.emailPlaceholder}
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (status === 'error') setStatus('idle');
-                    }}
                     aria-label="Email address"
+                    aria-invalid={form.formState.errors.email ? true : undefined}
                     disabled={status === 'submitting'}
+                    {...form.register('email', {
+                      onChange: () => {
+                        if (status === 'error') setStatus('idle');
+                      },
+                    })}
                   />
                   <button
                     className="landing-button"
@@ -387,7 +395,12 @@ export default function LandingPage() {
                     {status === 'submitting' ? 'Joining...' : landingContent.cta}
                   </button>
                 </form>
-                {status === 'error' && (
+                {form.formState.errors.email?.message && (
+                  <p className="landing-status landing-status-error" role="alert">
+                    {form.formState.errors.email.message}
+                  </p>
+                )}
+                {status === 'error' && !form.formState.errors.email && (
                   <p className="landing-status landing-status-error">{landingContent.error}</p>
                 )}
               </>
