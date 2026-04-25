@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useMotionPresets } from '@/lib/motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getAvatarColourClasses } from '@/lib/avatar-colours';
+import { formatName } from '@/lib/names';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ContentCard } from '@/components/ui/content-card';
@@ -150,7 +151,7 @@ function CommentRow({
             href={routes.publicProfile(comment.user_id)}
             className="text-sm font-medium text-foreground hover:underline"
           >
-            {comment.user_name}
+            {formatName(comment.user_name, { context: 'list' }) || comment.user_name}
           </Link>
           <span className="text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}

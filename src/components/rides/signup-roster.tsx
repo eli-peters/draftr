@@ -16,6 +16,7 @@ import {
 import { SectionHeading } from '@/components/ui/section-heading';
 import { appContent } from '@/content/app';
 import { getInitials } from '@/lib/utils';
+import { formatName } from '@/lib/names';
 import { SignupStatus } from '@/config/statuses';
 import { routes } from '@/config/routes';
 import { useMotionPresets } from '@/lib/motion';
@@ -62,6 +63,10 @@ export function SignupRoster({
 
   const leaderIds = new Set([...(createdBy ? [createdBy] : []), ...coLeaderIds]);
 
+  const rosterNames = signups.map((s) => s.user_name);
+  const displayNameFor = (signup: SignupEntry) =>
+    formatName(signup.user_name, { context: 'list', siblings: rosterNames }) || signup.user_name;
+
   // Pin ride leaders to the top of the confirmed list (creator first)
   const sortedConfirmed = [...confirmed].sort((a, b) => {
     const aIsLeader = leaderIds.has(a.user_id);
@@ -92,6 +97,7 @@ export function SignupRoster({
                   <SignupRow
                     key={signup.id}
                     signup={signup}
+                    displayName={displayNameFor(signup)}
                     canRemove={signup.user_id !== createdBy && signup.user_id !== currentUserId}
                     onRemove={onRemoveRider}
                   />
@@ -109,6 +115,7 @@ export function SignupRoster({
                   <SignupRow
                     key={signup.id}
                     signup={signup}
+                    displayName={displayNameFor(signup)}
                     canRemove={signup.user_id !== currentUserId}
                     onRemove={onRemoveRider}
                   />
@@ -120,7 +127,12 @@ export function SignupRoster({
       ) : (
         <AnimatePresence initial={false} mode="popLayout">
           {sortedConfirmed.map((signup) => (
-            <SignupRow key={signup.id} signup={signup} isLeader={leaderIds.has(signup.user_id)} />
+            <SignupRow
+              key={signup.id}
+              signup={signup}
+              displayName={displayNameFor(signup)}
+              isLeader={leaderIds.has(signup.user_id)}
+            />
           ))}
         </AnimatePresence>
       )}
@@ -134,6 +146,7 @@ export function SignupRoster({
               <SignupRow
                 key={signup.id}
                 signup={signup}
+                displayName={displayNameFor(signup)}
                 isLeader={!canRemoveRiders && leaderIds.has(signup.user_id)}
                 canRemove={
                   canRemoveRiders &&
@@ -152,11 +165,13 @@ export function SignupRoster({
 
 function SignupRow({
   signup,
+  displayName,
   isLeader,
   canRemove,
   onRemove,
 }: {
   signup: SignupEntry;
+  displayName: string;
   isLeader?: boolean;
   canRemove?: boolean;
   onRemove?: (userId: string, userName: string) => void;
@@ -187,7 +202,7 @@ function SignupRow({
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-base font-semibold text-foreground">{signup.user_name}</p>
+          <p className="truncate text-base font-semibold text-foreground">{displayName}</p>
           {signup.signed_up_at && (
             <p className="text-xs text-muted-foreground">
               {ridesContent.roster.joined(formatDistanceToNow(new Date(signup.signed_up_at)))}

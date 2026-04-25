@@ -19,6 +19,7 @@ import { Card } from '@/components/ui/card';
 import { RideWeatherBadge } from '@/components/weather/ride-weather-badge';
 import { useUserPrefs } from '@/components/user-prefs-provider';
 import { cn } from '@/lib/utils';
+import { formatName } from '@/lib/names';
 import { appContent } from '@/content/app';
 import {
   separators,
@@ -480,6 +481,7 @@ interface LeaderRowProps {
 export function LeaderRow({ creator, coLeaders }: LeaderRowProps) {
   if (!creator) return null;
   const allLeaders = [creator, ...coLeaders];
+  const leaderNames = allLeaders.map((l) => l.full_name);
 
   return (
     <div className="flex items-center gap-2">
@@ -491,7 +493,8 @@ export function LeaderRow({ creator, coLeaders }: LeaderRowProps) {
           <div key={i} className="flex items-center gap-1.5 min-w-0">
             <RiderAvatar avatarUrl={leader.avatar_url} name={leader.full_name} className="size-6" />
             <span className={cn(BODY_SM, 'font-medium text-foreground truncate')}>
-              {leader.full_name}
+              {formatName(leader.full_name, { context: 'card', siblings: leaderNames }) ||
+                leader.full_name}
             </span>
           </div>
         ))}
