@@ -72,19 +72,6 @@ export function NavigationOriginProvider({ children }: { children: React.ReactNo
     });
   }, [pathname]);
 
-  // Capacitor iOS: arm the WKWebView native edge-swipe gesture only on
-  // child routes reached via in-app navigation. Sibling L1 tabs share the
-  // WKWebView history but aren't a hierarchical relationship, so swiping
-  // between them shouldn't trigger a back navigation.
-  useEffect(() => {
-    const handler = (
-      window as unknown as {
-        webkit?: { messageHandlers?: { swipeGate?: { postMessage: (msg: unknown) => void } } };
-      }
-    ).webkit?.messageHandlers?.swipeGate;
-    handler?.postMessage({ enabled: state.canSwipeBack });
-  }, [state.canSwipeBack]);
-
   return (
     <NavigationOriginContext.Provider value={state}>{children}</NavigationOriginContext.Provider>
   );

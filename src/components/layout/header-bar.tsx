@@ -80,9 +80,13 @@ export function HeaderBar({
       {backInner}
     </button>
   ) : (
-    <Link href={parentRoute} aria-label={backLabel} className={backClass}>
+    <button
+      onClick={() => router.replace(parentRoute)}
+      aria-label={backLabel}
+      className={backClass}
+    >
       {backInner}
-    </Link>
+    </button>
   );
 
   const bellWrap = transparentMode ? (

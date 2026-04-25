@@ -40,6 +40,7 @@ export function BottomNav({ items }: BottomNavProps) {
                 <MotionLink
                   key={item.href}
                   href={item.href}
+                  replace
                   whileTap={shouldReduce ? undefined : { scale: 0.91 }}
                   transition={SPRINGS.gentle}
                   className={cn(
