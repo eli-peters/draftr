@@ -11,6 +11,7 @@ import { ProfileAvatarEditor } from '@/components/profile/profile-avatar-editor'
 import { useProfileForm } from '@/hooks/use-profile-form-state';
 import { nativeInputPresets } from '@/lib/forms';
 import { inputLimits } from '@/lib/forms/limits';
+import { capitalizeFirst } from '@/lib/text';
 import { getInitials } from '@/lib/utils';
 import { appContent } from '@/content/app';
 import type { ProfileViewerAccess } from '@/lib/profile/access';
@@ -152,7 +153,7 @@ export function ProfileIdentityHero({
             />
           ) : (
             <p className="line-clamp-3 select-text text-base leading-relaxed text-foreground">
-              {initialBio}
+              {capitalizeFirst(initialBio)}
             </p>
           )}
         </div>

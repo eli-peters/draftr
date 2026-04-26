@@ -25,6 +25,7 @@ import {
   separators,
   parseLocalDate,
 } from '@/config/formatting';
+import { capitalizeFirst } from '@/lib/text';
 import { cn } from '@/lib/utils';
 import type { RideLifecycle } from '@/lib/rides/lifecycle';
 import type { RideWithDetails, RideWeatherSnapshot } from '@/types/database';
@@ -168,10 +169,9 @@ export function RideDetailCardBody({
         )}
       </div>
 
-      {/* Description — full text, reads as prose after the metadata */}
       {ride.description && (
         <p className="select-text whitespace-pre-line text-base leading-relaxed text-muted-foreground">
-          {ride.description}
+          {capitalizeFirst(ride.description)}
         </p>
       )}
 

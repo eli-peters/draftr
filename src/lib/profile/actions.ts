@@ -3,6 +3,7 @@
 import { createClient, getUser } from '@/lib/supabase/server';
 import { invalidateProfile } from '@/lib/cache-tags';
 import { appContent } from '@/content/app';
+import { normalizeName } from '@/lib/names';
 import { toE164 } from '@/lib/phone';
 import type { UserPreferences } from '@/types/user-preferences';
 import {
@@ -48,10 +49,10 @@ export async function updateProfile(data: UpdateProfileData) {
   };
 
   if ('first_name' in data) {
-    updates.first_name = data.first_name || null;
+    updates.first_name = data.first_name ? normalizeName(data.first_name) : null;
   }
   if ('last_name' in data) {
-    updates.last_name = data.last_name || null;
+    updates.last_name = data.last_name ? normalizeName(data.last_name) : null;
   }
   if ('bio' in data) {
     updates.bio = data.bio || null;

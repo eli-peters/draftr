@@ -1,5 +1,59 @@
 export type NameContext = 'list' | 'detail' | 'card';
 
+const NAME_PARTICLES = new Set([
+  'van',
+  'de',
+  'der',
+  'den',
+  'von',
+  'del',
+  'della',
+  'di',
+  'du',
+  'la',
+  'le',
+]);
+
+function capitalizeAt(value: string, index: number): string {
+  if (index < 0 || index >= value.length) return value;
+  return value.slice(0, index) + value.charAt(index).toUpperCase() + value.slice(index + 1);
+}
+
+function normalizeToken(token: string, isFirst: boolean): string {
+  if (!token) return token;
+
+  const lower = token.toLowerCase();
+
+  if (!isFirst && NAME_PARTICLES.has(lower)) {
+    return lower;
+  }
+
+  let result = lower.charAt(0).toUpperCase() + lower.slice(1);
+
+  if (result.length >= 5 && result.slice(0, 3).toLowerCase() === 'mac') {
+    result = capitalizeAt(result, 3);
+  } else if (result.length >= 3 && result.slice(0, 2).toLowerCase() === 'mc') {
+    result = capitalizeAt(result, 2);
+  }
+
+  for (let i = 0; i < result.length - 1; i++) {
+    const ch = result.charAt(i);
+    if (ch === "'" || ch === '-') {
+      result = capitalizeAt(result, i + 1);
+    }
+  }
+
+  return result;
+}
+
+export function normalizeName(input: string | null | undefined): string {
+  const collapsed = (input ?? '').replace(/\s+/g, ' ').trim();
+  if (!collapsed) return '';
+
+  const tokens = collapsed.split(' ');
+  return tokens.map((token, index) => normalizeToken(token, index === 0)).join(' ');
+}
+
 export interface SplitName {
   first: string;
   last: string;

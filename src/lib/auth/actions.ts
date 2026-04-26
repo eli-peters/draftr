@@ -5,6 +5,7 @@ import { createClient, getUser } from '@/lib/supabase/server';
 import { appContent } from '@/content/app';
 import { getSiteUrl } from '@/config/routes';
 import { invalidateManage } from '@/lib/cache-tags';
+import { normalizeName } from '@/lib/names';
 
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
@@ -96,8 +97,8 @@ export async function setupProfile(formData: FormData) {
   if (nameParts.length < 2) {
     return { error: appContent.errors.fullNameRequired };
   }
-  const firstName = nameParts[0];
-  const lastName = nameParts.slice(1).join(' ');
+  const firstName = normalizeName(nameParts[0]);
+  const lastName = normalizeName(nameParts.slice(1).join(' '));
   const bio = formData.get('bio') as string;
   const preferredPace = formData.get('preferred_pace_group') as string;
 
@@ -201,7 +202,7 @@ export async function inviteMember(formData: FormData) {
       {
         id: data.user.id,
         email,
-        first_name: email.split('@')[0],
+        first_name: normalizeName(email.split('@')[0]),
         last_name: '',
         onboarding_completed: false,
       },
