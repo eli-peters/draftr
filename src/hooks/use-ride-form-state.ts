@@ -273,21 +273,22 @@ export function useRideFormState({
     const currentTitle = formInstance.getValues('title');
     const currentDescription = formInstance.getValues('description') ?? '';
 
-    formInstance.setValue('routeUrl', route.source_url);
-    formInstance.setValue('routeName', route.name);
-    formInstance.setValue('routePolyline', route.polyline || '');
-    if (!currentTitle) formInstance.setValue('title', route.name);
+    const dirty = { shouldDirty: true } as const;
+    formInstance.setValue('routeUrl', route.source_url, dirty);
+    formInstance.setValue('routeName', route.name, dirty);
+    formInstance.setValue('routePolyline', route.polyline || '', dirty);
+    if (!currentTitle) formInstance.setValue('title', route.name, dirty);
     if (!currentDescription && route.description) {
-      formInstance.setValue('description', route.description.slice(0, 250));
+      formInstance.setValue('description', route.description.slice(0, 250), dirty);
     }
     if (route.distance_m) {
-      formInstance.setValue('distanceKm', (route.distance_m / 1000).toFixed(1));
+      formInstance.setValue('distanceKm', (route.distance_m / 1000).toFixed(1), dirty);
     }
     if (route.elevation_m) {
-      formInstance.setValue('elevationM', String(Math.round(route.elevation_m)));
+      formInstance.setValue('elevationM', String(Math.round(route.elevation_m)), dirty);
     }
-    formInstance.setValue('startLatitude', startCoords?.latitude ?? null);
-    formInstance.setValue('startLongitude', startCoords?.longitude ?? null);
+    formInstance.setValue('startLatitude', startCoords?.latitude ?? null, dirty);
+    formInstance.setValue('startLongitude', startCoords?.longitude ?? null, dirty);
 
     setImportedRouteName(route.name);
     setDetectedService(route.service ?? null);
@@ -302,8 +303,8 @@ export function useRideFormState({
       try {
         const location = await reverseGeocode(startCoords.latitude, startCoords.longitude);
         if (location) {
-          formInstance.setValue('startLocationName', location.name);
-          formInstance.setValue('startLocationAddress', location.address);
+          formInstance.setValue('startLocationName', location.name, dirty);
+          formInstance.setValue('startLocationAddress', location.address, dirty);
         }
       } catch (err) {
         console.warn('[ride-form] reverseGeocode failed:', err);
@@ -369,7 +370,7 @@ export function useRideFormState({
 
     setFetchRouteError(null);
     formInstance.clearErrors('routeUrl');
-    formInstance.setValue('routeUrl', url);
+    formInstance.setValue('routeUrl', url, { shouldDirty: true });
 
     const parsed = parseRouteUrl(url);
 
@@ -411,19 +412,20 @@ export function useRideFormState({
 
   // ── Clear route data ───────────────────────────────────────────────────
   function clearRouteData(preserveUrl = false) {
+    const dirty = { shouldDirty: true } as const;
     setImportedRouteName(null);
     setDetectedService(null);
-    formInstance.setValue('routeName', '');
-    formInstance.setValue('routePolyline', '');
-    if (!preserveUrl) formInstance.setValue('routeUrl', '');
-    formInstance.setValue('title', '');
-    formInstance.setValue('description', '');
-    formInstance.setValue('distanceKm', '');
-    formInstance.setValue('elevationM', '');
-    formInstance.setValue('startLocationName', '');
-    formInstance.setValue('startLocationAddress', '');
-    formInstance.setValue('startLatitude', null);
-    formInstance.setValue('startLongitude', null);
+    formInstance.setValue('routeName', '', dirty);
+    formInstance.setValue('routePolyline', '', dirty);
+    if (!preserveUrl) formInstance.setValue('routeUrl', '', dirty);
+    formInstance.setValue('title', '', dirty);
+    formInstance.setValue('description', '', dirty);
+    formInstance.setValue('distanceKm', '', dirty);
+    formInstance.setValue('elevationM', '', dirty);
+    formInstance.setValue('startLocationName', '', dirty);
+    formInstance.setValue('startLocationAddress', '', dirty);
+    formInstance.setValue('startLatitude', null, dirty);
+    formInstance.setValue('startLongitude', null, dirty);
   }
 
   // ── Submission ─────────────────────────────────────────────────────────

@@ -10,13 +10,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { ProfileAvatarEditor } from '@/components/profile/profile-avatar-editor';
 import { useProfileForm } from '@/hooks/use-profile-form-state';
 import { nativeInputPresets } from '@/lib/forms';
+import { inputLimits } from '@/lib/forms/limits';
 import { getInitials } from '@/lib/utils';
 import { appContent } from '@/content/app';
 import type { ProfileViewerAccess } from '@/lib/profile/access';
 
 const { profile: content, auth } = appContent;
-
-const BIO_MAX = 300;
 
 interface ProfileIdentityHeroProps {
   fullName: string;
@@ -61,9 +60,17 @@ export function ProfileIdentityHero({
                 name="first_name"
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <FloatingField label={content.personalInfo.firstNameLabel}>
+                    <FloatingField
+                      label={content.personalInfo.firstNameLabel}
+                      maxLength={inputLimits.profile.firstName}
+                    >
                       <FormControl>
-                        <Input {...nativeInputPresets.firstName} placeholder=" " {...field} />
+                        <Input
+                          {...nativeInputPresets.firstName}
+                          placeholder=" "
+                          maxLength={inputLimits.profile.firstName}
+                          {...field}
+                        />
                       </FormControl>
                     </FloatingField>
                   </FormItem>
@@ -74,9 +81,17 @@ export function ProfileIdentityHero({
                 name="last_name"
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <FloatingField label={content.personalInfo.lastNameLabel}>
+                    <FloatingField
+                      label={content.personalInfo.lastNameLabel}
+                      maxLength={inputLimits.profile.lastName}
+                    >
                       <FormControl>
-                        <Input {...nativeInputPresets.lastName} placeholder=" " {...field} />
+                        <Input
+                          {...nativeInputPresets.lastName}
+                          placeholder=" "
+                          maxLength={inputLimits.profile.lastName}
+                          {...field}
+                        />
                       </FormControl>
                     </FloatingField>
                   </FormItem>
@@ -117,13 +132,16 @@ export function ProfileIdentityHero({
               name="bio"
               render={({ field }) => (
                 <FormItem>
-                  <FloatingField label={auth.setupProfile.bioLabel} maxLength={BIO_MAX}>
+                  <FloatingField
+                    label={auth.setupProfile.bioLabel}
+                    maxLength={inputLimits.profile.bio}
+                  >
                     <FormControl>
                       <Textarea
                         {...nativeInputPresets.composer}
                         rows={3}
                         placeholder=" "
-                        maxLength={BIO_MAX}
+                        maxLength={inputLimits.profile.bio}
                         {...field}
                         value={field.value ?? ''}
                       />

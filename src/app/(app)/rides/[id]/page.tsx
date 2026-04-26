@@ -116,7 +116,7 @@ export default async function RideDetailPage({ params }: RideDetailPageProps) {
   );
 
   const signupClosedBlock: ReactNode = showSignupClosed ? (
-    <div className="mt-6">
+    <div className="mt-card-stack">
       <p className="text-sm font-medium text-muted-foreground">
         {appContent.rides.status.signupClosed}
       </p>

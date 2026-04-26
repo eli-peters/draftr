@@ -6,3 +6,4 @@ export * from './invite-member';
 export * from './announcement';
 export * from './ride';
 export * from './profile';
+export * from './comment';

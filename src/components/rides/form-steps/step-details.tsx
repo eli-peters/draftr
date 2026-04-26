@@ -7,6 +7,7 @@ import { FloatingField } from '@/components/ui/floating-field';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useCompositionSafe } from '@/hooks/use-composition-safe';
+import { inputLimits } from '@/lib/forms/limits';
 import { DatePicker } from '@/components/ui/date-picker';
 import { TimePicker } from '@/components/ui/time-picker';
 import {
@@ -64,9 +65,14 @@ export function StepDetails({
   );
 
   return (
-    <ContentCard padding="default" heading={form.sectionRideDetails} icon={Bicycle}>
+    <ContentCard variant="admin" padding="default" heading={form.sectionRideDetails} icon={Bicycle}>
       <div className="flex flex-col gap-5 md:gap-6">
-        <FloatingField label={form.title} htmlFor="title" error={fieldErrors?.title}>
+        <FloatingField
+          label={form.title}
+          htmlFor="title"
+          error={fieldErrors?.title}
+          maxLength={inputLimits.ride.title}
+        >
           <Input
             id="title"
             name="title"
@@ -77,6 +83,7 @@ export function StepDetails({
             value={title}
             {...titleCompositionProps}
             placeholder=" "
+            maxLength={inputLimits.ride.title}
           />
         </FloatingField>
 
@@ -84,7 +91,7 @@ export function StepDetails({
           label={`${form.description} ${form.optional}`}
           htmlFor="description"
           helperText={form.descriptionHelper}
-          maxLength={250}
+          maxLength={inputLimits.ride.description}
         >
           <Textarea
             id="description"
@@ -95,7 +102,7 @@ export function StepDetails({
             value={description}
             {...descCompositionProps}
             placeholder=" "
-            maxLength={250}
+            maxLength={inputLimits.ride.description}
           />
         </FloatingField>
 

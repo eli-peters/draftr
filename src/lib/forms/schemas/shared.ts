@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { appContent } from '@/content/app';
 
+import { inputLimits } from '../limits';
+
 const v = appContent.validation;
 
 /** Email — required + RFC-ish format check. */
@@ -39,11 +41,11 @@ export const firstNameField = z
   .string({ error: v.name.firstRequired })
   .trim()
   .min(1, v.name.firstRequired)
-  .max(60, v.name.tooLong);
+  .max(inputLimits.profile.firstName, v.name.tooLong);
 
 /** Last name. */
 export const lastNameField = z
   .string({ error: v.name.lastRequired })
   .trim()
   .min(1, v.name.lastRequired)
-  .max(60, v.name.tooLong);
+  .max(inputLimits.profile.lastName, v.name.tooLong);

@@ -15,6 +15,7 @@ import { todayInTimezone } from '@/config/formatting';
 import { syncWeatherForRide } from '@/lib/weather/sync';
 import { createNotification, createNotifications } from '@/lib/notifications/create';
 import { removeUnreadReversible } from '@/lib/notifications/reversal';
+import { cancellationReasonSchema, commentBodySchema } from '@/lib/forms/schemas';
 
 const { errors, common, notificationMessages: notif, rides: ridesContent } = appContent;
 
@@ -921,6 +922,14 @@ export async function updateRecurringSeries(rideId: string, data: UpdateRideData
  * Cancel a ride. Creates notifications for signed-up riders.
  */
 export async function cancelRide(rideId: string, reason: string) {
+  const parsedReason = cancellationReasonSchema.safeParse(reason);
+  if (!parsedReason.success) {
+    return {
+      error: parsedReason.error.issues[0]?.message ?? appContent.validation.generic.invalid,
+    };
+  }
+  const cleanReason = (parsedReason.data ?? '').trim();
+
   const supabase = await createClient();
   const user = await getUser();
 
@@ -938,7 +947,7 @@ export async function cancelRide(rideId: string, reason: string) {
     .from('rides')
     .update({
       status: RideStatus.CANCELLED,
-      cancellation_reason: reason || null,
+      cancellation_reason: cleanReason || null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', rideId);
@@ -958,7 +967,7 @@ export async function cancelRide(rideId: string, reason: string) {
         userId: s.user_id,
         type: 'ride_cancelled' as const,
         title: notif.rideCancelled.title(ride.title),
-        body: reason || notif.rideCancelled.defaultBody,
+        body: cleanReason || notif.rideCancelled.defaultBody,
         rideId,
         channel: 'both' as const,
       })),
@@ -980,19 +989,16 @@ export async function cancelRide(rideId: string, reason: string) {
 // Comments
 // ---------------------------------------------------------------------------
 
-const COMMENT_MAX_LENGTH = 500;
-
 /**
  * Validate comment body length and return the trimmed string.
  * Returns an error string if invalid, or the trimmed body if valid.
  */
 function validateCommentBody(body: string): { trimmed: string } | { error: string } {
-  const trimmed = body.trim();
-  if (!trimmed) return { error: errors.commentEmpty };
-  if (trimmed.length > COMMENT_MAX_LENGTH) {
-    return { error: errors.commentTooLong(COMMENT_MAX_LENGTH) };
+  const parsed = commentBodySchema.safeParse(body);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? errors.commentEmpty };
   }
-  return { trimmed };
+  return { trimmed: parsed.data };
 }
 
 /**

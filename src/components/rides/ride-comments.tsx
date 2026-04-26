@@ -27,12 +27,13 @@ import { toast } from 'sonner';
 import { addComment, editComment, deleteComment, toggleCommentReaction } from '@/lib/rides/actions';
 import { ReactionPills } from '@/components/rides/reaction-pills';
 import { appContent } from '@/content/app';
-import { getInitial } from '@/lib/utils';
+import { inputLimits, shouldShowCounter, usePasteTruncate } from '@/lib/forms';
+import { cn, getInitial } from '@/lib/utils';
 import { routes } from '@/config/routes';
 import type { CommentWithUser, ReactionType, ReactionSummary } from '@/types/database';
 
 const content = appContent.rides.comments;
-const CHAR_LIMIT = 500;
+const CHAR_LIMIT = inputLimits.comment.body;
 const MAX_ROWS = 4;
 
 interface RideCommentsProps {
@@ -100,6 +101,7 @@ function CommentRow({
   const [editBody, setEditBody] = useState(comment.body);
   const [isPending, startTransition] = useTransition();
   const editRef = useRef<HTMLTextAreaElement>(null);
+  const handleEditPaste = usePasteTruncate(CHAR_LIMIT);
 
   const editCompositionProps = useCompositionSafe(
     useCallback((value: string) => {
@@ -167,24 +169,28 @@ function CommentRow({
               ref={editRef}
               value={editBody}
               {...editCompositionProps}
+              onPaste={handleEditPaste}
               maxLength={CHAR_LIMIT}
               rows={1}
               className="min-h-0 resize-none overflow-hidden py-2 text-sm"
             />
-            <div className="flex items-center gap-2">
-              <Button size="sm" onClick={handleSaveEdit} disabled={isPending || !editBody.trim()}>
-                {content.save}
-              </Button>
-              <Button
-                size="sm"
-                variant="muted"
-                onClick={() => {
-                  setIsEditing(false);
-                  setEditBody(comment.body);
-                }}
-              >
-                {content.cancelEdit}
-              </Button>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Button size="sm" onClick={handleSaveEdit} disabled={isPending || !editBody.trim()}>
+                  {content.save}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="muted"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditBody(comment.body);
+                  }}
+                >
+                  {content.cancelEdit}
+                </Button>
+              </div>
+              <CharCounter length={editBody.length} max={CHAR_LIMIT} />
             </div>
           </div>
         ) : (
@@ -259,6 +265,7 @@ function AddCommentForm({ rideId }: { rideId: string }) {
   const [body, setBody] = useState('');
   const [isPending, startTransition] = useTransition();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const handlePaste = usePasteTruncate(CHAR_LIMIT);
 
   const commentCompositionProps = useCompositionSafe(
     useCallback((value: string) => {
@@ -295,6 +302,7 @@ function AddCommentForm({ rideId }: { rideId: string }) {
           ref={textareaRef}
           value={body}
           {...commentCompositionProps}
+          onPaste={handlePaste}
           onKeyDown={handleKeyDown}
           placeholder={content.placeholder}
           maxLength={CHAR_LIMIT}
@@ -313,6 +321,24 @@ function AddCommentForm({ rideId }: { rideId: string }) {
           {isPending ? <ButtonSpinner /> : <PaperPlaneTilt className="size-4" />}
         </Button>
       </div>
+      <div className="flex justify-end px-2 pb-1">
+        <CharCounter length={body.length} max={CHAR_LIMIT} />
+      </div>
     </div>
+  );
+}
+
+function CharCounter({ length, max }: { length: number; max: number }) {
+  const visible = shouldShowCounter(length, max);
+  return (
+    <span
+      aria-live="polite"
+      className={cn(
+        'shrink-0 text-xs tabular-nums text-muted-foreground transition-opacity duration-150 motion-reduce:transition-none',
+        visible ? 'opacity-100' : 'pointer-events-none opacity-0',
+      )}
+    >
+      {length}/{max}
+    </span>
   );
 }

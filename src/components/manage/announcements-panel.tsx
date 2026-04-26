@@ -23,6 +23,7 @@ import { Switch } from '@/components/ui/switch';
 import { FormRootError, nativeInputPresets, useFormSubmit } from '@/lib/forms';
 import {
   ANNOUNCEMENT_BODY_MAX,
+  ANNOUNCEMENT_TITLE_MAX,
   announcementSchema,
   type AnnouncementValues,
 } from '@/lib/forms/schemas';
@@ -445,9 +446,18 @@ export function AnnouncementFormDrawer({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FloatingField label={content.announcements.titleLabel} hasValue={!!field.value}>
+                  <FloatingField
+                    label={content.announcements.titleLabel}
+                    hasValue={!!field.value}
+                    maxLength={ANNOUNCEMENT_TITLE_MAX}
+                  >
                     <FormControl>
-                      <Input {...nativeInputPresets.prose} placeholder=" " {...field} />
+                      <Input
+                        {...nativeInputPresets.prose}
+                        placeholder=" "
+                        maxLength={ANNOUNCEMENT_TITLE_MAX}
+                        {...field}
+                      />
                     </FormControl>
                   </FloatingField>
                 </FormItem>

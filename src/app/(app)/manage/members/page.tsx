@@ -35,7 +35,7 @@ export default async function ManageMembersPage() {
             </span>
           }
         />
-        <div className="mt-4">
+        <div className="mt-2">
           <MemberList
             members={members}
             clubId={membership.club_id}

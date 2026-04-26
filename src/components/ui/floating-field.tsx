@@ -3,6 +3,8 @@
 import * as React from 'react';
 import { useState, useCallback, useEffect, useRef } from 'react';
 
+import { shouldShowCounter } from '@/lib/forms/limits';
+import { applyPasteTruncate } from '@/lib/forms/paste-truncate';
 import { cn } from '@/lib/utils';
 import { FormFieldContext, useFormField } from './form';
 
@@ -21,7 +23,7 @@ interface FloatingFieldProps {
   helperText?: string;
   /** Optional error message below the field. Ignored when inside <FormField> — error comes from RHF state. */
   error?: string;
-  /** Max character length — shows a counter when provided (textareas) */
+  /** Max character length — shows a counter (within ~20% of limit) and truncates oversize pastes with a toast */
   maxLength?: number;
   /** Additional className on the outer wrapper */
   className?: string;
@@ -54,6 +56,14 @@ function FloatingFieldRhf(props: FloatingFieldProps) {
   );
 }
 
+type EditableInput = HTMLInputElement | HTMLTextAreaElement;
+
+function isEditable(el: Element | null): el is EditableInput {
+  if (!el) return false;
+  const slot = (el as HTMLElement).dataset?.slot;
+  return slot === 'textarea' || slot === 'input';
+}
+
 function FloatingFieldImpl({
   label,
   htmlFor,
@@ -69,26 +79,41 @@ function FloatingFieldImpl({
   const [charCount, setCharCount] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Read initial value for pre-filled textareas (defaultValue)
+  // Read initial value for pre-filled inputs/textareas (defaultValue or controlled)
   useEffect(() => {
     if (!maxLength || !containerRef.current) return;
-    const textarea =
-      containerRef.current.querySelector<HTMLTextAreaElement>('[data-slot="textarea"]');
-    if (textarea && textarea.value.length > 0) {
-      setCharCount(textarea.value.length);
+    const target = containerRef.current.querySelector<EditableInput>(
+      '[data-slot="textarea"], [data-slot="input"]',
+    );
+    if (target && target.value.length > 0) {
+      setCharCount(target.value.length);
     }
   }, [maxLength]);
 
   const handleInput = useCallback(
     (e: React.FormEvent<HTMLDivElement>) => {
       if (!maxLength) return;
-      const target = e.target as HTMLElement;
-      if (target.dataset?.slot === 'textarea') {
-        setCharCount((target as HTMLTextAreaElement).value.length);
+      const target = e.target as Element | null;
+      if (isEditable(target)) {
+        setCharCount(target.value.length);
       }
     },
     [maxLength],
   );
+
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent<HTMLDivElement>) => {
+      if (!maxLength) return;
+      const target = e.target as Element | null;
+      if (!isEditable(target)) return;
+      if (applyPasteTruncate(e, target, maxLength)) {
+        setCharCount(target.value.length);
+      }
+    },
+    [maxLength],
+  );
+
+  const counterVisible = maxLength ? shouldShowCounter(charCount, maxLength) : false;
 
   return (
     <div
@@ -98,6 +123,7 @@ function FloatingFieldImpl({
       data-has-value={hasValue || undefined}
       data-has-icon={Icon ? '' : undefined}
       onInput={maxLength ? handleInput : undefined}
+      onPaste={maxLength ? handlePaste : undefined}
     >
       {children}
       {Icon && (
@@ -121,7 +147,14 @@ function FloatingFieldImpl({
             <span />
           )}
           {maxLength && (
-            <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+            <span
+              aria-live="polite"
+              data-visible={counterVisible || undefined}
+              className={cn(
+                'shrink-0 text-xs tabular-nums text-muted-foreground transition-opacity duration-150 motion-reduce:transition-none',
+                counterVisible ? 'opacity-100' : 'pointer-events-none opacity-0',
+              )}
+            >
               {charCount}/{maxLength}
             </span>
           )}

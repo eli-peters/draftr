@@ -389,6 +389,12 @@ export const appContent = {
       addCoLeader: 'Add a co-leader',
       replaceRoute: 'Replace this route?',
       replaceRouteDescription: 'Import a new route to replace the current one.',
+      coLeadersSubtitle: 'Optional. Pick anyone helping you lead this ride.',
+      discardConfirmTitle: 'Discard changes?',
+      discardConfirmCreateDescription: 'Your draft ride will be lost. This cannot be undone.',
+      discardConfirmEditDescription: 'Your unsaved edits will be lost. This cannot be undone.',
+      discardConfirmAction: 'Discard',
+      discardConfirmKeep: 'Keep editing',
     },
     roster: {
       noSignups: 'No signups yet.',
@@ -1171,6 +1177,7 @@ export const appContent = {
       invalid: 'Invalid value',
       tooShort: (min: number) => `Must be at least ${min} characters`,
       tooLong: (max: number) => `Must be no more than ${max} characters`,
+      pasteTrimmed: (max: number) => `Trimmed to ${max} characters`,
       submitFailed: 'Something went wrong. Please try again.',
       fixErrorsAbove: 'Please fix the errors above',
     },
@@ -1204,6 +1211,11 @@ export const appContent = {
       paceRequired: 'Pace group is required',
       capacityInvalid: 'Capacity must be at least 1',
       descriptionTooLong: 'Description is too long',
+      cancellationReasonTooLong: 'Cancellation reason is too long',
+    },
+    comment: {
+      bodyRequired: 'Comment cannot be empty',
+      bodyTooLong: 'Comment is too long',
     },
     profile: {
       bioTooLong: 'Bio is too long',

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { useProfileForm } from '@/hooks/use-profile-form-state';
 import { nativeInputPresets } from '@/lib/forms';
+import { inputLimits } from '@/lib/forms/limits';
 import { formatPhoneDisplay, formatPhoneLive, stripToDigits } from '@/lib/phone';
 import { appContent } from '@/content/app';
 
@@ -163,12 +164,16 @@ export function ProfilePersonalInfoCard({
             name="street_address_line_1"
             render={({ field }) => (
               <FormItem>
-                <FloatingField label={content.personalInfo.streetAddress1Label}>
+                <FloatingField
+                  label={content.personalInfo.streetAddress1Label}
+                  maxLength={inputLimits.address.line}
+                >
                   <FormControl>
                     <Input
                       autoCapitalize="words"
                       autoComplete="address-line1"
                       placeholder=" "
+                      maxLength={inputLimits.address.line}
                       {...field}
                       value={field.value ?? ''}
                     />
@@ -184,12 +189,16 @@ export function ProfilePersonalInfoCard({
             name="street_address_line_2"
             render={({ field }) => (
               <FormItem>
-                <FloatingField label={content.personalInfo.streetAddress2Label}>
+                <FloatingField
+                  label={content.personalInfo.streetAddress2Label}
+                  maxLength={inputLimits.address.line}
+                >
                   <FormControl>
                     <Input
                       autoCapitalize="words"
                       autoComplete="address-line2"
                       placeholder=" "
+                      maxLength={inputLimits.address.line}
                       {...field}
                       value={field.value ?? ''}
                     />
@@ -205,12 +214,16 @@ export function ProfilePersonalInfoCard({
             name="city"
             render={({ field }) => (
               <FormItem>
-                <FloatingField label={content.personalInfo.cityLabel}>
+                <FloatingField
+                  label={content.personalInfo.cityLabel}
+                  maxLength={inputLimits.address.city}
+                >
                   <FormControl>
                     <Input
                       autoCapitalize="words"
                       autoComplete="address-level2"
                       placeholder=" "
+                      maxLength={inputLimits.address.city}
                       {...field}
                       value={field.value ?? ''}
                     />
@@ -250,12 +263,13 @@ export function ProfilePersonalInfoCard({
             name="postal_code"
             render={({ field }) => (
               <FormItem>
-                <FloatingField label={postalLabel}>
+                <FloatingField label={postalLabel} maxLength={inputLimits.address.postalCode}>
                   <FormControl>
                     <Input
                       autoCapitalize="characters"
                       autoComplete="postal-code"
                       placeholder=" "
+                      maxLength={inputLimits.address.postalCode}
                       {...field}
                       value={field.value ?? ''}
                     />

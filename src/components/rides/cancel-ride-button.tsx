@@ -9,6 +9,7 @@ import { StatusCallout } from '@/components/ui/status-callout';
 import { Textarea } from '@/components/ui/textarea';
 import { cancelRide } from '@/lib/rides/actions';
 import { appContent } from '@/content/app';
+import { inputLimits } from '@/lib/forms/limits';
 import { routes } from '@/config/routes';
 
 const { rides: ridesContent, common } = appContent;
@@ -54,7 +55,7 @@ export function CancelRideButton({ rideId, rideTitle }: CancelRideButtonProps) {
         label={ridesContent.edit.cancelReasonLabel}
         htmlFor="cancel-reason"
         hasValue={!!reason}
-        maxLength={300}
+        maxLength={inputLimits.ride.cancellationReason}
       >
         <Textarea
           id="cancel-reason"
@@ -62,7 +63,7 @@ export function CancelRideButton({ rideId, rideTitle }: CancelRideButtonProps) {
           onChange={(e) => setReason(e.target.value)}
           rows={2}
           placeholder=" "
-          maxLength={300}
+          maxLength={inputLimits.ride.cancellationReason}
         />
       </FloatingField>
       {error && <p className="text-sm">{error}</p>}

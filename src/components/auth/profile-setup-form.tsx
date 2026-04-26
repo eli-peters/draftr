@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { appContent } from '@/content/app';
 import { setupProfile } from '@/lib/auth/actions';
 import { FormRootError, nativeInputPresets, useFormSubmit } from '@/lib/forms';
+import { inputLimits } from '@/lib/forms/limits';
 import { setupProfileSchema, type SetupProfileValues } from '@/lib/forms/schemas';
 
 const { setupProfile: content } = appContent.auth;
@@ -62,9 +63,18 @@ export function ProfileSetupForm({ userEmail }: ProfileSetupFormProps) {
           name="full_name"
           render={({ field }) => (
             <FormItem>
-              <FloatingField label={content.nameLabel} helperText={content.nameHelperText}>
+              <FloatingField
+                label={content.nameLabel}
+                helperText={content.nameHelperText}
+                maxLength={inputLimits.profile.fullName}
+              >
                 <FormControl>
-                  <Input {...nativeInputPresets.fullName} placeholder=" " {...field} />
+                  <Input
+                    {...nativeInputPresets.fullName}
+                    placeholder=" "
+                    maxLength={inputLimits.profile.fullName}
+                    {...field}
+                  />
                 </FormControl>
               </FloatingField>
             </FormItem>
@@ -76,9 +86,14 @@ export function ProfileSetupForm({ userEmail }: ProfileSetupFormProps) {
           name="bio"
           render={({ field }) => (
             <FormItem>
-              <FloatingField label={content.bioLabel}>
+              <FloatingField label={content.bioLabel} maxLength={inputLimits.profile.bio}>
                 <FormControl>
-                  <Input {...nativeInputPresets.prose} placeholder=" " {...field} />
+                  <Input
+                    {...nativeInputPresets.prose}
+                    placeholder=" "
+                    maxLength={inputLimits.profile.bio}
+                    {...field}
+                  />
                 </FormControl>
               </FloatingField>
             </FormItem>

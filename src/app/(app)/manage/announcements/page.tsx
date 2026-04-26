@@ -34,7 +34,7 @@ export default async function ManageAnnouncementsPage() {
             </span>
           }
         />
-        <div className="mt-4">
+        <div className="mt-2">
           <AnnouncementsPanel announcements={announcements} clubId={membership.club_id} />
         </div>
       </DashboardShell>

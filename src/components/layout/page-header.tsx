@@ -21,7 +21,7 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        'mb-6 flex items-start justify-between gap-3 md:gap-4',
+        'mb-card-stack flex items-start justify-between gap-3 md:gap-4',
         sticky &&
           'sticky top-[calc(env(safe-area-inset-top)+3rem)] z-30 -mx-5 bg-background px-5 pt-1 pb-3 md:-mx-6 md:top-[calc(4rem+0.75rem)] md:px-6',
         className,

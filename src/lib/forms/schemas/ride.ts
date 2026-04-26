@@ -2,10 +2,9 @@ import { z } from 'zod';
 
 import { appContent } from '@/content/app';
 
-const v = appContent.validation;
+import { inputLimits } from '../limits';
 
-const RIDE_TITLE_MAX = 80;
-const RIDE_DESCRIPTION_MAX = 1000;
+const v = appContent.validation;
 
 /** Strava and Ride With GPS route URLs are the only accepted services. */
 const ROUTE_URL_PATTERN = /^https?:\/\/(www\.)?(strava\.com|ridewithgps\.com)\//i;
@@ -22,8 +21,8 @@ export const rideSchema = z.object({
     .string({ error: v.ride.titleRequired })
     .trim()
     .min(1, v.ride.titleRequired)
-    .max(RIDE_TITLE_MAX, v.ride.titleTooLong),
-  description: z.string().max(RIDE_DESCRIPTION_MAX, v.ride.descriptionTooLong).optional(),
+    .max(inputLimits.ride.title, v.ride.titleTooLong),
+  description: z.string().max(inputLimits.ride.description, v.ride.descriptionTooLong).optional(),
   distanceKm: z.string().optional(),
   elevationM: z.string().optional(),
   capacity: z
@@ -50,5 +49,13 @@ export const rideSchema = z.object({
 });
 
 export type RideValues = z.infer<typeof rideSchema>;
-export const RIDE_TITLE_MAX_LENGTH = RIDE_TITLE_MAX;
-export const RIDE_DESCRIPTION_MAX_LENGTH = RIDE_DESCRIPTION_MAX;
+export const RIDE_TITLE_MAX_LENGTH = inputLimits.ride.title;
+export const RIDE_DESCRIPTION_MAX_LENGTH = inputLimits.ride.description;
+
+/** Standalone schema for the cancellation-reason textarea on cancel-ride-button. */
+export const cancellationReasonSchema = z
+  .string()
+  .max(inputLimits.ride.cancellationReason, v.ride.cancellationReasonTooLong)
+  .optional()
+  .or(z.literal(''));
+export const RIDE_CANCELLATION_REASON_MAX_LENGTH = inputLimits.ride.cancellationReason;

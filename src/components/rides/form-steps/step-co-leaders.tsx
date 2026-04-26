@@ -32,7 +32,13 @@ export function StepCoLeaders({
     .sort(sortByFirstName);
 
   return (
-    <ContentCard padding="default" heading={form.sectionCoLeaders} icon={UsersThree}>
+    <ContentCard
+      variant="admin"
+      padding="default"
+      heading={form.sectionCoLeaders}
+      subtitle={form.coLeadersSubtitle}
+      icon={UsersThree}
+    >
       <div className="flex flex-col gap-5 md:gap-6">
         {eligibleLeaders.length > 0 && (
           <div className="flex flex-col gap-1">

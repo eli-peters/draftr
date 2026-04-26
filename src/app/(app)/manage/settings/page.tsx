@@ -26,7 +26,7 @@ export default async function ManageSettingsPage() {
     <MobileGate>
       <DashboardShell>
         <PageHeader title={content.sections.club} />
-        <div className="mt-4 space-y-4">
+        <div className="mt-2 space-y-card-stack">
           <ContentCard
             variant="admin"
             icon={CalendarBlank}

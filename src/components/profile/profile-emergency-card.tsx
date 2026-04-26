@@ -7,6 +7,7 @@ import { FormControl, FormField, FormItem } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useProfileForm } from '@/hooks/use-profile-form-state';
 import { nativeInputPresets } from '@/lib/forms';
+import { inputLimits } from '@/lib/forms/limits';
 import { formatPhoneDisplay, formatPhoneLive, stripToDigits } from '@/lib/phone';
 import { appContent } from '@/content/app';
 
@@ -34,11 +35,15 @@ export function ProfileEmergencyCard({
             name="emergency_contact_name"
             render={({ field }) => (
               <FormItem>
-                <FloatingField label={content.emergencyContact.nameLabel}>
+                <FloatingField
+                  label={content.emergencyContact.nameLabel}
+                  maxLength={inputLimits.profile.emergencyContactName}
+                >
                   <FormControl>
                     <Input
                       {...nativeInputPresets.fullName}
                       placeholder=" "
+                      maxLength={inputLimits.profile.emergencyContactName}
                       {...field}
                       value={field.value ?? ''}
                     />
@@ -52,12 +57,16 @@ export function ProfileEmergencyCard({
             name="emergency_contact_relationship"
             render={({ field }) => (
               <FormItem>
-                <FloatingField label={content.emergencyContact.relationshipLabel}>
+                <FloatingField
+                  label={content.emergencyContact.relationshipLabel}
+                  maxLength={inputLimits.profile.emergencyContactRelationship}
+                >
                   <FormControl>
                     <Input
                       autoCapitalize="words"
                       autoCorrect="off"
                       placeholder=" "
+                      maxLength={inputLimits.profile.emergencyContactRelationship}
                       {...field}
                       value={field.value ?? ''}
                     />

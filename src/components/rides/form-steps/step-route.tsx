@@ -75,7 +75,7 @@ export function StepRoute({
   const [showPasteInput, setShowPasteInput] = useState(false);
 
   return (
-    <ContentCard padding="default" heading={form.sectionRoute} icon={Path}>
+    <ContentCard variant="admin" padding="default" heading={form.sectionRoute} icon={Path}>
       <div className="flex flex-col gap-4 min-w-0">
         {importedRouteName ? (
           !routePolyline && detectedService ? (
